@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>八方雲集 - 智慧點餐系統</title>
+    <style>
+        :root { 
+            --primary: #9e1c11;       /* 質感暗紅 */
+            --primary-light: #fdf2f1; /* 淡淡的紅底 */
+            --secondary: #f1c40f;     /* 溫暖金黃 */
+            --accent: #e74c3c;        /* 亮紅點綴 */
+            --bg-main: #f8fafc;       /* 現代感淺灰底 */
+            --text-dark: #1e293b;     /* 深藍黑文字 */
+            --text-muted: #64748b;    /* 輔助灰色 */
+            --border-color: #e2e8f0;  /* 邊框線條 */
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Microsoft JhengHei", sans-serif; 
+            background: var(--bg-main); 
+            margin: 0; 
+            padding: 0; 
+            color: var(--text-dark); 
+            line-height: 1.5;
+        }
+
+        .container { 
+            max-width: 1050px; 
+            margin: 0 auto; 
+            padding: 24px 16px; 
+            /* 為了避免內容被右下角固定按鈕遮擋，底部多推一些留白 */
+            padding-bottom: 80px; 
+        }
+
+        /* 頂部 Header 設計 */
+        .header { 
+            text-align: center; 
+            background: linear-gradient(135deg, var(--primary), #bd2d1e); 
+            color: white; 
+            padding: 30px 20px; 
+            border-radius: 16px; 
+            margin-bottom: 24px; 
+            box-shadow: 0 4px 20px rgba(158, 28, 17, 0.15);
+            position: relative; 
+            overflow: hidden;
+        }
+        .header h1 { margin: 0 0 8px 0; font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+        .header p { margin: 0; font-size: 14px; opacity: 0.9; font-weight: 300; }
+
+        /* ✨ 右下角固定懸浮返回按鈕 */
+        .btn-back {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999; /* 確保永遠在最上層 */
+            background: rgba(30, 41, 59, 0.9); /* 深色基底，跟紅色的送出按鈕做出視覺區隔 */
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px); /* 磨砂玻璃效果 */
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+        }
+        .btn-back:hover {
+            background: #1e293b;
+            transform: translateY(-2px); /* 懸浮時往上微移 */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 資訊提示框樣式 */
+        .info-banner { 
+            background: #e0f2fe; 
+            color: #0369a1; 
+            padding: 14px 18px; 
+            border-radius: 12px; 
+            margin-bottom: 24px; 
+            font-size: 14px; 
+            border-left: 5px solid #0284c7; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+        
+        /* 佈局 */
+        .flex-box { display: flex; gap: 24px; align-items: flex-start; }
+        .menu-side { flex: 1.6; }
+        .cart-side { 
+            flex: 1; 
+            background: #fff; 
+            border: 1px solid var(--border-color); 
+            padding: 20px; 
+            border-radius: 16px; 
+            position: sticky; 
+            top: 24px; 
+            height: fit-content; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        }
+
+        /* 搜尋框優化 */
+        .search-box { 
+            width: 100%; 
+            padding: 12px 16px; 
+            margin-bottom: 20px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            font-size: 15px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(158, 28, 17, 0.1);
+        }
+        
+        /* 分類標題 */
+        .category-title { 
+            background: transparent; 
+            padding: 12px 0 6px 0; 
+            font-weight: 700; 
+            color: var(--primary); 
+            margin: 20px 0 10px 0; 
+            font-size: 16px; 
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        /* 品項列表卡片化 */
+        .item-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 14px 16px; 
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        .item-row:hover { 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-color: #cbd5e1;
+        }
+        .item-name { font-weight: 600; color: var(--text-dark); font-size: 15px; }
+        .item-price { color: var(--accent); font-weight: 600; font-size: 14px; margin-top: 2px; display: inline-block; }
+        
+        /* 按鈕與數量控制 */
+        .action-zone { display: flex; align-items: center; gap: 12px; }
+        .btn-qty { 
+            background: #f1f5f9; 
+            border: none; 
+            color: var(--text-dark); 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-qty:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .qty-num { width: 24px; text-align: center; font-weight: 700; color: var(--text-dark); font-size: 15px;}
+        
+        /* 購物車樣式優化 */
+        .cart-side h3 { margin-top: 0; font-size: 18px; font-weight: 700; border-bottom: 2px solid var(--bg-main); padding-bottom: 10px; }
+        
+        .cart-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 14px; 
+            margin-bottom: 12px; 
+            border-bottom: 1px dashed var(--border-color); 
+            padding-bottom: 8px; 
+        }
+        .cart-item-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .cart-item-name { font-weight: 500; color: var(--text-dark); }
+        .cart-item-price { font-weight: 600; color: var(--accent); font-size: 13px; margin-top: 2px; }
+        
+        /* 🗑 垃圾桶按鈕樣式 */
+        .btn-delete-item {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 6px 10px;
+            font-size: 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+        .btn-delete-item:hover {
+            color: var(--accent);
+            background: #fff5f5;
+        }
+        
+        .opt-group { margin-top: 16px; }
+        .opt-group label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
+        
+        /* 總計區塊 */
+        .total-box { font-size: 22px; font-weight: 700; color: var(--accent); text-align: right; margin: 20px 0; }
+        
+        /* 送出按鈕 */
+        .btn-submit { 
+            width: 100%; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            font-size: 16px; 
+            font-weight: 700; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(158, 28, 17, 0.2);
+        }
+        .btn-submit:hover { background: #84160d; transform: translateY(-1px); }
+        .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+        
+        /* 付款資訊區塊 */
+        .payment-info-box { 
+            margin-top: 24px; 
+            padding: 14px; 
+            background: var(--bg-main); 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+        }
+        .payment-title { font-weight: 700; color: var(--text-dark); font-size: 14px; margin-bottom: 10px; text-align: center; }
+        .payment-detial { font-size: 13px; color: var(--text-muted); text-align: left; line-height: 1.6; }
+        .payment-detial b { color: var(--text-dark); }
+
+        /* RWD 行動裝置優化 */
+        @media (max-width: 768px) { 
+            .flex-box { flex-direction: column; } 
+            .cart-side { position: static; width: 100%; box-sizing: border-box; } 
+            .btn-back { bottom: 16px; right: 16px; padding: 10px 16px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="btn-back" onclick="goBack()">⬅ 離開點餐</button>
+
+<div class="container">
+    <div class="header">
+        <h1>八方雲集 智慧點餐系統</h1>
+        <p>✨ 歡迎使用線上點餐系統 ‧ 快速、直覺、便利</p>
+    </div>
+
+    <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
+
+    <div class="flex-box">
+        <div class="menu-side">
+            <input type="text" id="search" class="search-box" placeholder="🔍 輸入關鍵字搜尋品項 (例如：水餃、酸辣湯)..." oninput="filterMenu()">
+            <div id="menu-list"></div>
+        </div>
+
+        <div class="cart-side">
+            <h3>🛒 已選點餐明細</h3>
+            <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0;">尚未加點商品</p></div>
+            
+            <div class="opt-group">
+                <label>醬料／辣度需求</label>
+                <select id="spicy-level" class="search-box" style="margin:0;">
+                    <option value="不辣">不辣</option>
+                    <option value="微辣">微辣</option>
+                    <option value="小辣">小辣</option>
+                    <option value="中辣">中辣</option>
+                    <option value="大辣">大辣</option>
+                    <option value="醬油膏">只要醬油膏</option>
+                    <option value="不加醬">不加任何醬料</option>
+                </select>
+            </div>
+
+            <div class="total-box" id="total-amount">總計: $0</div>
+            <button class="btn-submit" id="submit-btn" onclick="submitOrderToServer()">確認送出訂單</button>
+
+            <div class="payment-info-box">
+                <div class="payment-title">💰 付款方式說明</div>
+                <div class="payment-detial">
+                    • <b>銀行轉帳：</b>中國信託 428540856354<br>
+                    • <b>行動支付：</b>找珈豪掃描 iPASS Money<br>
+                    • <b>現金支付：</b>自行繳現金 / 櫃檯結帳
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function goBack() {
+    if (document.referrer && window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = `index.html?cardId=${encodeURIComponent(currentCardId)}`; 
+    }
+}
+
+const menuItems = [
+    {name: "紅燒牛肉麵", price: 168, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "清燉牛肉麵", price: 168, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "麻辣牛肉麵", price: 178, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "紅燒牛肉湯", price: 158, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "清燉牛肉湯", price: 158, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "麻辣牛肉湯", price: 168, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "紅燒牛肉湯餃(8顆)", price: 120, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "麻辣牛肉湯餃(8顆)", price: 125, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "紅燒牛肉湯珍珠餛飩(10顆)", price: 125, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "麻辣牛肉湯珍珠餛飩(10顆)", price: 130, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "紅燒牛肉湯菜肉大餛飩(6顆)", price: 125, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "麻辣牛肉湯菜肉大餛飩(6顆)", price: 130, category: "🐂 八方一號 經典牛肉麵系列"},
+    {name: "招牌鍋貼", price: 7.0, category: "🥟 鍋貼類（單顆計價）"},
+    {name: "韭菜鍋貼", price: 7.0, category: "🥟 鍋貼類（單顆計價）"},
+    {name: "韓式辣味鍋貼", price: 7.0, category: "🥟 鍋貼類（單顆計價）"},
+    {name: "咖哩雞肉鍋貼", price: 7.0, category: "🥟 鍋貼類（單顆計價）"},
+    {name: "玉米鍋貼", price: 7.0, category: "🥟 鍋貼類（單顆計價）"},
+    {name: "新蔬食鍋貼", price: 7.5, category: "🥟 鍋貼類（單顆計價）"},
+    {name: "招牌水餃", price: 7.0, category: "🥟 水餃類（單顆計價）"},
+    {name: "韭菜水餃", price: 7.0, category: "🥟 水餃類（單顆計價）"},
+    {name: "韓式辣味水餃", price: 7.0, category: "🥟 水餃類（單顆計價）"},
+    {name: "咖哩雞肉水餃", price: 7.0, category: "🥟 水餃類（單顆計價）"},
+    {name: "玉米水餃", price: 7.0, category: "🥟 水餃類（單顆計價）"},
+    {name: "新蔬食水餃", price: 7.5, category: "🥟 水餃類（單顆計價）"},
+    {name: "鮮蝦水餃", price: 10.5, category: "🥟 水餃類（單顆計價）"},
+    {name: "酸辣湯餃(8顆)", price: 90, category: "🥣 湯餃類"},
+    {name: "玉米湯餃(8顆)", price: 90, category: "🥣 湯餃類"},
+    {name: "古早味乾麵", price: 45, category: "🍜 乾麵類"},
+    {name: "麻醬乾麵", price: 55, category: "🍜 乾麵類"},
+    {name: "招牌乾麵(微辣)", price: 55, category: "🍜 乾麵類"},
+    {name: "紹辣乾麵", price: 60, category: "🍜 乾麵類"},
+    {name: "古早味湯麵", price: 45, category: "🍜 湯麵類"},
+    {name: "酸辣湯麵", price: 70, category: "🍜 湯麵類"},
+    {name: "珍珠餛飩麵", price: 70, category: "🍜 湯麵類"},
+    {name: "菜肉大餛飩麵", price: 80, category: "🍜 湯麵類"},
+    {name: "榨菜肉絲麵", price: 80, category: "🍜 湯麵類"},
+    {name: "紹辣珍珠餛飩麵", price: 80, category: "🍜 湯麵類"},
+    {name: "紹辣菜肉大餛飩麵", price: 90, category: "🍜 湯麵類"},
+    {name: "珍珠抄手(8顆)", price: 60, category: "🥟 抄手類"},
+    {name: "菜肉大抄手(6顆)", price: 75, category: "🥟 抄手類"},
+    {name: "酸辣湯", price: 35, category: "🥣 美味湯品類"},
+    {name: "玉米濃湯", price: 35, category: "🥣 美味湯品類"},
+    {name: "旗魚花枝丸湯", price: 35, category: "🥣 美味湯品類"},
+    {name: "蘿蔔湯", price: 35, category: "🥣 美味湯品類"},
+    {name: "珍珠餛飩湯", price: 50, category: "🥣 美味湯品類"},
+    {name: "菜肉大餛飩湯", price: 60, category: "🥣 美味湯品類"},
+    {name: "滷蛋", price: 15, category: "🥗 精選小菜類"},
+    {name: "黃金豆腐", price: 35, category: "🥗 精選小菜類"},
+    {name: "燙青菜", price: 35, category: "🥗 精選小菜類"},
+    {name: "燉蘿蔔", price: 35, category: "🥗 精選小菜類"},
+    {name: "和風秋葵", price: 35, category: "🥗 精選小菜類"},
+    {name: "薄鹽毛豆", price: 35, category: "🥗 精選小菜類"},
+    {name: "黃金泡菜", price: 30, category: "🥗 精選小菜類"},
+    {name: "韓式泡菜", price: 30, category: "🥗 精選小菜類"},
+    {name: "台式泡菜", price: 30, category: "🥗 精選小菜類"},
+    {name: "香濃豆漿", price: 20, category: "🥤 沁涼飲品類"},
+    {name: "香濃豆漿(無糖)", price: 20, category: "🥤 沁涼飲品類"},
+    {name: "黑豆漿", price: 20, category: "🥤 沁涼飲品類"},
+    {name: "真傳特調紅茶", price: 20, category: "🥤 沁涼飲品類"},
+    {name: "寒天真傳特調紅茶", price: 45, category: "🥤 沁涼飲品類"},
+    {name: "【生鮮】招牌生水餃(20入)", price: 125, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】招牌生水餃(50入)", price: 310, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】韭菜生水餃(20入)", price: 125, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】韭菜生水餃(50入)", price: 310, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】韓式辣味生水餃(20入)", price: 125, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】韓式辣味生水餃(50入)", price: 310, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】咖哩雞肉生水餃(20入)", price: 125, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】咖哩雞肉生水餃(50入)", price: 310, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】玉米生水餃(20入)", price: 125, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】玉米生水餃(50入)", price: 310, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】新蔬食生水餃(20入)", price: 135, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】新蔬食生水餃(50入)", price: 335, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】鮮蝦生水餃(20入)", price: 195, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】鮮蝦生水餃(50入)", price: 485, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】珍珠生餛飩(30入)", price: 85, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】菜肉大餛飩(10入)", price: 93, category: "❄️ 生鮮預購外帶類"},
+    {name: "【生鮮】菜肉大餛飩(20入)", price: 185, category: "❄️ 生鮮預購外帶類"},
+    {name: "【家庭號】香濃豆漿(有糖)", price: 80, category: "❄️ 生鮮預購外帶類"},
+    {name: "【家庭號】香濃豆漿(無糖)", price: 80, category: "❄️ 生鮮預購外帶類"},
+    {name: "【家庭號】黑豆漿", price: 90, category: "❄️ 生鮮預購外帶類"},
+    {name: "【家庭號】真傳特調紅茶", price: 100, category: "❄️ 生鮮預購外帶類"}
+];
+
+let cart = {};
+let finalTotal = 0;
+let finalSummary = "";
+let currentCardId = "18445";
+
+function initCardId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardParam = urlParams.get('cardId');
+    const statusDiv = document.getElementById("card-status");
+    
+    if (cardParam) {
+        currentCardId = cardParam;
+        statusDiv.innerHTML = `✅ <b>已自動帶入卡號：${currentCardId}</b> (發送訂單時將以此卡號紀錄)`;
+        statusDiv.style.backgroundColor = "#d1fae5";
+        statusDiv.style.color = "#065f46";
+        statusDiv.style.borderLeftColor = "#10b981";
+    } else {
+        statusDiv.innerHTML = `⚠️ <b>提示：網址未帶卡號</b>，目前使用預設卡號：${currentCardId}。<br><small style="color:#666">建議使用：http://localhost:3000/?cardId=18445 進入網頁</small>`;
+        statusDiv.style.backgroundColor = "#fef3c7";
+        statusDiv.style.color = "#92400e";
+        statusDiv.style.borderLeftColor = "#f59e0b";
+    }
+}
+
+function renderMenu(items) {
+    const listDiv = document.getElementById("menu-list");
+    listDiv.innerHTML = "";
+    
+    if (items.length === 0) {
+        listDiv.innerHTML = '<p style="color:#aaa; text-align:center; padding: 20px;">找不到相符的品項</p>';
+        return;
+    }
+
+    let currentCategory = "";
+
+    items.forEach(item => {
+        if (item.category && item.category !== currentCategory) {
+            currentCategory = item.category;
+            const catDiv = document.createElement("div");
+            catDiv.className = "category-title";
+            catDiv.innerText = currentCategory;
+            listDiv.appendChild(catDiv);
+        }
+
+        const qty = cart[item.name] ? cart[item.name].qty : 0;
+        const row = document.createElement("div");
+        row.className = "item-row";
+        row.innerHTML = `
+            <div>
+                <span class="item-name">${item.name}</span><br>
+                <span class="item-price">$${item.price}</span>
+            </div>
+            <div class="action-zone">
+                <button class="btn-qty" onclick="changeQty('${item.name}', -1, ${item.price})">-</button>
+                <span class="qty-num" id="q-${item.name}">${qty}</span>
+                <button class="btn-qty" onclick="changeQty('${item.name}', 1, ${item.price})">+</button>
+            </div>`;
+        listDiv.appendChild(row);
+    });
+}
+
+function filterMenu() {
+    const kw = document.getElementById("search").value.trim().toLowerCase();
+    const filtered = menuItems.filter(i => i.name.toLowerCase().includes(kw));
+    renderMenu(filtered);
+}
+
+function changeQty(name, delta, price) {
+    if (!cart[name]) cart[name] = { qty: 0, price: price };
+    cart[name].qty += delta;
+    if (cart[name].qty <= 0) delete cart[name];
+    
+    renderCart();
+    filterMenu(); 
+}
+
+function deleteCartItem(name) {
+    if (cart[name]) {
+        delete cart[name];
+        renderCart();
+        filterMenu(); 
+    }
+}
+
+function renderCart() {
+    const cartDiv = document.getElementById("cart-list");
+    cartDiv.innerHTML = "";
+    let tempTotal = 0; // 改用區域變數精確累加
+    finalSummary = "";
+    
+    const keys = Object.keys(cart);
+    if(keys.length === 0) {
+        cartDiv.innerHTML = '<p style="color:#aaa; text-align:center; margin: 30px 0;">尚未加點商品</p>';
+        document.getElementById("total-amount").innerText = "總計: $0";
+        finalTotal = 0;
+        return;
+    }
+    
+    keys.forEach(name => {
+        const item = cart[name];
+        const sub = item.qty * item.price;
+        tempTotal += sub;
+        finalSummary += `${name}*${item.qty} `;
+        
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        div.innerHTML = `
+            <div class="cart-item-info">
+                <span class="cart-item-name">${name} x ${item.qty}</span>
+                <span class="cart-item-price">$${Math.round(sub)}</span>
+            </div>
+            <button class="btn-delete-item" onclick="deleteCartItem('${name}')" title="刪除此品項">🗑</button>
+        `;
+        cartDiv.appendChild(div);
+    });
+    
+    // 解決浮點數累積誤差，四捨五入為整數
+    finalTotal = Math.round(tempTotal);
+    document.getElementById("total-amount").innerText = `總計: $${finalTotal}`;
+}
+
+async function submitOrderToServer() {
+    // 防呆機制：若當前全域金額為 0 或購物車根本沒東西，則直接攔截
+    if (finalTotal === 0 || Object.keys(cart).length === 0) { 
+        return alert("購物車是空的喔！"); 
+    }
+
+    const btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    btn.innerText = "訂單傳送中...";
+    
+    // 建立發送當下的安全常數，防止非同步期間變數遭到竄改或歸零
+    const orderTotal = finalTotal; 
+    
+    const payload = {
+        cardId: currentCardId, 
+        meal: finalSummary.trim(),
+        spicy: document.getElementById("spicy-level").value, 
+        note: "無特別備註",
+        total: orderTotal
+    };
+    
+    try {
+        const response = await fetch('/api/order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const resData = await response.json();
+
+        if (resData.success) {
+            // 🌟 先彈出提示視窗，此時背景畫面依然會完美保留餐點明細與正確金額！
+            alert(resData.message || "🎉 訂單送出成功！已儲存至伺服器。");
+            
+            // 🌟 當使用者點選彈窗的「確定」後，才開始清空資料與執行跳轉網頁
+            cart = {};
+            document.getElementById("search").value = "";
+            renderMenu(menuItems);
+            renderCart();
+
+            window.location.href = `index.html?cardId=${encodeURIComponent(currentCardId)}`;
+            
+        } else {
+            alert("❌ 伺服器回傳失敗：" + resData.message);
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+        }
+    } catch (err) {
+        console.error("連線錯誤:", err);
+        alert("💥 連線失敗！請確認你的電腦是否已執行後端服務？");
+        btn.disabled = false;
+        btn.innerText = "確認送出訂單";
+    }
+}
+
+window.addEventListener('DOMContentLoaded', (event) => {
+    initCardId();
+    renderMenu(menuItems);
+});
+</script>
+</body>
+</html>

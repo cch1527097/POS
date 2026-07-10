@@ -1,0 +1,7 @@
+伺服器啟動  
+
+node server.js
+
+cmd要安裝
+
+npm install exceljs

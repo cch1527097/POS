@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>後台管理系統 - 登入</title>
+    <style>
+        * { box-sizing: border-box; font-family: "Microsoft JhengHei", sans-serif; }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #bcdcb4; /* 與前台完全一致的淡綠色大背景 */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 100;
+            color: #2b4c23;
+            transition: color 0.2s;
+        }
+        .close-btn:hover { color: #a01010; }
+
+        /* ==================== 後台管理登入卡片（完美複製前台樣式） ==================== */
+        .login-card {
+            background-color: #ffffff; /* 純白底色卡片 */
+            border-radius: 60px;       /* 超大圓角效果 */  
+            width: 450px;
+            height: 620px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            padding: 40px;
+            position: relative;
+        }
+
+        /* 幸運草十字圖標 */
+        .clover-icon {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .clover-icon::before, .clover-icon::after {
+            content: "";
+            position: absolute;
+            background-color: #38692c; /* 墨綠色圖標 */
+            border-radius: 8px;
+        }
+        .clover-icon::before { top: 18px; left: 0; width: 60px; height: 24px; }
+        .clover-icon::after { top: 0; left: 18px; width: 24px; height: 60px; }
+        
+        .clover-center {
+            position: absolute;
+            top: 25px; left: 25px;
+            width: 10px; height: 10px;
+            background-color: #ffe066; /* 金色核心內圈 */
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .title {
+            font-size: 36px;
+            color: #2b4c23; /* 深綠色文字 */
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 10px; 
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #7ba370;
+            font-weight: bold;
+            letter-spacing: 4px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 35px;
+            width: 100%;
+            justify-content: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #e0e0e0; /* 淡色下底線 */
+            font-size: 22px;
+            width: 260px;
+            text-align: center;
+            outline: none;
+            padding-bottom: 8px;
+            color: #2b4c23;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-bottom-color: #4e803c;
+        }
+
+        /* 修改 Placeholder 提示文字顏色 */
+        .input-group input::placeholder {
+            color: #d2d2d2;
+            font-weight: normal;
+        }
+
+        .login-btn {
+            background-color: #2b4c23; /* 深綠色按鈕 */
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 24px;
+            padding: 10px 65px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .login-btn:hover:not(:disabled) { background-color: #3f6b30; transform: scale(1.03); }
+        .login-btn:active:not(:disabled) { transform: scale(0.98); }
+        .login-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
+        
+        /* 返回點餐系統的連結 */
+        .login-admin-link {
+            background: none;
+            border: none;
+            color: #7ba370;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 25px;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+            text-decoration: none;
+        }
+        .login-admin-link:hover {
+            color: #2b4c23;
+            transform: scale(1.02);
+        }
+
+        .error-msg { font-size: 16px; margin-top: 15px; height: 20px; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="close-btn" onclick="window.close()" title="關閉系統">✖</div>
+
+    <div id="login-section" class="login-card">
+        <div class="clover-icon">
+            <div class="clover-center"></div>
+        </div>
+        
+        <div class="title">後台管理系統</div>
+        <div class="subtitle">MANAGEMENT</div>
+        
+        <div class="input-group">
+            <input type="text" id="adminUser" placeholder="請輸入管理員帳號" autocomplete="off" autofocus required>
+            <input type="password" id="adminPass" placeholder="請輸入管理員密碼" required>
+        </div>
+
+        <button class="login-btn" id="submit-login-btn" onclick="executeAdminLogin()">登入</button>
+        
+        <button class="login-admin-link" onclick="navigateToHome()">🍀 返回點餐系統 ➔</button>
+        
+        <div id="msg-display" class="error-msg"></div>
+    </div>
+
+    <script>
+        let isSubmitting = false;
+
+        // 返回點餐系統首頁
+        function navigateToHome() {
+            window.location.href = 'index.html'; // 請確保前台網頁檔名正確
+        }
+
+        // 後台登入驗證邏輯
+        async function executeAdminLogin() {
+            if (isSubmitting) return;
+
+            const userInput = document.getElementById('adminUser');
+            const passInput = document.getElementById('adminPass');
+            const msgDisplay = document.getElementById('msg-display');
+            const loginBtn = document.getElementById('submit-login-btn');
+
+            const username = userInput.value.trim();
+            const password = passInput.value.trim();
+
+            if (!username || !password) {
+                msgDisplay.style.color = '#a01010';
+                msgDisplay.innerText = '❌ 請完整輸入帳號與密碼！';
+                return;
+            }
+
+            isSubmitting = true;
+            loginBtn.disabled = true;
+            userInput.disabled = true;
+            passInput.disabled = true;
+            msgDisplay.style.color = '#556b52';
+            msgDisplay.innerText = '⏳ 安全認證中，請稍候...';
+
+            // 預設密碼驗證延遲效果（讓畫面更有真實系統載入感）
+            setTimeout(async () => {
+                // 【新增前端指定帳密驗證】
+                if (username === '18445' && password === 'zxc456456') {
+                    msgDisplay.style.color = '#1f8a62';
+                    msgDisplay.innerText = '🎉 認證成功！正在進入管理後台...';
+                    setTimeout(() => {
+                        window.location.href = 'admin-dashboard.html'; // 登入成功跳轉的頁面
+                    }, 800);
+                } else {
+                    // 若前端指定的帳密不符，嘗試向後端 API 請求做為備援方案
+                    try {
+                        const response = await fetch('/api/admin/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username, password })
+                        });
+                        const data = await response.json();
+
+                        if (data.success) {
+                            msgDisplay.style.color = '#1f8a62';
+                            msgDisplay.innerText = '🎉 認證成功！正在進入管理後台...';
+                            setTimeout(() => {
+                                window.location.href = 'admin-dashboard.html';
+                            }, 800);
+                            return;
+                        } else {
+                            msgDisplay.style.color = '#a01010';
+                            msgDisplay.innerText = '❌ ' + (data.message || '帳號或密碼錯誤！');
+                        }
+                    } catch (error) {
+                        // 當沒有後端連線且靜態帳密錯誤時
+                        msgDisplay.style.color = '#a01010';
+                        msgDisplay.innerText = '❌ 帳號或密碼錯誤！（本機驗證失敗）';
+                    }
+                    resetInputs();
+                }
+            }, 600);
+
+            function resetInputs() {
+                isSubmitting = false;
+                loginBtn.disabled = false;
+                userInput.disabled = false;
+                passInput.disabled = false;
+                passInput.value = '';
+                passInput.focus();
+            }
+        }
+
+        // 監聽鍵盤 Enter 鍵
+        window.addEventListener('DOMContentLoaded', () => {
+            const inputs = ['adminUser', 'adminPass'];
+            inputs.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (!isSubmitting) {
+                                executeAdminLogin();
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美食訂餐系統</title>
+    <style>
+        * { box-sizing: border-box; font-family: "Microsoft JhengHei", sans-serif; }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #bcdcb4; /* 根據圖片調整的淡綠色大背景 */
+            min-height: 100vh;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        /* 透過主類別控制全域佈局，避免 JS 切換時畫面閃爍 */
+        body.login-mode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body.order-mode {
+            display: block;
+            background-color: #eef7ed; /* 點餐畫面舒適的清爽淺綠色大背景 */
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 100;
+            color: #2b4c23;
+            transition: color 0.2s;
+        }
+        .close-btn:hover { color: #a01010; }
+
+        /* 隱藏區塊專用 */
+        .hidden { display: none !important; }
+
+        /* ==================== 1. 新版登入畫面區塊（對齊圖片樣式） ==================== */
+        .login-card {
+            background-color: #ffffff; /* 更改為純白底色卡片 */
+            border-radius: 60px;       /* 加大圓角效果 */  
+            width: 450px;
+            height: 620px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            padding: 40px;
+            position: relative;
+        }
+
+        /* 幸運草十字圖標 */
+        .clover-icon {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .clover-icon::before, .clover-icon::after {
+            content: "";
+            position: absolute;
+            background-color: #38692c; /* 墨綠色圖標 */
+            border-radius: 8px;
+        }
+        .clover-icon::before { top: 18px; left: 0; width: 60px; height: 24px; }
+        .clover-icon::after { top: 0; left: 18px; width: 24px; height: 60px; }
+        
+        .clover-center {
+            position: absolute;
+            top: 25px; left: 25px;
+            width: 10px; height: 10px;
+            background-color: #ffffff; /* 內圈同步改為白色 */
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .title {
+            font-size: 36px;
+            color: #2b4c23; /* 深綠色文字 */
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 60px; /* 稍微縮小間距，為管理按鈕留空間 */
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 50px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .input-group input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #e0e0e0; /* 調整為更淡的下底線 */
+            font-size: 26px;
+            width: 260px;
+            text-align: center;
+            outline: none;
+            padding-bottom: 8px;
+            color: #2b4c23;
+        }
+
+        /* 修改 Placeholder 提示文字顏色與圖片相符 */
+        .input-group input::placeholder {
+            color: #d2d2d2;
+            font-weight: normal;
+        }
+
+        .login-btn {
+            background-color: #a4d49d; /* 更改為圖片中的粉綠色按鈕 */
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 24px;
+            padding: 10px 65px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            font-weight: bold;
+        }
+
+        .login-btn:hover:not(:disabled) { background-color: #93c48c; transform: scale(1.03); }
+        .login-btn:active:not(:disabled) { transform: scale(0.98); }
+        .login-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
+        
+        /* 登入畫面中的後台管理按鈕 */
+        .login-admin-link {
+            background: none;
+            border: none;
+            color: #7ba370;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 25px;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+            text-decoration: none;
+        }
+        .login-admin-link:hover {
+            color: #2b4c23;
+            transform: scale(1.02);
+        }
+
+        .error-msg { font-size: 16px; margin-top: 15px; height: 20px; font-weight: bold; }
+
+        /* ==================== 2. 點餐畫面區塊 ==================== */
+        .order-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-banner {
+            width: 100%;
+            background-color: #2b4c23; 
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .header-title {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            letter-spacing: 2px;
+        }
+
+        .sub-banner {
+            font-size: 18px;
+            margin-top: 15px;
+            opacity: 0.9;
+        }
+
+        .user-tag {
+            background: rgba(255,255,255,0.15);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 12px;
+            display: inline-block;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .grid-container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .shop-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(43, 76, 35, 0.04); 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #d6ebd3; 
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .shop-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(43, 76, 35, 0.1);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .shop-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2b4c23; 
+        }
+
+        .badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .badge.smart { background-color: #1f8a62; }   
+        .badge.private { background-color: #618756; } 
+        .badge.local { background-color: #7ba370; }    
+        .badge.main { background-color: #436e37; }    
+
+        .shop-desc {
+            font-size: 15px;
+            color: #556b52; 
+            line-height: 1.5;
+            margin-bottom: 25px;
+            flex: 1;
+        }
+
+        .go-btn {
+            width: 100%;
+            background-color: #4e803c; 
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(78, 128, 60, 0.15);
+        }
+
+        .go-btn:hover { background-color: #3f6b30; box-shadow: 0 6px 12px rgba(63, 107, 48, 0.25); }
+        .go-btn:active { transform: scale(0.99); }
+
+        /* ==================== 3. 訂單紀錄區塊樣式 ==================== */
+        .history-container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 0 20px 40px 20px;
+            margin-bottom: 100px; /* 留空間給浮動登出按鈕 */
+        }
+
+        .history-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(43, 76, 35, 0.04);
+            border: 1px solid #d6ebd3;
+        }
+
+        .history-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2b4c23;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #e2f0e0;
+            padding-bottom: 10px;
+        }
+
+        .history-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 16px;
+            min-width: 500px;
+        }
+
+        .history-table th {
+            background-color: #f4faf3;
+            color: #2b4c23;
+            font-weight: bold;
+            padding: 14px 16px;
+            border-bottom: 2px solid #d6ebd3;
+        }
+
+        .history-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f7f0;
+            color: #445941;
+        }
+
+        .history-table tr:hover {
+            background-color: #fafdfa;
+        }
+
+        .no-record {
+            text-align: center;
+            color: #88a085;
+            padding: 30px !important;
+            font-style: italic;
+        }
+
+        .logout-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: #a01010; 
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(160, 16, 16, 0.3);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logout-btn:hover {
+            background-color: #bd1616;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
+        }
+        .logout-btn:active { transform: translateY(-1px); }
+    </style>
+</head>
+<body class="login-mode">
+
+    <div class="close-btn" onclick="window.close()" title="關閉系統">✖</div>
+
+    <div id="login-section" class="login-card">
+        <div class="clover-icon">
+            <div class="clover-center"></div>
+        </div>
+        
+        <div class="title">美食訂餐系統</div>
+        
+        <div class="input-group">
+            <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required onclick="this.select()">
+        </div>
+
+        <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入</button>
+        
+        <button class="login-admin-link" onclick="navigateToAdmin()">⚙️ 後台管理系統 ➔</button>
+        
+        <div id="msg-display" class="error-msg"></div>
+    </div>
+
+    <div id="order-section" class="order-container hidden">
+        <div class="header-banner">
+            <h1 class="header-title">🍀 智慧點餐系統 🍀</h1>
+            <div class="sub-banner">一鍵線上點餐，美味免等待！請選擇您想點餐的店家：</div>
+            <div class="user-tag">目前登入員工：<span id="user-name" style="font-weight: bold;"></span></div>
+        </div>
+
+        <div class="grid-container">
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">榮郁香廣式燒臘</span>
+                    <span class="badge smart">智慧點餐</span>
+                </div>
+                <div class="shop-desc">道地廣式燒臘，外酥內嫩的美味首選。</div>
+                <button class="go-btn" onclick="sendOrderToServer('榮郁香廣式燒臘')">進入 榮郁香廣式燒臘 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">顏舍關東煮</span>
+                    <span class="badge smart">智慧點餐</span>
+                </div>
+                <div class="shop-desc">暖心熬煮鮮甜高湯，多款精緻關東煮食材。</div>
+                <button class="go-btn" onclick="sendOrderToServer('顏舍關東煮')">進入 顏舍關東煮 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">羹香鴨肉羹</span>
+                    <span class="badge smart">智慧點餐</span>
+                </div>
+                <div class="shop-desc">鮮美鴨肉與濃郁羹湯的完美結合。</div>
+                <button class="go-btn" onclick="sendOrderToServer('羹香鴨肉羹')">進入 羹香鴨肉羹 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">四海遊龍</span>
+                    <span class="badge smart">智慧點餐</span>
+                </div>
+                <div class="shop-desc">經典招牌鍋貼、水餃，現點現煎的美味。</div>
+                <button class="go-btn" onclick="sendOrderToServer('四海遊龍')">進入 四海遊龍 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">八方雲集</span>
+                    <span class="badge smart">智慧點餐</span>
+                </div>
+                <div class="shop-desc">皮Q餡飽滿的招牌鍋貼與各式經典水餃。</div>
+                <button class="go-btn" onclick="sendOrderToServer('八方雲集')">進入 八方雲集 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">鼎森泰式料理</span>
+                    <span class="badge main">主食精選</span>
+                </div>
+                <div class="shop-desc">酸辣開胃的道地泰式風味，配飯的最佳選擇。</div>
+                <button class="go-btn" onclick="sendOrderToServer('鼎森泰式料理')">進入 鼎森泰式料理 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">徊香麵線糊</span>
+                    <span class="badge private">私房推薦</span>
+                </div>
+                <div class="shop-desc">古法傳承麵線糊，香氣四溢、在地必吃。</div>
+                <button class="go-btn" onclick="sendOrderToServer('徊香麵線糊')">進入 徊香麵線糊 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">寶北斗肉圓</span>
+                    <span class="badge local">在地美食</span>
+                </div>
+                <div class="shop-desc">外皮Q彈、內餡紮實的經典北斗肉圓。</div>
+                <button class="go-btn" onclick="sendOrderToServer('寶北斗肉圓')">進入 寶北斗肉圓 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">百華味滷味</span>
+                    <span class="badge local">人氣小吃</span>
+                </div>
+                <div class="shop-desc">獨門滷汁透入食材，宵夜點心的最佳拍檔.</div>
+                <button class="go-btn" onclick="sendOrderToServer('百華味滷味')">進入 百華味滷味 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">飯大廚</span>
+                    <span class="badge main">主食精選</span>
+                </div>
+                <div class="shop-desc">大火翻炒粒粒分明，炒飯料理的專家。</div>
+                <button class="go-btn" onclick="sendOrderToServer('飯大廚')">進入 飯大廚 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">老聃飲食</span>
+                    <span class="badge main">主食精選</span>
+                </div>
+                <div class="shop-desc">最平價也最實在的健康手作清爽餐盒在老聃。</div>
+                <button class="go-btn" onclick="sendOrderToServer('老聃飲食')">進入 老聃飲食 點餐 ➔</button>
+            </div>
+        </div>
+
+        <div class="history-container">
+            <div class="history-card">
+                <h2 class="history-title">📋 歷史點餐紀錄</h2>
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%">日期</th>
+                                <th style="width: 35%">點餐店家 / 內容</th>
+                                <th style="width: 40%">備註說明</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list">
+                            <tr>
+                                <td colspan="3" class="no-record">載入紀錄中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <button class="logout-btn" onclick="executeLogout()">登出系統 ➔</button>
+    </div>
+
+    <script>
+        let loggedInCardId = ''; 
+        let isSubmitting = false;
+
+        const shopUrlMap = {
+            '八方雲集': 'bafang.html',
+            '飯大廚': 'aafang.html',
+            '鼎森泰式料理': 'cafang.html',
+            '榮郁香廣式燒臘': 'dafang.html',
+            '顏舍關東煮': 'eafang.html',
+            '羹香鴨肉羹': 'fafang.html',
+            '徊香麵線糊': 'gafang.html',
+            '四海遊龍': 'hafang.html',
+            '寶北斗肉圓': 'kafang.html',
+            '百華味滷味': 'jafang.html',
+            '老聃飲食': 'iafang.html'
+        };
+
+        // 點擊跳轉至後台
+        function navigateToAdmin() {
+            window.location.href = 'admin.html';
+        }
+
+        // 顯示點餐畫面
+        function showOrderSection(cardId, empName) {
+            loggedInCardId = cardId; 
+            document.getElementById('user-name').innerText = empName || cardId;
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('order-section').classList.remove('hidden');
+            document.body.classList.remove('login-mode');
+            document.body.classList.add('order-mode');
+            fetchOrderHistory(cardId);
+        }
+
+        // 顯示登入畫面
+        function showLoginSection() {
+            loggedInCardId = '';
+            document.getElementById('user-name').innerText = ''; 
+            document.getElementById('cardId').value = ''; 
+            document.getElementById('msg-display').innerText = ''; 
+            document.getElementById('order-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            document.body.classList.remove('order-mode');
+            document.body.classList.add('login-mode');
+
+            setTimeout(() => {
+                const cardInput = document.getElementById('cardId');
+                if (cardInput) {
+                    cardInput.disabled = false;
+                    cardInput.focus();
+                    cardInput.select();
+                }
+            }, 50);
+        }
+
+        // 向後端請求歷史點餐紀錄
+        async function fetchOrderHistory(cardId) {
+            const historyList = document.getElementById('history-list');
+            try {
+                const response = await fetch(`/api/order-history?cardId=${encodeURIComponent(cardId)}`);
+                const data = await response.json();
+
+                if (data.success && data.orders && data.orders.length > 0) {
+                    historyList.innerHTML = '';
+                    data.orders.forEach(order => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${order.time || '-'}</td>
+                            <td style="font-weight:bold; color:#2b4c23;">${order.meal || '-'}</td>
+                            <td>${order.note || '-'}</td>
+                        `;
+                        historyList.appendChild(tr);
+                    });
+                } else {
+                    historyList.innerHTML = `<tr><td colspan="3" class="no-record">HI，今日尚無點餐紀錄。</td></tr>`;
+                }
+            } catch (error) {
+                historyList.innerHTML = `<tr><td colspan="3" class="no-record">暫無點餐紀錄（連線至後端中斷或不支援紀錄查詢）。</td></tr>`;
+            }
+        }
+
+        // 檢查網址參數中是否有隨附的卡號
+        async function checkUrlCardId() {
+            const params = new URLSearchParams(window.location.search);
+            const cardId = params.get('cardId');
+            if (cardId) {
+                try {
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cardId: cardId.trim() })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        showOrderSection(cardId.trim(), data.empName);
+                        return true;
+                    }
+                } catch (e) {
+                    // 若後端未回應，做為保險前端直接顯示
+                    showOrderSection(cardId.trim(), cardId.trim());
+                    return true;
+                }
+            }
+            showLoginSection();
+            return false;
+        }
+
+        // 執行驗證與登入流程
+        async function executeLogin() {
+            if (isSubmitting) return;
+
+            const cardInput = document.getElementById('cardId');
+            const msgDisplay = document.getElementById('msg-display');
+            const loginBtn = document.getElementById('submit-login-btn');
+            const cardId = cardInput.value.trim();
+
+            if (!cardId) {
+                msgDisplay.style.color = '#a01010';
+                msgDisplay.innerText = '❌ 請輸入員工卡號！';
+                return;
+            }
+
+            isSubmitting = true;
+            loginBtn.disabled = true;
+            cardInput.disabled = true;
+            msgDisplay.style.color = '#556b52';
+            msgDisplay.innerText = '⏳ 認證中，請稍候...';
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cardId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showOrderSection(cardId, data.empName);
+                } else {
+                    msgDisplay.style.color = '#a01010';
+                    msgDisplay.innerText = '❌ ' + (data.message || '登入失敗');
+                    cardInput.disabled = false;
+                    cardInput.focus();
+                    cardInput.select();
+                }
+            } catch (error) {
+                msgDisplay.style.color = '#a01010';
+                msgDisplay.innerText = '💥 連線失敗，請確認後端程式有啟動。';
+                cardInput.disabled = false;
+                cardInput.focus();
+                cardInput.select();
+            } finally {
+                isSubmitting = false;
+                loginBtn.disabled = false;
+            }
+        }
+
+        // 登出系統
+        function executeLogout() {
+            if (confirm('確定要登出系統嗎？')) {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('cardId');
+                window.history.pushState({}, '', url.toString());
+                showLoginSection();
+            }
+        }
+
+        // 傳送點餐資料並處理跳轉
+        async function sendOrderToServer(shopName) {
+            if (!loggedInCardId) {
+                alert('❌ 偵測不到登入卡號，請先進行登入！');
+                window.location.reload();
+                return;
+            }
+
+            // 如果店家的 html 規則存在，則依原規則跳轉並附帶 cardId
+            if (shopUrlMap[shopName]) {
+                window.location.href = `${shopUrlMap[shopName]}?cardId=${encodeURIComponent(loggedInCardId)}`;
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cardId: loggedInCardId,
+                        meal: shopName, 
+                        note: "透過智慧點餐系統進入"
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`🎉 成功進入 ${shopName} 點餐！明細已傳送至後端。`);
+                    fetchOrderHistory(loggedInCardId);
+                } else {
+                    alert('❌ 點餐失敗，請重試。');
+                }
+            } catch (error) {
+                alert('💥 連線中斷，無法送出訂單！');
+            }
+        }
+
+        // 初始化監聽
+        window.addEventListener('DOMContentLoaded', async () => {
+            await checkUrlCardId();
+            
+            const cardInput = document.getElementById('cardId');
+            if (cardInput) {
+                cardInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (!isSubmitting) {
+                            executeLogin();
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
