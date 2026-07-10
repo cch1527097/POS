@@ -187,10 +187,10 @@
                             <th>餐點與備註明細</th>
                             <th>總金額</th>
                             <th>狀態</th>
-                        </tr>
+                            <th>操作</th> </tr>
                     </thead>
                     <tbody id="orderTableBody">
-                        <tr><td colspan="6" style="text-align:center; color:#999;">資料載入中...</td></tr>
+                        <tr><td colspan="7" style="text-align:center; color:#999;">資料載入中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -242,9 +242,7 @@
     </div>
 
     <script>
-        // 初始員工資料庫（改為從後端載入後的備用初始值）
         let USER_DB_PREVIEW = {};
-
         let currentTodayOrders = [];
         let searchTimeout = null;
 
@@ -259,7 +257,6 @@
             menuItem.classList.add('active');
         }
 
-        // 向後端取得完整的員工名單
         async function loadEmployees() {
             try {
                 const response = await fetch('/api/employees');
@@ -274,7 +271,6 @@
             }
         }
 
-        // 渲染員工列表表格
         function renderEmployeeDirectory() {
             const tbody = document.getElementById('cardTableBody');
             const keys = Object.keys(USER_DB_PREVIEW);
@@ -297,7 +293,6 @@
             tbody.innerHTML = rows.join('');
         }
 
-        // 新增員工（串接後端 API）
         async function addNewEmployee() {
             const cardIdInput = document.getElementById('newCardId');
             const nameInput = document.getElementById('newEmpName');
@@ -319,10 +314,8 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // 同步前端顯示
                     USER_DB_PREVIEW[cardId] = name;
                     renderEmployeeDirectory();
-                    
                     cardIdInput.value = '';
                     nameInput.value = '';
                     alert(`成功新增員工並同步至後端：${name} (${cardId})`);
@@ -331,11 +324,10 @@
                 }
             } catch (error) {
                 console.error('新增員工請求失敗:', error);
-                alert('網路連線失敗，請確認後端 server.js 是否有啟動！');
+                alert('網路連線失敗，請確認後端伺服器是否有啟動！');
             }
         }
 
-        // 刪除員工（串接後端 API）
         async function deleteEmployee(cardId) {
             const empName = USER_DB_PREVIEW[cardId];
             if (!confirm(`確定要刪除員工「${empName} (卡號: ${cardId})」嗎？`)) {
@@ -350,7 +342,6 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // 同步前端刪除顯示
                     delete USER_DB_PREVIEW[cardId];
                     renderEmployeeDirectory();
                     alert(`成功從後端刪除員工：${empName}`);
@@ -359,7 +350,7 @@
                 }
             } catch (error) {
                 console.error('刪除員工請求失敗:', error);
-                alert('網路連線失敗，請確認後端 server.js 是否有啟動！');
+                alert('網路連線失敗，請確認後端伺服器是否有啟動！');
             }
         }
 
@@ -369,7 +360,8 @@
             statusSpan.innerText = "連線中...";
             
             try {
-                const response = await fetch('/orders.json'); 
+                // 加上時間戳記防快取
+                const response = await fetch(`/orders.json?_=${new Date().getTime()}`); 
                 if (!response.ok) {
                     throw new Error('無法直接存取訂單資料。');
                 }
@@ -403,21 +395,25 @@
 
             } catch (error) {
                 console.error('後台讀取資料失敗:', error);
-                document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; color:#a01010;">資料同步失敗（請確認後端伺服器是否啟動）</td></tr>`;
+                document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="7" style="text-align:center; color:#a01010;">資料同步失敗（請確認後端伺服器是否啟動）</td></tr>`;
                 statusSpan.innerText = "同步失敗";
             }
         }
 
+        // 修改：渲染訂單表格（加入刪除按鈕欄位）
         function renderOrderTable(orders) {
             const tbody = document.getElementById('orderTableBody');
             
             if (orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#999;">目前尚無符合的點餐紀錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">目前尚無符合的點餐紀錄</td></tr>`;
                 return;
             }
 
             const htmlRows = [...orders].reverse().map(order => {
                 const timePart = order.timestamp && order.timestamp.includes(' ') ? order.timestamp.split(' ')[1] : order.timestamp;
+                // 將 orderId 安全轉換為字串傳入函式
+                const orderIdStr = order.orderId ? String(order.orderId) : '';
+                
                 return `
                     <tr>
                         <td><code>${order.orderId || '無'}</code></td>
@@ -429,10 +425,57 @@
                         </td>
                         <td><strong style="color:#a01010;">$${order.total || 0}</strong></td>
                         <td><span class="badge" style="background-color:#e3f2fd; color:#0d47a1;">已寫入 Excel</span></td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteOrder('${orderIdStr}')">❌ 刪除</button>
+                        </td>
                     </tr>
                 `;
             });
             tbody.innerHTML = htmlRows.join('');
+        }
+
+        // 新增：刪除訂單的非同步函式
+        async function deleteOrder(orderId) {
+            if (!orderId) {
+                alert('無法刪除：此訂單缺少編號(orderId)！');
+                return;
+            }
+
+            if (!confirm(`確定要刪除訂單編號「${orderId}」的紀錄嗎？\n(注意：此動作將同步從資料庫與 Excel 中移除)`)) {
+                return;
+            }
+
+            try {
+                // 發送 DELETE 請求給後端 API
+                const response = await fetch(`/api/orders/${orderId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 刪除成功後，前端陣列同步過濾掉該筆資料
+                    currentTodayOrders = currentTodayOrders.filter(o => String(o.orderId) !== orderId);
+                    
+                    // 重新計算看板摘要（總筆數、總金額）
+                    updateSummary(currentTodayOrders);
+                    
+                    // 重新渲染表格
+                    const searchInput = document.getElementById('orderSearchInput');
+                    if (searchInput && searchInput.value.trim() !== '') {
+                        executeFilter(searchInput.value.trim().toLowerCase());
+                    } else {
+                        renderOrderTable(currentTodayOrders);
+                    }
+                    
+                    alert(`訂單 ${orderId} 已成功刪除！`);
+                } else {
+                    alert(`刪除失敗：${result.message || '未知錯誤'}`);
+                }
+            } catch (error) {
+                console.error('刪除訂單請求失敗:', error);
+                alert('網路連線失敗，請確認後端 server.js 是否具備刪除訂單的 API 路由！');
+            }
         }
 
         function updateSummary(orders) {
@@ -465,14 +508,14 @@
                        (order.cardId || '').toLowerCase().includes(keyword) || 
                        (order.meal || '').toLowerCase().includes(keyword) || 
                        (order.note || '').toLowerCase().includes(keyword) ||
-                       (order.orderId || '').toLowerCase().includes(keyword);
+                       String(order.orderId || '').toLowerCase().includes(keyword);
             });
 
             renderOrderTable(filtered);
         }
 
         window.onload = function() {
-            loadEmployees(); // 初始化時先向 Server 抓員工清單
+            loadEmployees(); 
             loadOrders();
             setInterval(loadOrders, 30000);
         };

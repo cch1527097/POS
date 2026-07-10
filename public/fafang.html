@@ -216,6 +216,7 @@
         
         .opt-group { margin-top: 16px; }
         .opt-group label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); }
+        .check-inline { display: inline-block !important; margin-right: 12px; margin-bottom: 6px; font-weight: 500 !important; color: var(--text-dark) !important; cursor: pointer; }
         
         /* 總計區塊 */
         .total-box { font-size: 22px; font-weight: 700; color: var(--accent); text-align: right; margin: 20px 0; }
@@ -444,7 +445,7 @@ function deleteCartItem(name) {
 function renderCart() {
     const cartDiv = document.getElementById("cart-list");
     cartDiv.innerHTML = "";
-    let tempTotal = 0; // 改用區域變數精確累加
+    let tempTotal = 0; 
     finalSummary = "";
     
     const keys = Object.keys(cart);
@@ -473,13 +474,11 @@ function renderCart() {
         cartDiv.appendChild(div);
     });
     
-    // 解決浮點數累積誤差，四捨五入為整數
     finalTotal = Math.round(tempTotal);
     document.getElementById("total-amount").innerText = `總計: $${finalTotal}`;
 }
 
 async function submitOrderToServer() {
-    // 防呆機制：若當前全域金額為 0 或購物車根本沒東西，則直接攔截
     if (finalTotal === 0 || Object.keys(cart).length === 0) { 
         return alert("購物車是空的喔！"); 
     }
@@ -488,14 +487,23 @@ async function submitOrderToServer() {
     btn.disabled = true;
     btn.innerText = "訂單傳送中...";
     
-    // 建立發送當下的安全常數，防止非同步期間變數遭到竄改或歸零
     const orderTotal = finalTotal; 
+    
+    // ✨ 新增：獲取所有被勾選的小菜名稱
+    const checkedSauerkraut = [];
+    const sauerkrautCheckboxes = document.querySelectorAll('input[name="sauerkraut"]:checked');
+    sauerkrautCheckboxes.forEach(cb => {
+        checkedSauerkraut.push(cb.value);
+    });
+    
+    // 將勾選的小菜轉為文字，若無則顯示無
+    const sauerkrautText = checkedSauerkraut.length > 0 ? checkedSauerkraut.join('、') : "無";
     
     const payload = {
         cardId: currentCardId, 
         meal: finalSummary.trim(),
         spicy: document.getElementById("spicy-level").value, 
-        note: "無特別備註",
+        note: `指定小菜: ${sauerkrautText}`, // ✨ 將勾選的小菜塞進備註發送
         total: orderTotal
     };
     
@@ -509,11 +517,11 @@ async function submitOrderToServer() {
         const resData = await response.json();
 
         if (resData.success) {
-            // 🌟 先彈出提示視窗，此時背景畫面依然會完美保留餐點明細與正確金額！
             alert(resData.message || "🎉 訂單送出成功！已儲存至伺服器。");
             
-            // 🌟 當使用者點選彈窗的「確定」後，才開始清空資料與執行跳轉網頁
+            // 清空購物車與小菜勾選狀態
             cart = {};
+            sauerkrautCheckboxes.forEach(cb => cb.checked = false); // ✨ 順手清空勾選狀態
             document.getElementById("search").value = "";
             renderMenu(menuItems);
             renderCart();
@@ -536,6 +544,7 @@ async function submitOrderToServer() {
 window.addEventListener('DOMContentLoaded', (event) => {
     initCardId();
     renderMenu(menuItems);
+    renderCart(); // ✨ 初始化時也呼叫一次，確保狀態正確
 });
 </script>
 </body>

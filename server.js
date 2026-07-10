@@ -192,6 +192,50 @@ app.delete('/api/employees/:cardId', (req, res) => {
     res.json({ success: true, message: '刪除成功' });
 });
 
+// ⚙️ 新增 API 4：後台刪除特定訂單（連帶自動更新 JSON 與 Excel）
+app.delete('/api/orders/:orderId', async (req, res) => {
+    const { orderId } = req.params;
+    const targetOrderId = orderId ? Number(orderId) : null;
+
+    if (!targetOrderId) {
+        return res.status(400).json({ success: false, message: '無效的訂單編號！' });
+    }
+
+    try {
+        ensureDirectoryExistence(); // 確保路徑存在
+
+        // 1. 檢查並讀取 orders.json
+        if (!fs.existsSync(JSON_FILE)) {
+            return res.status(404).json({ success: false, message: '目前尚無任何訂單紀錄檔案。' });
+        }
+
+        let orders = JSON.parse(fs.readFileSync(JSON_FILE, 'utf-8'));
+
+        // 2. 檢查該訂單是否存在
+        const orderExists = orders.some(order => Number(order.orderId) === targetOrderId);
+        if (!orderExists) {
+            return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderId}` });
+        }
+
+        // 3. 過濾掉被刪除的那筆訂單
+        const updatedOrders = orders.filter(order => Number(order.orderId) !== targetOrderId);
+
+        // 4. 全新陣列覆寫回 orders.json
+        fs.writeFileSync(JSON_FILE, JSON.stringify(updatedOrders, null, 2), 'utf-8');
+        console.log(`[後台管理] 訂單編號 ${targetOrderId} 已被管理員刪除，已同步至 JSON。`);
+
+        // 5. 自動更新桌面 Excel 中的明細表與店家統計表
+        await updateExcel(updatedOrders);
+
+        // 6. 回傳成功狀態給前端
+        res.json({ success: true, message: `訂單 ${targetOrderId} 已成功刪除，Excel 亦同步更新。` });
+
+    } catch (error) {
+        console.error('後端處理刪除訂單發生錯誤:', error);
+        res.status(500).json({ success: false, message: '伺服器刪除資料或覆寫 Excel 失敗。' });
+    }
+});
+
 // 1. 驗證卡號 API（已改為讀取實體檔案）
 app.post('/api/login', (req, res) => {
     const { cardId } = req.body;
