@@ -1,0 +1,8 @@
+# 1. 將所有修改過的檔案加入暫存區
+git add .
+
+# 2. 提交更新，並說明你改了什麼 (例如：修正 bug、新增功能)
+git commit -m "Update: 修正了某些功能並優化效能"
+
+# 3. 推送到 GitHub
+git push origin main

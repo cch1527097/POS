@@ -28,23 +28,10 @@
             background-color: #eef7ed; /* 點餐畫面舒適的清爽淺綠色大背景 */
         }
 
-        .close-btn {
-            position: absolute;
-            top: 25px;
-            right: 30px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 100;
-            color: #2b4c23;
-            transition: color 0.2s;
-        }
-        .close-btn:hover { color: #a01010; }
-
         /* 隱藏區塊專用 */
         .hidden { display: none !important; }
 
-        /* ==================== 1. 新版登入畫面區塊（對齊圖片樣式） ==================== */
+        /* ==================== 1. 新版登入畫面區塊 ==================== */
         .login-card {
             background-color: #ffffff; /* 更改為純白底色卡片 */
             border-radius: 60px;       /* 加大圓角效果 */  
@@ -204,7 +191,7 @@
             width: 100%;
             padding: 40px 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 25px;
         }
 
@@ -274,8 +261,9 @@
             box-shadow: 0 4px 6px rgba(78, 128, 60, 0.15);
         }
 
-        .go-btn:hover { background-color: #3f6b30; box-shadow: 0 6px 12px rgba(63, 107, 48, 0.25); }
-        .go-btn:active { transform: scale(0.99); }
+        .go-btn:hover:not(:disabled) { background-color: #3f6b30; box-shadow: 0 6px 12px rgba(63, 107, 48, 0.25); }
+        .go-btn:active:not(:disabled) { transform: scale(0.99); }
+        .go-btn:disabled { background-color: #cccccc; cursor: not-allowed; box-shadow: none; }
 
         /* ==================== 3. 訂單紀錄區塊樣式 ==================== */
         .history-container {
@@ -368,11 +356,24 @@
             box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
         }
         .logout-btn:active { transform: translateY(-1px); }
+
+        /* ==================== 4. 響應式手機版適應（RWD） ==================== */
+        @media (max-width: 480px) {
+            .login-card {
+                width: 90%;
+                height: auto;
+                padding: 40px 20px;
+                border-radius: 35px;
+            }
+            .title { font-size: 28px; margin-bottom: 40px; }
+            .input-group { margin-bottom: 40px; }
+            .input-group input { width: 240px; max-width: 85%; font-size: 22px; }
+            .header-title { font-size: 30px; }
+            .sub-banner { font-size: 15px; }
+        }
     </style>
 </head>
 <body class="login-mode">
-
-    <div class="close-btn" onclick="window.close()" title="關閉系統">✖</div>
 
     <div id="login-section" class="login-card">
         <div class="clover-icon">
@@ -396,17 +397,18 @@
         <div class="header-banner">
             <h1 class="header-title">🍀 智慧點餐系統 🍀</h1>
             <div class="sub-banner">一鍵線上點餐，美味免等待！請選擇您想點餐的店家：</div>
-            <div class="user-tag">目前登入員工：<span id="user-name" style="font-weight: bold;"></span></div>
+            <div class="user-tag">目前登入員工：<span id="user-name" style="font-weight: bold;"></span> <span id="offline-tag" style="color: #ffcccc; font-weight: bold; display: none;">(離線模式)</span></div>
         </div>
 
         <div class="grid-container">
+            <!-- 店家卡片 -->
             <div class="shop-card">
                 <div class="card-top">
                     <span class="shop-name">榮郁香廣式燒臘</span>
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">道地廣式燒臘，外酥內嫩的美味首選。</div>
-                <button class="go-btn" onclick="sendOrderToServer('榮郁香廣式燒臘')">進入 榮郁香廣式燒臘 點餐 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('榮郁香廣式燒臘', this)">進入 榮郁香廣式燒臘 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -415,7 +417,7 @@
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">暖心熬煮鮮甜高湯，多款精緻關東煮食材。</div>
-                <button class="go-btn" onclick="sendOrderToServer('顏舍關東煮')">進入 顏舍關東煮 點餐 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('顏舍關東煮', this)">進入 顏舍關東煮 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -424,7 +426,7 @@
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">鮮美鴨肉與濃郁羹湯的完美結合。</div>
-                <button class="go-btn" onclick="sendOrderToServer('羹香鴨肉羹')">進入 羹香鴨肉羹 點餐 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('羹香鴨肉羹', this)">進入 羹香鴨肉羹 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -433,7 +435,7 @@
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">經典招牌鍋貼、水餃，現點現煎的美味。</div>
-                <button class="go-btn" onclick="sendOrderToServer('四海遊龍')">進入 四海遊龍 點餐 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('四海遊龍', this)">進入 四海遊龍 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -442,7 +444,7 @@
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">皮Q餡飽滿的招牌鍋貼與各式經典水餃。</div>
-                <button class="go-btn" onclick="sendOrderToServer('八方雲集')">進入 八方雲集 點餐 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('八方雲集', this)">進入 八方雲集 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -451,7 +453,7 @@
                     <span class="badge main">主食精選</span>
                 </div>
                 <div class="shop-desc">酸辣開胃的道地泰式風味，配飯的最佳選擇。</div>
-                <button class="go-btn" onclick="sendOrderToServer('鼎森泰式料理')">進入 鼎森泰式料理 點餐 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('鼎森泰式料理', this)">進入 鼎森泰式料理 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -460,7 +462,7 @@
                     <span class="badge private">私房推薦</span>
                 </div>
                 <div class="shop-desc">古法傳承麵線糊，香氣四溢、在地必吃。</div>
-                <button class="go-btn" onclick="sendOrderToServer('徊香麵線糊')">進入 徊香麵線糊 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('徊香麵線糊', this)">進入 徊香麵線糊 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -469,7 +471,7 @@
                     <span class="badge local">在地美食</span>
                 </div>
                 <div class="shop-desc">外皮Q彈、內餡紮實的經典北斗肉圓。</div>
-                <button class="go-btn" onclick="sendOrderToServer('寶北斗肉圓')">進入 寶北斗肉圓 點餐 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('寶北斗肉圓', this)">進入 寶北斗肉圓 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -477,8 +479,8 @@
                     <span class="shop-name">百華味滷味</span>
                     <span class="badge local">人氣小吃</span>
                 </div>
-                <div class="shop-desc">獨門滷汁透入食材，宵夜點心的最佳拍檔.</div>
-                <button class="go-btn" onclick="sendOrderToServer('百華味滷味')">進入 百華味滷味 點餐 ➔</button>
+                <div class="shop-desc">獨門滷汁透入食材，宵夜點心的最佳拍檔。</div>
+                <button class="go-btn" onclick="sendOrderToServer('百華味滷味', this)">進入 百華味滷味 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -487,7 +489,7 @@
                     <span class="badge main">主食精選</span>
                 </div>
                 <div class="shop-desc">大火翻炒粒粒分明，炒飯料理的專家。</div>
-                <button class="go-btn" onclick="sendOrderToServer('飯大廚')">進入 飯大廚 點餐 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('飯大廚', this)">進入 飯大廚 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -496,7 +498,7 @@
                     <span class="badge main">主食精選</span>
                 </div>
                 <div class="shop-desc">最平價也最實在的健康手作清爽餐盒在老聃。</div>
-                <button class="go-btn" onclick="sendOrderToServer('老聃飲食')">進入 老聃飲食 點餐 ➔</button>
+                <button class="go-btn" onclick="sendOrderToServer('老聃飲食', this)">進入 老聃飲食 點餐 ➔</button>
             </div>
         </div>
 
@@ -528,6 +530,7 @@
     <script>
         let loggedInCardId = ''; 
         let isSubmitting = false;
+        let isOrdering = false;
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -543,15 +546,19 @@
             '老聃飲食': 'iafang.html'
         };
 
-        // 點擊跳轉至後台
         function navigateToAdmin() {
             window.location.href = 'admin.html';
         }
 
-        // 顯示點餐畫面
-        function showOrderSection(cardId, empName) {
+        function showOrderSection(cardId, empName, isOffline = false) {
             loggedInCardId = cardId; 
+            sessionStorage.setItem('currentCardId', cardId);
+            sessionStorage.setItem('currentEmpName', empName || cardId);
+            sessionStorage.setItem('isOfflineMode', isOffline ? 'true' : 'false');
+
             document.getElementById('user-name').innerText = empName || cardId;
+            document.getElementById('offline-tag').style.display = isOffline ? 'inline' : 'none';
+            
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('order-section').classList.remove('hidden');
             document.body.classList.remove('login-mode');
@@ -559,12 +566,16 @@
             fetchOrderHistory(cardId);
         }
 
-        // 顯示登入畫面
         function showLoginSection() {
             loggedInCardId = '';
+            sessionStorage.removeItem('currentCardId');
+            sessionStorage.removeItem('currentEmpName');
+            sessionStorage.removeItem('isOfflineMode');
+
             document.getElementById('user-name').innerText = ''; 
             document.getElementById('cardId').value = ''; 
             document.getElementById('msg-display').innerText = ''; 
+            document.getElementById('offline-tag').style.display = 'none';
             document.getElementById('order-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
             document.body.classList.remove('order-mode');
@@ -580,59 +591,138 @@
             }, 50);
         }
 
-        // 向後端請求歷史點餐紀錄
+        function getFormattedTime() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+        }
+
+        function parseDateTime(timeStr) {
+            if (!timeStr) return 0;
+            const standardized = timeStr.replace(/-/g, '/');
+            const timestamp = Date.parse(standardized);
+            return isNaN(timestamp) ? Date.parse(timeStr) : timestamp;
+        }
+
+        function saveOrderToLocal(cardId, shopName, noteText) {
+            const key = `orders_${cardId}`;
+            let localOrders = [];
+            try {
+                localOrders = JSON.parse(localStorage.getItem(key)) || [];
+            } catch(e) { localOrders = []; }
+
+            const newOrder = {
+                time: getFormattedTime(),
+                meal: shopName,
+                note: noteText || "透過智慧點餐系統進入"
+            };
+            
+            localOrders.unshift(newOrder); 
+            localStorage.setItem(key, JSON.stringify(localOrders));
+        }
+
         async function fetchOrderHistory(cardId) {
             const historyList = document.getElementById('history-list');
+            let combinedOrders = [];
+
+            // 1. 抓取 Local 紀錄
+            const localKey = `orders_${cardId}`;
+            try {
+                combinedOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+            } catch(e) { combinedOrders = []; }
+
+            // 2. 嘗試跟後端同步更新並【優化去重複機制】
             try {
                 const response = await fetch(`/api/order-history?cardId=${encodeURIComponent(cardId)}`);
                 const data = await response.json();
 
                 if (data.success && data.orders && data.orders.length > 0) {
-                    historyList.innerHTML = '';
+                    // 統一使用 Set 來記錄已經存在的唯一 Key (時間_店家)
+                    const seen = new Set(combinedOrders.map(o => `${o.time}_${o.meal}`));
+                    
                     data.orders.forEach(order => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${order.time || '-'}</td>
-                            <td style="font-weight:bold; color:#2b4c23;">${order.meal || '-'}</td>
-                            <td>${order.note || '-'}</td>
-                        `;
-                        historyList.appendChild(tr);
+                        const uniqueKey = `${order.time}_${order.meal}`;
+                        if (!seen.has(uniqueKey)) {
+                            combinedOrders.push(order);
+                        }
                     });
-                } else {
-                    historyList.innerHTML = `<tr><td colspan="3" class="no-record">HI，今日尚無點餐紀錄。</td></tr>`;
                 }
             } catch (error) {
-                historyList.innerHTML = `<tr><td colspan="3" class="no-record">暫無點餐紀錄（連線至後端中斷或不支援紀錄查詢）。</td></tr>`;
+                console.log("後端紀錄同步失敗，將使用本地快照展示。");
+            }
+
+            // 安全排序
+            combinedOrders.sort((a, b) => parseDateTime(b.time) - parseDateTime(a.time));
+
+            // 3. 渲染畫面
+            if (combinedOrders.length > 0) {
+                historyList.innerHTML = '';
+                combinedOrders.forEach(order => {
+                    const tr = document.createElement('tr');
+                    
+                    const tdTime = document.createElement('td');
+                    tdTime.textContent = order.time || '-';
+                    
+                    const tdMeal = document.createElement('td');
+                    tdMeal.style.fontWeight = 'bold';
+                    tdMeal.style.color = '#2b4c23';
+                    tdMeal.textContent = order.meal || '-';
+                    
+                    const tdNote = document.createElement('td');
+                    tdNote.textContent = order.note || '-';
+                    
+                    tr.appendChild(tdTime);
+                    tr.appendChild(tdMeal);
+                    tr.appendChild(tdNote);
+                    historyList.appendChild(tr);
+                });
+            } else {
+                historyList.innerHTML = `<tr><td colspan="3" class="no-record">HI，今日尚無點餐紀錄。</td></tr>`;
             }
         }
 
-        // 檢查網址參數中是否有隨附的卡號
         async function checkUrlCardId() {
+            const savedCardId = sessionStorage.getItem('currentCardId');
+            const savedEmpName = sessionStorage.getItem('currentEmpName');
+            const isOfflineMode = sessionStorage.getItem('isOfflineMode') === 'true';
+            
             const params = new URLSearchParams(window.location.search);
-            const cardId = params.get('cardId');
-            if (cardId) {
+            const urlCardId = params.get('cardId');
+
+            if (urlCardId) {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('cardId');
+                window.history.replaceState({}, '', url.toString());
+
                 try {
                     const response = await fetch('/api/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ cardId: cardId.trim() })
+                        body: JSON.stringify({ cardId: urlCardId.trim() })
                     });
                     const data = await response.json();
                     if (data.success) {
-                        showOrderSection(cardId.trim(), data.empName);
+                        showOrderSection(urlCardId.trim(), data.empName, false);
                         return true;
                     }
                 } catch (e) {
-                    // 若後端未回應，做為保險前端直接顯示
-                    showOrderSection(cardId.trim(), cardId.trim());
+                    showOrderSection(urlCardId.trim(), urlCardId.trim(), true);
                     return true;
                 }
+            } else if (savedCardId) {
+                showOrderSection(savedCardId, savedEmpName, isOfflineMode);
+                return true;
             }
+            
             showLoginSection();
             return false;
         }
 
-        // 執行驗證與登入流程
         async function executeLogin() {
             if (isSubmitting) return;
 
@@ -662,7 +752,7 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    showOrderSection(cardId, data.empName);
+                    showOrderSection(cardId, data.empName, false);
                 } else {
                     msgDisplay.style.color = '#a01010';
                     msgDisplay.innerText = '❌ ' + (data.message || '登入失敗');
@@ -671,49 +761,57 @@
                     cardInput.select();
                 }
             } catch (error) {
-                msgDisplay.style.color = '#a01010';
-                msgDisplay.innerText = '💥 連線失敗，請確認後端程式有啟動。';
-                cardInput.disabled = false;
-                cardInput.focus();
-                cardInput.select();
+                alert('⚠️ 伺服器連線失敗！系統已自動切換為「離線點餐模式」，您的點餐明細將安全暫存於此裝置。');
+                showOrderSection(cardId, cardId, true);
             } finally {
                 isSubmitting = false;
                 loginBtn.disabled = false;
             }
         }
 
-        // 登出系統
         function executeLogout() {
             if (confirm('確定要登出系統嗎？')) {
-                const url = new URL(window.location.href);
-                url.searchParams.delete('cardId');
-                window.history.pushState({}, '', url.toString());
                 showLoginSection();
             }
         }
 
-        // 傳送點餐資料並處理跳轉
-        async function sendOrderToServer(shopName) {
+        async function sendOrderToServer(shopName, btnElement) {
             if (!loggedInCardId) {
                 alert('❌ 偵測不到登入卡號，請先進行登入！');
                 window.location.reload();
                 return;
             }
 
-            // 如果店家的 html 規則存在，則依原規則跳轉並附帶 cardId
+            if (isOrdering) return;
+            isOrdering = true;
+            if (btnElement) btnElement.disabled = true;
+
+            const defaultNote = sessionStorage.getItem('isOfflineMode') === 'true' ? "於離線模式下點餐" : "透過智慧點餐系統進入";
+
+            // 1. 規則跳轉情境【已修正：確保跳轉前將防連點按鈕與狀態重置，防止返回時按鈕鎖死】
             if (shopUrlMap[shopName]) {
-                window.location.href = `${shopUrlMap[shopName]}?cardId=${encodeURIComponent(loggedInCardId)}`;
+                saveOrderToLocal(loggedInCardId, shopName, defaultNote);
+                const targetUrl = `${shopUrlMap[shopName]}?cardId=${encodeURIComponent(loggedInCardId)}`;
+                
+                // 跳轉前重置控制狀態
+                isOrdering = false;
+                if (btnElement) btnElement.disabled = false;
+                
+                window.location.href = targetUrl;
                 return;
             }
 
+            // 2. 純 API 發送點餐情境
             try {
+                saveOrderToLocal(loggedInCardId, shopName, defaultNote);
+
                 const response = await fetch('/api/order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         cardId: loggedInCardId,
                         meal: shopName, 
-                        note: "透過智慧點餐系統進入"
+                        note: defaultNote
                     })
                 });
                 const data = await response.json();
@@ -725,11 +823,14 @@
                     alert('❌ 點餐失敗，請重試。');
                 }
             } catch (error) {
-                alert('💥 連線中斷，無法送出訂單！');
+                alert('💥 連線中斷，無法即時送出訂單到後端，但本地已建立紀錄留存！');
+                fetchOrderHistory(loggedInCardId);
+            } finally {
+                isOrdering = false;
+                if (btnElement) btnElement.disabled = false;
             }
         }
 
-        // 初始化監聽
         window.addEventListener('DOMContentLoaded', async () => {
             await checkUrlCardId();
             
