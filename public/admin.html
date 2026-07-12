@@ -34,30 +34,13 @@
             position: relative;
         }
 
-        /* 幸運草十字圖標 */
-        .clover-icon {
-            width: 60px;
-            height: 60px;
-            position: relative;
+        /* Logo 圖片樣式，完美與點餐首頁同步 */
+        .login-logo {
+            width: 80px;
+            height: auto;
             margin-bottom: 25px;
+            object-fit: contain;
             flex-shrink: 0;
-        }
-        .clover-icon::before, .clover-icon::after {
-            content: "";
-            position: absolute;
-            background-color: #38692c; /* 墨綠色圖標 */
-            border-radius: 8px;
-        }
-        .clover-icon::before { top: 18px; left: 0; width: 60px; height: 24px; }
-        .clover-icon::after { top: 0; left: 18px; width: 24px; height: 60px; }
-        
-        .clover-center {
-            position: absolute;
-            top: 25px; left: 25px;
-            width: 10px; height: 10px;
-            background-color: #ffffff; /* 完美同步 index.html 的白色內圈 */
-            border-radius: 50%;
-            z-index: 10;
         }
 
         .title {
@@ -89,11 +72,13 @@
             gap: 20px;
         }
 
+        /* 包裹輸入框的容器 */
         .input-wrapper {
             position: relative;
             width: 100%;
             max-width: 260px; /* 完美對齊輸入框寬度 */
             display: flex;
+            align-items: center;
             justify-content: center;
         }
 
@@ -108,9 +93,13 @@
             padding-bottom: 8px;
             color: #2b4c23;
             transition: border-color 0.2s;
-            /* 調整內邊距，使無小眼睛時的文字能完美居中對齊 */
-            padding-left: 10px;
-            padding-right: 10px;
+            padding-left: 35px;
+            padding-right: 35px;
+        }
+
+        /* 【核心修改】透過 CSS 安全屬性將文字遮蔽為圓點，直接繞過瀏覽器的原生眼睛機制 */
+        .password-mask {
+            -webkit-text-security: disc !important; /* Chrome, Safari, Edge 支援的遮罩 */
         }
 
         .login-form input:focus {
@@ -124,6 +113,19 @@
         .login-form input::placeholder {
             color: #d2d2d2;
             font-weight: normal;
+        }
+
+        /* 自訂鎖頭切換按鈕的絕對定位 */
+        .toggle-password {
+            position: absolute;
+            right: 5px;
+            bottom: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            user-select: none;
+            z-index: 15;
+            display: inline-block;
+            line-height: 1;
         }
 
         /* ==================== 完美同步 index.html 的粉綠色按鈕 ==================== */
@@ -189,8 +191,12 @@
             .title { font-size: 28px; }
             .subtitle { margin-bottom: 30px; font-size: 13px; letter-spacing: 3px; }
             .login-form { margin-bottom: 25px; }
+            
             .input-wrapper { max-width: 85%; } 
-            .login-form input { font-size: 20px; }
+            .login-form input { font-size: 20px; padding-left: 30px; padding-right: 30px; }
+            
+            .toggle-password { right: 4px; bottom: 8px; font-size: 18px; }
+            
             .login-btn {
                 font-size: 20px;
                 max-width: 85%; 
@@ -209,9 +215,7 @@
 <body>
 
     <div id="login-section" class="login-card">
-        <div class="clover-icon">
-            <div class="clover-center"></div>
-        </div>
+        <img src="logo.gif" alt="系統Logo" class="login-logo">
         
         <div class="title">後台管理系統</div>
         <div class="subtitle">MANAGEMENT</div>
@@ -221,8 +225,8 @@
                 <input type="text" id="adminUser" placeholder="請輸入管理員帳號" autocomplete="username" autofocus required onclick="this.select()">
             </div>
             <div class="input-wrapper">
-                <!-- 密碼輸入框，已移除後方的切換按鈕元素 -->
-                <input type="password" id="adminPass" placeholder="請輸入管理員密碼" autocomplete="current-password" required onclick="this.select()">
+                <input type="text" id="adminPass" class="password-mask" placeholder="請輸入管理員密碼" autocomplete="current-password" required onclick="this.select()">
+                <span class="toggle-password" id="eye-icon" onclick="togglePasswordVisibility()">🔐</span>
             </div>
             <button type="submit" class="login-btn" id="submit-login-btn">登入</button>
         </form>
@@ -237,6 +241,20 @@
 
         function navigateToHome() {
             window.location.href = 'index.html'; 
+        }
+
+        /* 【核心修改】不切換 input 類型，而是透過開關遮罩 class 來切換密碼顯示與隱藏 */
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('adminPass');
+            const eyeIcon = document.getElementById('eye-icon');
+            
+            if (passInput.classList.contains('password-mask')) {
+                passInput.classList.remove('password-mask');
+                eyeIcon.textContent = '🔒'; // 明文顯示時：閉合鎖
+            } else {
+                passInput.classList.add('password-mask');
+                eyeIcon.textContent = '🔐'; // 隱藏密碼時：帶鑰匙鎖
+            }
         }
 
         async function executeAdminLogin(event) {
@@ -276,6 +294,8 @@
                 passInput.disabled = false;
                 if (focusOnPassword) {
                     passInput.value = '';
+                    passInput.classList.add('password-mask'); // 重設為隱藏狀態
+                    document.getElementById('eye-icon').textContent = '🔐';
                     passInput.focus();
                 }
             }

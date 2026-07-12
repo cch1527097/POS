@@ -46,29 +46,12 @@
             position: relative;
         }
 
-        /* 幸運草十字圖標 */
-        .clover-icon {
-            width: 60px;
-            height: 60px;
-            position: relative;
+        /* Logo 圖片樣式，維持合適的大小與置中 */
+        .login-logo {
+            width: 80px;
+            height: auto;
             margin-bottom: 25px;
-        }
-        .clover-icon::before, .clover-icon::after {
-            content: "";
-            position: absolute;
-            background-color: #38692c; /* 墨綠色圖標 */
-            border-radius: 8px;
-        }
-        .clover-icon::before { top: 18px; left: 0; width: 60px; height: 24px; }
-        .clover-icon::after { top: 0; left: 18px; width: 24px; height: 60px; }
-        
-        .clover-center {
-            position: absolute;
-            top: 25px; left: 25px;
-            width: 10px; height: 10px;
-            background-color: #ffffff; /* 內圈同步改為白色 */
-            border-radius: 50%;
-            z-index: 10;
+            object-fit: contain;
         }
 
         .title {
@@ -223,7 +206,7 @@
             font-size: 22px;
             font-weight: bold;
             color: #2b4c23; 
-        }
+                }
 
         .badge {
             font-size: 12px;
@@ -376,20 +359,15 @@
 <body class="login-mode">
 
     <div id="login-section" class="login-card">
-        <div class="clover-icon">
-            <div class="clover-center"></div>
-        </div>
-        
+        <img src="logo.gif" alt="系統Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
         
         <div class="input-group">
-            <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required onclick="this.select()">
+            <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required inputmode="text" onclick="this.select()">
         </div>
 
         <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入</button>
-        
         <button class="login-admin-link" onclick="navigateToAdmin()">⚙️ 後台管理系統 ➔</button>
-        
         <div id="msg-display" class="error-msg"></div>
     </div>
 
@@ -401,7 +379,6 @@
         </div>
 
         <div class="grid-container">
-            <!-- 店家卡片 -->
             <div class="shop-card">
                 <div class="card-top">
                     <span class="shop-name">榮郁香廣式燒臘</span>
@@ -563,6 +540,8 @@
             document.getElementById('order-section').classList.remove('hidden');
             document.body.classList.remove('login-mode');
             document.body.classList.add('order-mode');
+            
+            // 登入成功，立刻去抓取該員工的所有歷史紀錄
             fetchOrderHistory(cardId);
         }
 
@@ -573,7 +552,13 @@
             sessionStorage.removeItem('isOfflineMode');
 
             document.getElementById('user-name').innerText = ''; 
-            document.getElementById('cardId').value = ''; 
+            
+            const cardInput = document.getElementById('cardId');
+            if (cardInput) {
+                cardInput.value = '';
+                cardInput.disabled = false;
+            }
+            
             document.getElementById('msg-display').innerText = ''; 
             document.getElementById('offline-tag').style.display = 'none';
             document.getElementById('order-section').classList.add('hidden');
@@ -581,14 +566,12 @@
             document.body.classList.remove('order-mode');
             document.body.classList.add('login-mode');
 
-            setTimeout(() => {
-                const cardInput = document.getElementById('cardId');
+            requestAnimationFrame(() => {
                 if (cardInput) {
-                    cardInput.disabled = false;
                     cardInput.focus();
                     cardInput.select();
                 }
-            }, 50);
+            });
         }
 
         function getFormattedTime() {
@@ -604,11 +587,12 @@
 
         function parseDateTime(timeStr) {
             if (!timeStr) return 0;
-            const standardized = timeStr.replace(/-/g, '/');
+            const standardized = timeStr.replace(/ /g, 'T').replace(/\//g, '-');
             const timestamp = Date.parse(standardized);
             return isNaN(timestamp) ? Date.parse(timeStr) : timestamp;
         }
 
+        /* 【核心功能】優化：確保確實存入 localStorage，不會因為切換頁面或斷線遺失 */
         function saveOrderToLocal(cardId, shopName, noteText) {
             const key = `orders_${cardId}`;
             let localOrders = [];
@@ -626,25 +610,33 @@
             localStorage.setItem(key, JSON.stringify(localOrders));
         }
 
+        /* 【核心功能】優化：整合本地緩存與伺服器端，確保未來登入隨時看得到 */
         async function fetchOrderHistory(cardId) {
             const historyList = document.getElementById('history-list');
+            if (!historyList) return;
+
             let combinedOrders = [];
 
-            // 1. 抓取 Local 紀錄
+            // 1. 先抓取儲存在此裝置瀏覽器的本地歷史
             const localKey = `orders_${cardId}`;
             try {
                 combinedOrders = JSON.parse(localStorage.getItem(localKey)) || [];
             } catch(e) { combinedOrders = []; }
 
-            // 2. 嘗試跟後端同步更新並【優化去重複機制】
+            // 2. 嘗試與後端資料庫同步（如果網路通暢）
             try {
-                const response = await fetch(`/api/order-history?cardId=${encodeURIComponent(cardId)}`);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+                const response = await fetch(`/api/order-history?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
                 const data = await response.json();
 
                 if (data.success && data.orders && data.orders.length > 0) {
-                    // 統一使用 Set 來記錄已經存在的唯一 Key (時間_店家)
                     const seen = new Set(combinedOrders.map(o => `${o.time}_${o.meal}`));
                     
+                    // 把後端有、但本地沒有的紀錄合併進來
                     data.orders.forEach(order => {
                         const uniqueKey = `${order.time}_${order.meal}`;
                         if (!seen.has(uniqueKey)) {
@@ -653,13 +645,13 @@
                     });
                 }
             } catch (error) {
-                console.log("後端紀錄同步失敗，將使用本地快照展示。");
+                console.log("後端同步延遲，目前完全使用本地快照無縫展示紀錄。");
             }
 
-            // 安全排序
+            // 3. 排序（最新點的排在最上面）
             combinedOrders.sort((a, b) => parseDateTime(b.time) - parseDateTime(a.time));
 
-            // 3. 渲染畫面
+            // 4. 渲染到 HTML 畫面上
             if (combinedOrders.length > 0) {
                 historyList.innerHTML = '';
                 combinedOrders.forEach(order => {
@@ -682,7 +674,7 @@
                     historyList.appendChild(tr);
                 });
             } else {
-                historyList.innerHTML = `<tr><td colspan="3" class="no-record">HI，今日尚無點餐紀錄。</td></tr>`;
+                historyList.innerHTML = `<tr><td colspan="3" class="no-record">嗨！您目前尚無歷史點餐紀錄。</td></tr>`;
             }
         }
 
@@ -729,7 +721,7 @@
             const cardInput = document.getElementById('cardId');
             const msgDisplay = document.getElementById('msg-display');
             const loginBtn = document.getElementById('submit-login-btn');
-            const cardId = cardInput.value.trim();
+            const cardId = cardInput ? cardInput.value.trim() : '';
 
             if (!cardId) {
                 msgDisplay.style.color = '#a01010';
@@ -738,8 +730,9 @@
             }
 
             isSubmitting = true;
-            loginBtn.disabled = true;
-            cardInput.disabled = true;
+            if (loginBtn) loginBtn.disabled = true;
+            if (cardInput) cardInput.disabled = true;
+            
             msgDisplay.style.color = '#556b52';
             msgDisplay.innerText = '⏳ 認證中，請稍候...';
 
@@ -756,16 +749,18 @@
                 } else {
                     msgDisplay.style.color = '#a01010';
                     msgDisplay.innerText = '❌ ' + (data.message || '登入失敗');
-                    cardInput.disabled = false;
-                    cardInput.focus();
-                    cardInput.select();
+                    if (cardInput) {
+                        cardInput.disabled = false;
+                        cardInput.focus();
+                        cardInput.select();
+                    }
                 }
             } catch (error) {
                 alert('⚠️ 伺服器連線失敗！系統已自動切換為「離線點餐模式」，您的點餐明細將安全暫存於此裝置。');
                 showOrderSection(cardId, cardId, true);
             } finally {
                 isSubmitting = false;
-                loginBtn.disabled = false;
+                if (loginBtn) loginBtn.disabled = false;
             }
         }
 
@@ -788,23 +783,18 @@
 
             const defaultNote = sessionStorage.getItem('isOfflineMode') === 'true' ? "於離線模式下點餐" : "透過智慧點餐系統進入";
 
-            // 1. 規則跳轉情境【已修正：確保跳轉前將防連點按鈕與狀態重置，防止返回時按鈕鎖死】
+            // 存入本地歷史紀錄
+            saveOrderToLocal(loggedInCardId, shopName, defaultNote);
+
             if (shopUrlMap[shopName]) {
-                saveOrderToLocal(loggedInCardId, shopName, defaultNote);
                 const targetUrl = `${shopUrlMap[shopName]}?cardId=${encodeURIComponent(loggedInCardId)}`;
-                
-                // 跳轉前重置控制狀態
                 isOrdering = false;
                 if (btnElement) btnElement.disabled = false;
-                
                 window.location.href = targetUrl;
                 return;
             }
 
-            // 2. 純 API 發送點餐情境
             try {
-                saveOrderToLocal(loggedInCardId, shopName, defaultNote);
-
                 const response = await fetch('/api/order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -831,14 +821,14 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            await checkUrlCardId();
+        window.addEventListener('DOMContentLoaded', () => {
+            checkUrlCardId();
             
             const cardInput = document.getElementById('cardId');
             if (cardInput) {
-                cardInput.addEventListener('keypress', function(e) {
+                cardInput.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter') {
-                        e.preventDefault();
+                        e.preventDefault(); 
                         if (!isSubmitting) {
                             executeLogin();
                         }
