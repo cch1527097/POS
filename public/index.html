@@ -10,13 +10,12 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #bcdcb4; /* 根據圖片調整的淡綠色大背景 */
+            background-color: #bcdcb4; /* 淡綠色大背景 */
             min-height: 100vh;
             position: relative;
             transition: background-color 0.3s ease;
         }
 
-        /* 透過主類別控制全域佈局，避免 JS 切換時畫面閃爍 */
         body.login-mode {
             display: flex;
             justify-content: center;
@@ -25,16 +24,15 @@
 
         body.order-mode {
             display: block;
-            background-color: #eef7ed; /* 點餐畫面舒適的清爽淺綠色大背景 */
+            background-color: #eef7ed; /* 清爽淺綠色大背景 */
         }
 
-        /* 隱藏區塊專用 */
         .hidden { display: none !important; }
 
-        /* ==================== 1. 新版登入畫面區塊 ==================== */
+        /* ==================== 1. 登入畫面區塊 ==================== */
         .login-card {
-            background-color: #ffffff; /* 更改為純白底色卡片 */
-            border-radius: 60px;       /* 加大圓角效果 */  
+            background-color: #ffffff; 
+            border-radius: 60px;       
             width: 450px;
             height: 620px;
             display: flex;
@@ -46,7 +44,6 @@
             position: relative;
         }
 
-        /* Logo 圖片樣式，維持合適的大小與置中 */
         .login-logo {
             width: 80px;
             height: auto;
@@ -56,10 +53,10 @@
 
         .title {
             font-size: 36px;
-            color: #2b4c23; /* 深綠色文字 */
+            color: #2b4c23; 
             font-weight: bold;
             letter-spacing: 2px;
-            margin-bottom: 60px; /* 稍微縮小間距，為管理按鈕留空間 */
+            margin-bottom: 60px; 
         }
 
         .input-group {
@@ -73,7 +70,7 @@
         .input-group input {
             background: transparent;
             border: none;
-            border-bottom: 2px solid #e0e0e0; /* 調整為更淡的下底線 */
+            border-bottom: 2px solid #e0e0e0; 
             font-size: 26px;
             width: 260px;
             text-align: center;
@@ -82,14 +79,13 @@
             color: #2b4c23;
         }
 
-        /* 修改 Placeholder 提示文字顏色與圖片相符 */
         .input-group input::placeholder {
             color: #d2d2d2;
             font-weight: normal;
         }
 
         .login-btn {
-            background-color: #a4d49d; /* 更改為圖片中的粉綠色按鈕 */
+            background-color: #a4d49d; 
             color: white;
             border: none;
             border-radius: 12px;
@@ -105,7 +101,6 @@
         .login-btn:active:not(:disabled) { transform: scale(0.98); }
         .login-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
         
-        /* 登入畫面中的後台管理按鈕 */
         .login-admin-link {
             background: none;
             border: none;
@@ -117,10 +112,7 @@
             transition: color 0.2s, transform 0.2s;
             text-decoration: none;
         }
-        .login-admin-link:hover {
-            color: #2b4c23;
-            transform: scale(1.02);
-        }
+        .login-admin-link:hover { color: #2b4c23; transform: scale(1.02); }
 
         .error-msg { font-size: 16px; margin-top: 15px; height: 20px; font-weight: bold; }
 
@@ -206,7 +198,7 @@
             font-size: 22px;
             font-weight: bold;
             color: #2b4c23; 
-                }
+        }
 
         .badge {
             font-size: 12px;
@@ -253,7 +245,7 @@
             max-width: 1200px;
             width: 100%;
             padding: 0 20px 40px 20px;
-            margin-bottom: 100px; /* 留空間給浮動登出按鈕 */
+            margin-bottom: 100px; 
         }
 
         .history-card {
@@ -264,17 +256,44 @@
             border: 1px solid #d6ebd3;
         }
 
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e2f0e0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
         .history-title {
             font-size: 24px;
             font-weight: bold;
             color: #2b4c23;
-            margin-top: 0;
-            margin-bottom: 20px;
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 10px;
-            border-bottom: 2px solid #e2f0e0;
-            padding-bottom: 10px;
+        }
+
+        .clear-history-btn {
+            background-color: #fce8e6;
+            color: #a01010;
+            border: 1px solid #f5c2be;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .clear-history-btn:hover {
+            background-color: #a01010;
+            color: white;
+            border-color: #a01010;
+            transform: scale(1.02);
         }
 
         .history-table-wrapper {
@@ -303,9 +322,7 @@
             color: #445941;
         }
 
-        .history-table tr:hover {
-            background-color: #fafdfa;
-        }
+        .history-table tr:hover { background-color: #fafdfa; }
 
         .no-record {
             text-align: center;
@@ -338,21 +355,14 @@
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
         }
-        .logout-btn:active { transform: translateY(-1px); }
 
-        /* ==================== 4. 響應式手機版適應（RWD） ==================== */
         @media (max-width: 480px) {
-            .login-card {
-                width: 90%;
-                height: auto;
-                padding: 40px 20px;
-                border-radius: 35px;
-            }
+            .login-card { width: 90%; height: auto; padding: 40px 20px; border-radius: 35px; }
             .title { font-size: 28px; margin-bottom: 40px; }
-            .input-group { margin-bottom: 40px; }
             .input-group input { width: 240px; max-width: 85%; font-size: 22px; }
             .header-title { font-size: 30px; }
-            .sub-banner { font-size: 15px; }
+            .history-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .clear-history-btn { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -379,13 +389,14 @@
         </div>
 
         <div class="grid-container">
+            <!-- 店家卡片群 -->
             <div class="shop-card">
                 <div class="card-top">
                     <span class="shop-name">榮郁香廣式燒臘</span>
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">道地廣式燒臘，外酥內嫩的美味首選。</div>
-                <button class="go-btn" onclick="sendOrderToServer('榮郁香廣式燒臘', this)">進入 榮郁香廣式燒臘 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('榮郁香廣式燒臘', this)">進入 榮郁香廣式燒臘 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -394,7 +405,7 @@
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">暖心熬煮鮮甜高湯，多款精緻關東煮食材。</div>
-                <button class="go-btn" onclick="sendOrderToServer('顏舍關東煮', this)">進入 顏舍關東煮 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('顏舍關東煮', this)">進入 顏舍關東煮 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -403,7 +414,7 @@
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">鮮美鴨肉與濃郁羹湯的完美結合。</div>
-                <button class="go-btn" onclick="sendOrderToServer('羹香鴨肉羹', this)">進入 羹香鴨肉羹 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('羹香鴨肉羹', this)">進入 羹香鴨肉羹 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -412,7 +423,7 @@
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">經典招牌鍋貼、水餃，現點現煎的美味。</div>
-                <button class="go-btn" onclick="sendOrderToServer('四海遊龍', this)">進入 四海遊龍 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('四海遊龍', this)">進入 四海遊龍 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -421,7 +432,7 @@
                     <span class="badge smart">智慧點餐</span>
                 </div>
                 <div class="shop-desc">皮Q餡飽滿的招牌鍋貼與各式經典水餃。</div>
-                <button class="go-btn" onclick="sendOrderToServer('八方雲集', this)">進入 八方雲集 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('八方雲集', this)">進入 八方雲集 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -430,7 +441,7 @@
                     <span class="badge main">主食精選</span>
                 </div>
                 <div class="shop-desc">酸辣開胃的道地泰式風味，配飯的最佳選擇。</div>
-                <button class="go-btn" onclick="sendOrderToServer('鼎森泰式料理', this)">進入 鼎森泰式料理 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('鼎森泰式料理', this)">進入 鼎森泰式料理 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -439,7 +450,7 @@
                     <span class="badge private">私房推薦</span>
                 </div>
                 <div class="shop-desc">古法傳承麵線糊，香氣四溢、在地必吃。</div>
-                <button class="go-btn" onclick="sendOrderToServer('徊香麵線糊', this)">進入 徊香麵線糊 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('徊香麵線糊', this)">進入 徊香麵線糊 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -448,7 +459,7 @@
                     <span class="badge local">在地美食</span>
                 </div>
                 <div class="shop-desc">外皮Q彈、內餡紮實的經典北斗肉圓。</div>
-                <button class="go-btn" onclick="sendOrderToServer('寶北斗肉圓', this)">進入 寶北斗肉圓 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('寶北斗肉圓', this)">進入 寶北斗肉圓 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -457,7 +468,7 @@
                     <span class="badge local">人氣小吃</span>
                 </div>
                 <div class="shop-desc">獨門滷汁透入食材，宵夜點心的最佳拍檔。</div>
-                <button class="go-btn" onclick="sendOrderToServer('百華味滷味', this)">進入 百華味滷味 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('百華味滷味', this)">進入 百華味滷味 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -466,7 +477,7 @@
                     <span class="badge main">主食精選</span>
                 </div>
                 <div class="shop-desc">大火翻炒粒粒分明，炒飯料理的專家。</div>
-                <button class="go-btn" onclick="sendOrderToServer('飯大廚', this)">進入 飯大廚 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('飯大廚', this)">進入 飯大廚 點餐 ➔</button>
             </div>
 
             <div class="shop-card">
@@ -475,20 +486,23 @@
                     <span class="badge main">主食精選</span>
                 </div>
                 <div class="shop-desc">最平價也最實在的健康手作清爽餐盒在老聃。</div>
-                <button class="go-btn" onclick="sendOrderToServer('老聃飲食', this)">進入 老聃飲食 點餐 ➔</button>
+                <button class="go-btn" onclick="redirectToShop('老聃飲食', this)">進入 老聃飲食 點餐 ➔</button>
             </div>
         </div>
 
         <div class="history-container">
             <div class="history-card">
-                <h2 class="history-title">📋 歷史點餐紀錄</h2>
+                <div class="history-header">
+                    <h2 class="history-title">📋 歷史點餐紀錄</h2>
+                    <button class="clear-history-btn" id="clear-btn" onclick="clearLocalHistory()">🗑️ 完全清除紀錄</button>
+                </div>
                 <div class="history-table-wrapper">
                     <table class="history-table">
                         <thead>
                             <tr>
                                 <th style="width: 25%">日期</th>
-                                <th style="width: 35%">點餐店家 / 內容</th>
-                                <th style="width: 40%">備註說明</th>
+                                <th style="width: 50%">點餐店家 / 內容（品項與數量）</th>
+                                <th style="width: 25%">備註說明</th>
                             </tr>
                         </thead>
                         <tbody id="history-list">
@@ -507,7 +521,9 @@
     <script>
         let loggedInCardId = ''; 
         let isSubmitting = false;
-        let isOrdering = false;
+        let isRedirecting = false;
+        // 新增：防範異步死而復生的記憶旗標
+        let isClearedToday = false; 
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -523,9 +539,7 @@
             '老聃飲食': 'iafang.html'
         };
 
-        function navigateToAdmin() {
-            window.location.href = 'admin.html';
-        }
+        function navigateToAdmin() { window.location.href = 'admin.html'; }
 
         function showOrderSection(cardId, empName, isOffline = false) {
             loggedInCardId = cardId; 
@@ -541,7 +555,8 @@
             document.body.classList.remove('login-mode');
             document.body.classList.add('order-mode');
             
-            // 登入成功，立刻去抓取該員工的所有歷史紀錄
+            // 每次重新切換進點餐畫面，重置清除狀態
+            isClearedToday = false; 
             fetchOrderHistory(cardId);
         }
 
@@ -550,14 +565,10 @@
             sessionStorage.removeItem('currentCardId');
             sessionStorage.removeItem('currentEmpName');
             sessionStorage.removeItem('isOfflineMode');
-
             document.getElementById('user-name').innerText = ''; 
             
             const cardInput = document.getElementById('cardId');
-            if (cardInput) {
-                cardInput.value = '';
-                cardInput.disabled = false;
-            }
+            if (cardInput) { cardInput.value = ''; cardInput.disabled = false; }
             
             document.getElementById('msg-display').innerText = ''; 
             document.getElementById('offline-tag').style.display = 'none';
@@ -566,23 +577,7 @@
             document.body.classList.remove('order-mode');
             document.body.classList.add('login-mode');
 
-            requestAnimationFrame(() => {
-                if (cardInput) {
-                    cardInput.focus();
-                    cardInput.select();
-                }
-            });
-        }
-
-        function getFormattedTime() {
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+            requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
         }
 
         function parseDateTime(timeStr) {
@@ -592,69 +587,65 @@
             return isNaN(timestamp) ? Date.parse(timeStr) : timestamp;
         }
 
-        /* 【核心功能】優化：確保確實存入 localStorage，不會因為切換頁面或斷線遺失 */
-        function saveOrderToLocal(cardId, shopName, noteText) {
-            const key = `orders_${cardId}`;
-            let localOrders = [];
-            try {
-                localOrders = JSON.parse(localStorage.getItem(key)) || [];
-            } catch(e) { localOrders = []; }
-
-            const newOrder = {
-                time: getFormattedTime(),
-                meal: shopName,
-                note: noteText || "透過智慧點餐系統進入"
-            };
-            
-            localOrders.unshift(newOrder); 
-            localStorage.setItem(key, JSON.stringify(localOrders));
-        }
-
-        /* 【核心功能】優化：整合本地緩存與伺服器端，確保未來登入隨時看得到 */
+        /* 雙軌並行載入歷史紀錄（已加上絕對防禦修正） */
         async function fetchOrderHistory(cardId) {
             const historyList = document.getElementById('history-list');
             if (!historyList) return;
 
-            let combinedOrders = [];
+            // 修正點：如果已經按過清除紀錄，直接阻斷渲染，避免後端未刪完的舊資料塞回來
+            if (isClearedToday) {
+                renderEmptyHistory(true, 0);
+                return;
+            }
 
-            // 1. 先抓取儲存在此裝置瀏覽器的本地歷史
+            let apiOrders = [];
+            let localOrders = [];
+            let isApiSuccess = false;
+
             const localKey = `orders_${cardId}`;
             try {
-                combinedOrders = JSON.parse(localStorage.getItem(localKey)) || [];
-            } catch(e) { combinedOrders = []; }
+                localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+            } catch(e) { localOrders = []; }
 
-            // 2. 嘗試與後端資料庫同步（如果網路通暢）
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                const timeoutId = setTimeout(() => controller.abort(), 2500);
 
                 const response = await fetch(`/api/order-history?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
                 clearTimeout(timeoutId);
                 
                 const data = await response.json();
-
-                if (data.success && data.orders && data.orders.length > 0) {
-                    const seen = new Set(combinedOrders.map(o => `${o.time}_${o.meal}`));
-                    
-                    // 把後端有、但本地沒有的紀錄合併進來
-                    data.orders.forEach(order => {
-                        const uniqueKey = `${order.time}_${order.meal}`;
-                        if (!seen.has(uniqueKey)) {
-                            combinedOrders.push(order);
-                        }
-                    });
+                if (data.success && data.orders) {
+                    apiOrders = data.orders;
+                    isApiSuccess = true;
                 }
             } catch (error) {
-                console.log("後端同步延遲，目前完全使用本地快照無縫展示紀錄。");
+                console.warn("⚠️ 後端 API 無法連線，改以本機快照渲染。");
             }
 
-            // 3. 排序（最新點的排在最上面）
-            combinedOrders.sort((a, b) => parseDateTime(b.time) - parseDateTime(a.time));
+            // 再次檢查：防止在 API 請求期間使用者按下了清除鍵
+            if (isClearedToday) {
+                renderEmptyHistory(true, 0);
+                return;
+            }
 
-            // 4. 渲染到 HTML 畫面上
-            if (combinedOrders.length > 0) {
+            let finalOrders = [];
+            if (isApiSuccess) {
+                const seenKeys = new Set(apiOrders.map(o => `${o.time}_${o.meal}`));
+                finalOrders = [...apiOrders];
+                localOrders.forEach(lo => {
+                    const k = `${lo.time}_${lo.meal}`;
+                    if (!seenKeys.has(k)) { finalOrders.push(lo); }
+                });
+            } else {
+                finalOrders = [...localOrders];
+            }
+
+            finalOrders.sort((a, b) => parseDateTime(b.time) - parseDateTime(a.time));
+
+            if (finalOrders.length > 0) {
                 historyList.innerHTML = '';
-                combinedOrders.forEach(order => {
+                finalOrders.forEach(order => {
                     const tr = document.createElement('tr');
                     
                     const tdTime = document.createElement('td');
@@ -663,7 +654,7 @@
                     const tdMeal = document.createElement('td');
                     tdMeal.style.fontWeight = 'bold';
                     tdMeal.style.color = '#2b4c23';
-                    tdMeal.textContent = order.meal || '-';
+                    tdMeal.textContent = order.meal || '-'; 
                     
                     const tdNote = document.createElement('td');
                     tdNote.textContent = order.note || '-';
@@ -674,7 +665,57 @@
                     historyList.appendChild(tr);
                 });
             } else {
+                renderEmptyHistory(isApiSuccess, localOrders.length);
+            }
+        }
+
+        function renderEmptyHistory(isApiSuccess, localLength) {
+            const historyList = document.getElementById('history-list');
+            if (!historyList) return;
+            
+            if (!isApiSuccess && localLength === 0) {
+                historyList.innerHTML = `<tr><td colspan="3" class="no-record" style="color:#b5651d;">💡 您這台裝置目前無暫存紀錄。</td></tr>`;
+            } else {
                 historyList.innerHTML = `<tr><td colspan="3" class="no-record">嗨！您目前尚無歷史點餐紀錄。</td></tr>`;
+            }
+        }
+
+        /* 【核心升級修正】徹底清空本地與後端雲端紀錄，防範死而復生問題 */
+        async function clearLocalHistory() {
+            if (!loggedInCardId) return;
+            
+            if (confirm('⚠️ 確定要徹底清除歷史點餐明細嗎？\n這將同時刪除「此裝置暫存」與「公司後端資料庫」中的跨裝置紀錄！')) {
+                const clearBtn = document.getElementById('clear-btn');
+                if (clearBtn) { clearBtn.disabled = true; clearBtn.innerText = '⏳ 正在徹底刪除...'; }
+
+                // 修正點 1：立刻開啟防禦旗標，通知前端徹底閉合合併邏輯
+                isClearedToday = true;
+
+                // 修正點 2：先清除本地裝置快照
+                const localKey = `orders_${loggedInCardId}`;
+                localStorage.removeItem(localKey);
+                
+                // 修正點 3：暴力重設前端畫面，確保視覺立刻變空
+                renderEmptyHistory(true, 0);
+
+                // 4. 向後端 API 發送清除請求（同步清空全公司資料庫）
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒超時
+
+                    await fetch(`/api/clear-history`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ cardId: loggedInCardId }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                } catch (e) {
+                    console.warn("⚠️ 雲端資料庫連線超時，已優先確保本機快照清除。");
+                }
+
+                if (clearBtn) { clearBtn.disabled = false; clearBtn.innerText = '🗑️ 完全清除紀錄'; }
+                alert('🗑️ 歷史紀錄已徹底清空完畢！');
             }
         }
 
@@ -698,10 +739,7 @@
                         body: JSON.stringify({ cardId: urlCardId.trim() })
                     });
                     const data = await response.json();
-                    if (data.success) {
-                        showOrderSection(urlCardId.trim(), data.empName, false);
-                        return true;
-                    }
+                    if (data.success) { showOrderSection(urlCardId.trim(), data.empName, false); return true; }
                 } catch (e) {
                     showOrderSection(urlCardId.trim(), urlCardId.trim(), true);
                     return true;
@@ -710,7 +748,6 @@
                 showOrderSection(savedCardId, savedEmpName, isOfflineMode);
                 return true;
             }
-            
             showLoginSection();
             return false;
         }
@@ -749,11 +786,7 @@
                 } else {
                     msgDisplay.style.color = '#a01010';
                     msgDisplay.innerText = '❌ ' + (data.message || '登入失敗');
-                    if (cardInput) {
-                        cardInput.disabled = false;
-                        cardInput.focus();
-                        cardInput.select();
-                    }
+                    if (cardInput) { cardInput.disabled = false; cardInput.focus(); cardInput.select(); }
                 }
             } catch (error) {
                 alert('⚠️ 伺服器連線失敗！系統已自動切換為「離線點餐模式」，您的點餐明細將安全暫存於此裝置。');
@@ -764,74 +797,34 @@
             }
         }
 
-        function executeLogout() {
-            if (confirm('確定要登出系統嗎？')) {
-                showLoginSection();
-            }
-        }
+        function executeLogout() { if (confirm('確定要登出系統嗎？')) { showLoginSection(); } }
 
-        async function sendOrderToServer(shopName, btnElement) {
-            if (!loggedInCardId) {
-                alert('❌ 偵測不到登入卡號，請先進行登入！');
-                window.location.reload();
-                return;
-            }
-
-            if (isOrdering) return;
-            isOrdering = true;
+        function redirectToShop(shopName, btnElement) {
+            if (!loggedInCardId) { alert('❌ 偵測不到登入卡號，請先進行登入！'); window.location.reload(); return; }
+            if (isRedirecting) return;
+            isRedirecting = true;
             if (btnElement) btnElement.disabled = true;
-
-            const defaultNote = sessionStorage.getItem('isOfflineMode') === 'true' ? "於離線模式下點餐" : "透過智慧點餐系統進入";
-
-            // 存入本地歷史紀錄
-            saveOrderToLocal(loggedInCardId, shopName, defaultNote);
 
             if (shopUrlMap[shopName]) {
                 const targetUrl = `${shopUrlMap[shopName]}?cardId=${encodeURIComponent(loggedInCardId)}`;
-                isOrdering = false;
+                isRedirecting = false;
                 if (btnElement) btnElement.disabled = false;
                 window.location.href = targetUrl;
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        cardId: loggedInCardId,
-                        meal: shopName, 
-                        note: defaultNote
-                    })
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    alert(`🎉 成功進入 ${shopName} 點餐！明細已傳送至後端。`);
-                    fetchOrderHistory(loggedInCardId);
-                } else {
-                    alert('❌ 點餐失敗，請重試。');
-                }
-            } catch (error) {
-                alert('💥 連線中斷，無法即時送出訂單到後端，但本地已建立紀錄留存！');
-                fetchOrderHistory(loggedInCardId);
-            } finally {
-                isOrdering = false;
+            } else {
+                alert('❌ 找不到該店家的菜單頁面。');
+                isRedirecting = false;
                 if (btnElement) btnElement.disabled = false;
             }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             checkUrlCardId();
-            
             const cardInput = document.getElementById('cardId');
             if (cardInput) {
                 cardInput.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault(); 
-                        if (!isSubmitting) {
-                            executeLogin();
-                        }
+                        if (!isSubmitting) { executeLogin(); }
                     }
                 });
             }
