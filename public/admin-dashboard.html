@@ -21,12 +21,12 @@
         .sidebar h2 { font-size: 22px; margin-bottom: 5px; letter-spacing: 1px; }
         .sidebar .user-info { color: #ffe066; font-size: 14px; margin-bottom: 30px; }
         .sidebar hr { border: 0; border-top: 1px solid #4e803c; margin: 15px 0; }
+        .sidebar .menu-container { display: flex; flex-direction: column; gap: 5px; flex: 1; }
         .sidebar .menu-item {
             padding: 12px 15px;
             color: #bcdcb4;
             text-decoration: none;
             border-radius: 8px;
-            margin-bottom: 5px;
             cursor: pointer;
             transition: all 0.2s;
             display: block;
@@ -38,7 +38,7 @@
         .sidebar .logout { color: #ff8888; margin-top: auto; }
 
         /* 主內容區 */
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; min-width: 0; } /* 修正：加入 min-width: 0 防止 Flex 子元素溢出 */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; min-width: 0; } 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 15px; flex-wrap: wrap; }
         .header h1 { color: #2b4c23; margin: 0; font-size: 28px; }
         
@@ -60,7 +60,7 @@
         .summary-container { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
         .summary-box {
             flex: 1;
-            min-width: 200px; /* 修正：確保手機上會自動折行，不會擠扁 */
+            min-width: 200px; 
             background: white;
             padding: 20px;
             border-radius: 12px;
@@ -74,7 +74,7 @@
 
         /* 表單與搜尋欄元素 */
         .form-group { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
-        .form-group div { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; } /* 修正：輸入框在手機上寬度自適應 */
+        .form-group div { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 200px; } 
         .form-group input { width: 100%; }
         .form-group label { font-size: 14px; color: #444; font-weight: bold; }
         .search-group { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; width: 100%; }
@@ -88,7 +88,7 @@
             transition: border 0.2s;
         }
         input:focus { border-color: #2b4c23; }
-        .search-group input { width: 100%; max-width: 250px; } /* 修正：手機板輸入框寬度自適應，最大 250px */
+        .search-group input { width: 100%; max-width: 250px; } 
         
         .btn {
             background-color: #2b4c23;
@@ -109,10 +109,10 @@
         .table-responsive {
             width: 100%;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* 讓 iOS 滑動更順暢 */
+            -webkit-overflow-scrolling: touch; 
             margin-top: 5px;
         }
-        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; } /* 修正：確保表格欄位不會被壓縮得太難看 */
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; } 
         th, td { padding: 12px 15px; border-bottom: 1px solid #eee; }
         th { background-color: #f8faf8; color: #555; }
         .badge {
@@ -124,7 +124,6 @@
             color: #2e7d32;
         }
         
-        /* 刪除動作按鈕樣式 */
         .btn-delete {
             color: #d32f2f;
             background: none;
@@ -141,53 +140,69 @@
         }
 
         /* ==========================================================================
-           新增：RWD 手機板自適應樣式 (螢幕寬度小於 768px 時觸發)
+           RWD 手機板自適應樣式
            ========================================================================== */
         @media (max-width: 768px) {
-            body { flex-direction: column; } /* 改為上下排列 */
+            body { flex-direction: column; } 
             
             .sidebar {
                 width: 100%;
-                padding: 15px;
+                padding: 20px 15px;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }
-            .sidebar .user-info { margin-bottom: 15px; }
-            .sidebar hr { display: none; } /* 手機板隱藏分隔線 */
-            
-            /* 讓選單按鈕在手機上橫向排列 */
-            .sidebar { display: block; }
             .sidebar h2, .sidebar .user-info { text-align: center; }
-            .sidebar .menu-container { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
-            .sidebar .menu-item { margin-bottom: 0; padding: 8px 12px; font-size: 14px; inline-size: max-content; }
-            .sidebar .logout { margin-top: 5px; width: 100%; text-align: center; }
+            .sidebar .user-info { margin-bottom: 15px; }
+            .sidebar hr { display: none; } 
+            
+            .sidebar .menu-container { 
+                display: grid; 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 8px; 
+            }
+            .sidebar .menu-item { 
+                margin-bottom: 0; 
+                padding: 10px; 
+                font-size: 14px; 
+                text-align: center;
+                border: 1px solid #4e803c;
+            }
+            .sidebar .logout { 
+                grid-column: span 2; 
+                margin-top: 5px; 
+                border-color: #ff888833;
+            }
 
-            .main-content { padding: 15px; } /* 縮小留白，釋放手機空間 */
+            .main-content { padding: 15px; } 
             .header h1 { font-size: 22px; }
-            .header .btn { width: 100%; text-align: center; } /* 點餐按鈕變全寬 */
+            .header .btn { width: 100%; text-align: center; } 
             
             .order-action-row { flex-direction: column; align-items: stretch !important; gap: 10px; }
             .order-action-row .search-group { margin-bottom: 0; }
             .order-action-row .search-group input { max-width: 100%; }
+            .order-action-row div[style*="text-align: right"] { text-align: left !important; display: flex; flex-direction: column; gap: 8px; }
+            .order-action-row .btn-secondary { width: 100%; }
         }
     </style>
 </head>
 <body>
 
+    <!-- 側邊欄選單 -->
     <div class="sidebar">
         <h2>後台管理系統</h2>
         <div class="user-info">🍀 管理員: 18445 [已上線]</div>
         <hr>
-        <!-- 新增包裹層以利手機板橫向排版 -->
         <div class="menu-container">
-            <div class="menu-item active" onclick="switchTab('overview', this)">📊 系統資料總覽</div>
-            <div class="menu-item" onclick="switchTab('employee-mgr', this)">🪪 員工卡號管理</div>
-            <div class="menu-item" onclick="loadOrders()">🔄 重新整理數據</div>
+            <div class="menu-item active" onclick="switchTab('overview', this)">📊 系統總覽</div>
+            <div class="menu-item" onclick="switchTab('history-mgr', this)">📜 歷史訂餐</div>
+            <div class="menu-item" onclick="switchTab('employee-mgr', this)">🪪 員工管理</div>
+            <div class="menu-item" onclick="refreshCurrentTab()">🔄 重新整理</div>
             <a href="admin.html" class="menu-item logout">⇦ 登出後台</a>
         </div>
     </div>
 
     <div class="main-content">
         
+        <!-- 分頁一：當天系統總覽 -->
         <div id="overview" class="tab-content active">
             <div class="header">
                 <h1>系統儀表板</h1>
@@ -209,10 +224,9 @@
                 <h3>當天訂單紀錄 (接收前台即時訂單)</h3>
                 <p style="color:#666; font-size:14px;">本表格會即時顯示所有員工送出的餐點明細，系統同時會於後端自動同步至 <b>訂單統計表.xlsx</b>。</p>
                 
-                <!-- 修正：加上 order-action-row 類別以利手機板排版 -->
                 <div class="order-action-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
                     <div class="search-group">
-                        <input type="text" id="orderSearchInput" placeholder="搜尋姓名、卡號或餐點..." oninput="filterOrders()">
+                        <input type="text" id="orderSearchInput" placeholder="搜尋姓名、卡號或餐點..." oninput="filterOrders('today')">
                     </div>
                     <div style="text-align: right;">
                         <span id="syncStatus" style="color: #666; margin-right: 15px; font-size: 14px;"></span>
@@ -220,7 +234,6 @@
                     </div>
                 </div>
 
-                <!-- 修正：使用 table-responsive 包裹表格，防止卡片被撐開 -->
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -241,6 +254,48 @@
             </div>
         </div>
 
+        <!-- 分頁二：歷史訂餐紀錄 (新增) -->
+        <div id="history-mgr" class="tab-content">
+            <div class="header">
+                <h1>歷史訂餐紀錄</h1>
+            </div>
+
+            <div class="card">
+                <h3>📜 歷年全系統不限當日訂單</h3>
+                <p style="color:#666; font-size:14px;">此處顯示 `orders.json` 資料庫檔案中的完整歷史點餐軌跡。</p>
+                
+                <div class="order-action-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                    <div class="search-group">
+                        <input type="text" id="historySearchInput" placeholder="關鍵字搜尋歷史紀錄..." oninput="filterOrders('history')">
+                    </div>
+                    <div style="text-align: right;">
+                        <span id="historySyncStatus" style="color: #666; margin-right: 15px; font-size: 14px;"></span>
+                        <button class="btn btn-secondary" onclick="loadHistoryOrders()">🔄 重新整理歷史紀錄</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>訂單編號</th>
+                                <th>點餐人</th>
+                                <th>訂單完整時間</th>
+                                <th>餐點與備註明細</th>
+                                <th>總金額</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr><td colspan="7" style="text-align:center; color:#999;">資料載入中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分頁三：員工卡號管理 -->
         <div id="employee-mgr" class="tab-content">
             <div class="header">
                 <h1>員工卡號管理</h1>
@@ -258,7 +313,6 @@
                         <label for="newEmpName">員工姓名</label>
                         <input type="text" id="newEmpName" placeholder="例如: 王小明">
                     </div>
-                    <!-- 修正：手機板時按鈕不靠底對齊，改為滿版 -->
                     <div style="flex: 1; min-width: 200px; justify-content: flex-end;">
                         <button class="btn" style="width: 100%;" onclick="addNewEmployee()">儲存並動態加入</button>
                     </div>
@@ -268,7 +322,6 @@
             <div class="card">
                 <h3>員工卡號清單</h3>
                 <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
-                    <!-- 修正：使用 table-responsive 包裹表格 -->
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -293,6 +346,7 @@
     <script>
         let USER_DB_PREVIEW = {};
         let currentTodayOrders = [];
+        let allHistoryOrders = []; // 用於存放所有的歷史資料
         let searchTimeout = null;
 
         function switchTab(tabId, menuItem) {
@@ -304,6 +358,19 @@
             
             document.getElementById(tabId).classList.add('active');
             menuItem.classList.add('active');
+
+            // 如果切換到歷史紀錄，順便自動重新整理一次最新狀態
+            if(tabId === 'history-mgr') {
+                loadHistoryOrders();
+            }
+        }
+
+        // 點選左側重新整理時，判斷目前停在點哪個頁面就刷新哪一頁
+        function refreshCurrentTab() {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab.id === 'overview') loadOrders();
+            else if (activeTab.id === 'history-mgr') loadHistoryOrders();
+            else if (activeTab.id === 'employee-mgr') loadEmployees();
         }
 
         async function loadEmployees() {
@@ -403,15 +470,14 @@
             }
         }
 
+        // 讀取今日訂單
         async function loadOrders() {
             const statusSpan = document.getElementById('syncStatus');
             statusSpan.innerText = "連線中...";
             
             try {
                 const response = await fetch(`/orders.json?_=${new Date().getTime()}`); 
-                if (!response.ok) {
-                    throw new Error('無法直接存取訂單資料。');
-                }
+                if (!response.ok) throw new Error('無法存取');
                 
                 const allOrders = await response.json();
                 
@@ -433,37 +499,64 @@
 
                 const searchInput = document.getElementById('orderSearchInput');
                 if (searchInput && searchInput.value.trim() !== '') {
-                    executeFilter(searchInput.value.trim().toLowerCase());
+                    executeFilter(searchInput.value.trim().toLowerCase(), 'today');
                 } else {
-                    renderOrderTable(currentTodayOrders);
+                    renderOrderTable(currentTodayOrders, 'orderTableBody', false);
                 }
                 
                 statusSpan.innerText = `最後更新：${new Date().toLocaleTimeString('zh-TW', {hour12:false})}`;
 
             } catch (error) {
                 console.error('後台讀取資料失敗:', error);
-                document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="7" style="text-align:center; color:#a01010;">資料同步失敗（請確認後端伺服器是否啟動）</td></tr>`;
+                document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="7" style="text-align:center; color:#a01010;">資料同步失敗（請確認後端伺服器）</td></tr>`;
                 statusSpan.innerText = "同步失敗";
             }
         }
 
-        function renderOrderTable(orders) {
-            const tbody = document.getElementById('orderTableBody');
+        // 讀取歷史訂單 (完整紀錄)
+        async function loadHistoryOrders() {
+            const hStatusSpan = document.getElementById('historySyncStatus');
+            if(hStatusSpan) hStatusSpan.innerText = "歷程載入中...";
+
+            try {
+                const response = await fetch(`/orders.json?_=${new Date().getTime()}`);
+                if (!response.ok) throw new Error('無法存取');
+                
+                allHistoryOrders = await response.json();
+                
+                const hSearchInput = document.getElementById('historySearchInput');
+                if (hSearchInput && hSearchInput.value.trim() !== '') {
+                    executeFilter(hSearchInput.value.trim().toLowerCase(), 'history');
+                } else {
+                    renderOrderTable(allHistoryOrders, 'historyTableBody', true);
+                }
+
+                if(hStatusSpan) hStatusSpan.innerText = `歷史最後更新：${new Date().toLocaleTimeString('zh-TW', {hour12:false})}`;
+            } catch (error) {
+                console.error('歷史資料讀取失敗:', error);
+                document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="7" style="text-align:center; color:#a01010;">無法讀取完整歷史檔案</td></tr>`;
+            }
+        }
+
+        // 共用渲染表格邏輯
+        function renderOrderTable(orders, tableBodyId, showFullTime = false) {
+            const tbody = document.getElementById(tableBodyId);
+            if (!tbody) return;
             
             if (orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">目前尚無符合的點餐紀錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">目前尚無點餐紀錄</td></tr>`;
                 return;
             }
 
             const htmlRows = [...orders].reverse().map(order => {
-                const timePart = order.timestamp && order.timestamp.includes(' ') ? order.timestamp.split(' ')[1] : order.timestamp;
+                const timeDisplay = showFullTime ? (order.timestamp || '-') : (order.timestamp && order.timestamp.includes(' ') ? order.timestamp.split(' ')[1] : order.timestamp);
                 const orderIdStr = order.orderId ? String(order.orderId) : '';
                 
                 return `
                     <tr>
                         <td><code>${order.orderId || '無'}</code></td>
                         <td><b>${order.name || '未知'}</b> (${order.cardId || '無'})</td>
-                        <td>${timePart || '-'}</td>
+                        <td>${timeDisplay || '-'}</td>
                         <td>
                             <span style="color:#2b4c23; font-weight:bold;">${order.meal || '未選擇'}</span><br>
                             <small style="color:#666;">醬料辣度: ${order.spicy || '無'} | 備註: ${order.note || '無'}</small>
@@ -497,14 +590,18 @@
                 const result = await response.json();
 
                 if (response.ok) {
+                    // 同步過濾本地的記憶體陣列
                     currentTodayOrders = currentTodayOrders.filter(o => String(o.orderId) !== orderId);
+                    allHistoryOrders = allHistoryOrders.filter(o => String(o.orderId) !== orderId);
+                    
                     updateSummary(currentTodayOrders);
                     
-                    const searchInput = document.getElementById('orderSearchInput');
-                    if (searchInput && searchInput.value.trim() !== '') {
-                        executeFilter(searchInput.value.trim().toLowerCase());
+                    // 重新渲染當下頁面
+                    const activeTab = document.querySelector('.tab-content.active');
+                    if(activeTab.id === 'overview') {
+                        filterOrders('today');
                     } else {
-                        renderOrderTable(currentTodayOrders);
+                        filterOrders('history');
                     }
                     
                     alert(`訂單 ${orderId} 已成功刪除！`);
@@ -513,7 +610,7 @@
                 }
             } catch (error) {
                 console.error('刪除訂單請求失敗:', error);
-                alert('網路連線失敗，請確認後端 server.js 是否具備刪除訂單的 API 路由！');
+                alert('網路連線失敗，請確認後端是否具有刪除路由。');
             }
         }
 
@@ -528,21 +625,31 @@
             document.getElementById('summaryAmount').innerText = `$${totalAmount}`;
         }
 
-        function filterOrders() {
+        // 調用過濾器
+        function filterOrders(type) {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
-                const keyword = document.getElementById('orderSearchInput').value.trim().toLowerCase();
-                executeFilter(keyword);
+                let keyword = "";
+                if(type === 'today') {
+                    keyword = document.getElementById('orderSearchInput').value.trim().toLowerCase();
+                } else {
+                    keyword = document.getElementById('historySearchInput').value.trim().toLowerCase();
+                }
+                executeFilter(keyword, type);
             }, 150);
         }
 
-        function executeFilter(keyword) {
+        function executeFilter(keyword, type) {
+            const isToday = (type === 'today');
+            const targetSource = isToday ? currentTodayOrders : allHistoryOrders;
+            const targetTbody = isToday ? 'orderTableBody' : 'historyTableBody';
+
             if (!keyword) {
-                renderOrderTable(currentTodayOrders);
+                renderOrderTable(targetSource, targetTbody, !isToday);
                 return;
             }
 
-            const filtered = currentTodayOrders.filter(order => {
+            const filtered = targetSource.filter(order => {
                 return (order.name || '').toLowerCase().includes(keyword) || 
                        (order.cardId || '').toLowerCase().includes(keyword) || 
                        (order.meal || '').toLowerCase().includes(keyword) || 
@@ -550,12 +657,13 @@
                        String(order.orderId || '').toLowerCase().includes(keyword);
             });
 
-            renderOrderTable(filtered);
+            renderOrderTable(filtered, targetTbody, !isToday);
         }
 
         window.onload = function() {
             loadEmployees(); 
             loadOrders();
+            // 每 30 秒自動向背景輪詢「當天即時新訂單」，歷史訂單不需要自動輪詢以減輕伺服器負擔
             setInterval(loadOrders, 30000);
         };
     </script>
