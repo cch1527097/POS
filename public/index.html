@@ -5,6 +5,247 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>美食訂餐系統</title>
     <style>
+
+/* ==================== 頂部 Header 樣式 ==================== */
+.nidin-header {
+    width: 100%;
+    background-color: #ffffff;
+    border-bottom: 1px solid #eaeaea;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    font-family: "Microsoft JhengHei", -apple-system, sans-serif;
+    color: #333;
+}
+
+/* 第一層：頂部工具列 */
+.nidin-top-bar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.nidin-top-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+    min-width: 0; /* 避免 flex 子元素擠爆 */
+}
+
+/* Logo 樣式 */
+.nidin-logo {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0091ff;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    user-select: none;
+}
+.nidin-logo .dot {
+    color: #ff4d4f;
+    font-size: 22px;
+}
+
+.nidin-divider {
+    width: 1px;
+    height: 20px;
+    background-color: #e0e0e0;
+    flex-shrink: 0;
+}
+
+/* 定位下拉按鈕 */
+.nidin-location-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    color: #4a4a4a;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.nidin-location-btn:hover {
+    background-color: #f5f5f5;
+}
+
+/* 搜尋框 */
+.nidin-search-box {
+    display: flex;
+    align-items: center;
+    background-color: #f2f3f5;
+    border-radius: 20px;
+    padding: 8px 16px;
+    width: 100%;
+    max-width: 320px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+.nidin-search-box:focus-within {
+    background-color: #ffffff;
+    box-shadow: 0 0 0 2px #0091ff;
+}
+.nidin-search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    margin-left: 8px;
+    width: 100%;
+    color: #333;
+}
+
+/* 右側員工資訊 */
+/* 右側員工資訊區塊：確保置中且不被擠壓 */
+.nidin-top-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto; /* 在手機版自動推至最右側 */
+}
+
+.nidin-user-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 15px;
+    font-weight: 600; /* 統一整體字型粗細 */
+    font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif; /* 強制統一字型 */
+    color: #333;
+    white-space: nowrap;
+}
+
+/* 確保內部所有的 span 都繼承相同的字型與粗細 */
+.nidin-user-info span {
+    font-family: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+}
+
+/* 動態顯示的使用者姓名樣式 */
+#user-name {
+    color: #0091ff;
+}
+
+/* 第二層：導覽選單 */
+.nidin-nav-bar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 20px 14px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 28px;
+}
+
+.nidin-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: #222;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.2s, transform 0.1s;
+    cursor: pointer;
+    flex-shrink: 0;
+    cursor: pointer;
+    user-select: none;          /* 避免文字被選取 */
+    -webkit-user-select: none;  /* Safari/Chrome 相容 */
+}
+.nidin-nav-item:hover {
+    color: #0091ff;
+    transform: translateY(-1px);
+}
+.nidin-nav-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.nidin-nav-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: #333;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.nidin-nav-item:hover .nidin-nav-icon svg {
+    stroke: #0091ff;
+}
+
+/* 📱 手機版 RWD 完美適應 */
+@media (max-width: 768px) {
+    /* 1. 頂部整體外框：改成直向排列並置中 */
+    .nidin-top-bar {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 15px;
+        gap: 12px;
+    }
+
+    /* 2. 左側區塊（Logo）：直向置中 */
+    .nidin-top-left {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        gap: 10px;
+    }
+
+    /* 3. 右側員工資訊：直向置中 */
+    .nidin-top-right {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0;
+    }
+
+    .nidin-user-info {
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* 隱藏分隔線與隱藏地點選擇器 (如需要顯示可拿掉 display: none) */
+    .nidin-divider, .nidin-location-btn {
+        display: none;
+    }
+
+    /* 4. 搜尋框：滿版且內部置中 */
+    .nidin-search-box {
+        order: 3;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 2px;
+        box-sizing: border-box;
+        justify-content: center;
+    }
+
+    .nidin-search-box input {
+        text-align: center; /* 搜尋文字與 placeholder 置中 */
+    }
+
+    /* 5. 下方導覽選單：置中對齊 */
+    .nidin-nav-bar {
+        justify-content: center;
+        flex-wrap: wrap; /* 項目過多時自動換行並保持置中 */
+        gap: 15px;
+        padding: 10px 15px 15px 15px;
+    }
+}
         * { box-sizing: border-box; font-family: "Microsoft JhengHei", sans-serif; }
         
         body {
@@ -114,7 +355,7 @@
         }
         .login-admin-link:hover { color: #2b4c23; transform: scale(1.02); }
 
-        .error-msg { font-size: 16px; margin-top: 15px; height: 20px; font-weight: bold; }
+        .error-msg { font-size: 16px; margin-top: 15px; height: 20px; font-weight: bold; color: #a01010; text-align: center; }
 
         /* ==================== 2. 點餐畫面區塊 ==================== */
         .order-container {
@@ -152,13 +393,14 @@
         }
 
         .user-tag {
-            background: rgba(255,255,255,0.15);
-            padding: 6px 18px;
-            border-radius: 20px;
-            font-size: 14px;
-            margin-top: 12px;
+            background: rgba(255, 255, 255, 0.18); /* 微調背景透明度使其更亮眼 */
+            padding: 10px 28px;                     /* 放大上下左右的留白區域 */
+            border-radius: 30px;                    /* 配合放大調整圓角弧度 */
+            font-size: 22px;                        /* 大幅放大字體 (原本為 14px) */
+            margin-top: 18px;                       /* 調整與上方文字的間距 */
             display: inline-block;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 2px solid rgba(255, 255, 255, 0.35); /* 稍微加粗外框線 */
+            letter-spacing: 1px;                    /* 讓字體有些許間距更好閱讀 */
         }
 
         .grid-container {
@@ -245,7 +487,7 @@
             max-width: 1200px;
             width: 100%;
             padding: 0 20px 40px 20px;
-            margin-bottom: 100px; 
+            margin-bottom: 30px; 
         }
 
         .history-card {
@@ -275,10 +517,11 @@
             gap: 10px;
         }
 
-        .clear-history-btn {
-            background-color: #fce8e6;
-            color: #a01010;
-            border: 1px solid #f5c2be;
+        /* 清除快取按鈕樣式 */
+        .clear-local-btn {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
             border-radius: 20px;
             padding: 6px 14px;
             font-size: 14px;
@@ -289,10 +532,10 @@
             align-items: center;
             gap: 5px;
         }
-        .clear-history-btn:hover {
-            background-color: #a01010;
-            color: white;
-            border-color: #a01010;
+        .clear-local-btn:hover {
+            background-color: #fca8a8;
+            color: #a01010;
+            border-color: #f5c2be;
             transform: scale(1.02);
         }
 
@@ -362,7 +605,7 @@
             .input-group input { width: 240px; max-width: 85%; font-size: 22px; }
             .header-title { font-size: 30px; }
             .history-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .clear-history-btn { width: 100%; justify-content: center; }
+            .clear-local-btn { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -371,7 +614,7 @@
     <div id="login-section" class="login-card">
         <img src="logo.gif" alt="系統Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
-        
+         
         <div class="input-group">
             <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required inputmode="text" onclick="this.select()">
         </div>
@@ -382,18 +625,88 @@
     </div>
 
     <div id="order-section" class="order-container hidden">
-        <div class="header-banner">
-            <h1 class="header-title">🍀 智慧點餐系統 🍀</h1>
-            <div class="sub-banner">一鍵線上點餐，美味免等待！請選擇您想點餐的店家：</div>
-            <div class="user-tag">目前登入員工：<span id="user-name" style="font-weight: bold;"></span> <span id="offline-tag" style="color: #ffcccc; font-weight: bold; display: none;">(離線模式)</span></div>
+        <header class="nidin-header">
+    <!-- 第一層：頂部工具列 -->
+    <div class="nidin-top-bar">
+        <div class="nidin-top-left">
+            <div class="nidin-logo">智慧點餐系統<span class="dot">.</span></div>
+            <div class="nidin-divider"></div>
+            <button class="nidin-location-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+                彰濱秀傳紀念醫院
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            
+            <!-- 即時搜尋框 -->
+            <div class="nidin-search-box">
+    <!-- 放大鏡改為可點擊按鈕 -->
+    <svg id="searchBtn" onclick="filterShops()" style="cursor: pointer;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input type="text" id="shopSearchInput" oninput="filterShops()" onkeypress="handleSearchKeyPress(event)" placeholder="搜尋品牌、門市或商品">
+</div>
         </div>
+
+        <div class="nidin-top-right">
+            <div class="nidin-user-info">
+                <span>目前登入員工：</span>
+                <span id="user-name" style="color: #0091ff;"></span>
+                <span id="offline-tag" style="color: #ff4d4f; display: none;">(離線)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二層：功能導覽選單 -->
+<!-- 第二層：功能導覽選單 -->
+<nav class="nidin-nav-bar">
+    <a class="nidin-nav-item" href="javascript:void(0);" onclick="focusSearchInput()">
+    <div class="nidin-nav-icon">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+            <circle cx="12" cy="10" r="2.5"/>
+            <path d="M16 16l3 3"/>
+        </svg>
+    </div>
+    <span>搜尋</span>
+</a>
+    
+    <a class="nidin-nav-item" href="javascript:void(0);" onclick="showPaymentInfo()">
+    <div class="nidin-nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/><path d="M3 20h18"/></svg>
+    </div>
+    <span>付款介紹</span>
+</a>
+
+<a class="nidin-nav-item" href="javascript:void(0);" onclick="scrollToTodayHistory()">
+    <div class="nidin-nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    </div>
+    <span>購物車</span>
+</a>
+
+<a class="nidin-nav-item" href="javascript:void(0);" onclick="goHome()">
+    <div class="nidin-nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <span>回首頁</span>
+</a>
+
+<a class="nidin-nav-item" href="javascript:void(0);" onclick="scrollToHistory()">
+    <div class="nidin-nav-icon">
+        <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
+    </div>
+    <span>曾點過</span>
+</a>
+</nav>
+</header>
 
         <div class="grid-container">
             <!-- 店家卡片群 -->
             <div class="shop-card">
                 <div class="card-top">
                     <span class="shop-name">榮郁香廣式燒臘</span>
-                    <span class="badge smart">智慧點餐</span>
+                    <span class="badge smart">主食精選</span>
                 </div>
                 <div class="shop-desc">道地廣式燒臘，外酥內嫩的美味首選。</div>
                 <button class="go-btn" onclick="redirectToShop('榮郁香廣式燒臘', this)">進入 榮郁香廣式燒臘 點餐 ➔</button>
@@ -402,7 +715,7 @@
             <div class="shop-card">
                 <div class="card-top">
                     <span class="shop-name">顏舍關東煮</span>
-                    <span class="badge smart">智慧點餐</span>
+                    <span class="badge smart">在地美食</span>
                 </div>
                 <div class="shop-desc">暖心熬煮鮮甜高湯，多款精緻關東煮食材。</div>
                 <button class="go-btn" onclick="redirectToShop('顏舍關東煮', this)">進入 顏舍關東煮 點餐 ➔</button>
@@ -411,7 +724,7 @@
             <div class="shop-card">
                 <div class="card-top">
                     <span class="shop-name">羹香鴨肉羹</span>
-                    <span class="badge smart">智慧點餐</span>
+                    <span class="badge smart">在地美食</span>
                 </div>
                 <div class="shop-desc">鮮美鴨肉與濃郁羹湯的完美結合。</div>
                 <button class="go-btn" onclick="redirectToShop('羹香鴨肉羹', this)">進入 羹香鴨肉羹 點餐 ➔</button>
@@ -420,7 +733,7 @@
             <div class="shop-card">
                 <div class="card-top">
                     <span class="shop-name">四海遊龍</span>
-                    <span class="badge smart">智慧點餐</span>
+                    <span class="badge smart">主食精選</span>
                 </div>
                 <div class="shop-desc">經典招牌鍋貼、水餃，現點現煎的美味。</div>
                 <button class="go-btn" onclick="redirectToShop('四海遊龍', this)">進入 四海遊龍 點餐 ➔</button>
@@ -429,7 +742,7 @@
             <div class="shop-card">
                 <div class="card-top">
                     <span class="shop-name">八方雲集</span>
-                    <span class="badge smart">智慧點餐</span>
+                    <span class="badge smart">主食精選</span>
                 </div>
                 <div class="shop-desc">皮Q餡飽滿的招牌鍋貼與各式經典水餃。</div>
                 <button class="go-btn" onclick="redirectToShop('八方雲集', this)">進入 八方雲集 點餐 ➔</button>
@@ -494,29 +807,124 @@
                     <span class="shop-name">八廚職人弁当</span>
                     <span class="badge main">主食精選</span>
                 </div>
-                <div class="shop-desc">主廚精選八種餐品，以最單純的食材堅持以現點現做。</div>
+                <div class="shop-desc">主廚精選八種餐品，以最單純的食材坚持以現點現做。</div>
                 <button class="go-btn" onclick="redirectToShop('八廚職人弁当', this)">進入 八廚職人弁当 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">嵐 爌肉・豬腳飯</span>
+                    <span class="badge main">在地美食</span>
+                </div>
+                <div class="shop-desc">主打招牌爌肉飯、Q彈豬腳飯及特色蒸蛋飯。</div>
+                <button class="go-btn" onclick="redirectToShop('嵐 爌肉・豬腳飯', this)">進入 嵐 爌肉・豬腳飯 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">旺春豐傳統小吃</span>
+                    <span class="badge main">在地美食</span>
+                </div>
+                <div class="shop-desc">旺春豐滷肉飯台灣傳統小吃。</div>
+                <button class="go-btn" onclick="redirectToShop('旺春豐傳統小吃', this)">進入 旺春豐傳統小吃 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">咕雞 鹽水雞</span>
+                    <span class="badge main">在地美食</span>
+                </div>
+                <div class="shop-desc">每日蔬菜現買現煮新鮮食材。</div>
+                <button class="go-btn" onclick="redirectToShop('咕雞 鹽水雞', this)">進入 咕雞 鹽水雞 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">家灶 傳統爌肉 豬腳專賣</span>
+                    <span class="badge main">在地美食</span>
+                </div>
+                <div class="shop-desc">招牌爌肉慢慢滷至油亮軟嫩，有提供豬腳麵線、滷豆腐、白菜魯等。</div>
+                <button class="go-btn" onclick="redirectToShop('家灶 傳統爌肉 豬腳專賣', this)">進入 家灶 傳統爌肉 豬腳專賣 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">菓蔬輕蒔坊</span>
+                    <span class="badge main">在地美食</span>
+                </div>
+                <div class="shop-desc">時蔬佳餚現場備有豐富的炸物拼盤、豐盛時蔬。</div>
+                <button class="go-btn" onclick="redirectToShop('菓蔬輕蒔坊', this)">進入 菓蔬輕蒔坊 點餐 ➔</button>
+            </div>
+     
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">老蕭土魠魚羹麵館</span>
+                    <span class="badge main">在地美食</span>
+                </div>
+                <div class="shop-desc">土魠魚焿及羊肉焿類，豬排飯，厚切豬排特餐及咖哩豬排飯。</div>
+                <button class="go-btn" onclick="redirectToShop('老蕭土魠魚羹麵館', this)">進入 老蕭土魠魚羹麵館 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">小松丼丼食事處</span>
+                    <span class="badge main">主食精選</span>
+                </div>
+                <div class="shop-desc">主打平價、大份量的日式食堂。</div>
+                <button class="go-btn" onclick="redirectToShop('小松丼丼食事處', this)">進入 小松丼丼食事處 點餐 ➔</button>
             </div>
         </div>
 
-        <div class="history-container">
-            <div class="history-card">
-                <div class="history-header">
-                    <h2 class="history-title">📋 歷史點餐紀錄</h2>
-                    <button class="clear-history-btn" id="clear-btn" onclick="clearLocalHistory()">🗑️ 完全清除紀錄</button>
+        <!-- ==================== 3. 今日點餐紀錄區塊 ==================== -->
+        <div id="today-history-anchor" class="history-container">
+    <div class="history-card">
+        <div class="history-header">
+            <h2 class="history-title">📋 今日點餐紀錄</h2>
+            <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
+        </div>
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+    <thead>
+        <tr>
+            <th style="width: 15%">卡號 / 姓名</th>
+            <th style="width: 20%">日期時間</th>
+            <th style="width: 35%">點餐店家 / 內容</th>
+            <th style="width: 15%">金額</th>
+            <th style="width: 15%">備註說明</th>
+        </tr>
+    </thead>
+    <tbody id="history-list">
+        <tr>
+            <td colspan="5" class="no-record">載入紀錄中...</td>
+        </tr>
+    </tbody>
+</table>
                 </div>
+            </div>
+        </div>
+
+        <!-- ==================== 4. 全系統個人歷史點餐軌跡 ==================== -->
+        <!-- 加上 id="history-anchor" -->
+<div id="history-anchor" class="history-container" style="margin-bottom: 100px;">
+    <div class="history-card" style="border-color: #b4d3b0; background-color: #fcfdfc;">
+        <div class="history-header" style="border-bottom-color: #cce5ca;">
+            <h2 class="history-title" style="color: #1e3818;">🗄️ 個人的歷史點餐軌跡 (歷年完整紀錄)</h2>
+            <span style="font-size: 14px; color: #668062; font-weight: bold;">資料來源：orders.json 資料庫</span>
+        </div>
                 <div class="history-table-wrapper">
                     <table class="history-table">
                         <thead>
                             <tr>
-                                <th style="width: 25%">日期</th>
-                                <th style="width: 50%">點餐店家 / 內容（品項與數量）</th>
-                                <th style="width: 25%">備註說明</th>
+                                <th style="width: 15%; background-color: #eff7ee;">卡號 / 姓名</th>
+                                <th style="width: 20%; background-color: #eff7ee;">日期時間</th>
+                                <th style="width: 35%; background-color: #eff7ee;">點餐店家 / 內容</th>
+                                <th style="width: 15%; background-color: #eff7ee;">金額</th>
+                                <th style="width: 15%; background-color: #eff7ee;">備註說明</th>
                             </tr>
                         </thead>
-                        <tbody id="history-list">
+                        <tbody id="global-history-list">
                             <tr>
-                                <td colspan="3" class="no-record">載入紀錄中...</td>
+                                <td colspan="5" class="no-record">核心資料庫載入中...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -530,9 +938,6 @@
     <script>
         let loggedInCardId = ''; 
         let isSubmitting = false;
-        let isRedirecting = false;
-        // 新增：防範異步死而復生的記憶旗標
-        let isClearedToday = false; 
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -546,16 +951,197 @@
             '寶北斗肉圓': 'kafang.html',
             '百華味滷味': 'jafang.html',
             '老聃飲食': 'iafang.html',
-            '八廚職人弁当': 'lafang.html'
+            '八廚職人弁当': 'lafang.html',
+            '嵐 爌肉・豬腳飯': 'mafang.html',
+            '旺春豐傳統小吃': 'nafang.html',
+            '咕雞 鹽水雞': 'oafang.html',
+            '家灶 傳統爌肉 豬腳專賣': 'pafang.html',
+            '菓蔬輕蒔坊': 'qafang.html',
+            '老蕭土魠魚羹麵館': 'rafang.html',
+            '小松丼丼食事處': 'safang.html'
         };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedCardId = localStorage.getItem('currentCardId');
+            const savedEmpName = localStorage.getItem('currentEmpName');
+            const savedOffline = localStorage.getItem('isOfflineMode') === 'true';
+            
+            if (savedCardId) {
+                showOrderSection(savedCardId, savedEmpName, savedOffline);
+            }
+
+            const cardInput = document.getElementById('cardId');
+            if (cardInput) {
+                cardInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') executeLogin();
+                });
+            }
+        });
+
+// 點擊「曾點過」自動平滑滾動至歷史軌跡區塊
+function scrollToHistory() {
+    const historySection = document.getElementById('history-anchor');
+    if (historySection) {
+        historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// 在 showOrderSection 函式內
+const userNameEl = document.getElementById('user-name');
+if (userNameEl) {
+    // 僅更新純文字，樣式由 CSS 完全控制
+    userNameEl.textContent = `${empName} (${cardId})`;
+}
+
+// 🔍 搜尋過濾店家卡片函式
+function filterShops() {
+    const searchInput = document.getElementById('shopSearchInput');
+    if (!searchInput) return;
+
+    // 取得輸入關鍵字並轉小寫
+    const query = searchInput.value.toLowerCase().trim();
+    const shopCards = document.querySelectorAll('.shop-card');
+
+    shopCards.forEach(card => {
+        // 抓取店家名稱與描述文字
+        const shopName = (card.querySelector('.shop-name')?.textContent || '').toLowerCase();
+        const shopDesc = (card.querySelector('.shop-desc')?.textContent || '').toLowerCase();
+        const badgeText = (card.querySelector('.badge')?.textContent || '').toLowerCase();
+
+        // 判斷名稱、描述或標籤是否包含關鍵字
+        const isMatch = shopName.includes(query) || shopDesc.includes(query) || badgeText.includes(query);
+
+        // 符合則顯示，不符合則隱藏
+        if (isMatch) {
+            card.style.display = ''; 
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// ⌨️ 按下 Enter 鍵時觸發搜尋
+function handleSearchKeyPress(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault(); // 防止表單預設送出動作
+        filterShops();
+    }
+}
+
+// 1. 搜尋：自動捲動至頂部搜尋框並聚焦（ focus ）
+function focusSearchInput() {
+    const searchInput = document.getElementById('shopSearchInput');
+    if (searchInput) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => {
+            searchInput.focus();
+        }, 300);
+    }
+}
+
+// 2. 付款介紹：跳出付款方式彈窗說明
+function showPaymentInfo() {
+    alert("💳 付款方式說明：\n\n1. 中國信託轉帳 428540856354\n2. 現場現金支付\n3. 現場 iPass money");
+}
+
+// 購物車按鈕：點擊後平滑滾動至「今日點餐紀錄」區塊
+function scrollToTodayHistory() {
+    const todaySection = document.getElementById('today-history-anchor');
+    if (todaySection) {
+        todaySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// 4. 回首頁：重置搜尋並平滑捲動回到頁面頂部
+function goHome() {
+    const searchInput = document.getElementById('shopSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        filterShops(); // 清除搜尋結果，回復顯示所有店家
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 5. 曾點過：平滑捲動至歷史紀錄區塊（已存在）
+function scrollToHistory() {
+    const historySection = document.getElementById('history-anchor');
+    if (historySection) {
+        historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+        async function executeLogin() {
+            if (isSubmitting) return;
+            
+            const cardInput = document.getElementById('cardId');
+            const msgDisplay = document.getElementById('msg-display');
+            const loginBtn = document.getElementById('submit-login-btn');
+            
+            if (!cardInput || !cardInput.value.trim()) {
+                if (msgDisplay) msgDisplay.innerText = '⚠️ 請輸入員工卡號！';
+                return;
+            }
+
+            const cardId = cardInput.value.trim();
+            isSubmitting = true;
+            if (msgDisplay) msgDisplay.innerText = '驗證中...';
+            if (loginBtn) loginBtn.disabled = true;
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cardId: cardId }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                if (data.success) {
+                    showOrderSection(cardId, data.empName || cardId, false);
+                } else {
+                    if (msgDisplay) msgDisplay.innerText = `❌ ${data.message || '無此卡號'}`;
+                    if (loginBtn) loginBtn.disabled = false;
+                    isSubmitting = false;
+                }
+            } catch (error) {
+                console.warn("🌐 無法連接 API，系統自動以離線模式進入。");
+                if (msgDisplay) msgDisplay.innerText = '';
+                if (loginBtn) loginBtn.disabled = false;
+                isSubmitting = false;
+                showOrderSection(cardId, cardId, true);
+            }
+        }
+
+        function redirectToShop(shopName, buttonEl) {
+            const url = shopUrlMap[shopName];
+            if (!url) {
+                alert(`尚未設定 ${shopName} 的對應點餐網頁。`);
+                return;
+            }
+            
+            const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
+            const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}`;
+            window.location.href = targetUrl;
+        }
+
+        function executeLogout() {
+            if (confirm('確定要登出系統嗎？')) {
+                showLoginSection();
+            }
+        }
 
         function navigateToAdmin() { window.location.href = 'admin.html'; }
 
         function showOrderSection(cardId, empName, isOffline = false) {
             loggedInCardId = cardId; 
-            sessionStorage.setItem('currentCardId', cardId);
-            sessionStorage.setItem('currentEmpName', empName || cardId);
-            sessionStorage.setItem('isOfflineMode', isOffline ? 'true' : 'false');
+            
+            localStorage.setItem('currentCardId', cardId);
+            localStorage.setItem('currentEmpName', empName || cardId);
+            localStorage.setItem('isOfflineMode', isOffline ? 'true' : 'false');
 
             document.getElementById('user-name').innerText = empName || cardId;
             document.getElementById('offline-tag').style.display = isOffline ? 'inline' : 'none';
@@ -565,117 +1151,246 @@
             document.body.classList.remove('login-mode');
             document.body.classList.add('order-mode');
             
-            // 每次重新切換進點餐畫面，重置清除狀態
-            isClearedToday = false; 
             fetchOrderHistory(cardId);
+            fetchGlobalOrders(cardId);
         }
 
         function showLoginSection() {
-            loggedInCardId = '';
-            sessionStorage.removeItem('currentCardId');
-            sessionStorage.removeItem('currentEmpName');
-            sessionStorage.removeItem('isOfflineMode');
-            document.getElementById('user-name').innerText = ''; 
+    loggedInCardId = '';
+    isSubmitting = false;
+    
+    localStorage.removeItem('currentCardId');
+    localStorage.removeItem('currentEmpName');
+    localStorage.removeItem('isOfflineMode');
+    document.getElementById('user-name').innerText = ''; 
+    
+    // === 修正這段：確保解鎖登入按鈕 ===
+    const loginBtn = document.getElementById('submit-login-btn');
+    if (loginBtn) { loginBtn.disabled = false; }
+    // ===================================
+    
+    const cardInput = document.getElementById('cardId');
+    if (cardInput) { cardInput.value = ''; cardInput.disabled = false; }
+    
+    document.getElementById('msg-display').innerText = ''; 
+    document.getElementById('offline-tag').style.display = 'none';
+    document.getElementById('order-section').classList.add('hidden');
+    document.getElementById('login-section').classList.remove('hidden');
+    document.body.classList.remove('order-mode');
+    document.body.classList.add('login-mode');
+
+    requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
+}
+
+        function getMilliTimestamp(obj) {
+    if (!obj) return 0;
+    
+    // 優先抓取可能的時間欄位
+    let rawTime = obj.time || obj.Time || obj.date || obj.datetime || obj.timestamp || '';
+    rawTime = String(rawTime).trim();
+    if (!rawTime) return 0;
+
+    // 如果本身就是純數字（時間戳記）
+    if (/^\d+$/.test(rawTime)) {
+        const ts = Number(rawTime);
+        return ts < 9999999999 ? ts * 1000 : ts;
+    }
+
+    // 重點：處理中文的「上午/下午」格式 (例如：2026/7/13 下午8:13:58)
+    if (rawTime.includes('上午') || rawTime.includes('下午')) {
+        try {
+            const isPM = rawTime.includes('下午');
+            // 把 中文 拿掉，並將全形空格或多餘空格做清理
+            let cleanStr = rawTime.replace(/[上下]午/, ' ').replace(/\s+/g, ' ');
             
-            const cardInput = document.getElementById('cardId');
-            if (cardInput) { cardInput.value = ''; cardInput.disabled = false; }
-            
-            document.getElementById('msg-display').innerText = ''; 
-            document.getElementById('offline-tag').style.display = 'none';
-            document.getElementById('order-section').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-            document.body.classList.remove('order-mode');
-            document.body.classList.add('login-mode');
-
-            requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
-        }
-
-        function parseDateTime(timeStr) {
-            if (!timeStr) return 0;
-            const standardized = timeStr.replace(/ /g, 'T').replace(/\//g, '-');
-            const timestamp = Date.parse(standardized);
-            return isNaN(timestamp) ? Date.parse(timeStr) : timestamp;
-        }
-
-        /* 雙軌並行載入歷史紀錄（已加上絕對防禦修正） */
-        async function fetchOrderHistory(cardId) {
-            const historyList = document.getElementById('history-list');
-            if (!historyList) return;
-
-            // 修正點：如果已經按過清除紀錄，直接阻斷渲染，避免後端未刪完的舊資料塞回來
-            if (isClearedToday) {
-                renderEmptyHistory(true, 0);
-                return;
-            }
-
-            let apiOrders = [];
-            let localOrders = [];
-            let isApiSuccess = false;
-
-            const localKey = `orders_${cardId}`;
-            try {
-                localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
-            } catch(e) { localOrders = []; }
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-                const response = await fetch(`/api/order-history?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
-                clearTimeout(timeoutId);
+            // 拆出 日期 與 時間 部分
+            let [datePart, timePart] = cleanStr.trim().split(' ');
+            if (datePart && timePart) {
+                let [hrs, mins, secs] = timePart.split(':').map(Number);
                 
-                const data = await response.json();
-                if (data.success && data.orders) {
-                    apiOrders = data.orders;
-                    isApiSuccess = true;
+                // 調整為 24 小時制
+                if (isPM && hrs < 12) hrs += 12;
+                if (!isPM && hrs === 12) hrs = 0; // 上午 12 點是 0 點
+                
+                // 重新拼回標準格式以便 Date 解析
+                const standardStr = `${datePart.replace(/\//g, '-')} ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
+                const parsed = Date.parse(standardStr);
+                if (!isNaN(parsed)) return parsed;
+            }
+        } catch (e) {
+            console.error("中文時間解析失敗，嘗試通用解析: ", e);
+        }
+    }
+
+    // 通用後備解析
+    const parsedStr = Date.parse(rawTime.replace(/ /g, 'T').replace(/\//g, '-'));
+    return !isNaN(parsedStr) ? parsedStr : 0;
+}
+
+        function isTodayOrder(orderObj) {
+            const orderTs = getMilliTimestamp(orderObj);
+            if (orderTs === 0) return false;
+
+            const orderDate = new Date(orderTs);
+            const today = new Date();
+
+            return orderDate.getFullYear() === today.getFullYear() &&
+                   orderDate.getMonth() === today.getMonth() &&
+                   orderDate.getDate() === today.getDate();
+        }
+
+        function formatDisplayTime(obj) {
+            if (!obj) return '-';
+            const rawTime = obj.time || obj.Time || obj.date || obj.datetime || '';
+            if (rawTime) return rawTime; 
+
+            if (obj.timestamp) {
+                const ts = Number(obj.timestamp);
+                if (!isNaN(ts) && ts > 0) {
+                    const finalTs = ts < 9999999999 ? ts * 1000 : ts;
+                    const d = new Date(finalTs);
+                    return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
                 }
-            } catch (error) {
-                console.warn("⚠️ 後端 API 無法連線，改以本機快照渲染。");
+                return obj.timestamp;
             }
+            return '-';
+        }
 
-            // 再次檢查：防止在 API 請求期間使用者按下了清除鍵
-            if (isClearedToday) {
-                renderEmptyHistory(true, 0);
-                return;
+        // 清除當前卡號本機快照今日紀錄的處理函數
+        function clearLocalTodayOrders() {
+            if (!loggedInCardId) return;
+            if (confirm('確定要清除這台裝置上的今日點餐暫存紀錄嗎？\n(此操作不會影響全系統 orders.json 資料庫)')) {
+                const localKey = `orders_${loggedInCardId}`;
+                localStorage.removeItem(localKey);
+                fetchOrderHistory(loggedInCardId);
             }
+        }
 
-            let finalOrders = [];
-            if (isApiSuccess) {
-                const seenKeys = new Set(apiOrders.map(o => `${o.time}_${o.meal}`));
-                finalOrders = [...apiOrders];
-                localOrders.forEach(lo => {
-                    const k = `${lo.time}_${lo.meal}`;
-                    if (!seenKeys.has(k)) { finalOrders.push(lo); }
+        async function fetchOrderHistory(cardId) {
+    const historyList = document.getElementById('history-list');
+    if (!historyList) return;
+
+    let apiOrders = [];
+    let localOrders = [];
+    let isApiSuccess = false;
+
+    const localKey = `orders_${cardId}`;
+    try {
+        localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+    } catch(e) { localOrders = []; }
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+        // 統一使用 /api/orders 接口
+        const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+            apiOrders = await response.json();
+            isApiSuccess = true;
+        }
+    } catch (error) {
+        console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
+    }
+
+    // 合併資料並過濾出今日點餐
+    let merged = isApiSuccess ? apiOrders : localOrders;
+    let todayOrders = merged.filter(order => isTodayOrder(order));
+
+    // 按時間由新到舊排序
+    todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+    if (todayOrders.length === 0) {
+        historyList.innerHTML = `<tr><td colspan="5" class="no-record">嗨！您今天尚無任何點餐紀錄。</td></tr>`;
+        return;
+    }
+
+    // ✨ 關鍵修正：精準渲染 5 個欄位（卡號姓名、時間、店家內容、金額、備註）
+    const empName = localStorage.getItem('currentEmpName') || cardId;
+
+// ✨ 根據 orders.json 格式完美對齊的 5 個欄位
+historyList.innerHTML = todayOrders.map(order => {
+    // 1. 抽離金額解析邏輯，避免 IIFE 在 HTML 模板字串中看起來過於混亂
+    const rawTotal = Number(order.total);
+    let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
+
+    // 2. 若 total 無效，彈性正則匹配 note 中的金額 (相容有無空格，例如 "總計:$180" 或 "總計: $180")
+    if (!totalAmount && order.note) {
+        const match = String(order.note).match(/總計:\s*\$(\d+)/);
+        if (match) totalAmount = parseInt(match[1], 10);
+    }
+
+    return `
+        <tr>
+            <td>${order.cardId || cardId}</td>
+            <td>${formatDisplayTime(order)}</td>
+            <td>${order.meal || '無品項內容'}</td>
+            <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
+            <td>${order.note || '-'}</td>
+        </tr>
+    `;
+}).join('');
+}
+
+        /* 異步載入 orders.json 歷史點餐軌跡 */
+        async function fetchGlobalOrders(targetCardId) {
+            const globalHistoryList = document.getElementById('global-history-list');
+            if (!globalHistoryList) return;
+            if (!targetCardId) return;
+
+            try {
+                const response = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
+                if (!response.ok) throw new Error('無法讀取 orders.json');
+
+                const allOrders = await response.json();
+                const orderArray = Array.isArray(allOrders) ? allOrders : (allOrders.orders || []);
+
+                const userOrders = orderArray.filter(order => {
+                    const orderCard = String(order.cardId || '').trim().toLowerCase();
+                    const loginCard = String(targetCardId).trim().toLowerCase();
+                    return orderCard === loginCard;
                 });
-            } else {
-                finalOrders = [...localOrders];
-            }
 
-            finalOrders.sort((a, b) => parseDateTime(b.time) - parseDateTime(a.time));
+                if (userOrders.length === 0) {
+                    globalHistoryList.innerHTML = `<tr><td colspan="5" class="no-record">💡 您在歷年全系統資料庫中尚無任何點餐軌跡。</td></tr>`;
+                    return;
+                }
 
-            if (finalOrders.length > 0) {
-                historyList.innerHTML = '';
-                finalOrders.forEach(order => {
+                userOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+                globalHistoryList.innerHTML = '';
+                userOrders.forEach(order => {
                     const tr = document.createElement('tr');
                     
+                    const tdUser = document.createElement('td');
+                    tdUser.textContent = `${order.cardId || ''} ${order.empName || order.name || ''}`;
+                    
                     const tdTime = document.createElement('td');
-                    tdTime.textContent = order.time || '-';
+                    tdTime.textContent = formatDisplayTime(order);
                     
                     const tdMeal = document.createElement('td');
                     tdMeal.style.fontWeight = 'bold';
-                    tdMeal.style.color = '#2b4c23';
-                    tdMeal.textContent = order.meal || '-'; 
+                    tdMeal.textContent = order.meal || '-';
+                    
+                    const rawPrice = order.total ?? order.Total ?? order.price ?? order.Price ?? order.totalPrice ?? order.amount ?? null;
+                    const tdPrice = document.createElement('td');
+                    tdPrice.textContent = (rawPrice !== null && rawPrice !== '') ? `$${rawPrice}` : '-';
                     
                     const tdNote = document.createElement('td');
                     tdNote.textContent = order.note || '-';
                     
+                    tr.appendChild(tdUser);
                     tr.appendChild(tdTime);
                     tr.appendChild(tdMeal);
+                    tr.appendChild(tdPrice); // 歷史點餐軌跡依舊保留金額作為對照
                     tr.appendChild(tdNote);
-                    historyList.appendChild(tr);
+                    globalHistoryList.appendChild(tr);
                 });
-            } else {
-                renderEmptyHistory(isApiSuccess, localOrders.length);
+            } catch (error) {
+                console.error(error);
+                globalHistoryList.innerHTML = `<tr><td colspan="5" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡或 orders.json 檔案不存在。</td></tr>`;
             }
         }
 
@@ -683,162 +1398,13 @@
             const historyList = document.getElementById('history-list');
             if (!historyList) return;
             
+            // 由於今日紀錄表格剩下 3 欄，空紀錄的 colspan 已同步修正為 3
             if (!isApiSuccess && localLength === 0) {
-                historyList.innerHTML = `<tr><td colspan="3" class="no-record" style="color:#b5651d;">💡 您這台裝置目前無暫存紀錄。</td></tr>`;
+                historyList.innerHTML = `<tr><td colspan="5" class="no-record" style="color:#b5651d;">💡 您這台裝置目前無暫存紀錄。</td></tr>`;
             } else {
-                historyList.innerHTML = `<tr><td colspan="3" class="no-record">嗨！您目前尚無歷史點餐紀錄。</td></tr>`;
+                historyList.innerHTML = `<tr><td colspan="5" class="no-record">嗨！您今天尚無任何點餐紀錄。</td></tr>`;
             }
         }
-
-        /* 【核心升級修正】徹底清空本地與後端雲端紀錄，防範死而復生問題 */
-        async function clearLocalHistory() {
-            if (!loggedInCardId) return;
-            
-            if (confirm('⚠️ 確定要徹底清除歷史點餐明細嗎？\n這將同時刪除「此裝置暫存」與「公司後端資料庫」中的跨裝置紀錄！')) {
-                const clearBtn = document.getElementById('clear-btn');
-                if (clearBtn) { clearBtn.disabled = true; clearBtn.innerText = '⏳ 正在徹底刪除...'; }
-
-                // 修正點 1：立刻開啟防禦旗標，通知前端徹底閉合合併邏輯
-                isClearedToday = true;
-
-                // 修正點 2：先清除本地裝置快照
-                const localKey = `orders_${loggedInCardId}`;
-                localStorage.removeItem(localKey);
-                
-                // 修正點 3：暴力重設前端畫面，確保視覺立刻變空
-                renderEmptyHistory(true, 0);
-
-                // 4. 向後端 API 發送清除請求（同步清空全公司資料庫）
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒超時
-
-                    await fetch(`/api/clear-history`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ cardId: loggedInCardId }),
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                } catch (e) {
-                    console.warn("⚠️ 雲端資料庫連線超時，已優先確保本機快照清除。");
-                }
-
-                if (clearBtn) { clearBtn.disabled = false; clearBtn.innerText = '🗑️ 完全清除紀錄'; }
-                alert('🗑️ 歷史紀錄已徹底清空完畢！');
-            }
-        }
-
-        async function checkUrlCardId() {
-            const savedCardId = sessionStorage.getItem('currentCardId');
-            const savedEmpName = sessionStorage.getItem('currentEmpName');
-            const isOfflineMode = sessionStorage.getItem('isOfflineMode') === 'true';
-            
-            const params = new URLSearchParams(window.location.search);
-            const urlCardId = params.get('cardId');
-
-            if (urlCardId) {
-                const url = new URL(window.location.href);
-                url.searchParams.delete('cardId');
-                window.history.replaceState({}, '', url.toString());
-
-                try {
-                    const response = await fetch('/api/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ cardId: urlCardId.trim() })
-                    });
-                    const data = await response.json();
-                    if (data.success) { showOrderSection(urlCardId.trim(), data.empName, false); return true; }
-                } catch (e) {
-                    showOrderSection(urlCardId.trim(), urlCardId.trim(), true);
-                    return true;
-                }
-            } else if (savedCardId) {
-                showOrderSection(savedCardId, savedEmpName, isOfflineMode);
-                return true;
-            }
-            showLoginSection();
-            return false;
-        }
-
-        async function executeLogin() {
-            if (isSubmitting) return;
-
-            const cardInput = document.getElementById('cardId');
-            const msgDisplay = document.getElementById('msg-display');
-            const loginBtn = document.getElementById('submit-login-btn');
-            const cardId = cardInput ? cardInput.value.trim() : '';
-
-            if (!cardId) {
-                msgDisplay.style.color = '#a01010';
-                msgDisplay.innerText = '❌ 請輸入員工卡號！';
-                return;
-            }
-
-            isSubmitting = true;
-            if (loginBtn) loginBtn.disabled = true;
-            if (cardInput) cardInput.disabled = true;
-            
-            msgDisplay.style.color = '#556b52';
-            msgDisplay.innerText = '⏳ 認證中，請稍候...';
-
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cardId })
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    showOrderSection(cardId, data.empName, false);
-                } else {
-                    msgDisplay.style.color = '#a01010';
-                    msgDisplay.innerText = '❌ ' + (data.message || '登入失敗');
-                    if (cardInput) { cardInput.disabled = false; cardInput.focus(); cardInput.select(); }
-                }
-            } catch (error) {
-                alert('⚠️ 伺服器連線失敗！系統已自動切換為「離線點餐模式」，您的點餐明細將安全暫存於此裝置。');
-                showOrderSection(cardId, cardId, true);
-            } finally {
-                isSubmitting = false;
-                if (loginBtn) loginBtn.disabled = false;
-            }
-        }
-
-        function executeLogout() { if (confirm('確定要登出系統嗎？')) { showLoginSection(); } }
-
-        function redirectToShop(shopName, btnElement) {
-            if (!loggedInCardId) { alert('❌ 偵測不到登入卡號，請先進行登入！'); window.location.reload(); return; }
-            if (isRedirecting) return;
-            isRedirecting = true;
-            if (btnElement) btnElement.disabled = true;
-
-            if (shopUrlMap[shopName]) {
-                const targetUrl = `${shopUrlMap[shopName]}?cardId=${encodeURIComponent(loggedInCardId)}`;
-                isRedirecting = false;
-                if (btnElement) btnElement.disabled = false;
-                window.location.href = targetUrl;
-            } else {
-                alert('❌ 找不到該店家的菜單頁面。');
-                isRedirecting = false;
-                if (btnElement) btnElement.disabled = false;
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            checkUrlCardId();
-            const cardInput = document.getElementById('cardId');
-            if (cardInput) {
-                cardInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault(); 
-                        if (!isSubmitting) { executeLogin(); }
-                    }
-                });
-            }
-        });
     </script>
 </body>
 </html>

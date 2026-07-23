@@ -1,23 +1,26 @@
 const express = require('express');
-const fs = require('fs').promises; 
+const fs = require('fs');
 const path = require('path');
-const ExcelJS = require('exceljs');
+const ExcelJS = require('exceljs'); // 引入 Excel 處理套件
 
 const app = express();
 const PORT = 3000;
 
+// 允許解析 JSON 與表單資料
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// 靜態網頁檔案導向 public 資料夾
 app.use(express.static('public'));
 
-const JSON_FILE = path.join(__dirname, 'orders.json');
-const EXCEL_FILE = path.join(__dirname, '訂單統計表.xlsx');
-const SHOPS_FILE = path.join(__dirname, 'shops.json'); // 🌟 店家動態資料庫
+// 🎯 設定要同步的目標絕對路徑
+const TARGET_DIR = path.join('C:', 'Users', '18445', 'Desktop', '李珈豪', 'pos-system', 'public');
+const JSON_FILE = path.join(TARGET_DIR, 'orders.json');
+const EXCEL_FILE = path.join(TARGET_DIR, '訂單統計表.xlsx');
+// 🪪 新增：員工資料庫實體 JSON 檔案路徑
+const USER_DB_FILE = path.join(TARGET_DIR, 'users.json');
 
-// ==================== 🛠️ 記憶體與資料檔案初始化 ====================
-
-// 🌟 員工資料庫改用 let，允許後台動態增刪
-let USER_DB = {
+// 🌟 初始員工資料庫（若 users.json 不存在時的預設值）
+const INITIAL_USER_DB = {
     '18445': '李珈豪', '601471': '陳永育', '11110': '林佳蘭', '11744': '施名娟',
     '10069': '許民芳', '13228': '宋筱湄', '12218': '沈佩琪', '10047': '許博捷',
     '6513': '李承州', '16661': '陳育倫', '601473': '李羽茹', '6800': '吳修文',
@@ -26,52 +29,44 @@ let USER_DB = {
     '16294': '梁婧盈', '16925': '李宜珊', '17528': '曾雅琴', 'TEST': '測試員'
 };
 
-// 預設合作店家資料
-const DEFAULT_SHOPS = [
-    { name: "八方雲集", file: "bafang.html", desc: "皮Q餡飽滿的招牌鍋貼與各式經典水餃。" },
-    { name: "榮郁香廣式燒臘", file: "dafang.html", desc: "道地廣式燒臘，外酥內嫩的美味首選。" },
-    { name: "飯大廚", file: "aafang.html", desc: "大火翻炒粒粒分明，炒飯料理的專家。" }
-];
-
-// 確保店家 json 存在
-async function initShopsFile() {
-    try {
-        await fs.access(SHOPS_FILE);
-    } catch {
-        await fs.writeFile(SHOPS_FILE, JSON.stringify(DEFAULT_SHOPS, null, 2), 'utf-8');
+// 安全檢查函式：確保目標資料夾存在，並確保員工資料庫檔案存在
+function ensureDirectoryExistence() {
+    if (!fs.existsSync(TARGET_DIR)) {
+        fs.mkdirSync(TARGET_DIR, { recursive: true });
+        console.log(`[系統提示] 已自動建立目標資料夾：${TARGET_DIR}`);
+    }
+    // 檢查 users.json 是否存在，若不存在則建立初始檔案
+    if (!fs.existsSync(USER_DB_FILE)) {
+        fs.writeFileSync(USER_DB_FILE, JSON.stringify(INITIAL_USER_DB, null, 2), 'utf-8');
+        console.log(`[系統提示] 已自動建立員工資料庫檔案：${USER_DB_FILE}`);
     }
 }
-initShopsFile();
 
-// ==================== 🔒 併發排隊管理佇列 ====================
-let fileWriteQueue = Promise.resolve();
-function queueFileWrite(operation) {
-    fileWriteQueue = fileWriteQueue.then(operation).catch(err => console.error("📁 JSON 佇列執行錯誤:", err));
-    return fileWriteQueue;
+// 輔助函式：從實體檔案讀取最新的員工名單
+function loadUserDatabase() {
+    ensureDirectoryExistence();
+    try {
+        const data = fs.readFileSync(USER_DB_FILE, 'utf-8');
+        return JSON.parse(data);
+    } catch (e) {
+        console.error('讀取員工資料庫檔案失敗，使用內建資料:', e.message);
+        return INITIAL_USER_DB;
+    }
 }
 
-let excelWriteQueue = Promise.resolve();
-function queueExcelWrite(operation) {
-    excelWriteQueue = excelWriteQueue.then(operation).catch(err => console.error("📊 Excel 佇列執行錯誤:", err));
-    return excelWriteQueue;
+// 輔助函式：將最新的員工名單寫入實體檔案
+function saveUserDatabase(db) {
+    ensureDirectoryExistence();
+    fs.writeFileSync(USER_DB_FILE, JSON.stringify(db, null, 2), 'utf-8');
 }
 
-// 台灣時間標準化字串工具
-function getTaiwanTimeParts() {
-    const now = new Date();
-    const twTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
-    const isoStr = twTime.toISOString();
-    return {
-        datePart: isoStr.split('T')[0],
-        timePart: isoStr.split('T')[1].substring(0, 8),
-        fullLog: `${isoStr.split('T')[0]} ${isoStr.split('T')[1].substring(0, 8)}`
-    };
-}
-
-// ==================== 📊 Excel 產生器 ====================
+// ==================== 自動生成並美化 Excel 的輔助函式 ====================
 async function updateExcel(orders) {
-    return queueExcelWrite(async () => {
+    try {
+        ensureDirectoryExistence(); // 確保路徑資料夾存在
         const workbook = new ExcelJS.Workbook();
+        
+        // 1. 建立第一個分頁：訂單明細
         const sheet1 = workbook.addWorksheet('訂單明細');
         sheet1.columns = [
             { header: '訂單ID', key: 'orderId', width: 18 },
@@ -84,248 +79,280 @@ async function updateExcel(orders) {
             { header: '金額', key: 'total', width: 12 }
         ];
         
+        // 2. 建立第二個分頁：店家點餐統計
         const sheet2 = workbook.addWorksheet('店家點餐統計表');
         sheet2.columns = [
             { header: '店家/品項名稱', key: 'meal', width: 25 },
             { header: '總點餐次數', key: 'count', width: 15 }
         ];
 
+        // 寫入明細資料
         orders.forEach(order => {
             sheet1.addRow({
-                orderId: order.orderId, timestamp: order.timestamp, cardId: order.cardId,
-                name: order.name || '未知', meal: order.meal, spicy: order.spicy || '無',
-                note: order.note || '無', total: order.total !== undefined ? order.total : 0
+                orderId: order.orderId,
+                timestamp: order.timestamp,
+                cardId: order.cardId,
+                name: order.name || '未知', 
+                meal: order.meal,
+                spicy: order.spicy || '無',
+                note: order.note || '無',
+                total: order.total !== undefined ? Number(order.total) : 0
             });
         });
 
+        // 統計各店家的數量
         const statistics = {};
-        orders.forEach(order => { statistics[order.meal] = (statistics[order.meal] || 0) + 1; });
-        Object.keys(statistics).forEach(meal => { sheet2.addRow({ meal: meal, count: statistics[meal] }); });
+        orders.forEach(order => {
+            if (order.meal) {
+                statistics[order.meal] = (statistics[order.meal] || 0) + 1;
+            }
+        });
 
+        // 寫入統計資料
+        Object.keys(statistics).forEach(meal => {
+            sheet2.addRow({
+                meal: meal,
+                count: statistics[meal]
+            });
+        });
+
+        // 美化 Excel 樣式
         [sheet1, sheet2].forEach(sheet => {
-            sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
-            sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '2B4C23' } };
+            // 標題列樣式 (第 1 列)
+            const headerRow = sheet.getRow(1);
+            headerRow.font = { bold: true, color: { argb: 'FFFFFF' }, size: 11 };
+            headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '2B4C23' } };
+            
+            // 全格線與置中
             sheet.eachRow((row) => {
                 row.eachCell(cell => {
                     cell.alignment = { vertical: 'middle', horizontal: 'center' };
                     cell.border = {
-                        top: { style: 'thin', color: { argb: 'DDDDDD' } }, bottom: { style: 'thin', color: { argb: 'DDDDDD' } },
-                        left: { style: 'thin', color: { argb: 'DDDDDD' } }, right: { style: 'thin', color: { argb: 'DDDDDD' } }
+                        top: { style: 'thin', color: { argb: 'DDDDDD' } },
+                        bottom: { style: 'thin', color: { argb: 'DDDDDD' } },
+                        left: { style: 'thin', color: { argb: 'DDDDDD' } },
+                        right: { style: 'thin', color: { argb: 'DDDDDD' } }
                     };
                 });
             });
         });
 
-        try {
-            await workbook.xlsx.writeFile(EXCEL_FILE);
-            console.log('📊 [系統提示] 訂單統計表.xlsx 已自動更新！');
-        } catch (err) {
-            console.error('❌ Excel 寫入鎖定中，可能有人開啟了檔案。安全跳過本次更新。');
-        }
-    });
+        await workbook.xlsx.writeFile(EXCEL_FILE);
+        console.log(`📊 [系統提示] 訂單統計表.xlsx 已自動更新至：${EXCEL_FILE}`);
+    } catch (err) {
+        console.error('❌ Excel 更新失敗（可能檔案被開啟中）：', err.message);
+    }
 }
 
-// ==================== 👤 前端員工端 API ====================
+// ==================== API 路由 ====================
 
-// 1. 驗證卡號 API
+// ⚙️ 新增 API 1：獲取完整的員工清單給後台表格
+app.get('/api/employees', (req, res) => {
+    const db = loadUserDatabase();
+    res.json(db);
+});
+
+// ⚙️ 新增 API 2：後台新增員工卡號
+app.post('/api/employees', (req, res) => {
+    const { cardId, name } = req.body;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    const cleanName = name ? String(name).trim() : '';
+
+    if (!cleanCardId || !cleanName) {
+        return res.status(400).json({ success: false, message: '卡號與姓名不可為空！' });
+    }
+
+    const db = loadUserDatabase();
+    if (db[cleanCardId]) {
+        return res.status(400).json({ success: false, message: '此卡號已經存在！' });
+    }
+
+    db[cleanCardId] = cleanName;
+    saveUserDatabase(db); // 寫入 users.json 永久儲存
+
+    console.log(`[員工作業] 新增員工成功: ${cleanName} (${cleanCardId})`);
+    res.json({ success: true, message: '新增成功' });
+});
+
+// ⚙️ 新增 API 3：後台刪除員工卡號
+app.delete('/api/employees/:cardId', (req, res) => {
+    const cardId = req.params.cardId;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+
+    const db = loadUserDatabase();
+    if (!db[cleanCardId]) {
+        return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
+    }
+
+    const removedName = db[cleanCardId];
+    delete db[cleanCardId];
+    saveUserDatabase(db); // 寫入 users.json 永久儲存
+
+    console.log(`[員工作業] 刪除員工成功: ${removedName} (${cleanCardId})`);
+    res.json({ success: true, message: '刪除成功' });
+});
+
+// ⚙️ 新增 API 4：後台刪除特定訂單（連帶自動更新 JSON 與 Excel）
+app.delete('/api/orders/:orderId', async (req, res) => {
+    const { orderId } = req.params;
+    const targetOrderId = orderId ? Number(orderId) : null;
+
+    if (!targetOrderId) {
+        return res.status(400).json({ success: false, message: '無效的訂單編號！' });
+    }
+
+    try {
+        ensureDirectoryExistence(); // 確保路徑存在
+
+        // 1. 檢查並讀取 orders.json
+        if (!fs.existsSync(JSON_FILE)) {
+            return res.status(404).json({ success: false, message: '目前尚無任何訂單紀錄檔案。' });
+        }
+
+        let orders = JSON.parse(fs.readFileSync(JSON_FILE, 'utf-8'));
+
+        // 2. 檢查該訂單是否存在
+        const orderExists = orders.some(order => Number(order.orderId) === targetOrderId);
+        if (!orderExists) {
+            return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderId}` });
+        }
+
+        // 3. 過濾掉被刪除的那筆訂單
+        const updatedOrders = orders.filter(order => Number(order.orderId) !== targetOrderId);
+
+        // 4. 全新陣列覆寫回 orders.json
+        fs.writeFileSync(JSON_FILE, JSON.stringify(updatedOrders, null, 2), 'utf-8');
+        console.log(`[後台管理] 訂單編號 ${targetOrderId} 已被管理員刪除，已同步至 JSON。`);
+
+        // 5. 自動更新桌面 Excel 中的明細表與店家統計表
+        await updateExcel(updatedOrders);
+
+        // 6. 回傳成功狀態給前端
+        res.json({ success: true, message: `訂單 ${targetOrderId} 已成功刪除，Excel 亦同步更新。` });
+
+    } catch (error) {
+        console.error('後端處理刪除訂單發生錯誤:', error);
+        res.status(500).json({ success: false, message: '伺服器刪除資料或覆寫 Excel 失敗。' });
+    }
+});
+
+// 1. 驗證卡號 API（已改為讀取實體檔案）
 app.post('/api/login', (req, res) => {
     const { cardId } = req.body;
-    if (USER_DB[cardId]) {
-        res.json({ success: true, message: '登入成功', empName: USER_DB[cardId] });
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    
+    const db = loadUserDatabase();
+    if (db[cleanCardId]) {
+        res.json({ 
+            success: true, 
+            message: '登入成功', 
+            empName: db[cleanCardId] 
+        });
     } else {
         res.json({ success: false, message: '卡號無效，拒絕存取' });
     }
 });
 
-// 2. 接收訂餐資料 API
+// 2. 接收訂餐資料 API（已改為讀取實體檔案）
 app.post('/api/order', async (req, res) => {
     const { cardId, meal, note, spicy, total } = req.body;
-    const empName = USER_DB[cardId] || "未知員工";
-    const { fullLog } = getTaiwanTimeParts();
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    
+    const db = loadUserDatabase();
+    const empName = db[cleanCardId] || "未知員工";
 
     const newOrder = {
         orderId: Date.now(),
-        cardId: cardId || "未登入卡號",
+        cardId: cleanCardId || "未登入卡號",
         name: empName, 
         meal: meal || "未知餐點",
         spicy: spicy || "無",
         note: note || "無",
         total: total !== undefined ? Number(total) : 0,
-        timestamp: fullLog
+        timestamp: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })
     };
 
-    queueFileWrite(async () => {
-        let orders = [];
-        try {
-            await fs.access(JSON_FILE);
-            const fileData = await fs.readFile(JSON_FILE, 'utf-8');
-            orders = JSON.parse(fileData || '[]');
-        } catch (e) { orders = []; }
-        
-        orders.push(newOrder);
-        await fs.writeFile(JSON_FILE, JSON.stringify(orders, null, 2), 'utf-8');
-        console.log(`[新訂單提示] 收到來自 ${empName} (${cardId}) 的訂單！`);
-        updateExcel(orders);
-    });
-
-    res.json({ success: true, message: `🎉 訂單送出成功！` });
-});
-
-// 3. 獲取當日個人點餐紀錄 API
-app.get('/api/order-history', async (req, res) => {
-    const { cardId } = req.query;
-    if (!cardId) return res.json({ success: false, message: '缺少員工卡號' });
+    let orders = [];
 
     try {
+        ensureDirectoryExistence(); // 確保路徑資料夾存在
+
+        if (fs.existsSync(JSON_FILE)) {
+            orders = JSON.parse(fs.readFileSync(JSON_FILE, 'utf-8'));
+        }
+        
+        orders.push(newOrder);
+        fs.writeFileSync(JSON_FILE, JSON.stringify(orders, null, 2), 'utf-8');
+        console.log(`[新訂單提示] 收到來自 ${empName} (${cleanCardId}) 的訂單，已同步至 JSON！`);
+
+        // 非同步更新 Excel，不阻塞前端回應
+        updateExcel(orders).catch(e => console.error(e));
+
+        res.json({ success: true, message: `🎉 訂單送出成功！` });
+
+    } catch (error) {
+        console.error('後端處理訂單發生錯誤:', error);
+        res.status(500).json({ success: false, message: '伺服器寫入資料失敗。' });
+    }
+});
+
+// 3. 獲取當日個人點餐紀錄 API（已改為讀取實體檔案）
+app.get('/api/order-history', (req, res) => {
+    const { cardId } = req.query;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+
+    if (!cleanCardId) {
+        return res.json({ success: false, message: '缺少員工卡號', orders: [] });
+    }
+
+    try {
+        ensureDirectoryExistence(); // 確保路徑資料夾存在
+        
         let orders = [];
-        try {
-            const fileData = await fs.readFile(JSON_FILE, 'utf-8');
-            orders = JSON.parse(fileData || '[]');
-        } catch (e) {}
+        if (fs.existsSync(JSON_FILE)) {
+            orders = JSON.parse(fs.readFileSync(JSON_FILE, 'utf-8'));
+        }
 
-        const { datePart } = getTaiwanTimeParts();
+        // 精確台北時間日期抓取
+        const now = new Date();
+        const todayStr = new Intl.DateTimeFormat('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            year: 'numeric', month: 'numeric', day: 'numeric'
+        }).format(now);
 
+        // 過濾出屬於該卡號，且時間為今天的紀錄
         const userOrders = orders
             .filter(order => {
-                const isSameUser = String(order.cardId).trim() === String(cardId).trim();
-                const isToday = order.timestamp && order.timestamp.startsWith(datePart);
+                const isSameUser = String(order.cardId).trim() === cleanCardId;
+                const isToday = order.timestamp && order.timestamp.includes(todayStr);
                 return isSameUser && isToday;
             })
             .map(order => {
-                const timePart = order.timestamp ? order.timestamp.split(' ')[1] : '-';
+                const parts = order.timestamp ? order.timestamp.split(/\s+/) : [];
+                const timePart = parts[1] || '-'; 
+                
                 return {
-                    time: timePart,
+                    time: timePart, 
                     meal: order.meal,
                     note: `醬料辣度: ${order.spicy} | 備註: ${order.note} | 金額: $${order.total}`
                 };
             });
 
-        res.json({ success: true, orders: userOrders });
+        res.json({
+            success: true,
+            orders: userOrders
+        });
+
     } catch (error) {
-        res.json({ success: false, message: '讀取紀錄失敗', orders: [] });
+        console.error('讀取紀錄失敗:', error);
+        res.json({ success: false, message: '讀取歷史紀錄失敗', orders: [] });
     }
 });
 
-
-// ==================== ⚙️ 後台管理端 API (全新對接) ====================
-
-// A-1. 後台管理員登入驗證
-app.post('/api/admin/login', (req, res) => {
-    const { username, password } = req.body;
-    // 依據前端 HTML 寫死的預設備用帳密對接
-    if (username === '18445' && password === 'zxc456456') {
-        res.json({ success: true, message: '驗證成功' });
-    } else {
-        res.json({ success: false, message: '管理員帳號或密碼錯誤' });
-    }
-});
-
-// A-2. 獲取所有人當日訂單統計資訊
-app.get('/api/admin/orders', async (req, res) => {
-    try {
-        let orders = [];
-        try {
-            const fileData = await fs.readFile(JSON_FILE, 'utf-8');
-            orders = JSON.parse(fileData || '[]');
-        } catch (e) {}
-
-        const { datePart } = getTaiwanTimeParts();
-
-        // 過濾出今天的訂單，並包裝成前端對應欄位 (time, cardId, empName, meal, note)
-        const todayOrders = orders
-            .filter(order => order.timestamp && order.timestamp.startsWith(datePart))
-            .map(order => ({
-                time: order.timestamp.split(' ')[1].substring(0, 5), // 只取 "HH:mm"
-                cardId: order.cardId,
-                empName: order.name,
-                meal: order.meal,
-                note: `辣度: ${order.spicy} | 備註: ${order.note} | 金額: $${order.total}`
-            }));
-
-        res.json({ success: true, orders: todayOrders });
-    } catch (err) {
-        res.status(500).json({ success: false, message: '讀取統計資料失敗' });
-    }
-});
-
-// B-1. 獲取員工卡號清單
-app.get('/api/admin/employees', (req, res) => {
-    // 將記憶體物件轉成前端需要的陣列格式 [{ cardId: "...", empName: "..." }]
-    const employees = Object.keys(USER_DB).map(cardId => ({
-        cardId: cardId,
-        empName: USER_DB[cardId]
-    }));
-    res.json({ success: true, employees });
-});
-
-// B-2. 新增員工卡號
-app.post('/api/admin/employees', (req, res) => {
-    const { cardId, empName } = req.body;
-    if (!cardId || !empName) return res.status(400).json({ success: false, message: '欄位缺失' });
-
-    USER_DB[String(cardId).trim()] = String(empName).trim();
-    console.log(`👤 [後台提示] 管理員新增了員工：${empName} (${cardId})`);
-    res.json({ success: true });
-});
-
-// B-3. 刪除員工卡號
-app.delete('/api/admin/employees/:cardId', (req, res) => {
-    const { cardId } = req.params;
-    if (USER_DB[cardId]) {
-        console.log(`👤 [後台提示] 管理員移除了員工：${USER_DB[cardId]} (${cardId})`);
-        delete USER_DB[cardId];
-        res.json({ success: true });
-    } else {
-        res.status(404).json({ success: false, message: '找不到該員工' });
-    }
-});
-
-// C-1. 獲取合作店家清單
-app.get('/api/admin/shops', async (req, res) => {
-    try {
-        const fileData = await fs.readFile(SHOPS_FILE, 'utf-8');
-        const shops = JSON.parse(fileData || '[]');
-        res.json({ success: true, shops });
-    } catch (e) {
-        res.json({ success: true, shops: DEFAULT_SHOPS });
-    }
-});
-
-// C-2. 新增合作店家
-app.post('/api/admin/shops', async (req, res) => {
-    const { name, file, desc } = req.body;
-    try {
-        const fileData = await fs.readFile(SHOPS_FILE, 'utf-8');
-        const shops = JSON.parse(fileData || '[]');
-        
-        shops.push({ name, file, desc });
-        await fs.writeFile(SHOPS_FILE, JSON.stringify(shops, null, 2), 'utf-8');
-        console.log(`🏪 [後台提示] 成功上架新店家：${name}`);
-        res.json({ success: true });
-    } catch (e) {
-        res.status(500).json({ success: false, message: '寫入店家資料失敗' });
-    }
-});
-
-// C-3. 下架合作店家
-app.delete('/api/admin/shops/:name', async (req, res) => {
-    const shopName = decodeURIComponent(req.params.name);
-    try {
-        const fileData = await fs.readFile(SHOPS_FILE, 'utf-8');
-        let shops = JSON.parse(fileData || '[]');
-        
-        shops = shops.filter(s => s.name !== shopName);
-        await fs.writeFile(SHOPS_FILE, JSON.stringify(shops, null, 2), 'utf-8');
-        console.log(`🏪 [後台提示] 成功下架店家：${shopName}`);
-        res.json({ success: true });
-    } catch (e) {
-        res.status(500).json({ success: false, message: '移除店家資料失敗' });
-    }
-});
-
-// ==================== 🚀 啟動伺服器 ====================
 app.listen(PORT, () => {
-    console.log(`🚀 訂餐系統全功能商用版已啟動！`);
-    console.log(`👉 員工點餐大廳：http://localhost:${PORT}`);
-    console.log(`👉 後台管理中心：http://localhost:${PORT}/admin.html (假設你的管理頁檔名為 admin.html)`);
+    console.log(`================================================================`);
+    console.log(` 🚀 訂餐系統後端已啟動！`);
+    console.log(` 🌐 請在瀏覽器輸入 http://localhost:${PORT}`);
+    console.log(` 📂 檔案同步路徑設定為：${TARGET_DIR}`);
+    console.log(`================================================================`);
 });

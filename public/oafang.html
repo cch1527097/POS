@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鼎森泰式料理 - 智慧點餐系統</title>
+    <title>咕雞 鹽水雞 - 智慧點餐系統</title>
     <style>
-        html { scroll-behavior: smooth; }
+        html { 
+            scroll-behavior: smooth; 
+            scroll-padding-top: 70px;
+        }
 
         :root { 
             --primary: #9e1c11;       /* 品牌質感暗紅 */
@@ -110,31 +113,27 @@
         .store-meta span { display: flex; align-items: center; gap: 4px; }
         .store-meta .rating { color: #f1c40f; font-weight: bold; }
 
-        /* 低消橫幅樣式 */
         .promo-banner {
-            background: #fdf2f2;
+            background-color: #fff0f0;
             border-radius: 8px;
-            padding: 10px 16px;
+            padding: 12px 16px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 12px;
             font-size: 14px;
+            color: var(--text-dark);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.01);
         }
         .promo-badge {
-            background: #e74c3c;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
+            background-color: #e54d42;
+            color: #ffffff;
             font-size: 12px;
             font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        .promo-text {
-            color: #2c3e50;
-        }
-        .promo-text b {
-            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            flex-shrink: 0;
         }
 
         .info-banner { 
@@ -213,8 +212,24 @@
         .qty-num { min-width: 16px; text-align: center; font-weight: 700; font-size: 14px; }
 
         .opt-group { margin-top: 16px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); }
-        .select-box { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; background-color: #fff; }
+        .opt-group label.opt-title { font-weight: 600; display: block; margin-top: 12px; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); }
+        .opt-btn-container { display: flex; flex-wrap: wrap; gap: 6px; }
+        .opt-btn { 
+            background: #f1f5f9; 
+            border: 1px solid var(--border-color); 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            font-size: 13px; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            color: var(--text-dark);
+        }
+        .opt-btn.active { 
+            background: var(--primary); 
+            color: white; 
+            border-color: var(--primary);
+        }
+
         .total-box { font-size: 20px; font-weight: 700; color: var(--accent); text-align: right; margin: 16px 0; }
         .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(158, 28, 17, 0.2); }
         .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
@@ -236,53 +251,18 @@
             border: none; 
         }
 
-        /* 響應式手機/平板優化 */
         @media (max-width: 1024px) {
-            .main-layout { 
-                flex-direction: column; 
-            }
-
+            .main-layout { flex-direction: column; }
             .category-sidebar { 
-                display: flex;
-                flex: none;
-                width: 100%;
-                box-sizing: border-box;
-                overflow-x: auto;
-                white-space: nowrap;
-                position: sticky; 
-                top: 0; 
-                z-index: 100;
-                background: #fff;
-                padding: 10px 8px;
-                margin-bottom: 16px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                -webkit-overflow-scrolling: touch;
+                display: flex; flex: none; width: 100%; box-sizing: border-box; overflow-x: auto; white-space: nowrap; 
+                position: sticky; top: 0; z-index: 100; background: #fff; padding: 10px 8px; margin-bottom: 16px; 
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; 
             }
-
-            .category-sidebar::-webkit-scrollbar {
-                display: none;
-            }
-
-            .side-cat-item { 
-                flex: 0 0 auto; 
-                margin-right: 8px; 
-                margin-bottom: 0;
-                padding: 8px 16px;
-                font-size: 13px;
-                background: #f1f5f9;
-                border-radius: 20px;
-            }
-
-            .side-cat-item.active {
-                background: var(--primary);
-                color: #fff;
-            }
-
-            .cart-sidebar { 
-                width: 100%; 
-                box-sizing: border-box; 
-                position: static; 
-            }
+            .category-sidebar::-webkit-scrollbar { display: none; }
+            .side-cat-item { flex: 0 0 auto; margin-right: 8px; margin-bottom: 0; padding: 8px 16px; font-size: 13px; background: #f1f5f9; border-radius: 20px; }
+            .side-cat-item.active { background: var(--primary); color: #fff; }
+            .category-block { scroll-margin-top: 60px; }
+            .cart-sidebar { width: 100%; box-sizing: border-box; position: static; }
         }
         
         @media (max-width: 600px) {
@@ -296,7 +276,7 @@
 <div class="navbar">
     <a href="#" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (例如：海鮮打拋飯、炒河粉)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (如：雞心、雞診)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -305,23 +285,22 @@
 <div class="container">
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">泰</div>
+            <div class="store-logo">咕</div>
             <div class="store-details">
-                <h1>鼎森泰式料理 鹿港店</h1>
+                <h1>咕雞 鹽水雞 鹿港店</h1>
                 <div class="store-meta">
-                    <span class="rating">⭐ 4.4 (327)</span>
-                    <span>🕒 11:30 ~ 13:30 </span>
-                    <span>📍 505彰化縣鹿港鎮海埔里彰濱五路二段402號</span>
-                    <span>📞 (04) 777-6142</span>
+                    <span class="rating">⭐ 4.5 (53)</span>
+                    <span>🕒 10:30 ~ 19:00</span>
+                    <span>📍 505彰化縣鹿港鎮興化里金盛巷30號</span>
+                    <span>📞 0900-267-536</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
-        <span class="promo-text">外送最低金額 <b>500</b> 元</span>
+        <span class="promo-text">外送最低金額 <b>800</b> 元</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -340,14 +319,40 @@
             <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p></div>
             
             <div class="opt-group">
-                <label>🌶️ 辣度選擇</label>
-                <select id="spicy-level" class="select-box">
-                    <option value="不辣">不辣</option>
-                    <option value="微辣">微辣</option>
-                    <option value="小辣">小辣</option>
-                    <option value="中辣">中辣</option>
-                    <option value="大辣">大辣</option>
-                </select>
+                <label class="opt-title">🥗 配菜需求</label>
+                <div class="opt-btn-container">
+                    <button type="button" class="opt-btn" id="side-筍片" onclick="setSingleSide('筍片')">筍片</button>
+                    <button type="button" class="opt-btn" id="side-洋蔥" onclick="setSingleSide('洋蔥')">洋蔥</button>
+                </div>
+
+                <label class="opt-title">🧄 調味加料</label>
+                <div class="opt-btn-container">
+                    <button type="button" class="opt-btn" id="flavor-蔥少" onclick="toggleFlavor('蔥少')">蔥少</button>
+                    <button type="button" class="opt-btn" id="flavor-蔥" onclick="toggleFlavor('蔥')">蔥</button>
+                    <button type="button" class="opt-btn" id="flavor-蒜少" onclick="toggleFlavor('蒜少')">蒜少</button>
+                    <button type="button" class="opt-btn" id="flavor-蒜" onclick="toggleFlavor('蒜')">蒜</button>
+                    <button type="button" class="opt-btn" id="flavor-檸檬汁" onclick="toggleFlavor('檸檬汁')">檸檬汁</button>
+                </div>
+
+                <label class="opt-title">🧂 胡椒鹹度</label>
+                <div class="opt-btn-container">
+                    <button type="button" class="opt-btn active" id="salt-正常" onclick="setSalt('正常')">正常</button>
+                    <button type="button" class="opt-btn" id="salt-少量" onclick="setSalt('少量')">少量</button>
+                    <button type="button" class="opt-btn" id="salt-多量" onclick="setSalt('多量')">多量</button>
+                </div>
+
+                <label class="opt-title">🌶️ 辣度選擇</label>
+                <div class="opt-btn-container">
+                    <button type="button" class="opt-btn active" id="spicy-不辣" onclick="setSpicy('不辣')">不辣</button>
+                    <button type="button" class="opt-btn" id="spicy-小辣" onclick="setSpicy('小辣')">小辣</button>
+                    <button type="button" class="opt-btn" id="spicy-中辣" onclick="setSpicy('中辣')">中辣</button>
+                    <button type="button" class="opt-btn" id="spicy-大辣" onclick="setSpicy('大辣')">大辣</button>
+                </div>
+
+                <label class="opt-title">📦 盒裝需求</label>
+                <div class="opt-btn-container">
+                    <button type="button" class="opt-btn" id="box-opt-btn" onclick="toggleBoxOpt()">需要盒子 (未滿$120+$5)</button>
+                </div>
             </div>
 
             <div class="total-box" id="total-amount">總計: $0</div>
@@ -361,72 +366,83 @@ function goBack() {
     window.location.href = 'index.html'; 
 }
 
-const menuItems = [
-    // === 泰式經典飯麵系列 ===
-    {name: "海鮮打拋飯", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "豬肉打拋飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "雞肉打拋飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "泰式蝦仁炒飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "泰式豬肉炒飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "泰式雞肉炒飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "海鮮炒麵", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "豬肉炒麵", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "雞肉炒麵", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "炒粄條", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "炒河粉", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "海鮮燴粄條", price: 110, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "豬肉燴粄條", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "雞肉燴粄條", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "海鮮河粉湯", price: 110, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "豬肉河粉湯", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "雞肉河粉湯", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "海鮮什錦冬粉湯", price: 110, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "白飯 (盤)", price: 30, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
+const rawMenuItems = [
+    // === 超值套餐 ===
+    {name: "套餐 (鹽水胸 + 任2小菜)", price: 80, category: "超值套餐", icon:"🐔🥬"},
+    {name: "套餐 (鹽水腿 + 任2小菜)", price: 80, category: "超值套餐", icon:"🐔🥬"},
+    {name: "套餐 (舒肥胸 + 任2小菜)", price: 80, category: "超值套餐", icon:"🐔🥬"},
+    {name: "松阪豬餐 (松阪肉 + 任2小菜)", price: 110, category: "超值套餐", icon:"🐷🥬"},
+    {name: "吃飽點 (鹽水胸 + 任2菜)", price: 120, category: "超值套餐", icon:"🐔🥬"},
+    {name: "吃飽點 (舒肥胸 + 任2菜)", price: 120, category: "超值套餐", icon:"🐔🥬"},
+    {name: "吃更飽 (鹽水胸 +鹽水腿固定 + 任6菜)", price: 200, category: "超值套餐", icon:"🐔🥬"},
+    {name: "吃更飽 (舒肥胸 +鹽水腿固定 + 任6菜)", price: 200, category: "超值套餐", icon:"🐔🥬"},
+    {name: "雞豬都吃 (松阪豬+鹽水胸+任6菜)", price: 220, category: "超值套餐", icon:"🐔🐷🥬🥬"},
+    {name: "雞豬都吃 (松阪豬+鹽水腿+任6菜)", price: 220, category: "超值套餐", icon:"🐔🐷🥬🥬"},
+    {name: "雞豬都吃 (松阪豬+舒肥胸+任6菜)", price: 220, category: "超值套餐", icon:"🐔🐷🥬🥬"},
+    {name: "肉多多 (鹽水胸/舒肥胸/鹽水腿肉*4 + 6菜)", price: 300, category: "超值套餐", icon:"🐔🐷🪿🥬"},
 
-    // 招牌泰式單點
-    {name: "泰式鹽焗蝦", price: 300, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌生蝦", price: 220, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "炸蝦子", price: 220, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌海鮮", price: 220, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌冬粉", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌豬肉", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "打拋海鮮", price: 200, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "打拋豬肉", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "打拋雞肉", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "泰式椒麻雞", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "月亮蝦餅", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "泰式涼拌木瓜", price: 100, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌木瓜-臭魚醬", price: 100, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "蝦醬炒青菜", price: 100, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "炒青菜", price: 70, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "泰式吐司", price: 70, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "荷包蛋", price: 15, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "清蒸檸檬魚 (時價多退少補)", price: 1000, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "辣糖醋魚 (時價多退少補)", price: 1000, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "紅咖哩魚 (時價多退少補)", price: 1000, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
+    // === 單點肉類 ===
+    {name: "單點鹽水胸", price: 60, category: "單點肉類", icon:"🐔"},
+    {name: "單點鹽水腿", price: 60, category: "單點肉類", icon:"🐔"},
+    {name: "單點舒肥胸", price: 60, category: "單點肉類", icon:"🐔"},
+    {name: "單點松阪肉", price: 80, category: "單點肉類", icon:"🐔"},
 
-    // 泰式風味湯品
-    {name: "海鮮酸辣湯", price: 250, category: "泰式風味湯品", icon:"🥣", isMainCourse: true},
-    {name: "紫菜湯", price: 35, category: "泰式風味湯品", icon:"🥣", isMainCourse: true},
-    {name: "蛋花湯", price: 30, category: "泰式風味湯品", icon:"🥣", isMainCourse: true},
-    {name: "貢丸湯", price: 25, category: "泰式風味湯品", icon:"🥣", isMainCourse: true},
-
-    // 泰式特色飲品
-    {name: "泰式奶茶", price: 60, category: "泰式特色飲品", icon:"🥤", isMainCourse: true},
-    {name: "泰式紅茶", price: 35, category: "泰式特色飲品", icon:"🥤", isMainCourse: true},
-    {name: "紅糖水", price: 50, category: "泰式特色飲品", icon:"🥤", isMainCourse: true},
-    {name: "阿華田", price: 50, category: "泰式特色飲品", icon:"🥤", isMainCourse: true},
-    {name: "椰子汁 (罐)", price: 35, category: "泰式特色飲品", icon:"🥤", isMainCourse: true}
+    // === 精選小菜 ===
+    {name: "雞心", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "雞診", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "雞冠", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "雞屁股", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "雞翅", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "蛋胚", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "德式香腸", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "豬耳朵絲", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "溏心蛋", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "米血", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "甜不辣", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "魚豆腐", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "豆皮(炸)", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "豆包(無炸)", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "百頁豆腐", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "貢丸", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "大豆干", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "韓式泡菜", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "豆干絲(麵)", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "泡麵", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "義大利麵", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "毛豆仁", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "高麗菜", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "綠花椰", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "龍鬚菜", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "玉米筍", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "小黃瓜", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "水晶藻", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "白蘿蔔", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "黑木耳", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "杏鮑菇", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "洋蔥", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "蓮藕", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "蘋果", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "地瓜", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "美生菜", price: 25, category: "精選小菜", icon:"🥬"}
 ];
 
-let cart = {};
+const menuItems = rawMenuItems.map((item, index) => ({ ...item, id: index + 1 }));
+
+let cart = {}; 
 let finalTotal = 0;
+let rawSubtotal = 0;
 let finalSummary = "";
 let currentCardId = "TEST";
 let searchTimer = null;
 let currentFilteredItems = menuItems;
 
-// 初始化
+// 客製化選項狀態
+let selectedSide = ""; // 單選配菜
+let selectedFlavors = [];
+let selectedSalt = "正常";
+let selectedSpicy = "不辣";
+let needBox = false;
+
 window.onload = function() {
     initCardId();
     renderMenu(menuItems);
@@ -473,7 +489,6 @@ function renderMenu(items) {
         sideLink.href = `#cat-${index}`;
         sideLink.innerText = cat;
         
-        // 點擊側欄時平滑捲動
         sideLink.onclick = (e) => {
             e.preventDefault();
             document.querySelectorAll('.side-cat-item').forEach(el => el.classList.remove('active'));
@@ -500,7 +515,7 @@ function renderMenu(items) {
 
         const catItems = items.filter(i => i.category === cat);
         catItems.forEach(item => {
-            const qty = cart[item.name] ? cart[item.name].qty : 0;
+            const qty = cart[item.id] ? cart[item.id].qty : 0;
             const card = document.createElement("div");
             card.className = "item-card";
             card.innerHTML = `
@@ -509,14 +524,14 @@ function renderMenu(items) {
                     <div class="item-price-zone">
                         <span class="item-price">$${item.price}</span>
                         <div class="action-zone">
-                            <button class="btn-qty" onclick="changeQty('${item.name}', -1, ${item.price})">-</button>
-                            <span class="qty-num" id="q-${item.name}">${qty}</span>
-                            <button class="btn-qty" onclick="changeQty('${item.name}', 1, ${item.price})">+</button>
+                            <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
+                            <span class="qty-num" id="q-id-${item.id}">${qty}</span>
+                            <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
                         </div>
                     </div>
                 </div>
-                <div class="item-img-placeholder" onclick="changeQty('${item.name}', 1, ${item.price})">
-                    ${item.icon || '🍛'}
+                <div class="item-img-placeholder" onclick="changeQty(${item.id}, 1)">
+                    ${item.icon || '🍜'}
                 </div>
             `;
             grid.appendChild(card);
@@ -536,18 +551,25 @@ function debounceFilterMenu() {
     }, 250);
 }
 
-function changeQty(name, delta, price) {
-    if (!cart[name]) cart[name] = { qty: 0, price: price };
-    cart[name].qty += delta;
-    
-    if (cart[name].qty <= 0) {
-        delete cart[name];
+function changeQty(itemId, delta) {
+    const item = menuItems.find(m => m.id === itemId);
+    if (!item) return;
+
+    if (!cart[itemId]) {
+        cart[itemId] = { id: item.id, name: item.name, price: item.price, category: item.category, qty: 0 };
     }
     
-    // 更新菜單畫面數量
-    const qtySpan = document.getElementById(`q-${name}`);
+    cart[itemId].qty += delta;
+    
+    if (cart[itemId].qty <= 0) {
+        delete cart[itemId];
+    }
+    
+    const qtySpan = document.getElementById(`q-id-${itemId}`);
     if (qtySpan) {
-        qtySpan.innerText = cart[name] ? cart[name].qty : 0;
+        qtySpan.innerText = cart[itemId] ? cart[itemId].qty : 0;
+    } else {
+        renderMenu(currentFilteredItems);
     }
 
     renderCart();
@@ -558,14 +580,65 @@ function clearCart() {
     if (confirm("確定要清空購物車內的所有餐點嗎？")) {
         cart = {};
         renderCart();
-        renderMenu(currentFilteredItems); // 重新渲染當前選單以清空數字
+        renderMenu(currentFilteredItems);
     }
 }
 
+// === 客製化按鈕切換邏輯 ===
+
+// 配菜需求：單選邏輯 (再次點擊可取消選擇)
+function setSingleSide(val) {
+    if (selectedSide === val) {
+        selectedSide = ""; // 已選中則取消
+    } else {
+        selectedSide = val; // 切換為新選的配菜
+    }
+    
+    ["筍片", "洋蔥"].forEach(s => {
+        const btn = document.getElementById(`side-${s}`);
+        if (btn) btn.classList.toggle("active", s === selectedSide);
+    });
+}
+
+function toggleFlavor(val) {
+    const btn = document.getElementById(`flavor-${val}`);
+    if (selectedFlavors.includes(val)) {
+        selectedFlavors = selectedFlavors.filter(f => f !== val);
+        btn.classList.remove("active");
+    } else {
+        selectedFlavors.push(val);
+        btn.classList.add("active");
+    }
+}
+
+function setSalt(val) {
+    selectedSalt = val;
+    ["正常", "少量", "多量"].forEach(s => {
+        const btn = document.getElementById(`salt-${s}`);
+        if(btn) btn.classList.toggle("active", s === val);
+    });
+}
+
+function setSpicy(val) {
+    selectedSpicy = val;
+    ["不辣", "小辣", "中辣", "大辣"].forEach(s => {
+        const btn = document.getElementById(`spicy-${s}`);
+        if(btn) btn.classList.toggle("active", s === val);
+    });
+}
+
+function toggleBoxOpt() {
+    needBox = !needBox;
+    const btn = document.getElementById("box-opt-btn");
+    btn.classList.toggle("active", needBox);
+    renderCart();
+}
+
+// === 購物車渲染與套餐小菜自動折抵 ===
 function renderCart() {
     const cartDiv = document.getElementById("cart-list");
     cartDiv.innerHTML = "";
-    finalTotal = 0;
+    rawSubtotal = 0;
     finalSummary = "";
     
     const keys = Object.keys(cart);
@@ -574,33 +647,63 @@ function renderCart() {
         document.getElementById("total-amount").innerText = "總計: $0";
         return;
     }
-    
-    // 計算餐點小計
-    keys.forEach(name => {
-        const item = cart[name];
-        const sub = item.qty * item.price;
-        finalTotal += sub;
-        
-        finalSummary += `${name}*${item.qty} `;
+
+    // 1. 計算購物車內的「免費小菜額度」
+    let freeSidesQuota = 0;
+    keys.forEach(id => {
+        const item = cart[id];
+        if (item.name.includes("任2小菜") || item.name.includes("任2菜")) {
+            freeSidesQuota += 2 * item.qty;
+        } else if (item.name.includes("任6菜") || item.name.includes("+ 6菜")) {
+            freeSidesQuota += 6 * item.qty;
+        }
+    });
+
+    // 2. 進行金額計算與小菜免費額度扣減
+    let discountAmount = 0;
+
+    keys.forEach(id => {
+        const item = cart[id];
+        let sub = item.qty * item.price;
+
+        // 如果是精選小菜，且還有套餐免費額度，進行折抵
+        if (item.category === "精選小菜" && freeSidesQuota > 0) {
+            let freeCount = Math.min(item.qty, freeSidesQuota); // 可折抵的數量
+            discountAmount += freeCount * item.price;           // 扣除金額 (每份25元)
+            freeSidesQuota -= freeCount;                         // 扣減剩餘額度
+        }
+
+        rawSubtotal += sub;
+        finalSummary += `${item.name}*${item.qty} `;
         
         const div = document.createElement("div");
         div.className = "cart-item";
         div.innerHTML = `
             <div style="flex: 1; min-width: 0; padding-right: 8px;">
-                <div style="font-weight: 600; word-break: break-all; font-size:13px;">${name}</div>
+                <div style="font-weight: 600; word-break: break-all; font-size:13px;">${item.name}</div>
                 <div style="color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 2px;">$${sub}</div>
             </div>
             <div style="display: flex; align-items: center; gap: 4px;">
-                <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty('${name}', -1, ${item.price})">-</button>
+                <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.id}, -1)">-</button>
                 <span style="width: 16px; text-align: center; font-weight: 700; font-size: 13px;">${item.qty}</span>
-                <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty('${name}', 1, ${item.price})">+</button>
+                <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.id}, 1)">+</button>
             </div>
         `;
         cartDiv.appendChild(div);
     });
 
-    // 更新總金額顯示
-    document.getElementById("total-amount").innerText = `總計: $${Math.round(finalTotal)}`;
+    // 計算折抵後的金額
+    let actualSubtotal = rawSubtotal - discountAmount;
+
+    // 盒裝加價邏輯 (折抵後未滿120元且勾選盒裝 +5元)
+    let boxFee = (needBox && actualSubtotal < 120) ? 5 : 0;
+    finalTotal = actualSubtotal + boxFee;
+
+    // 顯示訊息
+    let feeText = boxFee > 0 ? ` (含餐盒費 $5)` : ``;
+    let discountText = discountAmount > 0 ? `<br><small style="color:#10b981; font-size:12px; font-weight:600;">🎉 套餐已折抵小菜 -$${discountAmount}</small>` : ``;
+    
+    document.getElementById("total-amount").innerHTML = `總計: $${Math.round(finalTotal)}${feeText}${discountText}`;
 }
 
 async function submitOrderToServer() {
@@ -608,27 +711,26 @@ async function submitOrderToServer() {
         return alert("🛒 購物車是空的喔！"); 
     }
 
-    // 安全取得選項值
-    const spicyEl = document.getElementById("spicy-level");
-    const spicyVal = spicyEl ? spicyEl.value : "不辣";
+    let sideText = selectedSide !== "" ? selectedSide : "無";
+    let flavorText = selectedFlavors.length > 0 ? selectedFlavors.join(',') : "標準";
+    let boxText = needBox ? "需要盒子" : "不需要盒子";
 
-    const orderMealSummary = `鼎森泰式料理：${finalSummary.trim()}`;
-    const fullNote = `醬料/辣度：${spicyVal} / 總計：$${finalTotal}`;
+    const customNotes = `辣度: ${selectedSpicy} / 鹹度: ${selectedSalt} / 配菜: ${sideText} / 加料: ${flavorText} / ${boxText}`;
 
-    // 組成彈窗內容
+    const orderMealSummary = `咕雞 鹽水雞：${finalSummary.trim()}`;
+    const fullNote = `客製需求：${customNotes} / 總計：$${finalTotal}`;
+
     const confirmMessage = 
         `請確認您的訂單內容：\n\n` +
         `餐點：${finalSummary.trim()}\n` +
-        `醬料/辣度：${spicyVal}\n` +
+        `需求：${customNotes}\n` +
         `總金額：$${finalTotal} 元\n\n` +
         `確定要送出訂單嗎？`;
 
-    const isConfirmed = confirm(confirmMessage);
-    if (!isConfirmed) {
+    if (!confirm(confirmMessage)) {
         return; 
     }
 
-    // 使用者按下「確定」後，鎖定按鈕並發送 API
     const btn = document.getElementById("submit-btn");
     btn.disabled = true;
     btn.innerText = "訂單傳送中...";
@@ -636,7 +738,7 @@ async function submitOrderToServer() {
     const payload = {
         cardId: currentCardId,
         meal: orderMealSummary,
-        spicy: spicyVal,
+        spicy: selectedSpicy,
         total: finalTotal,
         note: fullNote
     };
@@ -658,6 +760,13 @@ async function submitOrderToServer() {
             localStorage.setItem(localKey, JSON.stringify(existingOrders));
             
             cart = {};
+            selectedSide = "";
+            selectedFlavors = [];
+            needBox = false;
+            document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+            setSalt('正常');
+            setSpicy('不辣');
+
             renderCart();
             renderMenu(currentFilteredItems);
         } else {

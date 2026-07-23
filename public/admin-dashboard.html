@@ -22,6 +22,8 @@
         .sidebar .user-info { color: #ffe066; font-size: 14px; margin-bottom: 30px; }
         .sidebar hr { border: 0; border-top: 1px solid #4e803c; margin: 15px 0; }
         .sidebar .menu-container { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+        
+        /* 側邊欄選單項目 */
         .sidebar .menu-item {
             padding: 12px 15px;
             color: #bcdcb4;
@@ -30,12 +32,27 @@
             cursor: pointer;
             transition: all 0.2s;
             display: block;
+            width: 100%;
+            background: transparent;
+            border: none;
+            text-align: left;
+            font-size: 16px;
+            outline: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         .sidebar .menu-item:hover, .sidebar .menu-item.active {
             background-color: #3f6b30;
             color: white;
         }
-        .sidebar .logout { color: #ff8888; margin-top: auto; }
+        .sidebar .logout { 
+            color: #ff8888; 
+            margin-top: auto; 
+            text-align: left;
+            border: 1px solid transparent;
+        }
 
         /* 主內容區 */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; min-width: 0; } 
@@ -139,9 +156,22 @@
             text-decoration: underline;
         }
 
-        /* ==========================================================================
-           RWD 手機板自適應樣式
-           ========================================================================== */
+        /* 專屬歷史紀錄的滾動外殼與標頭凍結 */
+        .scrollable-table-container {
+            max-height: 800px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        .scrollable-table-container table th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8faf8;
+            box-shadow: inset 0 -1px 0 #eee;
+        }
+
+        /* RWD 手機板自適應樣式 */
         @media (max-width: 768px) {
             body { flex-direction: column; } 
             
@@ -170,6 +200,7 @@
                 grid-column: span 2; 
                 margin-top: 5px; 
                 border-color: #ff888833;
+                text-align: center;
             }
 
             .main-content { padding: 15px; } 
@@ -192,10 +223,10 @@
         <div class="user-info">🍀 管理員: 18445 [已上線]</div>
         <hr>
         <div class="menu-container">
-            <div class="menu-item active" onclick="switchTab('overview', this)">📊 系統總覽</div>
-            <div class="menu-item" onclick="switchTab('history-mgr', this)">📜 歷史訂餐</div>
-            <div class="menu-item" onclick="switchTab('employee-mgr', this)">🪪 員工管理</div>
-            <div class="menu-item" onclick="refreshCurrentTab()">🔄 重新整理</div>
+            <button type="button" class="menu-item active" onclick="switchTab('overview', this)">📊 系統總覽</button>
+            <button type="button" class="menu-item" onclick="switchTab('history-mgr', this)">📜 歷史訂餐</button>
+            <button type="button" class="menu-item" onclick="switchTab('employee-mgr', this)">🪪 員工管理</button>
+            <button type="button" class="menu-item" onclick="refreshCurrentTab()">🔄 重新整理</button>
             <a href="admin.html" class="menu-item logout">⇦ 登出後台</a>
         </div>
     </div>
@@ -244,7 +275,8 @@
                                 <th>餐點與備註明細</th>
                                 <th>總金額</th>
                                 <th>狀態</th>
-                                <th>操作</th> </tr>
+                                <th>操作</th>
+                            </tr>
                         </thead>
                         <tbody id="orderTableBody">
                             <tr><td colspan="7" style="text-align:center; color:#999;">資料載入中...</td></tr>
@@ -254,7 +286,7 @@
             </div>
         </div>
 
-        <!-- 分頁二：歷史訂餐紀錄 (新增) -->
+        <!-- 分頁二：歷史訂餐紀錄 -->
         <div id="history-mgr" class="tab-content">
             <div class="header">
                 <h1>歷史訂餐紀錄</h1>
@@ -274,23 +306,26 @@
                     </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>訂單編號</th>
-                                <th>點餐人</th>
-                                <th>訂單完整時間</th>
-                                <th>餐點與備註明細</th>
-                                <th>總金額</th>
-                                <th>狀態</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTableBody">
-                            <tr><td colspan="7" style="text-align:center; color:#999;">資料載入中...</td></tr>
-                        </tbody>
-                    </table>
+                <!-- 這裡新增了捲動條容器包裹層 -->
+                <div class="scrollable-table-container">
+                    <div class="table-responsive" style="margin-top: 0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>訂單編號</th>
+                                    <th>點餐人</th>
+                                    <th>訂單完整時間</th>
+                                    <th>餐點與備註明細</th>
+                                    <th>總金額</th>
+                                    <th>狀態</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr><td colspan="7" style="text-align:center; color:#999;">資料載入中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -321,7 +356,7 @@
 
             <div class="card">
                 <h3>員工卡號清單</h3>
-                <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
+                <div style="max-height: 600px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -346,7 +381,7 @@
     <script>
         let USER_DB_PREVIEW = {};
         let currentTodayOrders = [];
-        let allHistoryOrders = []; // 用於存放所有的歷史資料
+        let allHistoryOrders = []; 
         let searchTimeout = null;
 
         function switchTab(tabId, menuItem) {
@@ -359,13 +394,11 @@
             document.getElementById(tabId).classList.add('active');
             menuItem.classList.add('active');
 
-            // 如果切換到歷史紀錄，順便自動重新整理一次最新狀態
             if(tabId === 'history-mgr') {
                 loadHistoryOrders();
             }
         }
 
-        // 點選左側重新整理時，判斷目前停在點哪個頁面就刷新哪一頁
         function refreshCurrentTab() {
             const activeTab = document.querySelector('.tab-content.active');
             if (activeTab.id === 'overview') loadOrders();
@@ -470,7 +503,6 @@
             }
         }
 
-        // 讀取今日訂單
         async function loadOrders() {
             const statusSpan = document.getElementById('syncStatus');
             statusSpan.innerText = "連線中...";
@@ -513,7 +545,6 @@
             }
         }
 
-        // 讀取歷史訂單 (完整紀錄)
         async function loadHistoryOrders() {
             const hStatusSpan = document.getElementById('historySyncStatus');
             if(hStatusSpan) hStatusSpan.innerText = "歷程載入中...";
@@ -538,7 +569,6 @@
             }
         }
 
-        // 共用渲染表格邏輯
         function renderOrderTable(orders, tableBodyId, showFullTime = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -590,13 +620,11 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // 同步過濾本地的記憶體陣列
                     currentTodayOrders = currentTodayOrders.filter(o => String(o.orderId) !== orderId);
                     allHistoryOrders = allHistoryOrders.filter(o => String(o.orderId) !== orderId);
                     
                     updateSummary(currentTodayOrders);
                     
-                    // 重新渲染當下頁面
                     const activeTab = document.querySelector('.tab-content.active');
                     if(activeTab.id === 'overview') {
                         filterOrders('today');
@@ -625,7 +653,6 @@
             document.getElementById('summaryAmount').innerText = `$${totalAmount}`;
         }
 
-        // 調用過濾器
         function filterOrders(type) {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
@@ -663,7 +690,6 @@
         window.onload = function() {
             loadEmployees(); 
             loadOrders();
-            // 每 30 秒自動向背景輪詢「當天即時新訂單」，歷史訂單不需要自動輪詢以減輕伺服器負擔
             setInterval(loadOrders, 30000);
         };
     </script>

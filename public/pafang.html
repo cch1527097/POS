@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鼎森泰式料理 - 智慧點餐系統</title>
+    <title>家灶 傳統爌肉 豬腳專賣 - 智慧點餐系統</title>
     <style>
-        html { scroll-behavior: smooth; }
+        html { 
+            scroll-behavior: smooth; 
+            scroll-padding-top: 80px; /* 避免錨點捲動時被頂部列遮擋 */
+        }
 
         :root { 
             --primary: #9e1c11;       /* 品牌質感暗紅 */
@@ -36,8 +39,9 @@
             justify-content: space-between;
             border-bottom: 1px solid var(--border-color);
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            position: relative;
-            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
             box-sizing: border-box;
         }
         .navbar-brand { 
@@ -69,10 +73,12 @@
             box-sizing: border-box;
             text-align: center;
             outline: none;
+            transition: all 0.2s;
         }
         .top-search-box:focus {
             border-color: var(--primary);
             background: #fff;
+            box-shadow: 0 0 0 3px rgba(158, 28, 17, 0.1);
         }
 
         .container { 
@@ -110,31 +116,28 @@
         .store-meta span { display: flex; align-items: center; gap: 4px; }
         .store-meta .rating { color: #f1c40f; font-weight: bold; }
 
-        /* 低消橫幅樣式 */
+        /* 低消訊息橫幅 */
         .promo-banner {
-            background: #fdf2f2;
+            background-color: #fff0f0;
             border-radius: 8px;
-            padding: 10px 16px;
+            padding: 12px 16px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 12px;
             font-size: 14px;
+            color: var(--text-dark);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.01);
         }
         .promo-badge {
-            background: #e74c3c;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
+            background-color: #e54d42;
+            color: #ffffff;
             font-size: 12px;
             font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        .promo-text {
-            color: #2c3e50;
-        }
-        .promo-text b {
-            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            flex-shrink: 0;
         }
 
         .info-banner { 
@@ -149,12 +152,30 @@
 
         .main-layout { display: flex; gap: 20px; align-items: flex-start; }
         
-        .category-sidebar { flex: 0 0 200px; background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); position: sticky; top: 20px; }
-        .side-cat-item { display: block; padding: 12px 16px; color: var(--text-dark); text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600; transition: all 0.2s; margin-bottom: 4px; }
+        .category-sidebar { 
+            flex: 0 0 200px; 
+            background: #fff; 
+            border-radius: 12px; 
+            padding: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); 
+            position: sticky; 
+            top: 90px; 
+        }
+        .side-cat-item { 
+            display: block; 
+            padding: 12px 16px; 
+            color: var(--text-dark); 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            transition: all 0.2s; 
+            margin-bottom: 4px; 
+        }
         .side-cat-item:hover, .side-cat-item.active { background: var(--primary-light); color: var(--primary); }
 
         .menu-content { flex: 1; }
-        .category-block { margin-bottom: 30px; scroll-margin-top: 20px; }
+        .category-block { margin-bottom: 30px; scroll-margin-top: 90px; }
         .category-title { font-size: 18px; font-weight: 700; color: #e67e22; margin: 0 0 14px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
         
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
@@ -190,7 +211,9 @@
             cursor: pointer;
             position: relative;
             user-select: none;
+            transition: transform 0.1s active;
         }
+        .item-img-placeholder:active { transform: scale(0.95); }
 
         .cart-sidebar { 
             flex: 0 0 320px; 
@@ -199,24 +222,43 @@
             padding: 20px; 
             border-radius: 12px; 
             position: sticky; 
-            top: 20px; 
+            top: 90px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
         }
         .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg-main); padding-bottom: 10px; margin-bottom: 16px; }
         .cart-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
-        .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+        .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        .btn-clear-all:hover { background: #fca5a5; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
         
         .action-zone { display: flex; align-items: center; gap: 8px; }
-        .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
+        .btn-qty { 
+            background: #f1f5f9; 
+            border: none; 
+            color: var(--text-dark); 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            user-select: none; 
+            transition: all 0.15s ease;
+        }
         .btn-qty:hover { background: var(--primary); color: white; }
+        .btn-qty:active { transform: scale(0.85); }
         .qty-num { min-width: 16px; text-align: center; font-weight: 700; font-size: 14px; }
 
         .opt-group { margin-top: 16px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); }
-        .select-box { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; background-color: #fff; }
+        .opt-group label.opt-title { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 6px; font-size: 13px; color: var(--text-muted); }
+        .select-box, .text-input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; background-color: #fff; box-sizing: border-box; }
+        .select-box:focus, .text-input:focus { border-color: var(--primary); }
         .total-box { font-size: 20px; font-weight: 700; color: var(--accent); text-align: right; margin: 16px 0; }
-        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(158, 28, 17, 0.2); }
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(158, 28, 17, 0.2); transition: all 0.2s; }
+        .btn-submit:hover:not(:disabled) { background: #80160d; }
+        .btn-submit:active:not(:disabled) { transform: scale(0.98); }
         .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
 
         .btn-back { 
@@ -234,60 +276,31 @@
             text-decoration: none; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
             border: none; 
+            transition: transform 0.15s;
         }
+        .btn-back:active { transform: scale(0.92); }
 
         /* 響應式手機/平板優化 */
         @media (max-width: 1024px) {
-            .main-layout { 
-                flex-direction: column; 
-            }
-
+            .main-layout { flex-direction: column; }
             .category-sidebar { 
-                display: flex;
-                flex: none;
-                width: 100%;
-                box-sizing: border-box;
-                overflow-x: auto;
-                white-space: nowrap;
-                position: sticky; 
-                top: 0; 
-                z-index: 100;
-                background: #fff;
-                padding: 10px 8px;
-                margin-bottom: 16px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                -webkit-overflow-scrolling: touch;
+                display: flex; flex: none; width: 100%; box-sizing: border-box; overflow-x: auto; white-space: nowrap; 
+                position: sticky; top: 70px; z-index: 100; background: #fff; padding: 10px 8px; margin-bottom: 16px; 
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; 
             }
-
-            .category-sidebar::-webkit-scrollbar {
-                display: none;
-            }
-
-            .side-cat-item { 
-                flex: 0 0 auto; 
-                margin-right: 8px; 
-                margin-bottom: 0;
-                padding: 8px 16px;
-                font-size: 13px;
-                background: #f1f5f9;
-                border-radius: 20px;
-            }
-
-            .side-cat-item.active {
-                background: var(--primary);
-                color: #fff;
-            }
-
-            .cart-sidebar { 
-                width: 100%; 
-                box-sizing: border-box; 
-                position: static; 
-            }
+            .category-sidebar::-webkit-scrollbar { display: none; }
+            .side-cat-item { flex: 0 0 auto; margin-right: 8px; margin-bottom: 0; padding: 8px 16px; font-size: 13px; background: #f1f5f9; border-radius: 20px; }
+            .side-cat-item.active { background: var(--primary); color: #fff; }
+            .category-block { scroll-margin-top: 130px; }
+            .cart-sidebar { width: 100%; box-sizing: border-box; position: static; }
         }
         
         @media (max-width: 600px) {
-            .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
+            html { scroll-padding-top: 140px; }
+            .navbar { flex-direction: column; gap: 10px; padding: 12px 16px; position: sticky; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
+            .category-sidebar { top: 110px; }
+            .category-block { scroll-margin-top: 160px; }
         }
     </style>
 </head>
@@ -296,7 +309,7 @@
 <div class="navbar">
     <a href="#" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (例如：海鮮打拋飯、炒河粉)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (如：爌肉、豬腳)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -305,14 +318,14 @@
 <div class="container">
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">泰</div>
+            <div class="store-logo">家</div>
             <div class="store-details">
-                <h1>鼎森泰式料理 鹿港店</h1>
+                <h1>家灶 傳統爌肉 豬腳專賣 鹿港店</h1>
                 <div class="store-meta">
-                    <span class="rating">⭐ 4.4 (327)</span>
-                    <span>🕒 11:30 ~ 13:30 </span>
-                    <span>📍 505彰化縣鹿港鎮海埔里彰濱五路二段402號</span>
-                    <span>📞 (04) 777-6142</span>
+                    <span class="rating">⭐ 4.2 (28)</span>
+                    <span>🕒 10:30 ~ 21:30</span>
+                    <span>📍 505彰化縣鹿港鎮洛津里民權路269號</span>
+                    <span>📞 (04) 778-8823</span>
                 </div>
             </div>
         </div>
@@ -321,7 +334,7 @@
     <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
-        <span class="promo-text">外送最低金額 <b>500</b> 元</span>
+        <span class="promo-text">外送最低金額 <b>800</b> 元</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -340,7 +353,7 @@
             <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p></div>
             
             <div class="opt-group">
-                <label>🌶️ 辣度選擇</label>
+                <label class="opt-title">🌶️ 辣度需求</label>
                 <select id="spicy-level" class="select-box">
                     <option value="不辣">不辣</option>
                     <option value="微辣">微辣</option>
@@ -348,7 +361,6 @@
                     <option value="中辣">中辣</option>
                     <option value="大辣">大辣</option>
                 </select>
-            </div>
 
             <div class="total-box" id="total-amount">總計: $0</div>
             <button class="btn-submit" id="submit-btn" onclick="submitOrderToServer()">確認送出訂單</button>
@@ -361,72 +373,61 @@ function goBack() {
     window.location.href = 'index.html'; 
 }
 
-const menuItems = [
-    // === 泰式經典飯麵系列 ===
-    {name: "海鮮打拋飯", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "豬肉打拋飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "雞肉打拋飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "泰式蝦仁炒飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "泰式豬肉炒飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "泰式雞肉炒飯", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "海鮮炒麵", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "豬肉炒麵", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "雞肉炒麵", price: 90, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "炒粄條", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "炒河粉", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "海鮮燴粄條", price: 110, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "豬肉燴粄條", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "雞肉燴粄條", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "海鮮河粉湯", price: 110, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "豬肉河粉湯", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "雞肉河粉湯", price: 100, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "海鮮什錦冬粉湯", price: 110, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
-    {name: "白飯 (盤)", price: 30, category: "泰式經典飯麵", icon:"🍛", isMainCourse: true},
+const rawMenuItems = [
+    // === 主食 ===
+    {name: "爌肉飯", price: 70, category: "主食", icon:"🍱"},
+    {name: "腿庫皮飯", price: 70, category: "主食", icon:"🍱"},
+    {name: "魯肉飯", price: 50, category: "主食", icon:"🍱"},
 
-    // 招牌泰式單點
-    {name: "泰式鹽焗蝦", price: 300, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌生蝦", price: 220, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "炸蝦子", price: 220, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌海鮮", price: 220, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌冬粉", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌豬肉", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "打拋海鮮", price: 200, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "打拋豬肉", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "打拋雞肉", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "泰式椒麻雞", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "月亮蝦餅", price: 150, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "泰式涼拌木瓜", price: 100, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "涼拌木瓜-臭魚醬", price: 100, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "蝦醬炒青菜", price: 100, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "炒青菜", price: 70, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "泰式吐司", price: 70, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "荷包蛋", price: 15, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "清蒸檸檬魚 (時價多退少補)", price: 1000, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "辣糖醋魚 (時價多退少補)", price: 1000, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
-    {name: "紅咖哩魚 (時價多退少補)", price: 1000, category: "招牌泰式單點", icon:"🥗", isMainCourse: true},
+    // === 豬腳系列 ===
+    {name: "豬腳飯 (腳蹄)", price: 85, category: "豬腳系列", icon:"🐷"},
+    {name: "豬腳飯 (中段)", price: 100, category: "豬腳系列", icon:"🐷"},
+    {name: "豬腳飯 (有肉頭段)", price: 120, category: "豬腳系列", icon:"🐷"},
+    {name: "豬腳麵線 (腳蹄)", price: 110, category: "豬腳系列", icon:"🐷"},
+    {name: "豬腳麵線 (中段)", price: 125, category: "豬腳系列", icon:"🐷"},
+    {name: "豬腳麵線 (有肉頭段)", price: 145, category: "豬腳系列", icon:"🐷"},
 
-    // 泰式風味湯品
-    {name: "海鮮酸辣湯", price: 250, category: "泰式風味湯品", icon:"🥣", isMainCourse: true},
-    {name: "紫菜湯", price: 35, category: "泰式風味湯品", icon:"🥣", isMainCourse: true},
-    {name: "蛋花湯", price: 30, category: "泰式風味湯品", icon:"🥣", isMainCourse: true},
-    {name: "貢丸湯", price: 25, category: "泰式風味湯品", icon:"🥣", isMainCourse: true},
+    // === 便當 ===
+    {name: "爌肉便當", price: 100, category: "便當", icon:"🍱"},
+    {name: "腿庫皮便當", price: 100, category: "便當", icon:"🍱"},
+    {name: "魯肉便當", price: 80, category: "便當", icon:"🍱"},
+    {name: "豬腳便當 (腳蹄)", price: 115, category: "便當", icon:"🍱"},
+    {name: "豬腳便當 (中段)", price: 125, category: "便當", icon:"🍱"},
+    {name: "豬腳便當 (有肉頭段)", price: 145, category: "便當", icon:"🍱"},
 
-    // 泰式特色飲品
-    {name: "泰式奶茶", price: 60, category: "泰式特色飲品", icon:"🥤", isMainCourse: true},
-    {name: "泰式紅茶", price: 35, category: "泰式特色飲品", icon:"🥤", isMainCourse: true},
-    {name: "紅糖水", price: 50, category: "泰式特色飲品", icon:"🥤", isMainCourse: true},
-    {name: "阿華田", price: 50, category: "泰式特色飲品", icon:"🥤", isMainCourse: true},
-    {name: "椰子汁 (罐)", price: 35, category: "泰式特色飲品", icon:"🥤", isMainCourse: true}
+    // === 湯品 ===
+    {name: "貢丸湯", price: 50, category: "湯品", icon:"🍜"},
+    {name: "虱目魚丸湯", price: 50, category: "湯品", icon:"🍜"},
+    {name: "虱目魚皮湯", price: 60, category: "湯品", icon:"🍜"},
+    {name: "隔間肉湯", price: 60, category: "湯品", icon:"🍜"},
+    {name: "骨仔肉湯", price: 60, category: "湯品", icon:"🍜"},
+
+    // === 小菜 ===
+    {name: "魯蛋", price: 15, category: "小菜", icon:"🥬"},
+    {name: "魯油豆腐", price: 25, category: "小菜", icon:"🥬"},
+    {name: "筍干魯", price: 30, category: "小菜", icon:"🥬"},
+    {name: "白菜魯", price: 40, category: "小菜", icon:"🥬"},
+    {name: "燙青菜", price: 40, category: "小菜", icon:"🥬"},
+    {name: "手工泡菜", price: 40, category: "小菜", icon:"🥬"},
+    {name: "涼拌川耳", price: 40, category: "小菜", icon:"🥬"},
+    {name: "皮蛋豆腐", price: 55, category: "小菜", icon:"🥬"},
+    {name: "隔間肉 (單點小菜)", price: 50, category: "小菜", icon:"🥬"},
+    {name: "骨仔肉 (單點小菜)", price: 50, category: "小菜", icon:"🥬"},
+    {name: "爌肉 (單點小菜)", price: 60, category: "小菜", icon:"🥬"},
+    {name: "豬腳-腳蹄 (單點小菜)", price: 75, category: "小菜", icon:"🥬"},
+    {name: "豬腳-中段 (單點小菜)", price: 90, category: "小菜", icon:"🥬"},
+    {name: "豬腳-有肉頭段 (單點小菜)", price: 110, category: "小菜", icon:"🥬"}
 ];
 
-let cart = {};
+const menuItems = rawMenuItems.map((item, index) => ({ ...item, id: index + 1 }));
+
+let cart = {}; 
 let finalTotal = 0;
 let finalSummary = "";
 let currentCardId = "TEST";
 let searchTimer = null;
 let currentFilteredItems = menuItems;
 
-// 初始化
 window.onload = function() {
     initCardId();
     renderMenu(menuItems);
@@ -441,16 +442,26 @@ function initCardId() {
     if (cardParam) {
         currentCardId = cardParam;
         localStorage.setItem('currentCardId', cardParam);
-        statusDiv.innerHTML = `✅ <b>已從網址帶入卡號：${currentCardId}</b>`;
+        statusDiv.innerHTML = `✅ <b>已從網址帶入卡號：${escapeHtml(currentCardId)}</b>`;
         statusDiv.style.backgroundColor = "#d1fae5"; statusDiv.style.color = "#065f46"; statusDiv.style.borderLeftColor = "#10b981";
     } else if (savedCardId) {
         currentCardId = savedCardId;
-        statusDiv.innerHTML = `✅ <b>已自動帶入卡號：${currentCardId}</b>`;
+        statusDiv.innerHTML = `✅ <b>已自動帶入卡號：${escapeHtml(currentCardId)}</b>`;
         statusDiv.style.backgroundColor = "#d1fae5"; statusDiv.style.color = "#065f46"; statusDiv.style.borderLeftColor = "#10b981";
     } else {
-        statusDiv.innerHTML = `⚠️ <b>提示：未偵測到登入卡號</b>，使用臨時卡號：${currentCardId}`;
+        statusDiv.innerHTML = `⚠️ <b>提示：未偵測到登入卡號</b>，使用臨時卡號：${escapeHtml(currentCardId)}`;
         statusDiv.style.backgroundColor = "#fef3c7"; statusDiv.style.color = "#92400e"; statusDiv.style.borderLeftColor = "#f59e0b";
     }
+}
+
+// 簡單轉義防止 HTML 注入 (XSS 防護)
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 function renderMenu(items) {
@@ -461,7 +472,10 @@ function renderMenu(items) {
     sideCatsDiv.innerHTML = "";
     
     if (items.length === 0) {
-        listDiv.innerHTML = '<p style="color:#aaa; text-align:center; padding: 20px;">找不到相符的品項</p>';
+        const noItem = document.createElement("p");
+        noItem.style.cssText = "color:#aaa; text-align:center; padding: 20px;";
+        noItem.textContent = "找不到相符的品項";
+        listDiv.appendChild(noItem);
         return;
     }
 
@@ -471,9 +485,8 @@ function renderMenu(items) {
         const sideLink = document.createElement("a");
         sideLink.className = `side-cat-item ${index === 0 ? 'active' : ''}`;
         sideLink.href = `#cat-${index}`;
-        sideLink.innerText = cat;
+        sideLink.textContent = cat;
         
-        // 點擊側欄時平滑捲動
         sideLink.onclick = (e) => {
             e.preventDefault();
             document.querySelectorAll('.side-cat-item').forEach(el => el.classList.remove('active'));
@@ -492,7 +505,7 @@ function renderMenu(items) {
         
         const title = document.createElement("h3");
         title.className = "category-title";
-        title.innerText = cat;
+        title.textContent = cat;
         catBlock.appendChild(title);
 
         const grid = document.createElement("div");
@@ -500,23 +513,24 @@ function renderMenu(items) {
 
         const catItems = items.filter(i => i.category === cat);
         catItems.forEach(item => {
-            const qty = cart[item.name] ? cart[item.name].qty : 0;
+            const qty = cart[item.id] ? cart[item.id].qty : 0;
             const card = document.createElement("div");
             card.className = "item-card";
+            
             card.innerHTML = `
                 <div class="item-info">
-                    <div class="item-name">${item.name}</div>
+                    <div class="item-name">${escapeHtml(item.name)}</div>
                     <div class="item-price-zone">
                         <span class="item-price">$${item.price}</span>
                         <div class="action-zone">
-                            <button class="btn-qty" onclick="changeQty('${item.name}', -1, ${item.price})">-</button>
-                            <span class="qty-num" id="q-${item.name}">${qty}</span>
-                            <button class="btn-qty" onclick="changeQty('${item.name}', 1, ${item.price})">+</button>
+                            <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
+                            <span class="qty-num" id="q-id-${item.id}">${qty}</span>
+                            <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
                         </div>
                     </div>
                 </div>
-                <div class="item-img-placeholder" onclick="changeQty('${item.name}', 1, ${item.price})">
-                    ${item.icon || '🍛'}
+                <div class="item-img-placeholder" onclick="changeQty(${item.id}, 1)">
+                    ${escapeHtml(item.icon || '🍜')}
                 </div>
             `;
             grid.appendChild(card);
@@ -536,18 +550,25 @@ function debounceFilterMenu() {
     }, 250);
 }
 
-function changeQty(name, delta, price) {
-    if (!cart[name]) cart[name] = { qty: 0, price: price };
-    cart[name].qty += delta;
-    
-    if (cart[name].qty <= 0) {
-        delete cart[name];
+function changeQty(itemId, delta) {
+    const item = menuItems.find(m => m.id === itemId);
+    if (!item) return;
+
+    if (!cart[itemId]) {
+        cart[itemId] = { id: item.id, name: item.name, price: item.price, qty: 0 };
     }
     
-    // 更新菜單畫面數量
-    const qtySpan = document.getElementById(`q-${name}`);
+    cart[itemId].qty += delta;
+    
+    if (cart[itemId].qty <= 0) {
+        delete cart[itemId];
+    }
+    
+    const qtySpan = document.getElementById(`q-id-${itemId}`);
     if (qtySpan) {
-        qtySpan.innerText = cart[name] ? cart[name].qty : 0;
+        qtySpan.innerText = cart[itemId] ? cart[itemId].qty : 0;
+    } else {
+        renderMenu(currentFilteredItems);
     }
 
     renderCart();
@@ -558,7 +579,7 @@ function clearCart() {
     if (confirm("確定要清空購物車內的所有餐點嗎？")) {
         cart = {};
         renderCart();
-        renderMenu(currentFilteredItems); // 重新渲染當前選單以清空數字
+        renderMenu(currentFilteredItems);
     }
 }
 
@@ -575,31 +596,44 @@ function renderCart() {
         return;
     }
     
-    // 計算餐點小計
-    keys.forEach(name => {
-        const item = cart[name];
+    keys.forEach(id => {
+        const item = cart[id];
         const sub = item.qty * item.price;
         finalTotal += sub;
         
-        finalSummary += `${name}*${item.qty} `;
+        finalSummary += `${item.name}*${item.qty} `;
         
         const div = document.createElement("div");
         div.className = "cart-item";
-        div.innerHTML = `
-            <div style="flex: 1; min-width: 0; padding-right: 8px;">
-                <div style="font-weight: 600; word-break: break-all; font-size:13px;">${name}</div>
-                <div style="color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 2px;">$${sub}</div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 4px;">
-                <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty('${name}', -1, ${item.price})">-</button>
-                <span style="width: 16px; text-align: center; font-weight: 700; font-size: 13px;">${item.qty}</span>
-                <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty('${name}', 1, ${item.price})">+</button>
-            </div>
+        
+        // 使用安全方式建立節點，防範 XSS
+        const infoDiv = document.createElement("div");
+        infoDiv.style.cssText = "flex: 1; min-width: 0; padding-right: 8px;";
+        
+        const nameDiv = document.createElement("div");
+        nameDiv.style.cssText = "font-weight: 600; word-break: break-all; font-size:13px;";
+        nameDiv.textContent = item.name;
+        
+        const subDiv = document.createElement("div");
+        subDiv.style.cssText = "color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 2px;";
+        subDiv.textContent = `$${sub}`;
+        
+        infoDiv.appendChild(nameDiv);
+        infoDiv.appendChild(subDiv);
+
+        const actionDiv = document.createElement("div");
+        actionDiv.style.cssText = "display: flex; align-items: center; gap: 4px;";
+        actionDiv.innerHTML = `
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.id}, -1)">-</button>
+            <span style="width: 16px; text-align: center; font-weight: 700; font-size: 13px;">${item.qty}</span>
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.id}, 1)">+</button>
         `;
+
+        div.appendChild(infoDiv);
+        div.appendChild(actionDiv);
         cartDiv.appendChild(div);
     });
 
-    // 更新總金額顯示
     document.getElementById("total-amount").innerText = `總計: $${Math.round(finalTotal)}`;
 }
 
@@ -608,27 +642,35 @@ async function submitOrderToServer() {
         return alert("🛒 購物車是空的喔！"); 
     }
 
-    // 安全取得選項值
     const spicyEl = document.getElementById("spicy-level");
     const spicyVal = spicyEl ? spicyEl.value : "不辣";
 
-    const orderMealSummary = `鼎森泰式料理：${finalSummary.trim()}`;
-    const fullNote = `醬料/辣度：${spicyVal} / 總計：$${finalTotal}`;
+    const customNoteEl = document.getElementById("custom-note");
+    const customNoteVal = customNoteEl ? customNoteEl.value.trim() : "";
 
-    // 組成彈窗內容
-    const confirmMessage = 
+    const orderMealSummary = `家灶 傳統爌肉 豬腳專賣：${finalSummary.trim()}`;
+    
+    let fullNote = `醬料辣度需求：${spicyVal}`;
+    if (customNoteVal) {
+        fullNote += ` / 備註：${customNoteVal}`;
+    }
+    fullNote += ` / 總計：$${finalTotal}`;
+
+    let confirmMessage = 
         `請確認您的訂單內容：\n\n` +
         `餐點：${finalSummary.trim()}\n` +
-        `醬料/辣度：${spicyVal}\n` +
-        `總金額：$${finalTotal} 元\n\n` +
-        `確定要送出訂單嗎？`;
+        `客製化辣度：${spicyVal}\n`;
+        
+    if (customNoteVal) {
+        confirmMessage += `特殊需求：${customNoteVal}\n`;
+    }
+    
+    confirmMessage += `總金額：$${finalTotal} 元\n\n確定要送出訂單嗎？`;
 
-    const isConfirmed = confirm(confirmMessage);
-    if (!isConfirmed) {
+    if (!confirm(confirmMessage)) {
         return; 
     }
 
-    // 使用者按下「確定」後，鎖定按鈕並發送 API
     const btn = document.getElementById("submit-btn");
     btn.disabled = true;
     btn.innerText = "訂單傳送中...";
@@ -637,6 +679,7 @@ async function submitOrderToServer() {
         cardId: currentCardId,
         meal: orderMealSummary,
         spicy: spicyVal,
+        customNote: customNoteVal,
         total: finalTotal,
         note: fullNote
     };
@@ -658,6 +701,7 @@ async function submitOrderToServer() {
             localStorage.setItem(localKey, JSON.stringify(existingOrders));
             
             cart = {};
+            if (customNoteEl) customNoteEl.value = ""; // 清空備註欄
             renderCart();
             renderMenu(currentFilteredItems);
         } else {
