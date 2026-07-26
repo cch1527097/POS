@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家灶 傳統爌肉 豬腳專賣 - 智慧點餐系統</title>
+    <title>滿座燒肉丼飯屋 - 智慧點餐系統</title>
     <style>
         html { 
             scroll-behavior: smooth; 
@@ -11,10 +11,10 @@
         }
 
         :root { 
-            --primary: #9e1c11;       /* 品牌質感暗紅 */
-            --primary-light: #fdf2f1; /* 淡淡的紅底 */
+            --primary: #2e7d32;       /* 蔬食清新綠色 */
+            --primary-light: #f1f8e9; /* 淡淡的綠底 */
             --secondary: #f1c40f;      /* 溫暖金黃 */
-            --accent: #e74c3c;        /* 亮紅點綴 */
+            --accent: #e65100;        /* 亮橘點綴 */
             --bg-main: #f4f6f9;       /* 輕灰底色 */
             --text-dark: #2c3e50;      /* 深色文字 */
             --text-muted: #7f8c8d;    /* 輔助灰色 */
@@ -78,7 +78,7 @@
         .top-search-box:focus {
             border-color: var(--primary);
             background: #fff;
-            box-shadow: 0 0 0 3px rgba(158, 28, 17, 0.1);
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
         }
 
         .container { 
@@ -109,7 +109,7 @@
             justify-content: center;
             font-size: 32px;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(158, 28, 17, 0.2);
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
         }
         .store-details h1 { margin: 0 0 8px 0; font-size: 22px; font-weight: 700; }
         .store-meta { display: flex; flex-wrap: wrap; gap: 15px; font-size: 13px; color: var(--text-muted); }
@@ -118,7 +118,7 @@
 
         /* 低消訊息橫幅 */
         .promo-banner {
-            background-color: #fff0f0;
+            background-color: #fff8e1;
             border-radius: 8px;
             padding: 12px 16px;
             margin-bottom: 20px;
@@ -130,7 +130,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.01);
         }
         .promo-badge {
-            background-color: #e54d42;
+            background-color: #f57c00;
             color: #ffffff;
             font-size: 12px;
             font-weight: bold;
@@ -176,7 +176,7 @@
 
         .menu-content { flex: 1; }
         .category-block { margin-bottom: 30px; scroll-margin-top: 90px; }
-        .category-title { font-size: 18px; font-weight: 700; color: #e67e22; margin: 0 0 14px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
+        .category-title { font-size: 18px; font-weight: 700; color: var(--primary); margin: 0 0 14px 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 6px; }
         
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
         
@@ -193,7 +193,8 @@
         }
         .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
         .item-info { flex: 1; padding-right: 12px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
-        .item-name { font-weight: 700; color: var(--text-dark); font-size: 15px; margin-bottom: 6px; word-break: break-all; }
+        .item-name { font-weight: 700; color: var(--text-dark); font-size: 15px; margin-bottom: 2px; word-break: break-all; }
+        .item-note { font-size: 12px; color: #689f38; margin-bottom: 8px; font-weight: 500; }
         .item-price-zone { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
         .item-price { color: var(--text-dark); font-weight: 700; font-size: 15px; }
         
@@ -211,7 +212,7 @@
             cursor: pointer;
             position: relative;
             user-select: none;
-            transition: transform 0.1s active;
+            transition: transform 0.1s;
         }
         .item-img-placeholder:active { transform: scale(0.95); }
 
@@ -256,8 +257,8 @@
         .select-box, .text-input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; background-color: #fff; box-sizing: border-box; }
         .select-box:focus, .text-input:focus { border-color: var(--primary); }
         .total-box { font-size: 20px; font-weight: 700; color: var(--accent); text-align: right; margin: 16px 0; }
-        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(158, 28, 17, 0.2); transition: all 0.2s; }
-        .btn-submit:hover:not(:disabled) { background: #80160d; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2); transition: all 0.2s; }
+        .btn-submit:hover:not(:disabled) { background: #1b5e20; }
         .btn-submit:active:not(:disabled) { transform: scale(0.98); }
         .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
 
@@ -309,7 +310,7 @@
 <div class="navbar">
     <a href="#" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (如：爌肉、豬腳)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (如：牛五花、烏龍麵、唐揚雞)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -318,14 +319,14 @@
 <div class="container">
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">家</div>
+            <div class="store-logo">滿</div>
             <div class="store-details">
-                <h1>家灶 傳統爌肉 豬腳專賣 鹿港店</h1>
+                <h1>滿座燒肉丼飯屋 鹿港店</h1>
                 <div class="store-meta">
-                    <span class="rating">⭐ 4.2 (28)</span>
-                    <span>🕒 10:30 ~ 21:30</span>
-                    <span>📍 505彰化縣鹿港鎮洛津里民權路269號</span>
-                    <span>📞 (04) 778-8823</span>
+                    <span class="rating">⭐ 4.5 (217)</span>
+                    <span>🕒 10:30 ~ 19:00</span>
+                    <span>📍 彰化縣鹿港鎮館前街9號</span>
+                    <span>📞 0972-066-710</span>
                 </div>
             </div>
         </div>
@@ -361,6 +362,7 @@
                     <option value="中辣">中辣</option>
                     <option value="大辣">大辣</option>
                 </select>
+            </div>
 
             <div class="total-box" id="total-amount">總計: $0</div>
             <button class="btn-submit" id="submit-btn" onclick="submitOrderToServer()">確認送出訂單</button>
@@ -374,49 +376,93 @@ function goBack() {
 }
 
 const rawMenuItems = [
-    // === 主食 ===
-    {name: "爌肉飯", price: 70, category: "主食", icon:"🍱"},
-    {name: "腿庫皮飯", price: 70, category: "主食", icon:"🍱"},
-    {name: "魯肉飯", price: 50, category: "主食", icon:"🍱"},
+    // === 丼飯 ===
+    {name: "炙燒豚五花丼飯", price: 150, note: "", category: "丼飯", icon:"🍱"},
+    {name: "炙燒豚五花丼飯 (加肉)", price: 180, note: "肉量升級", category: "丼飯", icon:"🍱"},
+    {name: "蔥鹽蜜汁松花丼飯", price: 180, note: "", category: "丼飯", icon:"🍱"},
+    {name: "炙燒雪花牛丼飯", price: 160, note: "", category: "丼飯", icon:"🍱"},
+    {name: "炙燒雪花牛丼飯 (加肉)", price: 210, note: "肉量升級", category: "丼飯", icon:"🍱"},
+    {name: "黑牛燒肉丼飯", price: 240, note: "", category: "丼飯", icon:"🍱"},
+    {name: "職火肉山帶骨牛", price: 300, note: "推薦", category: "丼飯", icon:"🍱"},
+    {name: "香煎牛肋條丼飯", price: 270, note: "", category: "丼飯", icon:"🍱"},
+    {name: "醬烤嫩雞腿丼飯", price: 180, note: "", category: "丼飯", icon:"🍱"},
+    {name: "鹽烤挪威鮭魚丼飯", price: 170, note: "", category: "丼飯", icon:"🍱"},
+    {name: "鹽烤虱目魚丼飯", price: 170, note: "", category: "丼飯", icon:"🍱"},
+    {name: "炙燒鮭魚菲力丼飯", price: 240, note: "", category: "丼飯", icon:"🍱"},
+    {name: "手作鰻魚飯", price: 360, note: "嚴選鰻魚", category: "丼飯", icon:"🍱"},
 
-    // === 豬腳系列 ===
-    {name: "豬腳飯 (腳蹄)", price: 85, category: "豬腳系列", icon:"🐷"},
-    {name: "豬腳飯 (中段)", price: 100, category: "豬腳系列", icon:"🐷"},
-    {name: "豬腳飯 (有肉頭段)", price: 120, category: "豬腳系列", icon:"🐷"},
-    {name: "豬腳麵線 (腳蹄)", price: 110, category: "豬腳系列", icon:"🐷"},
-    {name: "豬腳麵線 (中段)", price: 125, category: "豬腳系列", icon:"🐷"},
-    {name: "豬腳麵線 (有肉頭段)", price: 145, category: "豬腳系列", icon:"🐷"},
+    // === 湯・飲 ===
+    {name: "味噌海帶湯", price: 20, note: "", category: "湯・飲", icon:"🥣"},
+    {name: "味噌蛤蠣湯", price: 50, note: "", category: "湯・飲", icon:"🥣"},
+    {name: "薑絲蛤蠣湯", price: 100, note: "", category: "湯・飲", icon:"🥣"},
+    {name: "虱目魚肚湯", price: 170, note: "", category: "湯・飲", icon:"🥣"},
+    {name: "鱸魚湯", price: 170, note: "", category: "湯・飲", icon:"🥣"},
+    {name: "可樂 / 雪碧", price: 25, note: "罐裝", category: "湯・飲", icon:"🥤"},
 
-    // === 便當 ===
-    {name: "爌肉便當", price: 100, category: "便當", icon:"🍱"},
-    {name: "腿庫皮便當", price: 100, category: "便當", icon:"🍱"},
-    {name: "魯肉便當", price: 80, category: "便當", icon:"🍱"},
-    {name: "豬腳便當 (腳蹄)", price: 115, category: "便當", icon:"🍱"},
-    {name: "豬腳便當 (中段)", price: 125, category: "便當", icon:"🍱"},
-    {name: "豬腳便當 (有肉頭段)", price: 145, category: "便當", icon:"🍱"},
+    // === 烏龍湯麵 ===
+    {name: "柴魚鍋燒湯烏龍麵", price: 120, note: "", category: "烏龍湯麵", icon:"🍜"},
+    {name: "韓式泡菜湯烏龍麵", price: 130, note: "微辣開胃", category: "烏龍湯麵", icon:"🍜"},
+    {name: "味噌海帶湯烏龍麵", price: 130, note: "", category: "烏龍湯麵", icon:"🍜"},
 
-    // === 湯品 ===
-    {name: "貢丸湯", price: 50, category: "湯品", icon:"🍜"},
-    {name: "虱目魚丸湯", price: 50, category: "湯品", icon:"🍜"},
-    {name: "虱目魚皮湯", price: 60, category: "湯品", icon:"🍜"},
-    {name: "隔間肉湯", price: 60, category: "湯品", icon:"🍜"},
-    {name: "骨仔肉湯", price: 60, category: "湯品", icon:"🍜"},
+    // === 咖哩飯 ===
+    {name: "職人熟成咖哩飯", price: 100, note: "基本款", category: "咖哩飯", icon:"🍛"},
+    {name: "酥炸唐揚雞咖哩飯", price: 160, note: "", category: "咖哩飯", icon:"🍛"},
+    {name: "起司豬排咖哩飯", price: 190, note: "", category: "咖哩飯", icon:"🍛"},
+    {name: "厚切豬排咖哩飯", price: 180, note: "", category: "咖哩飯", icon:"🍛"},
+    {name: "原味卡拉雞咖哩飯", price: 160, note: "", category: "咖哩飯", icon:"🍛"},
+    {name: "炸蝦天婦羅咖哩飯", price: 170, note: "", category: "咖哩飯", icon:"🍛"},
+    {name: "廣島炸牡蠣咖哩飯", price: 200, note: "", category: "咖哩飯", icon:"🍛"},
+    {name: "炙燒牛肉咖哩飯", price: 180, note: "", category: "咖哩飯", icon:"🍛"},
+
+    // === 炒 ===
+    {name: "鮭魚炒飯", price: 120, note: "", category: "炒物", icon:"🍳"},
+    {name: "讚岐炒烏龍麵 (原味)", price: 120, note: "", category: "炒物", icon:"🍜"},
+    {name: "讚岐炒烏龍麵 (泡菜)", price: 120, note: "泡菜風味", category: "炒物", icon:"🍜"},
+
+    // === 單點烤物 ===
+    {name: "泡菜雪花牛燒肉", price: 190, note: "", category: "單點烤物", icon:"🥩"},
+    {name: "安格斯黑牛燒肉", price: 250, note: "", category: "單點烤物", icon:"🥩"},
+    {name: "泡菜豚五花燒肉", price: 170, note: "", category: "單點烤物", icon:"🥩"},
+    {name: "鹽烤松阪豬", price: 190, note: "", category: "單點烤物", icon:"🥩"},
+    {name: "鹽烤虱目魚肚", price: 220, note: "", category: "單點烤物", icon:"🐟"},
+    {name: "薄鹽挪威鯖魚", price: 220, note: "", category: "單點烤物", icon:"🐟"},
+    {name: "香檸鹽烤鮭魚", price: 250, note: "", category: "單點烤物", icon:"🐟"},
+    {name: "鹽烤鮭魚下巴", price: 240, note: "限量", category: "單點烤物", icon:"🐟"},
+    {name: "醬烤雞腿排", price: 170, note: "", category: "單點烤物", icon:"🍗"},
+    {name: "泰式雞腿排", price: 170, note: "", category: "單點烤物", icon:"🍗"},
+    {name: "酒蒸蛤蜊", price: 180, note: "", category: "單點烤物", icon:"🦪"},
+    {name: "加購升級套餐", price: 120, note: "附白飯、茶碗蒸、沙拉、小菜、湯品", category: "單點烤物", icon:"🍱"},
+
+    // === 烤串 ===
+    {name: "雞肉串 (2串)", price: 100, note: "", category: "烤串", icon:"🍡"},
+    {name: "五花肉串 (2串)", price: 100, note: "", category: "烤串", icon:"🍡"},
+    {name: "櫛瓜串 (2串)", price: 70, note: "", category: "烤串", icon:"🍡"},
+    {name: "美國牛肋串", price: 70, note: "", category: "烤串", icon:"🍡"},
+    {name: "炙燒干貝串", price: 100, note: "", category: "烤串", icon:"🍡"},
+    {name: "鰻魚串", price: 80, note: "", category: "烤串", icon:"🍡"},
+
+    // === 炸物 ===
+    {name: "酥炸唐揚雞", price: 60, note: "", category: "炸物", icon:"🍗"},
+    {name: "厚切炸豬排", price: 90, note: "", category: "炸物", icon:"🥩"},
+    {name: "原味卡拉雞", price: 60, note: "", category: "炸物", icon:"🍗"},
+    {name: "起司炸豬排", price: 100, note: "", category: "炸物", icon:"🥩"},
+    {name: "炸蝦天婦羅 (3入)", price: 100, note: "", category: "炸物", icon:"🍤"},
+    {name: "廣島炸牡蠣 (3入)", price: 120, note: "", category: "炸物", icon:"🦪"},
+    {name: "炸起司可樂餅", price: 60, note: "", category: "炸物", icon:"🥔"},
+    {name: "炸物拼盤", price: 200, note: "豐富組合", category: "炸物", icon:"🍟"},
 
     // === 小菜 ===
-    {name: "魯蛋", price: 15, category: "小菜", icon:"🥬"},
-    {name: "魯油豆腐", price: 25, category: "小菜", icon:"🥬"},
-    {name: "筍干魯", price: 30, category: "小菜", icon:"🥬"},
-    {name: "白菜魯", price: 40, category: "小菜", icon:"🥬"},
-    {name: "燙青菜", price: 40, category: "小菜", icon:"🥬"},
-    {name: "手工泡菜", price: 40, category: "小菜", icon:"🥬"},
-    {name: "涼拌川耳", price: 40, category: "小菜", icon:"🥬"},
-    {name: "皮蛋豆腐", price: 55, category: "小菜", icon:"🥬"},
-    {name: "隔間肉 (單點小菜)", price: 50, category: "小菜", icon:"🥬"},
-    {name: "骨仔肉 (單點小菜)", price: 50, category: "小菜", icon:"🥬"},
-    {name: "爌肉 (單點小菜)", price: 60, category: "小菜", icon:"🥬"},
-    {name: "豬腳-腳蹄 (單點小菜)", price: 75, category: "小菜", icon:"🥬"},
-    {name: "豬腳-中段 (單點小菜)", price: 90, category: "小菜", icon:"🥬"},
-    {name: "豬腳-有肉頭段 (單點小菜)", price: 110, category: "小菜", icon:"🥬"}
+    {name: "滿座茶碗蒸", price: 45, note: "", category: "小菜", icon:"🥚"},
+    {name: "魚卵沙拉", price: 90, note: "", category: "小菜", icon:"🥗"},
+    {name: "玉子燒沙拉", price: 60, note: "", category: "小菜", icon:"🥗"},
+    {name: "裙帶絲", price: 30, note: "", category: "小菜", icon:"🥗"},
+    {name: "干貝唇", price: 50, note: "", category: "小菜", icon:"🥗"},
+    {name: "黃金泡菜", price: 40, note: "", category: "小菜", icon:"🥬"},
+    {name: "牛蒡絲", price: 30, note: "", category: "小菜", icon:"🥗"},
+    {name: "和風洋蔥", price: 60, note: "", category: "小菜", icon:"🥗"},
+    {name: "胡麻海藻洋蔥", price: 90, note: "", category: "小菜", icon:"🥗"},
+    {name: "白飯", price: 20, note: "", category: "小菜", icon:"🍚"},
+    {name: "鮭魚鬆拌飯", price: 50, note: "", category: "小菜", icon:"🍚"}
 ];
 
 const menuItems = rawMenuItems.map((item, index) => ({ ...item, id: index + 1 }));
@@ -513,18 +559,23 @@ function renderMenu(items) {
 
         const catItems = items.filter(i => i.category === cat);
         catItems.forEach(item => {
-            const qty = cart[item.id] ? cart[item.id].qty : 0;
+            // 計算該商品（包含加麵與未加麵）在購物車中的總數量
+            const totalQty = Object.values(cart)
+                .filter(c => c.itemId === item.id)
+                .reduce((sum, c) => sum + c.qty, 0);
+
             const card = document.createElement("div");
             card.className = "item-card";
             
             card.innerHTML = `
                 <div class="item-info">
                     <div class="item-name">${escapeHtml(item.name)}</div>
+                    ${item.note ? `<div class="item-note">🏷️ ${escapeHtml(item.note)}</div>` : ''}
                     <div class="item-price-zone">
                         <span class="item-price">$${item.price}</span>
                         <div class="action-zone">
                             <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
-                            <span class="qty-num" id="q-id-${item.id}">${qty}</span>
+                            <span class="qty-num" id="q-id-${item.id}">${totalQty}</span>
                             <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
                         </div>
                     </div>
@@ -550,23 +601,61 @@ function debounceFilterMenu() {
     }, 250);
 }
 
-function changeQty(itemId, delta) {
+function changeQty(itemId, delta, targetCartKey = null) {
     const item = menuItems.find(m => m.id === itemId);
     if (!item) return;
 
-    if (!cart[itemId]) {
-        cart[itemId] = { id: item.id, name: item.name, price: item.price, qty: 0 };
+    let cartKey = targetCartKey;
+
+    // 如果是增加數量且未指定 specific cartKey，詢問是否加麵/加大
+    if (delta > 0 && !cartKey) {
+        let extraPrice = 0;
+        let isExtra = false;
+
+        if (item.category === "鍋燒類") {
+            isExtra = confirm(`【${item.name}】需要加麵嗎？(+20元)`);
+            if (isExtra) extraPrice = 20;
+        } else if (item.category === "炒飯、麵") {
+            isExtra = confirm(`【${item.name}】需要升級加大/加麵嗎？(+30元)`);
+            if (isExtra) extraPrice = 30;
+        }
+
+        cartKey = isExtra ? `${itemId}_extra` : `${itemId}`;
+        const displayName = isExtra ? `${item.name} (加麵/加大)` : item.name;
+
+        if (!cart[cartKey]) {
+            cart[cartKey] = {
+                cartKey: cartKey,
+                itemId: item.id,
+                name: displayName,
+                price: item.price + extraPrice,
+                qty: 0
+            };
+        }
+    } else if (!cartKey) {
+        // 如果是按菜單上的小減號，優先扣除普通版的，若沒有則扣加麵版的
+        if (cart[`${itemId}`]) {
+            cartKey = `${itemId}`;
+        } else if (cart[`${itemId}_extra`]) {
+            cartKey = `${itemId}_extra`;
+        }
     }
-    
-    cart[itemId].qty += delta;
-    
-    if (cart[itemId].qty <= 0) {
-        delete cart[itemId];
+
+    if (cartKey && cart[cartKey]) {
+        cart[cartKey].qty += delta;
+        if (cart[cartKey].qty <= 0) {
+            delete cart[cartKey];
+        }
     }
-    
+
+    // 更新菜單上的總顯示數量
+    const totalQty = Object.values(cart)
+        .filter(c => c.itemId === itemId)
+        .reduce((sum, c) => sum + c.qty, 0);
+
     const qtySpan = document.getElementById(`q-id-${itemId}`);
     if (qtySpan) {
-        qtySpan.innerText = cart[itemId] ? cart[itemId].qty : 0;
+        qtySpan.innerText = totalQty;
     } else {
         renderMenu(currentFilteredItems);
     }
@@ -578,6 +667,8 @@ function clearCart() {
     if (Object.keys(cart).length === 0) return;
     if (confirm("確定要清空購物車內的所有餐點嗎？")) {
         cart = {};
+        const customNoteEl = document.getElementById("custom-note");
+        if (customNoteEl) customNoteEl.value = "";
         renderCart();
         renderMenu(currentFilteredItems);
     }
@@ -596,8 +687,8 @@ function renderCart() {
         return;
     }
     
-    keys.forEach(id => {
-        const item = cart[id];
+    keys.forEach(key => {
+        const item = cart[key];
         const sub = item.qty * item.price;
         finalTotal += sub;
         
@@ -624,9 +715,9 @@ function renderCart() {
         const actionDiv = document.createElement("div");
         actionDiv.style.cssText = "display: flex; align-items: center; gap: 4px;";
         actionDiv.innerHTML = `
-            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.id}, -1)">-</button>
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.itemId}, -1, '${item.cartKey}')">-</button>
             <span style="width: 16px; text-align: center; font-weight: 700; font-size: 13px;">${item.qty}</span>
-            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.id}, 1)">+</button>
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.itemId}, 1, '${item.cartKey}')">+</button>
         `;
 
         div.appendChild(infoDiv);
@@ -648,7 +739,7 @@ async function submitOrderToServer() {
     const customNoteEl = document.getElementById("custom-note");
     const customNoteVal = customNoteEl ? customNoteEl.value.trim() : "";
 
-    const orderMealSummary = `家灶 傳統爌肉 豬腳專賣：${finalSummary.trim()}`;
+    const orderMealSummary = `滿座燒肉丼飯屋：${finalSummary.trim()}`;
     
     let fullNote = `醬料辣度需求：${spicyVal}`;
     if (customNoteVal) {
@@ -659,7 +750,7 @@ async function submitOrderToServer() {
     let confirmMessage = 
         `請確認您的訂單內容：\n\n` +
         `餐點：${finalSummary.trim()}\n` +
-        `客製化辣度：${spicyVal}\n`;
+        `辣度：${spicyVal}\n`;
         
     if (customNoteVal) {
         confirmMessage += `特殊需求：${customNoteVal}\n`;

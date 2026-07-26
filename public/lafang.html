@@ -306,7 +306,7 @@
             <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p></div>
             
             <div class="opt-group">
-                <label class="opt-title">🌶️ 口味與辣度需求</label>
+                <label class="opt-title">🌶️ 辣度需求</label>
                 <select id="spicy-level" class="select-box">
                     <option value="不辣">不辣</option>
                     <option value="微辣">微辣</option>
@@ -594,7 +594,7 @@ async function submitOrderToServer() {
         const resData = await response.json();
 
         if (resData.success) {
-            alert("🎉 點餐成功！訂單已送到18445。");
+            alert("🎉 點餐成功！訂單已送到後端。");
             const localKey = `orders_${currentCardId}`;
             const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
             existingOrders.push({ ...payload, timestamp: new Date().toISOString() });

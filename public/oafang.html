@@ -388,15 +388,15 @@ const rawMenuItems = [
     {name: "單點松阪肉", price: 80, category: "單點肉類", icon:"🐔"},
 
     // === 精選小菜 ===
-    {name: "雞心", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "雞診", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "雞冠", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "雞屁股", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "雞翅", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "蛋胚", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "雞心", price: 25, category: "精選小菜", icon:"🐔"},
+    {name: "雞診", price: 25, category: "精選小菜", icon:"🐔"},
+    {name: "雞冠", price: 25, category: "精選小菜", icon:"🐔"},
+    {name: "雞屁股", price: 25, category: "精選小菜", icon:"🐔"},
+    {name: "雞翅", price: 25, category: "精選小菜", icon:"🐔"},
+    {name: "蛋胚", price: 25, category: "精選小菜", icon:"🥚"},
     {name: "德式香腸", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "豬耳朵絲", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "溏心蛋", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "豬耳朵絲", price: 25, category: "精選小菜", icon:"🐷"},
+    {name: "溏心蛋", price: 25, category: "精選小菜", icon:"🥚"},
     {name: "米血", price: 25, category: "精選小菜", icon:"🥬"},
     {name: "甜不辣", price: 25, category: "精選小菜", icon:"🥬"},
     {name: "魚豆腐", price: 25, category: "精選小菜", icon:"🥬"},
@@ -407,22 +407,22 @@ const rawMenuItems = [
     {name: "大豆干", price: 25, category: "精選小菜", icon:"🥬"},
     {name: "韓式泡菜", price: 25, category: "精選小菜", icon:"🥬"},
     {name: "豆干絲(麵)", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "泡麵", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "義大利麵", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "毛豆仁", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "泡麵", price: 25, category: "精選小菜", icon:"🍜"},
+    {name: "義大利麵", price: 25, category: "精選小菜", icon:"🍝"},
+    {name: "毛豆仁", price: 25, category: "精選小菜", icon:"🫛"},
     {name: "高麗菜", price: 25, category: "精選小菜", icon:"🥬"},
     {name: "綠花椰", price: 25, category: "精選小菜", icon:"🥬"},
     {name: "龍鬚菜", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "玉米筍", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "小黃瓜", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "玉米筍", price: 25, category: "精選小菜", icon:"🌽"},
+    {name: "小黃瓜", price: 25, category: "精選小菜", icon:"🥒"},
     {name: "水晶藻", price: 25, category: "精選小菜", icon:"🥬"},
     {name: "白蘿蔔", price: 25, category: "精選小菜", icon:"🥬"},
     {name: "黑木耳", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "杏鮑菇", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "洋蔥", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "蓮藕", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "蘋果", price: 25, category: "精選小菜", icon:"🥬"},
-    {name: "地瓜", price: 25, category: "精選小菜", icon:"🥬"},
+    {name: "杏鮑菇", price: 25, category: "精選小菜", icon:"🍄"},
+    {name: "洋蔥", price: 25, category: "精選小菜", icon:"🧅"},
+    {name: "蓮藕", price: 25, category: "精選小菜", icon:"🪷"},
+    {name: "蘋果", price: 25, category: "精選小菜", icon:"🍎"},
+    {name: "地瓜", price: 25, category: "精選小菜", icon:"🍠"},
     {name: "美生菜", price: 25, category: "精選小菜", icon:"🥬"}
 ];
 
@@ -753,7 +753,7 @@ async function submitOrderToServer() {
         const resData = await response.json();
 
         if (resData.success) {
-            alert("🎉 點餐成功！訂單已送到18445。");
+            alert("🎉 點餐成功！訂單已送到後端。");
             const localKey = `orders_${currentCardId}`;
             const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
             existingOrders.push({ ...payload, timestamp: new Date().toISOString() });

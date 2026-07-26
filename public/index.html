@@ -873,13 +873,31 @@
                 <div class="shop-desc">主打平價、大份量的日式食堂。</div>
                 <button class="go-btn" onclick="redirectToShop('小松丼丼食事處', this)">進入 小松丼丼食事處 點餐 ➔</button>
             </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">滿座燒肉丼飯屋</span>
+                    <span class="badge main">主食精選</span>
+                </div>
+                <div class="shop-desc">燒肉丼飯與咖喱飯料理集結了新鮮食材和精心熬煮的醬汁，每一口都能帶給您極致的享受。</div>
+                <button class="go-btn" onclick="redirectToShop('滿座燒肉丼飯屋', this)">進入 滿座燒肉丼飯屋 點餐 ➔</button>
+            </div>
+
+            <div class="shop-card">
+                <div class="card-top">
+                    <span class="shop-name">元鼎燉湯</span>
+                    <span class="badge main">主食精選</span>
+                </div>
+                <div class="shop-desc">香菇雞（含薑絲）香菇與嫩滑的雞翅一同燉煮，風味鮮美豐富、湯頭濃郁不油膩。</div>
+                <button class="go-btn" onclick="redirectToShop('元鼎燉湯', this)">進入 元鼎燉湯 點餐 ➔</button>
+            </div>
         </div>
 
         <!-- ==================== 3. 今日點餐紀錄區塊 ==================== -->
         <div id="today-history-anchor" class="history-container">
     <div class="history-card">
         <div class="history-header">
-            <h2 class="history-title">📋 今日點餐紀錄</h2>
+            <h2 class="history-title">📋 我的購物車</h2>
             <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
         </div>
                 <div class="history-table-wrapper">
@@ -908,7 +926,7 @@
 <div id="history-anchor" class="history-container" style="margin-bottom: 100px;">
     <div class="history-card" style="border-color: #b4d3b0; background-color: #fcfdfc;">
         <div class="history-header" style="border-bottom-color: #cce5ca;">
-            <h2 class="history-title" style="color: #1e3818;">🗄️ 個人的歷史點餐軌跡 (歷年完整紀錄)</h2>
+            <h2 class="history-title" style="color: #1e3818;">🗄️ 曾點過歷史點餐軌跡 (歷年完整紀錄)</h2>
             <span style="font-size: 14px; color: #668062; font-weight: bold;">資料來源：orders.json 資料庫</span>
         </div>
                 <div class="history-table-wrapper">
@@ -958,7 +976,9 @@
             '家灶 傳統爌肉 豬腳專賣': 'pafang.html',
             '菓蔬輕蒔坊': 'qafang.html',
             '老蕭土魠魚羹麵館': 'rafang.html',
-            '小松丼丼食事處': 'safang.html'
+            '小松丼丼食事處': 'safang.html',
+            '滿座燒肉丼飯屋': 'tafang.html',
+            '元鼎燉湯': 'uafang.html'
         };
 
         window.addEventListener('DOMContentLoaded', () => {

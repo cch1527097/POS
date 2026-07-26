@@ -590,7 +590,7 @@ async function submitOrderToServer() {
         const resData = await response.json();
 
         if (resData.success) {
-            alert("🎉 點餐成功！訂單已送到18445。");
+            alert("🎉 點餐成功！訂單已送到後端。");
             const localKey = `orders_${currentCardId}`;
             const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
             existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
