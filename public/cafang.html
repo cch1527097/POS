@@ -199,7 +199,7 @@
             padding: 20px; 
             border-radius: 12px; 
             position: sticky; 
-            top: 20px; 
+top: 20px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
         }
         .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg-main); padding-bottom: 10px; margin-bottom: 16px; }
@@ -236,53 +236,125 @@
             border: none; 
         }
 
+        /* 彈窗 Modal 樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease-in-out;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-box {
+            background: #fff;
+            width: 90%;
+            max-width: 440px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transform: translateY(10px);
+            transition: transform 0.2s ease-in-out;
+        }
+        .modal-overlay.active .modal-box {
+            transform: translateY(0);
+        }
+        .modal-header {
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #64748b; }
+        .modal-body {
+            padding: 24px;
+            font-size: 15px;
+            color: #334155;
+            line-height: 1.8;
+        }
+        .modal-row {
+            margin-bottom: 12px;
+            display: flex;
+        }
+        .modal-row:last-child { margin-bottom: 0; }
+        .modal-label {
+            color: #475569;
+            white-space: nowrap;
+        }
+        .modal-value {
+            color: #1e293b;
+            font-weight: 500;
+        }
+        .modal-value.highlight {
+            color: #9e1c11;
+            font-weight: 800;
+            font-size: 17px;
+        }
+        .modal-footer {
+            padding: 16px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: #f8fafc;
+        }
+        .btn-modal-cancel {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-modal-confirm {
+            background: #9e1c11;
+            border: none;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-modal-confirm:hover { background: #82170e; }
+
         /* 響應式手機/平板優化 */
         @media (max-width: 1024px) {
-            .main-layout { 
-                flex-direction: column; 
-            }
-
+            .main-layout { flex-direction: column; }
             .category-sidebar { 
-                display: flex;
-                flex: none;
-                width: 100%;
-                box-sizing: border-box;
-                overflow-x: auto;
-                white-space: nowrap;
-                position: sticky; 
-                top: 0; 
-                z-index: 100;
-                background: #fff;
-                padding: 10px 8px;
-                margin-bottom: 16px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                -webkit-overflow-scrolling: touch;
+                display: flex; flex: none; width: 100%; box-sizing: border-box; overflow-x: auto; white-space: nowrap; position: sticky; top: 0; z-index: 100; background: #fff; padding: 10px 8px; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; 
             }
-
-            .category-sidebar::-webkit-scrollbar {
-                display: none;
-            }
-
-            .side-cat-item { 
-                flex: 0 0 auto; 
-                margin-right: 8px; 
-                margin-bottom: 0;
-                padding: 8px 16px;
-                font-size: 13px;
-                background: #f1f5f9;
-                border-radius: 20px;
-            }
-
-            .side-cat-item.active {
-                background: var(--primary);
-                color: #fff;
-            }
-
-            .cart-sidebar { 
-                width: 100%; 
-                box-sizing: border-box; 
-                position: static; 
-            }
+            .category-sidebar::-webkit-scrollbar { display: none; }
+            .side-cat-item { flex: 0 0 auto; margin-right: 8px; margin-bottom: 0; padding: 8px 16px; font-size: 13px; background: #f1f5f9; border-radius: 20px; }
+            .side-cat-item.active { background: var(--primary); color: #fff; }
+            .cart-sidebar { width: 100%; box-sizing: border-box; position: static; }
         }
         
         @media (max-width: 600px) {
@@ -351,7 +423,24 @@
             </div>
 
             <div class="total-box" id="total-amount">總計: $0</div>
-            <button class="btn-submit" id="submit-btn" onclick="submitOrderToServer()">確認送出訂單</button>
+            <button class="btn-submit" id="submit-btn" onclick="openConfirmModal()">確認送出訂單</button>
+        </div>
+    </div>
+</div>
+
+<!-- 彈窗 Modal 結構 -->
+<div id="custom-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modal-title">請確認您的訂單內容</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body">
+            <!-- 動態插入訂單內容 -->
+        </div>
+        <div class="modal-footer" id="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeModal()">取消</button>
+            <button class="btn-modal-confirm" id="modal-confirm-btn">確認送出</button>
         </div>
     </div>
 </div>
@@ -603,35 +692,64 @@ function renderCart() {
     document.getElementById("total-amount").innerText = `總計: $${Math.round(finalTotal)}`;
 }
 
-async function submitOrderToServer() {
+/* Modal 控制邏輯 */
+function closeModal() {
+    document.getElementById('custom-modal').classList.remove('active');
+}
+
+function openConfirmModal() {
     if (finalTotal === 0) { 
-        return alert("🛒 購物車是空的喔！"); 
+        showNoticeModal("提示", "🛒 購物車是空的喔！");
+        return; 
     }
 
-    // 安全取得選項值
+    const spicyEl = document.getElementById("spicy-level");
+    const spicyVal = spicyEl ? spicyEl.value : "不辣";
+
+    const modalTitle = document.getElementById("modal-title");
+    const modalBody = document.getElementById("modal-body");
+    const modalFooter = document.getElementById("modal-footer");
+
+    modalTitle.innerText = "請確認您的訂單內容";
+    modalBody.innerHTML = `
+        <div class="modal-row"><span class="modal-label">餐點：</span><span class="modal-value">${finalSummary.trim()}</span></div>
+        <div class="modal-row"><span class="modal-label">醬料/辣度：</span><span class="modal-value">${spicyVal}</span></div>
+        <div class="modal-row"><span class="modal-label">總金額：</span><span class="modal-value highlight">$${finalTotal} 元</span></div>
+    `;
+
+    modalFooter.innerHTML = `
+        <button class="btn-modal-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-modal-confirm" id="modal-confirm-btn" onclick="submitOrderToServer()">確認送出</button>
+    `;
+
+    document.getElementById('custom-modal').classList.add('active');
+}
+
+function showNoticeModal(title, text) {
+    const modalTitle = document.getElementById("modal-title");
+    const modalBody = document.getElementById("modal-body");
+    const modalFooter = document.getElementById("modal-footer");
+
+    modalTitle.innerText = title;
+    modalBody.innerHTML = `<div style="padding: 10px 0; font-size: 16px;">${text}</div>`;
+    modalFooter.innerHTML = `<button class="btn-modal-confirm" onclick="closeModal()">確定</button>`;
+
+    document.getElementById('custom-modal').classList.add('active');
+}
+
+async function submitOrderToServer() {
     const spicyEl = document.getElementById("spicy-level");
     const spicyVal = spicyEl ? spicyEl.value : "不辣";
 
     const orderMealSummary = `鼎森泰式料理：${finalSummary.trim()}`;
     const fullNote = `醬料/辣度：${spicyVal} / 總計：$${finalTotal}`;
 
-    // 組成彈窗內容
-    const confirmMessage = 
-        `請確認您的訂單內容：\n\n` +
-        `餐點：${finalSummary.trim()}\n` +
-        `醬料/辣度：${spicyVal}\n` +
-        `總金額：$${finalTotal} 元\n\n` +
-        `確定要送出訂單嗎？`;
-
-    const isConfirmed = confirm(confirmMessage);
-    if (!isConfirmed) {
-        return; 
+    // 鎖定 UI 按鈕
+    const confirmBtn = document.getElementById("modal-confirm-btn");
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = "傳送中...";
     }
-
-    // 使用者按下「確定」後，鎖定按鈕並發送 API
-    const btn = document.getElementById("submit-btn");
-    btn.disabled = true;
-    btn.innerText = "訂單傳送中...";
 
     const payload = {
         cardId: currentCardId,
@@ -651,7 +769,6 @@ async function submitOrderToServer() {
         const resData = await response.json();
 
         if (resData.success) {
-            alert("🎉 點餐成功！訂單已送到後端。");
             const localKey = `orders_${currentCardId}`;
             const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
             existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
@@ -660,15 +777,14 @@ async function submitOrderToServer() {
             cart = {};
             renderCart();
             renderMenu(currentFilteredItems);
+
+            showNoticeModal("提示", "🎉 點餐成功！訂單已送到後端。");
         } else {
-            alert(`⚠️ 送出失敗：${resData.message || '請稍後再試'}`);
+            showNoticeModal("提示", `⚠️ 送出失敗：${resData.message || '請稍後再試'}`);
         }
     } catch (err) {
         console.error("發送失敗:", err);
-        alert("❌ 網路發送失敗，請確認網路連線或改用人工點餐！");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "確認送出訂單";
+        showNoticeModal("提示", "❌ 網路發送失敗，請確認網路連線或改用人工點餐！");
     }
 }
 </script>

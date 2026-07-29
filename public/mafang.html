@@ -255,6 +255,106 @@
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
         }
+
+        /* ---------------- 自訂彈窗 (Modal) 樣式 ---------------- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-card {
+            background: #fff;
+            width: 90%;
+            max-width: 440px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+        .modal-header {
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-body {
+            padding: 24px;
+            font-size: 15px;
+            color: #334155;
+            line-height: 1.8;
+        }
+        .modal-body .info-row {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .modal-body .info-label {
+            color: #475569;
+            flex-shrink: 0;
+        }
+        .modal-body .highlight-price {
+            color: #9e1c11;
+            font-weight: 800;
+        }
+        .modal-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .btn-modal-cancel {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-modal-confirm {
+            background: #9e1c11;
+            border: none;
+            color: #fff;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -323,6 +423,23 @@
     </div>
 </div>
 
+<!-- 自訂彈窗 (Modal) 結構 -->
+<div id="custom-modal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="modal-title">請確認您的訂單內容</h3>
+            <button class="modal-close-btn" onclick="closeCustomModal(false)">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-body">
+            <!-- 動態注入內容 -->
+        </div>
+        <div class="modal-footer" id="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeCustomModal(false)">取消</button>
+            <button class="btn-modal-confirm" onclick="closeCustomModal(true)">確認送出</button>
+        </div>
+    </div>
+</div>
+
 <script>
 function goBack() {
     window.location.href = 'index.html'; 
@@ -386,6 +503,7 @@ let finalSummary = "";
 let currentCardId = "TEST";
 let searchTimer = null;
 let currentFilteredItems = menuItems;
+let modalResolver = null;
 
 window.onload = function() {
     initCardId();
@@ -519,9 +637,48 @@ function changeQty(itemId, delta) {
     renderCart();
 }
 
-function clearCart() {
+/* ---------------- 彈窗控制邏輯 ---------------- */
+function showCustomModal({ title, bodyHTML, showCancel = true, confirmText = "確定", cancelText = "取消" }) {
+    return new Promise((resolve) => {
+        modalResolver = resolve;
+        document.getElementById("modal-title").innerText = title;
+        document.getElementById("modal-body").innerHTML = bodyHTML;
+
+        const footer = document.getElementById("modal-footer");
+        if (showCancel) {
+            footer.innerHTML = `
+                <button class="btn-modal-cancel" onclick="closeCustomModal(false)">${cancelText}</button>
+                <button class="btn-modal-confirm" onclick="closeCustomModal(true)">${confirmText}</button>
+            `;
+        } else {
+            footer.innerHTML = `
+                <button class="btn-modal-confirm" onclick="closeCustomModal(true)">${confirmText}</button>
+            `;
+        }
+
+        document.getElementById("custom-modal").classList.add("active");
+    });
+}
+
+function closeCustomModal(result) {
+    document.getElementById("custom-modal").classList.remove("active");
+    if (modalResolver) {
+        modalResolver(result);
+        modalResolver = null;
+    }
+}
+
+async function clearCart() {
     if (Object.keys(cart).length === 0) return;
-    if (confirm("確定要清空購物車內的所有餐點嗎？")) {
+    const isConfirmed = await showCustomModal({
+        title: "確定清空",
+        bodyHTML: "確定要清空購物車內的所有餐點嗎？",
+        showCancel: true,
+        confirmText: "清空",
+        cancelText: "取消"
+    });
+
+    if (isConfirmed) {
         cart = {};
         renderCart();
         renderMenu(currentFilteredItems);
@@ -569,7 +726,12 @@ function renderCart() {
 
 async function submitOrderToServer() {
     if (finalTotal === 0) { 
-        return alert("🛒 購物車是空的喔！"); 
+        await showCustomModal({
+            title: "提示",
+            bodyHTML: "🛒 購物車是空的喔！",
+            showCancel: false
+        });
+        return;
     }
 
     const spicyEl = document.getElementById("spicy-level");
@@ -578,16 +740,22 @@ async function submitOrderToServer() {
     const orderMealSummary = `嵐 爌肉・豬腳飯：${finalSummary.trim()}`;
     const fullNote = `醬料辣度需求：${spicyVal} / 總計：$${finalTotal}`;
 
-    const confirmMessage = 
-        `請確認您的訂單內容：\n\n` +
-        `餐點：${finalSummary.trim()}\n` +
-        `客製化需求：${spicyVal}\n` +
-        `總金額：$${finalTotal} 元\n\n` +
-        `確定要送出訂單嗎？`;
+    // 格式化為圖片中的資訊列
+    const confirmBodyHTML = `
+        <div class="info-row"><span class="info-label">餐點：</span><span>${finalSummary.trim()}</span></div>
+        <div class="info-row"><span class="info-label">醬料/辣度：</span><span>${spicyVal}</span></div>
+        <div class="info-row"><span class="info-label">總金額：</span><span class="highlight-price">$${finalTotal}</span> 元</div>
+    `;
 
-    if (!confirm(confirmMessage)) {
-        return; 
-    }
+    const userConfirmed = await showCustomModal({
+        title: "請確認您的訂單內容",
+        bodyHTML: confirmBodyHTML,
+        showCancel: true,
+        confirmText: "確認送出",
+        cancelText: "取消"
+    });
+
+    if (!userConfirmed) return;
 
     const btn = document.getElementById("submit-btn");
     btn.disabled = true;
@@ -611,7 +779,13 @@ async function submitOrderToServer() {
         const resData = await response.json();
 
         if (resData.success) {
-            alert("🎉 點餐成功！訂單已送到後端。");
+            await showCustomModal({
+                title: "提示",
+                bodyHTML: "🎉 點餐成功！訂單已送到後端。",
+                showCancel: false,
+                confirmText: "確定"
+            });
+
             const localKey = `orders_${currentCardId}`;
             const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
             existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
@@ -621,11 +795,21 @@ async function submitOrderToServer() {
             renderCart();
             renderMenu(currentFilteredItems);
         } else {
-            alert(`⚠️ 送出失敗：${resData.message || '請稍後再試'}`);
+            await showCustomModal({
+                title: "提示",
+                bodyHTML: `⚠️ 送出失敗：${resData.message || '請稍後再試'}`,
+                showCancel: false,
+                confirmText: "確定"
+            });
         }
     } catch (err) {
         console.error("發送失敗:", err);
-        alert("❌ 網路發送失敗，請確認網路連線或改用人工點餐！");
+        await showCustomModal({
+            title: "提示",
+            bodyHTML: "❌ 網路發送失敗，請確認網路連線或改用人工點餐！",
+            showCancel: false,
+            confirmText: "確定"
+        });
     } finally {
         btn.disabled = false;
         btn.innerText = "確認送出訂單";

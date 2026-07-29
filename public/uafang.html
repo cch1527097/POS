@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>元鼎燉湯 - 智慧點餐系統</title>
+    <title>地6攤排餐 - 智慧點餐系統</title>
     <style>
         html { 
             scroll-behavior: smooth; 
@@ -11,10 +11,10 @@
         }
 
         :root { 
-            --primary: #8b0000;       /* 懷舊深紅/磚紅調 */
-            --primary-light: #fde8e8; /* 淺紅底色 */
+            --primary: #c0392b;       /* 懷舊美式/美式牛排館紅 */
+            --primary-light: #fbeee6; /* 淺紅底色 */
             --secondary: #f1c40f;      /* 溫暖金黃 */
-            --accent: #d32f2f;        /* 亮紅點綴 */
+            --accent: #e74c3c;        /* 亮紅點綴 */
             --bg-main: #f4f6f9;       /* 輕灰底色 */
             --text-dark: #2c3e50;      /* 深色文字 */
             --text-muted: #7f8c8d;    /* 輔助灰色 */
@@ -78,7 +78,7 @@
         .top-search-box:focus {
             border-color: var(--primary);
             background: #fff;
-            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.15);
+            box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15);
         }
 
         .container { 
@@ -87,7 +87,7 @@
             padding: 24px 16px 100px 16px; 
         }
 
-        /* 店家 Banner 樣式 (依截圖格式調整) */
+        /* 店家 Banner 樣式 */
         .store-banner {
             background: #fff;
             border-radius: 12px;
@@ -103,7 +103,7 @@
         .store-logo {
             width: 60px;
             height: 60px;
-            background: #2e7d32; /* 參照截圖綠色底色 */
+            background: #c0392b; 
             color: #fff;
             border-radius: 12px;
             display: flex;
@@ -120,7 +120,6 @@
             color: #1a202c; 
         }
         
-        /* 橫向單行排版 */
         .store-meta { 
             display: flex; 
             flex-wrap: wrap; 
@@ -130,8 +129,6 @@
             color: #718096; 
         }
         .store-meta span { display: flex; align-items: center; gap: 4px; }
-        .store-meta .rating-score { color: #ecc94b; font-weight: 700; }
-        .store-meta .rating-count { color: #ecc94b; font-weight: 700; }
 
         .promo-banner {
             background: #fff;
@@ -246,7 +243,7 @@
         
         .opt-group { margin-top: 16px; margin-bottom: 12px; }
         .opt-title { font-size: 13px; font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 6px; }
-        .select-box { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: #f8fafc; font-size: 13px; outline: none; }
+        .select-box { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: #f8fafc; font-size: 13px; outline: none; margin-bottom: 8px; }
 
         .action-zone { display: flex; align-items: center; gap: 8px; }
         .btn-qty { 
@@ -269,8 +266,8 @@
         .qty-num { min-width: 16px; text-align: center; font-weight: 700; font-size: 14px; }
 
         .total-box { font-size: 20px; font-weight: 700; color: var(--accent); text-align: right; margin: 16px 0; }
-        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2); transition: all 0.2s; }
-        .btn-submit:hover:not(:disabled) { background: #5c0000; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(192, 57, 43, 0.2); transition: all 0.2s; }
+        .btn-submit:hover:not(:disabled) { background: #962d22; }
         .btn-submit:active:not(:disabled) { transform: scale(0.98); }
         .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
 
@@ -293,7 +290,107 @@
         }
         .btn-back:active { transform: scale(0.92); }
 
-        /* 響應式手機/平板優化 */
+        /* 自訂彈出視窗 (Modal) 樣式 */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .custom-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-modal {
+            background: #fff;
+            width: 90%;
+            max-width: 440px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+        .custom-modal-overlay.active .custom-modal {
+            transform: scale(1);
+        }
+        .custom-modal-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .custom-modal-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        .custom-modal-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #a0aec0;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+        .custom-modal-close:hover {
+            color: #4a5568;
+        }
+        .custom-modal-body {
+            padding: 16px 20px;
+            font-size: 14px;
+            color: #4a5568;
+            border-top: 1px solid #edf2f7;
+            border-bottom: 1px solid #edf2f7;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+        .custom-modal-footer {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fff;
+        }
+        .modal-btn {
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-btn-cancel {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+        }
+        .modal-btn-cancel:hover {
+            background: #f1f5f9;
+        }
+        .modal-btn-confirm {
+            background: var(--primary);
+            border: none;
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(192, 57, 43, 0.2);
+        }
+        .modal-btn-confirm:hover {
+            background: #962d22;
+        }
+
+        /* 響應式優化 */
         @media (max-width: 1024px) {
             .main-layout { flex-direction: column; }
             .category-sidebar { 
@@ -314,7 +411,7 @@
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
             .category-sidebar { top: 110px; }
             .category-block { scroll-margin-top: 160px; }
-            .store-meta { gap: 8px 12px; } /* 小螢幕自動換行時縮小間距 */
+            .store-meta { gap: 8px 12px; }
         }
     </style>
 </head>
@@ -323,33 +420,33 @@
 <div class="navbar">
     <a href="#" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (如：筒仔米糕、香菇雞湯)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (如：沙朗牛排、鐵板麵)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
 <button class="btn-back" onclick="goBack()">⬅ 離開點餐</button>
 
 <div class="container">
-    <!-- 改版後的店家 Banner -->
+    <!-- 店家 Banner -->
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">元</div>
+            <div class="store-logo">6</div>
             <div class="store-details">
-                <h1>元鼎燉湯 鹿港店</h1>
+                <h1>地6攤排餐 鹿港店</h1>
                 <div class="store-meta">
-                    <span>⭐ <span class="rating-score">4.8</span> <span class="rating-count">(66)</span></span>
-                    <span>🕒 06:00 ~ 13:30</span>
-                    <span>📍 彰化縣鹿港鎮復興路 687 號</span>
-                    <span>📞 0989-891619</span>
+                    <span class="rating">⭐ 4.8 (795)</span>
+                    <span>🕒 11:00 ~ 13:30，17:00 ~ 20:30</span>
+                    <span>📍 505彰化縣鹿港鎮永安里東隆路236-5號</span>
+                    <span>📞 (04) 778-9819</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 低消訊息與須知橫幅 -->
+    <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
-        <span class="promo-text">外送最低金額 <b>800</b> 元</span>
+        <span class="promo-text">外送最低金額 <b>1000</b> 元</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -367,14 +464,22 @@
             
             <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p></div>
 
+            <!-- 客製化選項：醬料與熟度 -->
             <div class="opt-group">
-                <label class="opt-title" for="spicy-level">🌶️ 調整辣度</label>
-                <select id="spicy-level" class="select-box">
-                    <option value="不辣">不辣 / 正常</option>
-                    <option value="微辣">微辣</option>
-                    <option value="小辣">小辣</option>
-                    <option value="中辣">中辣</option>
-                    <option value="大辣">大辣</option>
+                <label class="opt-title" for="sauce-type">🧂 醬料選擇</label>
+                <select id="sauce-type" class="select-box">
+                    <option value="綜合醬">綜合醬</option>
+                    <option value="黑胡椒">黑胡椒</option>
+                    <option value="蘑菇醬">蘑菇醬</option>
+                    <option value="不加醬">不加醬</option>
+                </select>
+
+                <label class="opt-title" for="doneness">🥩 牛排熟度</label>
+                <select id="doneness" class="select-box">
+                    <option value="全熟">全熟</option>
+                    <option value="7分">7分</option>
+                    <option value="5分">5分</option>
+                    <option value="3分">3分</option>
                 </select>
             </div>
 
@@ -384,41 +489,122 @@
     </div>
 </div>
 
+<!-- 自訂精美 Modal 結構 -->
+<div id="customModal" class="custom-modal-overlay">
+    <div class="custom-modal">
+        <div class="custom-modal-header">
+            <h3 id="modalTitle" class="custom-modal-title">提示</h3>
+            <button class="custom-modal-close" onclick="closeModal(false)">&times;</button>
+        </div>
+        <div id="modalBody" class="custom-modal-body">
+            <!-- 內容動態帶入 -->
+        </div>
+        <div id="modalFooter" class="custom-modal-footer">
+            <!-- 按鈕動態帶入 -->
+        </div>
+    </div>
+</div>
+
 <script>
+let modalCallback = null;
+
+function showModal(title, htmlContent, type = 'alert', callback = null) {
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalBody').innerHTML = htmlContent;
+    modalCallback = callback;
+
+    const footer = document.getElementById('modalFooter');
+    footer.innerHTML = '';
+
+    if (type === 'confirm') {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'modal-btn modal-btn-cancel';
+        cancelBtn.innerText = '取消';
+        cancelBtn.onclick = () => closeModal(false);
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'modal-btn modal-btn-confirm';
+        confirmBtn.innerText = '確認送出';
+        confirmBtn.onclick = () => closeModal(true);
+
+        footer.appendChild(cancelBtn);
+        footer.appendChild(confirmBtn);
+    } else {
+        const okBtn = document.createElement('button');
+        okBtn.className = 'modal-btn modal-btn-confirm';
+        okBtn.innerText = '確定';
+        okBtn.onclick = () => closeModal(true);
+
+        footer.appendChild(okBtn);
+    }
+
+    document.getElementById('customModal').classList.add('active');
+}
+
+function closeModal(result) {
+    document.getElementById('customModal').classList.remove('active');
+    if (modalCallback) {
+        modalCallback(result);
+        modalCallback = null;
+    }
+}
+
 function goBack() {
     window.location.href = 'index.html'; 
 }
 
 const rawMenuItems = [
-    // === 主食 ===
-    {name: "筒仔米糕", price: 35, category: "主食", icon:"🍚"},
-    {name: "爌肉飯", price: 60, category: "主食", icon:"🍱"},
-    {name: "魯肉飯 (小)", price: 35, category: "主食", icon:"🍚"},
-    {name: "魯肉飯 (大)", price: 45, category: "主食", icon:"🍚"},
-    {name: "切仔麵 (乾)", price: 35, category: "主食", icon:"🍜"},
-    {name: "切仔麵 (湯)", price: 35, category: "主食", icon:"🍜"},
-    {name: "蛤仔排骨麵", price: 80, category: "主食", icon:"🍜"},
-    {name: "排骨酥麵", price: 80, category: "主食", icon:"🍜"},
+    // === 經典排餐 ===
+    {name: "沙朗牛排", price: 220, category: "經典排餐", icon:"🐮"},
+    {name: "香煎豬排", price: 200, category: "經典排餐", icon:"🐷"},
+    {name: "脆皮雞腿排", price: 200, category: "經典排餐", icon:"🐔"},
+    {name: "中卷排餐", price: 200, category: "經典排餐", icon:"🦑"},
+    {name: "鐵板麵", price: 100, category: "經典排餐", icon:"🍝"},
 
-    // === 湯品 ===
-    {name: "香菇雞湯", price: 60, category: "湯品", icon:"🍲"},
-    {name: "剝皮辣椒雞湯", price: 60, category: "湯品", icon:"🍲"},
-    {name: "藥膳排骨湯", price: 60, category: "湯品", icon:"🍲"},
-    {name: "蛤仔排骨湯", price: 50, category: "湯品", icon:"🍲"},
-    {name: "排骨酥湯", price: 50, category: "湯品", icon:"🍲"},
-    {name: "筍絲排骨湯", price: 45, category: "湯品", icon:"🍲"},
-    {name: "苦瓜排骨湯", price: 45, category: "湯品", icon:"🍲"},
-    {name: "枸杞腦髓湯", price: 45, category: "湯品", icon:"🍲"},
-    {name: "貢丸湯", price: 25, category: "湯品", icon:"🥣"},
+    // === 雙拼系列 ===
+    {name: "牛排 + 豬排", price: 330, category: "雙拼系列", icon:"🐮🐷"},
+    {name: "牛排 + 雞排", price: 330, category: "雙拼系列", icon:"🐮🐔"},
+    {name: "豬排 + 雞排", price: 320, category: "雙拼系列", icon:"🐷🐔"},
+    {name: "牛排 + 牛排", price: 340, category: "雙拼系列", icon:"🐮🐮"},
+    {name: "牛排 + 中卷", price: 330, category: "雙拼系列", icon:"🐮🦑"},
+    {name: "豬排 + 中卷", price: 320, category: "雙拼系列", icon:"🐷🦑"},
+    {name: "雞排 + 中卷", price: 320, category: "雙拼系列", icon:"🐔🦑"},
 
-    // === 小菜 ===
-    {name: "燙青菜", price: 30, category: "小菜", icon:"🥬"},
-    {name: "白菜魯", price: 20, category: "小菜", icon:"🥬"},
-    {name: "筍干", price: 20, category: "小菜", icon:"🥬"},
-    {name: "魯蛋", price: 15, category: "小菜", icon:"🥚"},
-    {name: "肉皮", price: 10, category: "小菜", icon:"🥓"},
-    {name: "豆輪", price: 5, category: "小菜", icon:"🧆"},
-    {name: "油豆腐", price: 5, category: "小菜", icon:"🧊"}
+    // === 鐵板麵系列 ===
+    {name: "牛丼鐵板麵", price: 110, category: "鐵板麵系列", icon:"🐮🍝"},
+    {name: "豬丼鐵板麵", price: 100, category: "鐵板麵系列", icon:"🐷🍝"},
+    {name: "紐奧良雞麵", price: 100, category: "鐵板麵系列", icon:"🐔🍝"},
+
+    // === 輕食餐盒 (半肉) ===
+    {name: "沙朗牛餐盒 (半肉)", price: 120, category: "輕食餐盒 (半肉)", icon:"🍱"},
+    {name: "紐奧良雞餐盒 (半肉)", price: 100, category: "輕食餐盒 (半肉)", icon:"🍱"},
+    {name: "豬排餐盒 (半肉)", price: 100, category: "輕食餐盒 (半肉)", icon:"🍱"},
+    {name: "蒲燒鯛餐盒 (半肉)", price: 100, category: "輕食餐盒 (半肉)", icon:"🍱"},
+
+    // === 輕食餐盒 (全肉) ===
+    {name: "沙朗牛餐盒 (全肉)", price: 185, category: "輕食餐盒 (全肉)", icon:"🍱"},
+    {name: "紐奧良雞餐盒 (全肉)", price: 145, category: "輕食餐盒 (全肉)", icon:"🍱"},
+    {name: "豬排餐盒 (全肉)", price: 145, category: "輕食餐盒 (全肉)", icon:"🍱"},
+    {name: "蒲燒鯛餐盒 (全肉)", price: 145, category: "輕食餐盒 (全肉)", icon:"🍱"},
+    {name: "中卷餐盒 (全肉)", price: 145, category: "輕食餐盒 (全肉)", icon:"🍱"},
+
+    // === 單點主餐 ===
+    {name: "沙朗牛排 (3oz)", price: 65, category: "單點主餐", icon:"🥩"},
+    {name: "沙朗牛排 (6oz)", price: 130, category: "單點主餐", icon:"🥩"},
+    {name: "香煎豬排 (1片)", price: 45, category: "單點主餐", icon:"🥩"},
+    {name: "香煎豬排 (2片)", price: 90, category: "單點主餐", icon:"🥩"},
+    {name: "雞腿排 (半塊)", price: 45, category: "單點主餐", icon:"🍗"},
+    {name: "雞腿排 (1塊)", price: 90, category: "單點主餐", icon:"🍗"},
+    {name: "蒲燒鯛 (1片)", price: 45, category: "單點主餐", icon:"🐟"},
+    {name: "蒲燒鯛 (2片)", price: 90, category: "單點主餐", icon:"🐟"},
+
+    // === 其他加點 ===
+    {name: "無肉餐盒 (鍋邊素)", price: 55, category: "其他加點", icon:"🥗"},
+    {name: "玉米濃湯", price: 35, category: "其他加點", icon:"🥣"},
+    {name: "酸辣湯 (冬日限定)", price: 35, category: "其他加點", icon:"🥣"},
+    {name: "加蛋", price: 15, category: "其他加點", icon:"🍳"},
+    {name: "加 1 碗飯", price: 15, category: "其他加點", icon:"🍚"},
+    {name: "加麵", price: 5, category: "其他加點", icon:"🍝"}
 ];
 
 const menuItems = rawMenuItems.map((item, index) => ({ ...item, id: index + 1 }));
@@ -532,7 +718,7 @@ function renderMenu(items) {
                     </div>
                 </div>
                 <div class="item-img-placeholder" onclick="changeQty(${item.id}, 1)">
-                    ${escapeHtml(item.icon || '🍲')}
+                    ${escapeHtml(item.icon || '🥩')}
                 </div>
             `;
             grid.appendChild(card);
@@ -582,11 +768,13 @@ function changeQty(itemId, delta) {
 
 function clearCart() {
     if (Object.keys(cart).length === 0) return;
-    if (confirm("確定要清空購物車內的所有餐點嗎？")) {
-        cart = {};
-        renderCart();
-        renderMenu(currentFilteredItems);
-    }
+    showModal("提示", "確定要清空購物車內的所有餐點嗎？", "confirm", (confirmed) => {
+        if (confirmed) {
+            cart = {};
+            renderCart();
+            renderMenu(currentFilteredItems);
+        }
+    });
 }
 
 function renderCart() {
@@ -642,68 +830,74 @@ function renderCart() {
     document.getElementById("total-amount").innerText = `總計: $${Math.round(finalTotal)}`;
 }
 
-async function submitOrderToServer() {
+function submitOrderToServer() {
     if (finalTotal === 0) { 
-        return alert("🛒 購物車是空的喔！"); 
-    }
-
-    const spicySelect = document.getElementById("spicy-level");
-    const spicyVal = spicySelect ? spicySelect.value : "不辣 / 正常";
-
-    const orderMealSummary = `元鼎燉湯：${finalSummary.trim()}`;
-    const fullNote = `辣度：${spicyVal}`;
-
-    let confirmMessage = 
-        `請確認您的訂單內容：\n\n` +
-        `餐點：${finalSummary.trim()}\n` +
-        `辣度：${spicyVal}\n` +
-        `總金額：$${finalTotal} 元\n\n確定要送出訂單嗎？`;
-
-    if (!confirm(confirmMessage)) {
+        showModal("提示", "🛒 購物車是空的喔！", "alert");
         return; 
     }
 
-    const btn = document.getElementById("submit-btn");
-    btn.disabled = true;
-    btn.innerText = "訂單傳送中...";
+    const sauceSelect = document.getElementById("sauce-type");
+    const sauceVal = sauceSelect ? sauceSelect.value : "綜合醬";
 
-    const payload = {
-        cardId: currentCardId,
-        meal: orderMealSummary,
-        total: finalTotal,
-        spicy: spicyVal,
-        note: fullNote
-    };
+    const donenessSelect = document.getElementById("doneness");
+    const donenessVal = donenessSelect ? donenessSelect.value : "7分";
 
-    try {
-        const response = await fetch('/api/order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        
-        const resData = await response.json();
+    const orderMealSummary = `地6攤排餐：${finalSummary.trim()}`;
+    const fullNote = `醬料：${sauceVal} / 熟度：${donenessVal}`;
 
-        if (resData.success) {
-            alert("🎉 點餐成功！訂單已傳送到後端。");
-            const localKey = `orders_${currentCardId}`;
-            const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
-            existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
-            localStorage.setItem(localKey, JSON.stringify(existingOrders));
+    let confirmHtml = 
+        `請確認您的訂單內容：<br><br>` +
+        `餐點：${escapeHtml(finalSummary.trim())}<br>` +
+        `醬料：${escapeHtml(sauceVal)}<br>` +
+        `熟度：${escapeHtml(donenessVal)}<br>` +
+        `總金額：<b style="color:var(--accent); font-size:16px;">$${finalTotal}</b> 元<br><br>確定要送出訂單嗎？`;
+
+    showModal("請確認您的訂單內容", confirmHtml, "confirm", async (confirmed) => {
+        if (!confirmed) return;
+
+        const btn = document.getElementById("submit-btn");
+        btn.disabled = true;
+        btn.innerText = "訂單傳送中...";
+
+        const payload = {
+            cardId: currentCardId,
+            meal: orderMealSummary,
+            total: finalTotal,
+            sauce: sauceVal,
+            doneness: donenessVal,
+            note: fullNote
+        };
+
+        try {
+            const response = await fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
             
-            cart = {};
-            renderCart();
-            renderMenu(currentFilteredItems);
-        } else {
-            alert(`⚠️ 送出失敗：${resData.message || '請稍後再試'}`);
+            const resData = await response.json();
+
+            if (resData.success) {
+                showModal("提示", "🎉 點餐成功！訂單已傳送到後端。", "alert");
+                const localKey = `orders_${currentCardId}`;
+                const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
+                existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
+                localStorage.setItem(localKey, JSON.stringify(existingOrders));
+                
+                cart = {};
+                renderCart();
+                renderMenu(currentFilteredItems);
+            } else {
+                showModal("提示", `⚠️ 送出失敗：${escapeHtml(resData.message || '請稍後再試')}`, "alert");
+            }
+        } catch (err) {
+            console.error("發送失敗:", err);
+            showModal("提示", "❌ 網路發送失敗，請確認網路連線或改用人工點餐！", "alert");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
         }
-    } catch (err) {
-        console.error("發送失敗:", err);
-        alert("❌ 網路發送失敗，請確認網路連線或改用人工點餐！");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "確認送出訂單";
-    }
+    });
 }
 </script>
 </body>

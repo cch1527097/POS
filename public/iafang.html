@@ -13,7 +13,7 @@
             --secondary: #f1c40f;      /* 溫暖金黃 */
             --accent: #e74c3c;        /* 亮紅點綴 */
             --bg-main: #f4f6f9;       /* 輕灰底色 */
-            --text-dark: #2c3e50;      /* 深色文字 */
+            --text-dark: #2c3e50;     /* 深色文字 */
             --text-muted: #7f8c8d;    /* 輔助灰色 */
             --border-color: #e2e8f0;  /* 邊框線條 */
         }
@@ -234,6 +234,99 @@
             border: none; 
         }
 
+        /* ---------------- 自訂 Modal 彈窗樣式 ---------------- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-container {
+            background: #ffffff;
+            width: 90%;
+            max-width: 420px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transform: translateY(10px);
+            transition: transform 0.2s ease;
+        }
+        .modal-overlay.active .modal-container {
+            transform: translateY(0);
+        }
+        .modal-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .modal-close-icon {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-body {
+            padding: 0 20px 20px 20px;
+            font-size: 15px;
+            color: #334155;
+            line-height: 1.8;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 16px;
+        }
+        .modal-body-item {
+            margin-bottom: 8px;
+        }
+        .modal-highlight {
+            color: #9e1c11;
+            font-weight: 700;
+        }
+        .modal-footer {
+            padding: 12px 20px 16px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background-color: #f8fafc;
+        }
+        .modal-btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: background 0.2s;
+        }
+        .modal-btn-cancel {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #334155;
+        }
+        .modal-btn-cancel:hover { background: #f1f5f9; }
+        .modal-btn-confirm {
+            background: var(--primary);
+            color: #ffffff;
+        }
+        .modal-btn-confirm:hover { background: #82150d; }
+
         /* 響應式手機/平板優化 */
         @media (max-width: 1024px) {
             .main-layout { flex-direction: column; }
@@ -313,7 +406,6 @@
                     <option value="大辣">大辣</option>
                 </select>
 
-                <!-- 補上原本 JS script 依賴的 sauerkraut 客製選項 (便當需求) -->
                 <label class="opt-title">🍱 便當客製需求</label>
                 <div>
                     <label class="check-inline"><input type="checkbox" name="sauerkraut" value="飯少"> 飯少</label>
@@ -324,6 +416,23 @@
 
             <div class="total-box" id="total-amount">總計: $0</div>
             <button class="btn-submit" id="submit-btn" onclick="submitOrderToServer()">確認送出訂單</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 彈窗結構 -->
+<div class="modal-overlay" id="custom-modal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <span id="modal-title">請確認您的訂單內容</span>
+            <button class="modal-close-icon" onclick="closeModal(false)">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-body">
+            <!-- 內容由 JS 動態填入 -->
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn-cancel" id="modal-cancel-btn" onclick="closeModal(false)">取消</button>
+            <button class="modal-btn modal-btn-confirm" id="modal-confirm-btn" onclick="closeModal(true)">確認送出</button>
         </div>
     </div>
 </div>
@@ -357,6 +466,7 @@ let finalSummary = "";
 let currentCardId = "TEST";
 let searchTimer = null;
 let currentFilteredItems = menuItems;
+let modalResolveFunc = null;
 
 window.onload = function() {
     initCardId();
@@ -487,9 +597,15 @@ function changeQty(name, delta, price, itemId) {
     renderCart();
 }
 
-function clearCart() {
+async function clearCart() {
     if (Object.keys(cart).length === 0) return;
-    if (confirm("確定要清空購物車內的所有餐點嗎？")) {
+    const isConfirmed = await showCustomModal({
+        title: "提示",
+        htmlContent: "確定要清空購物車內的所有餐點嗎？",
+        showCancel: true,
+        confirmText: "確定清空"
+    });
+    if (isConfirmed) {
         cart = {};
         renderCart();
         renderMenu(currentFilteredItems);
@@ -539,30 +655,69 @@ function renderCart() {
     document.getElementById("total-amount").innerText = `總計: $${Math.round(finalTotal)}`;
 }
 
+/* ---------------- 通用 Modal 控制邏輯 ---------------- */
+function showCustomModal({ title, htmlContent, showCancel = true, confirmText = "確認送出", cancelText = "取消" }) {
+    return new Promise((resolve) => {
+        document.getElementById("modal-title").innerText = title;
+        document.getElementById("modal-body").innerHTML = htmlContent;
+        
+        const cancelBtn = document.getElementById("modal-cancel-btn");
+        const confirmBtn = document.getElementById("modal-confirm-btn");
+        
+        cancelBtn.style.display = showCancel ? "inline-block" : "none";
+        cancelBtn.innerText = cancelText;
+        confirmBtn.innerText = confirmText;
+        
+        document.getElementById("custom-modal").classList.add("active");
+        modalResolveFunc = resolve;
+    });
+}
+
+function closeModal(result) {
+    document.getElementById("custom-modal").classList.remove("active");
+    if (modalResolveFunc) {
+        modalResolveFunc(result);
+        modalResolveFunc = null;
+    }
+}
+
 async function submitOrderToServer() {
     if (finalTotal === 0) { 
-        return alert("🛒 購物車是空的喔！"); 
+        await showCustomModal({
+            title: "提示",
+            htmlContent: "🛒 購物車是空的喔！",
+            showCancel: false,
+            confirmText: "確定"
+        });
+        return; 
     }
 
     const spicyEl = document.getElementById("spicy-level");
-    const spicyVal = spicyEl ? spicyEl.value : "正常";
+    const spicyVal = spicyEl ? spicyEl.value : "不辣";
 
     const selectedSideDishes = Array.from(document.querySelectorAll('input[name="sauerkraut"]:checked'))
                                      .map(cb => cb.value);
     const sideDishesStr = selectedSideDishes.length > 0 ? selectedSideDishes.join('、') : "無";
 
     const orderMealSummary = `老聃飲食：${finalSummary.trim()}`;
-    const fullNote = `配料項目：${sideDishesStr} / 醬料辣度：${spicyVal} / 總計：$${finalTotal}`;
+    const fullNote = `便當需求：${sideDishesStr} / 醬料辣度：${spicyVal} / 總計：$${finalTotal}`;
 
-    const confirmMessage = 
-        `請確認您的訂單內容：\n\n` +
-        `餐點：${finalSummary.trim()}\n` +
-        `配料項目：${sideDishesStr}\n` +
-        `醬料辣度：${spicyVal}\n` +
-        `總金額：$${finalTotal} 元\n\n` +
-        `確定要送出訂單嗎？`;
+    // 格式化彈出內容 (完全比照圖片卡片與高亮樣式)
+    const modalHtml = `
+        <div class="modal-body-item">餐點：${finalSummary.trim()}</div>
+        <div class="modal-body-item">小菜項目：${sideDishesStr}</div>
+        <div class="modal-body-item">醬料/辣度：${spicyVal}</div>
+        <div class="modal-body-item">總金額：<span class="modal-highlight">$${finalTotal}</span> 元</div>
+    `;
 
-    const isConfirmed = confirm(confirmMessage);
+    const isConfirmed = await showCustomModal({
+        title: "請確認您的訂單內容",
+        htmlContent: modalHtml,
+        showCancel: true,
+        confirmText: "確認送出",
+        cancelText: "取消"
+    });
+
     if (!isConfirmed) {
         return; 
     }
@@ -590,7 +745,12 @@ async function submitOrderToServer() {
         const resData = await response.json();
 
         if (resData.success) {
-            alert("🎉 點餐成功！訂單已送到後端。");
+            await showCustomModal({
+                title: "提示",
+                htmlContent: "🎉 點餐成功！訂單已送到後端。",
+                showCancel: false,
+                confirmText: "確定"
+            });
             const localKey = `orders_${currentCardId}`;
             const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
             existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
@@ -600,11 +760,21 @@ async function submitOrderToServer() {
             renderCart();
             renderMenu(currentFilteredItems);
         } else {
-            alert(`⚠️ 送出失敗：${resData.message || '請稍後再試'}`);
+            await showCustomModal({
+                title: "提示",
+                htmlContent: `⚠️ 送出失敗：${resData.message || '請稍後再試'}`,
+                showCancel: false,
+                confirmText: "確定"
+            });
         }
     } catch (err) {
         console.error("發送失敗:", err);
-        alert("❌ 網路發送失敗，請確認網路連線或改用人工點餐！");
+        await showCustomModal({
+            title: "提示",
+            htmlContent: "❌ 網路發送失敗，請確認網路連線或改用人工點餐！",
+            showCancel: false,
+            confirmText: "確定"
+        });
     } finally {
         btn.disabled = false;
         btn.innerText = "確認送出訂單";

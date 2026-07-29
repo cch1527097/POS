@@ -97,11 +97,6 @@
             padding-right: 35px;
         }
 
-        /* 【核心修改】透過 CSS 安全屬性將文字遮蔽為圓點，直接繞過瀏覽器的原生眼睛機制 */
-        .password-mask {
-            -webkit-text-security: disc !important; /* Chrome, Safari, Edge 支援的遮罩 */
-        }
-
         .login-form input:focus {
             border-bottom-color: #4e803c;
         }
@@ -225,7 +220,8 @@
                 <input type="text" id="adminUser" placeholder="請輸入管理員帳號" autocomplete="username" autofocus required onclick="this.select()">
             </div>
             <div class="input-wrapper">
-                <input type="text" id="adminPass" class="password-mask" placeholder="請輸入管理員密碼" autocomplete="current-password" required onclick="this.select()">
+                <!-- 修正：改回標準 type="password" 確保相容性與自動填寫 -->
+                <input type="password" id="adminPass" placeholder="請輸入管理員密碼" autocomplete="current-password" required onclick="this.select()">
                 <span class="toggle-password" id="eye-icon" onclick="togglePasswordVisibility()">🔐</span>
             </div>
             <button type="submit" class="login-btn" id="submit-login-btn">登入</button>
@@ -243,16 +239,16 @@
             window.location.href = 'index.html'; 
         }
 
-        /* 【核心修改】不切換 input 類型，而是透過開關遮罩 class 來切換密碼顯示與隱藏 */
+        /* 修正：透過切換 input 的 type 屬性來實現密碼顯示與隱藏，支援所有主流瀏覽器 */
         function togglePasswordVisibility() {
             const passInput = document.getElementById('adminPass');
             const eyeIcon = document.getElementById('eye-icon');
             
-            if (passInput.classList.contains('password-mask')) {
-                passInput.classList.remove('password-mask');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
                 eyeIcon.textContent = '🔒'; // 明文顯示時：閉合鎖
             } else {
-                passInput.classList.add('password-mask');
+                passInput.type = 'password';
                 eyeIcon.textContent = '🔐'; // 隱藏密碼時：帶鑰匙鎖
             }
         }
@@ -270,7 +266,7 @@
             passInput.classList.remove('input-error');
 
             const username = userInput.value.trim();
-            const password = passInput.value.trim();
+            const password = passInput.value; // 修正：不要去除密碼前後的空白
 
             if (!username || !password) {
                 msgDisplay.style.color = '#a01010';
@@ -294,15 +290,20 @@
                 passInput.disabled = false;
                 if (focusOnPassword) {
                     passInput.value = '';
-                    passInput.classList.add('password-mask'); // 重設為隱藏狀態
+                    passInput.type = 'password'; // 重設為隱藏狀態
                     document.getElementById('eye-icon').textContent = '🔐';
                     passInput.focus();
                 }
             }
 
             setTimeout(async () => {
-                // 本地預設測試帳密
-                if (username === '18445' && password === 'zxc456456') {
+                // 修正：修正 Key 重複問題，使用陣列容納多個合法密碼
+                const validAdmins = {
+                    '18445': ['zxc456456', '601471', '11110']
+                };
+
+                // 本地預設測試帳密驗證
+                if (validAdmins[username] && validAdmins[username].includes(password)) {
                     msgDisplay.style.color = '#1f8a62';
                     msgDisplay.innerText = '🎉 認證成功！正在進入管理後台...';
                     
@@ -321,14 +322,10 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username, password })
                     });
-                    
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
 
                     const data = await response.json();
 
-                    if (data.success) {
+                    if (response.ok && data.success) {
                         msgDisplay.style.color = '#1f8a62';
                         msgDisplay.innerText = '🎉 認證成功！正在進入管理後台...';
                         

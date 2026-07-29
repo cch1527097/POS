@@ -251,6 +251,72 @@
             border: none; 
         }
 
+        /* Modal 彈窗樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000;
+            opacity: 0; visibility: hidden;
+            transition: all 0.2s ease-in-out;
+        }
+        .modal-overlay.active {
+            opacity: 1; visibility: visible;
+        }
+        .modal-container {
+            background: #fff;
+            width: 90%; max-width: 420px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.2s ease-in-out;
+        }
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+        .modal-header {
+            padding: 18px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .modal-header h3 {
+            margin: 0; font-size: 18px; font-weight: 700; color: #2c3e50;
+        }
+        .modal-close {
+            background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; padding: 0; line-height: 1;
+        }
+        .modal-body {
+            padding: 24px; font-size: 15px; color: #334155; line-height: 1.8;
+        }
+        .modal-body .info-row {
+            margin-bottom: 12px; display: flex; align-items: baseline;
+        }
+        .modal-body .info-row:last-child { margin-bottom: 0; }
+        .modal-body .label {
+            color: #475569; width: 100px; flex-shrink: 0; font-weight: 500;
+        }
+        .modal-body .value {
+            color: #0f172a; font-weight: 600; flex: 1; word-break: break-all;
+        }
+        .modal-body .highlight-price {
+            color: #9e1c11; font-weight: 800; font-size: 18px;
+        }
+        .modal-footer {
+            padding: 16px 24px 20px;
+            display: flex; justify-content: flex-end; gap: 12px;
+            background: #fafafa; border-top: 1px solid #f1f5f9;
+        }
+        .btn-modal-cancel {
+            background: #fff; border: 1px solid #cbd5e1; color: #475569;
+            padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;
+        }
+        .btn-modal-confirm {
+            background: #9e1c11; border: none; color: #fff;
+            padding: 8px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;
+        }
+
         @media (max-width: 1024px) {
             .main-layout { flex-direction: column; }
             .category-sidebar { 
@@ -356,7 +422,24 @@
             </div>
 
             <div class="total-box" id="total-amount">總計: $0</div>
-            <button class="btn-submit" id="submit-btn" onclick="submitOrderToServer()">確認送出訂單</button>
+            <button class="btn-submit" id="submit-btn" onclick="openOrderModal()">確認送出訂單</button>
+        </div>
+    </div>
+</div>
+
+<!-- 美化 Modal 彈窗區域 -->
+<div class="modal-overlay" id="custom-modal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 id="modal-title">請確認您的訂單內容</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body">
+            <!-- 動態注入內容 -->
+        </div>
+        <div class="modal-footer" id="modal-footer">
+            <button class="btn-modal-cancel" id="modal-cancel-btn" onclick="closeModal()">取消</button>
+            <button class="btn-modal-confirm" id="modal-confirm-btn">確認送出</button>
         </div>
     </div>
 </div>
@@ -437,7 +520,7 @@ let searchTimer = null;
 let currentFilteredItems = menuItems;
 
 // 客製化選項狀態
-let selectedSide = ""; // 單選配菜
+let selectedSide = ""; 
 let selectedFlavors = [];
 let selectedSalt = "正常";
 let selectedSpicy = "不辣";
@@ -577,23 +660,15 @@ function changeQty(itemId, delta) {
 
 function clearCart() {
     if (Object.keys(cart).length === 0) return;
-    if (confirm("確定要清空購物車內的所有餐點嗎？")) {
+    openAlertModal("確認清空", "確定要清空購物車內的所有餐點嗎？", true, () => {
         cart = {};
         renderCart();
         renderMenu(currentFilteredItems);
-    }
+    });
 }
 
-// === 客製化按鈕切換邏輯 ===
-
-// 配菜需求：單選邏輯 (再次點擊可取消選擇)
 function setSingleSide(val) {
-    if (selectedSide === val) {
-        selectedSide = ""; // 已選中則取消
-    } else {
-        selectedSide = val; // 切換為新選的配菜
-    }
-    
+    selectedSide = (selectedSide === val) ? "" : val;
     ["筍片", "洋蔥"].forEach(s => {
         const btn = document.getElementById(`side-${s}`);
         if (btn) btn.classList.toggle("active", s === selectedSide);
@@ -634,7 +709,6 @@ function toggleBoxOpt() {
     renderCart();
 }
 
-// === 購物車渲染與套餐小菜自動折抵 ===
 function renderCart() {
     const cartDiv = document.getElementById("cart-list");
     cartDiv.innerHTML = "";
@@ -648,7 +722,6 @@ function renderCart() {
         return;
     }
 
-    // 1. 計算購物車內的「免費小菜額度」
     let freeSidesQuota = 0;
     keys.forEach(id => {
         const item = cart[id];
@@ -659,18 +732,16 @@ function renderCart() {
         }
     });
 
-    // 2. 進行金額計算與小菜免費額度扣減
     let discountAmount = 0;
 
     keys.forEach(id => {
         const item = cart[id];
         let sub = item.qty * item.price;
 
-        // 如果是精選小菜，且還有套餐免費額度，進行折抵
         if (item.category === "精選小菜" && freeSidesQuota > 0) {
-            let freeCount = Math.min(item.qty, freeSidesQuota); // 可折抵的數量
-            discountAmount += freeCount * item.price;           // 扣除金額 (每份25元)
-            freeSidesQuota -= freeCount;                         // 扣減剩餘額度
+            let freeCount = Math.min(item.qty, freeSidesQuota);
+            discountAmount += freeCount * item.price;
+            freeSidesQuota -= freeCount;
         }
 
         rawSubtotal += sub;
@@ -692,48 +763,93 @@ function renderCart() {
         cartDiv.appendChild(div);
     });
 
-    // 計算折抵後的金額
     let actualSubtotal = rawSubtotal - discountAmount;
-
-    // 盒裝加價邏輯 (折抵後未滿120元且勾選盒裝 +5元)
     let boxFee = (needBox && actualSubtotal < 120) ? 5 : 0;
     finalTotal = actualSubtotal + boxFee;
 
-    // 顯示訊息
     let feeText = boxFee > 0 ? ` (含餐盒費 $5)` : ``;
     let discountText = discountAmount > 0 ? `<br><small style="color:#10b981; font-size:12px; font-weight:600;">🎉 套餐已折抵小菜 -$${discountAmount}</small>` : ``;
     
     document.getElementById("total-amount").innerHTML = `總計: $${Math.round(finalTotal)}${feeText}${discountText}`;
 }
 
-async function submitOrderToServer() {
+/* === Modal 彈窗控制邏輯 === */
+function closeModal() {
+    document.getElementById('custom-modal').classList.remove('active');
+}
+
+function openOrderModal() {
     if (finalTotal === 0) { 
-        return alert("🛒 購物車是空的喔！"); 
+        return openAlertModal("提示", "🛒 購物車是空的喔！", false);
     }
 
+    let sideText = selectedSide !== "" ? selectedSide : "無";
+    let flavorText = selectedFlavors.length > 0 ? selectedFlavors.join('、') : "無";
+    let boxText = needBox ? "需要盒子" : "不需要盒子";
+
+    document.getElementById("modal-title").innerText = "請確認您的訂單內容";
+    
+    const bodyHtml = `
+        <div class="info-row">
+            <span class="label">餐點：</span>
+            <span class="value">${finalSummary.trim()}</span>
+        </div>
+        <div class="info-row">
+            <span class="label">配菜項目：</span>
+            <span class="value">${sideText}</span>
+        </div>
+        <div class="info-row">
+            <span class="label">醬料/辣度：</span>
+            <span class="value">鹹度:${selectedSalt} / 辣度:${selectedSpicy} / 加料:${flavorText} / ${boxText}</span>
+        </div>
+        <div class="info-row" style="margin-top: 16px;">
+            <span class="label">總金額：</span>
+            <span class="value highlight-price">$${finalTotal} <span style="font-size:14px; font-weight:normal; color:#475569;">元</span></span>
+        </div>
+    `;
+    
+    document.getElementById("modal-body").innerHTML = bodyHtml;
+    
+    const cancelBtn = document.getElementById("modal-cancel-btn");
+    cancelBtn.style.display = "block";
+    cancelBtn.innerText = "取消";
+
+    const confirmBtn = document.getElementById("modal-confirm-btn");
+    confirmBtn.innerText = "確認送出";
+    confirmBtn.onclick = submitOrderToServer;
+
+    document.getElementById('custom-modal').classList.add('active');
+}
+
+function openAlertModal(title, text, showCancel = false, onConfirm = null) {
+    document.getElementById("modal-title").innerText = title;
+    document.getElementById("modal-body").innerHTML = `<div>${text}</div>`;
+    
+    const cancelBtn = document.getElementById("modal-cancel-btn");
+    cancelBtn.style.display = showCancel ? "block" : "none";
+
+    const confirmBtn = document.getElementById("modal-confirm-btn");
+    confirmBtn.innerText = "確定";
+    confirmBtn.onclick = () => {
+        closeModal();
+        if (onConfirm) onConfirm();
+    };
+
+    document.getElementById('custom-modal').classList.add('active');
+}
+
+async function submitOrderToServer() {
     let sideText = selectedSide !== "" ? selectedSide : "無";
     let flavorText = selectedFlavors.length > 0 ? selectedFlavors.join(',') : "標準";
     let boxText = needBox ? "需要盒子" : "不需要盒子";
 
     const customNotes = `辣度: ${selectedSpicy} / 鹹度: ${selectedSalt} / 配菜: ${sideText} / 加料: ${flavorText} / ${boxText}`;
-
     const orderMealSummary = `咕雞 鹽水雞：${finalSummary.trim()}`;
     const fullNote = `客製需求：${customNotes} / 總計：$${finalTotal}`;
 
-    const confirmMessage = 
-        `請確認您的訂單內容：\n\n` +
-        `餐點：${finalSummary.trim()}\n` +
-        `需求：${customNotes}\n` +
-        `總金額：$${finalTotal} 元\n\n` +
-        `確定要送出訂單嗎？`;
-
-    if (!confirm(confirmMessage)) {
-        return; 
-    }
-
-    const btn = document.getElementById("submit-btn");
+    const btn = document.getElementById("modal-confirm-btn");
     btn.disabled = true;
-    btn.innerText = "訂單傳送中...";
+    btn.innerText = "傳送中...";
 
     const payload = {
         cardId: currentCardId,
@@ -752,32 +868,36 @@ async function submitOrderToServer() {
         
         const resData = await response.json();
 
-        if (resData.success) {
-            alert("🎉 點餐成功！訂單已送到後端。");
-            const localKey = `orders_${currentCardId}`;
-            const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
-            existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
-            localStorage.setItem(localKey, JSON.stringify(existingOrders));
-            
-            cart = {};
-            selectedSide = "";
-            selectedFlavors = [];
-            needBox = false;
-            document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
-            setSalt('正常');
-            setSpicy('不辣');
+        closeModal();
 
-            renderCart();
-            renderMenu(currentFilteredItems);
+        if (resData.success) {
+            openAlertModal("提示", "🎉 點餐成功！訂單已送到後端。", false, () => {
+                const localKey = `orders_${currentCardId}`;
+                const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
+                existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
+                localStorage.setItem(localKey, JSON.stringify(existingOrders));
+                
+                cart = {};
+                selectedSide = "";
+                selectedFlavors = [];
+                needBox = false;
+                document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+                setSalt('正常');
+                setSpicy('不辣');
+
+                renderCart();
+                renderMenu(currentFilteredItems);
+            });
         } else {
-            alert(`⚠️ 送出失敗：${resData.message || '請稍後再試'}`);
+            openAlertModal("提示", `⚠️ 送出失敗：${resData.message || '請稍後再試'}`, false);
         }
     } catch (err) {
         console.error("發送失敗:", err);
-        alert("❌ 網路發送失敗，請確認網路連線或改用人工點餐！");
+        closeModal();
+        openAlertModal("提示", "❌ 網路發送失敗，請確認網路連線或改用人工點餐！", false);
     } finally {
         btn.disabled = false;
-        btn.innerText = "確認送出訂單";
+        btn.innerText = "確認送出";
     }
 }
 </script>

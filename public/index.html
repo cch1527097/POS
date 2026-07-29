@@ -103,7 +103,6 @@
     color: #333;
 }
 
-/* 右側員工資訊 */
 /* 右側員工資訊區塊：確保置中且不被擠壓 */
 .nidin-top-right {
     display: flex;
@@ -159,7 +158,6 @@
     transition: color 0.2s, transform 0.1s;
     cursor: pointer;
     flex-shrink: 0;
-    cursor: pointer;
     user-select: none;          /* 避免文字被選取 */
     -webkit-user-select: none;  /* Safari/Chrome 相容 */
 }
@@ -189,7 +187,6 @@
 
 /* 📱 手機版 RWD 完美適應 */
 @media (max-width: 768px) {
-    /* 1. 頂部整體外框：改成直向排列並置中 */
     .nidin-top-bar {
         flex-direction: column;
         align-items: center;
@@ -198,7 +195,6 @@
         gap: 12px;
     }
 
-    /* 2. 左側區塊（Logo）：直向置中 */
     .nidin-top-left {
         flex-direction: column;
         align-items: center;
@@ -207,7 +203,6 @@
         gap: 10px;
     }
 
-    /* 3. 右側員工資訊：直向置中 */
     .nidin-top-right {
         width: 100%;
         justify-content: center;
@@ -219,12 +214,10 @@
         width: 100%;
     }
 
-    /* 隱藏分隔線與隱藏地點選擇器 (如需要顯示可拿掉 display: none) */
     .nidin-divider, .nidin-location-btn {
         display: none;
     }
 
-    /* 4. 搜尋框：滿版且內部置中 */
     .nidin-search-box {
         order: 3;
         width: 100%;
@@ -235,17 +228,17 @@
     }
 
     .nidin-search-box input {
-        text-align: center; /* 搜尋文字與 placeholder 置中 */
+        text-align: center;
     }
 
-    /* 5. 下方導覽選單：置中對齊 */
     .nidin-nav-bar {
         justify-content: center;
-        flex-wrap: wrap; /* 項目過多時自動換行並保持置中 */
+        flex-wrap: wrap;
         gap: 15px;
         padding: 10px 15px 15px 15px;
     }
 }
+
         * { box-sizing: border-box; font-family: "Microsoft JhengHei", sans-serif; }
         
         body {
@@ -353,6 +346,7 @@
             transition: color 0.2s, transform 0.2s;
             text-decoration: none;
         }
+
         .login-admin-link:hover { color: #2b4c23; transform: scale(1.02); }
 
         .error-msg { font-size: 16px; margin-top: 15px; height: 20px; font-weight: bold; color: #a01010; text-align: center; }
@@ -364,43 +358,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        .header-banner {
-            width: 100%;
-            background-color: #2b4c23; 
-            color: white;
-            text-align: center;
-            padding: 40px 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
-
-        .header-title {
-            font-size: 42px;
-            font-weight: bold;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            letter-spacing: 2px;
-        }
-
-        .sub-banner {
-            font-size: 18px;
-            margin-top: 15px;
-            opacity: 0.9;
-        }
-
-        .user-tag {
-            background: rgba(255, 255, 255, 0.18); /* 微調背景透明度使其更亮眼 */
-            padding: 10px 28px;                     /* 放大上下左右的留白區域 */
-            border-radius: 30px;                    /* 配合放大調整圓角弧度 */
-            font-size: 22px;                        /* 大幅放大字體 (原本為 14px) */
-            margin-top: 18px;                       /* 調整與上方文字的間距 */
-            display: inline-block;
-            border: 2px solid rgba(255, 255, 255, 0.35); /* 稍微加粗外框線 */
-            letter-spacing: 1px;                    /* 讓字體有些許間距更好閱讀 */
         }
 
         .grid-container {
@@ -482,42 +439,7 @@
         .go-btn:active:not(:disabled) { transform: scale(0.99); }
         .go-btn:disabled { background-color: #cccccc; cursor: not-allowed; box-shadow: none; }
 
-        /* ==================== 3. 訂單紀錄區塊樣式 ==================== */
-        .history-container {
-            max-width: 1200px;
-            width: 100%;
-            padding: 0 20px 40px 20px;
-            margin-bottom: 30px; 
-        }
-
-        .history-card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 4px 15px rgba(43, 76, 35, 0.04);
-            border: 1px solid #d6ebd3;
-        }
-
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #e2f0e0;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        .history-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2b4c23;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* 清除快取按鈕樣式 */
+        /* ==================== 3. 表格通用樣式 ==================== */
         .clear-local-btn {
             background-color: #fff3cd;
             color: #856404;
@@ -599,18 +521,203 @@
             box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
         }
 
+        /* ==================== 4. 院區 / 付款 / 購物車 / 曾點過 選擇彈窗 Modal 樣式 ==================== */
+        .branch-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(3px);
+        }
+
+        .branch-modal-content {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 420px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: modalFadeIn 0.25s ease-out;
+        }
+
+        /* 購物車 & 曾點過 Modal 寬度較寬 */
+        .cart-modal-content {
+            max-width: 800px !important;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .branch-modal-header {
+            padding: 16px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eaeaea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .branch-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #2b4c23;
+        }
+
+        .branch-modal-header .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            line-height: 1;
+        }
+
+        .branch-modal-header .close-btn:hover { color: #333; }
+
+        .branch-list {
+            padding: 10px 0;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .branch-item {
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .branch-item:hover {
+            background-color: #f0f7ee;
+            color: #2b4c23;
+        }
+
+        .branch-item .check-icon {
+            display: none;
+            color: #0091ff;
+            font-weight: bold;
+        }
+
+        .branch-item.active {
+            background-color: #eef7ed;
+            color: #2b4c23;
+            font-weight: bold;
+        }
+
+        .branch-item.active .check-icon {
+            display: inline;
+        }
+
+        /* 付款介紹 Modal 專用內部樣式 */
+        .payment-modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .payment-item {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px 16px;
+            border-left: 4px solid #4e803c;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .payment-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2b4c23;
+        }
+
+        .payment-detail {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* ==================== 5. 仿圖二自訂精美提示/確認對話框樣式 ==================== */
+        .custom-alert-box {
+            max-width: 440px !important;
+        }
+        .custom-alert-header {
+            background-color: #ffffff !important;
+            padding: 18px 24px !important;
+            border-bottom: 1px solid #edf2f7 !important;
+        }
+        .custom-alert-header h3 {
+            font-size: 18px !important;
+            color: #2d3748 !important;
+            font-weight: bold !important;
+        }
+        .custom-alert-header .close-btn {
+            color: #a0aec0 !important;
+            font-size: 20px !important;
+        }
+        .custom-alert-header .close-btn:hover {
+            color: #718096 !important;
+        }
+        .custom-alert-body {
+            padding: 30px 24px !important;
+            font-size: 16px !important;
+            color: #4a5568 !important;
+            line-height: 1.6 !important;
+            background-color: #ffffff !important;
+        }
+        .custom-alert-footer {
+            padding: 12px 24px 20px 24px !important;
+            display: flex !important;
+            justify-content: flex-end !important;
+            gap: 12px !important;
+            background-color: #ffffff !important;
+        }
+        .custom-btn-action {
+            padding: 10px 26px !important;
+            border-radius: 8px !important;
+            font-size: 15px !important;
+            font-weight: bold !important;
+            cursor: pointer !important;
+            border: none !important;
+            transition: background 0.2s, transform 0.1s !important;
+        }
+        .custom-btn-confirm-red {
+            background-color: #8b1a1a !important; /* 仿圖二深紅/紅棕色系 */
+            color: white !important;
+        }
+        .custom-btn-confirm-red:hover {
+            background-color: #721616 !important;
+        }
+        .custom-btn-cancel-gray {
+            background-color: #edf2f7 !important;
+            color: #4a5568 !important;
+        }
+        .custom-btn-cancel-gray:hover {
+            background-color: #e2e8f0 !important;
+        }
+
         @media (max-width: 480px) {
             .login-card { width: 90%; height: auto; padding: 40px 20px; border-radius: 35px; }
             .title { font-size: 28px; margin-bottom: 40px; }
             .input-group input { width: 240px; max-width: 85%; font-size: 22px; }
-            .header-title { font-size: 30px; }
-            .history-header { flex-direction: column; align-items: flex-start; gap: 10px; }
             .clear-local-btn { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body class="login-mode">
 
+    <!-- 登入畫面區塊 -->
     <div id="login-section" class="login-card">
         <img src="logo.gif" alt="系統Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
@@ -624,82 +731,90 @@
         <div id="msg-display" class="error-msg"></div>
     </div>
 
+    <!-- 點餐主畫面區塊 -->
     <div id="order-section" class="order-container hidden">
         <header class="nidin-header">
-    <!-- 第一層：頂部工具列 -->
-    <div class="nidin-top-bar">
-        <div class="nidin-top-left">
-            <div class="nidin-logo">智慧點餐系統<span class="dot">.</span></div>
-            <div class="nidin-divider"></div>
-            <button class="nidin-location-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-                彰濱秀傳紀念醫院
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            
-            <!-- 即時搜尋框 -->
-            <div class="nidin-search-box">
-    <!-- 放大鏡改為可點擊按鈕 -->
-    <svg id="searchBtn" onclick="filterShops()" style="cursor: pointer;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/>
-        <path d="M21 21l-4.35-4.35"/>
-    </svg>
-    <input type="text" id="shopSearchInput" oninput="filterShops()" onkeypress="handleSearchKeyPress(event)" placeholder="搜尋品牌、門市或商品">
-</div>
-        </div>
+            <!-- 第一層：頂部工具列 -->
+            <div class="nidin-top-bar">
+                <div class="nidin-top-left">
+                    <div class="nidin-logo">智慧點餐系統<span class="dot">.</span></div>
+                    <div class="nidin-divider"></div>
+                    
+                    <!-- 頂部地點按鈕：點擊觸發開啟選擇院區 Modal -->
+                    <button class="nidin-location-btn" onclick="openBranchModal()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span id="current-branch-text">彰濱秀傳紀念醫院</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- 即時搜尋框 -->
+                    <div class="nidin-search-box">
+                        <svg id="searchBtn" onclick="filterShops()" style="cursor: pointer;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                        <input type="text" id="shopSearchInput" oninput="filterShops()" onkeypress="handleSearchKeyPress(event)" placeholder="搜尋品牌、門市或商品">
+                    </div>
+                </div>
 
-        <div class="nidin-top-right">
-            <div class="nidin-user-info">
-                <span>目前登入員工：</span>
-                <span id="user-name" style="color: #0091ff;"></span>
-                <span id="offline-tag" style="color: #ff4d4f; display: none;">(離線)</span>
+                <div class="nidin-top-right">
+                    <div class="nidin-user-info">
+                        <span>目前登入員工：</span>
+                        <span id="user-name" style="color: #0091ff;"></span>
+                        <span id="offline-tag" style="color: #ff4d4f; display: none;">(離線)</span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- 第二層：功能導覽選單 -->
-<!-- 第二層：功能導覽選單 -->
-<nav class="nidin-nav-bar">
-    <a class="nidin-nav-item" href="javascript:void(0);" onclick="focusSearchInput()">
-    <div class="nidin-nav-icon">
-        <svg viewBox="0 0 24 24">
-            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
-            <circle cx="12" cy="10" r="2.5"/>
-            <path d="M16 16l3 3"/>
-        </svg>
-    </div>
-    <span>搜尋</span>
-</a>
-    
-    <a class="nidin-nav-item" href="javascript:void(0);" onclick="showPaymentInfo()">
-    <div class="nidin-nav-icon">
-        <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/><path d="M3 20h18"/></svg>
-    </div>
-    <span>付款介紹</span>
-</a>
+            <!-- 第二層：導覽選單 -->
+            <nav class="nidin-nav-bar">
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="openBranchModal()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+                            <circle cx="12" cy="10" r="2.5"/>
+                            <path d="M16 16l3 3"/>
+                        </svg>
+                    </div>
+                    <span>選擇院區</span>
+                </a>
+                
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="showPaymentInfo()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/><path d="M3 20h18"/></svg>
+                    </div>
+                    <span>付款介紹</span>
+                </a>
 
-<a class="nidin-nav-item" href="javascript:void(0);" onclick="scrollToTodayHistory()">
-    <div class="nidin-nav-icon">
-        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-    </div>
-    <span>購物車</span>
-</a>
+                <!-- 點擊觸發開啟購物車 Modal -->
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="openCartModal()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    </div>
+                    <span>購物車</span>
+                </a>
 
-<a class="nidin-nav-item" href="javascript:void(0);" onclick="goHome()">
-    <div class="nidin-nav-icon">
-        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    </div>
-    <span>回首頁</span>
-</a>
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="goHome()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    </div>
+                    <span>回首頁</span>
+                </a>
 
-<a class="nidin-nav-item" href="javascript:void(0);" onclick="scrollToHistory()">
-    <div class="nidin-nav-icon">
-        <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
-    </div>
-    <span>曾點過</span>
-</a>
-</nav>
-</header>
+                <!-- 點擊觸發開啟「曾點過」 Modal -->
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="openHistoryModal()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
+                    </div>
+                    <span>曾點過</span>
+                </a>
+            </nav>
+        </header>
 
         <div class="grid-container">
             <!-- 店家卡片群 -->
@@ -807,7 +922,7 @@
                     <span class="shop-name">八廚職人弁当</span>
                     <span class="badge main">主食精選</span>
                 </div>
-                <div class="shop-desc">主廚精選八種餐品，以最單純的食材坚持以現點現做。</div>
+                <div class="shop-desc">主廚精選八種餐品，以最單純的食材堅持以現點現做。</div>
                 <button class="go-btn" onclick="redirectToShop('八廚職人弁当', this)">進入 八廚職人弁当 點餐 ➔</button>
             </div>
 
@@ -855,7 +970,7 @@
                 <div class="shop-desc">時蔬佳餚現場備有豐富的炸物拼盤、豐盛時蔬。</div>
                 <button class="go-btn" onclick="redirectToShop('菓蔬輕蒔坊', this)">進入 菓蔬輕蒔坊 點餐 ➔</button>
             </div>
-     
+
             <div class="shop-card">
                 <div class="card-top">
                     <span class="shop-name">老蕭土魠魚羹麵館</span>
@@ -885,57 +1000,130 @@
 
             <div class="shop-card">
                 <div class="card-top">
-                    <span class="shop-name">元鼎燉湯</span>
+                    <span class="shop-name">地6攤排餐</span>
                     <span class="badge main">主食精選</span>
                 </div>
-                <div class="shop-desc">香菇雞（含薑絲）香菇與嫩滑的雞翅一同燉煮，風味鮮美豐富、湯頭濃郁不油膩。</div>
-                <button class="go-btn" onclick="redirectToShop('元鼎燉湯', this)">進入 元鼎燉湯 點餐 ➔</button>
+                <div class="shop-desc">排餐有沙朗牛排、香煎豬排、脆皮雞腿排三款人氣肉品。另有雙拼，一次滿足兩種美味，爽快又過癮！</div>
+                <button class="go-btn" onclick="redirectToShop('地6攤排餐', this)">進入 地6攤排餐 點餐 ➔</button>
             </div>
         </div>
 
-        <!-- ==================== 3. 今日點餐紀錄區塊 ==================== -->
-        <div id="today-history-anchor" class="history-container">
-    <div class="history-card">
-        <div class="history-header">
-            <h2 class="history-title">📋 我的購物車</h2>
-            <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
-        </div>
-                <div class="history-table-wrapper">
-                    <table class="history-table">
-    <thead>
-        <tr>
-            <th style="width: 15%">卡號 / 姓名</th>
-            <th style="width: 20%">日期時間</th>
-            <th style="width: 35%">點餐店家 / 內容</th>
-            <th style="width: 15%">金額</th>
-            <th style="width: 15%">備註說明</th>
-        </tr>
-    </thead>
-    <tbody id="history-list">
-        <tr>
-            <td colspan="5" class="no-record">載入紀錄中...</td>
-        </tr>
-    </tbody>
-</table>
+        <button class="logout-btn" onclick="executeLogout()">登出系統 ➔</button>
+    </div>
+
+    <!-- 選擇院區彈窗 (Modal) -->
+    <div id="branchModal" class="branch-modal-overlay hidden" onclick="closeBranchModal(event)">
+        <div class="branch-modal-content" onclick="event.stopPropagation()">
+            <div class="branch-modal-header">
+                <h3>請選擇服務院區</h3>
+                <span class="close-btn" onclick="closeBranchModal()">&times;</span>
+            </div>
+            <div class="branch-list">
+                <div class="branch-item active" onclick="selectBranch('彰濱秀傳紀念醫院', this)">
+                    <span>彰濱秀傳紀念醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('彰化秀傳紀念醫院', this)">
+                    <span>彰化秀傳紀念醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('高雄秀傳紀念醫院', this)">
+                    <span>高雄秀傳紀念醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('竹山秀傳醫院', this)">
+                    <span>竹山秀傳醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('台南市立醫院', this)">
+                    <span>台南市立醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('高雄市立岡山醫院', this)">
+                    <span>高雄市立岡山醫院</span>
+                    <span class="check-icon">✓</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- ==================== 4. 全系統個人歷史點餐軌跡 ==================== -->
-        <!-- 加上 id="history-anchor" -->
-<div id="history-anchor" class="history-container" style="margin-bottom: 100px;">
-    <div class="history-card" style="border-color: #b4d3b0; background-color: #fcfdfc;">
-        <div class="history-header" style="border-bottom-color: #cce5ca;">
-            <h2 class="history-title" style="color: #1e3818;">🗄️ 曾點過歷史點餐軌跡 (歷年完整紀錄)</h2>
-            <span style="font-size: 14px; color: #668062; font-weight: bold;">資料來源：orders.json 資料庫</span>
+    <!-- 付款介紹彈窗 (Modal) -->
+    <div id="paymentModal" class="branch-modal-overlay hidden" onclick="closePaymentModal(event)">
+        <div class="branch-modal-content" onclick="event.stopPropagation()">
+            <div class="branch-modal-header">
+                <h3>💳 付款方式說明</h3>
+                <span class="close-btn" onclick="closePaymentModal()">&times;</span>
+            </div>
+            <div class="payment-modal-body">
+                <div class="payment-item">
+                    <span class="payment-title">1. 中國信託轉帳</span>
+                    <span class="payment-detail">帳號：<strong>428540856354</strong></span>
+                </div>
+                <div class="payment-item">
+                    <span class="payment-title">2. 現金支付</span>
+                    <span class="payment-detail">請至現場櫃檯支付現金</span>
+                </div>
+                <div class="payment-item">
+                    <span class="payment-title">3. 電子支付</span>
+                    <span class="payment-detail">現場支援 iPass money 掃碼支付</span>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <!-- 購物車彈窗 (Modal) -->
+    <div id="cartModal" class="branch-modal-overlay hidden" onclick="closeCartModal(event)">
+        <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
+            <div class="branch-modal-header">
+                <h3>📋 我的購物車 (今日點餐)</h3>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
+                    <span class="close-btn" onclick="closeCartModal()">&times;</span>
+                </div>
+            </div>
+            <div style="padding: 20px; max-height: 450px; overflow-y: auto;">
                 <div class="history-table-wrapper">
                     <table class="history-table">
                         <thead>
                             <tr>
-                                <th style="width: 15%; background-color: #eff7ee;">卡號 / 姓名</th>
+                                <th style="width: 20%">卡號 / 姓名</th>
+                                <th style="width: 20%">日期時間</th>
+                                <th style="width: 30%">點餐店家 / 內容</th>
+                                <th style="width: 15%">金額</th>
+                                <th style="width: 15%">備註說明</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list">
+                            <tr>
+                                <td colspan="5" class="no-record">載入紀錄中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 曾點過歷史紀錄彈窗 (Modal) -->
+    <div id="historyModal" class="branch-modal-overlay hidden" onclick="closeHistoryModal(event)">
+        <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
+            <div class="branch-modal-header">
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    🗄️ 曾點過歷史點餐軌跡 (歷年完整紀錄)
+                </h3>
+                <span class="close-btn" onclick="closeHistoryModal()">&times;</span>
+            </div>
+            <div style="padding: 20px; max-height: 500px; overflow-y: auto;">
+                <div style="margin-bottom: 12px; font-size: 13px; color: #668062; font-weight: bold; text-align: right;">
+                    資料來源：orders.json 資料庫
+                </div>
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%; background-color: #eff7ee;">卡號 / 姓名</th>
                                 <th style="width: 20%; background-color: #eff7ee;">日期時間</th>
-                                <th style="width: 35%; background-color: #eff7ee;">點餐店家 / 內容</th>
+                                <th style="width: 30%; background-color: #eff7ee;">點餐店家 / 內容</th>
                                 <th style="width: 15%; background-color: #eff7ee;">金額</th>
                                 <th style="width: 15%; background-color: #eff7ee;">備註說明</th>
                             </tr>
@@ -949,13 +1137,29 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <button class="logout-btn" onclick="executeLogout()">登出系統 ➔</button>
+    <!-- 新增：仿圖二客製化自訂提示/確認對話框 (Modal) -->
+    <div id="customAlertModal" class="branch-modal-overlay hidden" onclick="closeCustomAlert(false)">
+        <div class="branch-modal-content custom-alert-box" onclick="event.stopPropagation()">
+            <div class="branch-modal-header custom-alert-header">
+                <h3 id="customAlertTitle">提示</h3>
+                <span class="close-btn" onclick="closeCustomAlert(false)">&times;</span>
+            </div>
+            <div class="payment-modal-body custom-alert-body" id="customAlertMessage">
+                提示內容
+            </div>
+            <div class="custom-alert-footer">
+                <button id="customAlertCancelBtn" class="custom-btn-action custom-btn-cancel-gray" onclick="closeCustomAlert(false)">取消</button>
+                <button id="customAlertConfirmBtn" class="custom-btn-action custom-btn-confirm-red" onclick="closeCustomAlert(true)">確定</button>
+            </div>
+        </div>
     </div>
 
     <script>
         let loggedInCardId = ''; 
         let isSubmitting = false;
+        let customAlertCallback = null; // 用於處理自訂對話框的回傳事件
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -978,7 +1182,7 @@
             '老蕭土魠魚羹麵館': 'rafang.html',
             '小松丼丼食事處': 'safang.html',
             '滿座燒肉丼飯屋': 'tafang.html',
-            '元鼎燉湯': 'uafang.html'
+            '地6攤排餐': 'uafang.html'
         };
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -996,99 +1200,170 @@
                     if (e.key === 'Enter') executeLogin();
                 });
             }
+
+            // 載入與初始化記憶的院區
+            const savedBranch = localStorage.getItem('selectedBranch');
+            if (savedBranch) {
+                updateBranchDisplay(savedBranch);
+            }
         });
 
-// 點擊「曾點過」自動平滑滾動至歷史軌跡區塊
-function scrollToHistory() {
-    const historySection = document.getElementById('history-anchor');
-    if (historySection) {
-        historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-// 在 showOrderSection 函式內
-const userNameEl = document.getElementById('user-name');
-if (userNameEl) {
-    // 僅更新純文字，樣式由 CSS 完全控制
-    userNameEl.textContent = `${empName} (${cardId})`;
-}
-
-// 🔍 搜尋過濾店家卡片函式
-function filterShops() {
-    const searchInput = document.getElementById('shopSearchInput');
-    if (!searchInput) return;
-
-    // 取得輸入關鍵字並轉小寫
-    const query = searchInput.value.toLowerCase().trim();
-    const shopCards = document.querySelectorAll('.shop-card');
-
-    shopCards.forEach(card => {
-        // 抓取店家名稱與描述文字
-        const shopName = (card.querySelector('.shop-name')?.textContent || '').toLowerCase();
-        const shopDesc = (card.querySelector('.shop-desc')?.textContent || '').toLowerCase();
-        const badgeText = (card.querySelector('.badge')?.textContent || '').toLowerCase();
-
-        // 判斷名稱、描述或標籤是否包含關鍵字
-        const isMatch = shopName.includes(query) || shopDesc.includes(query) || badgeText.includes(query);
-
-        // 符合則顯示，不符合則隱藏
-        if (isMatch) {
-            card.style.display = ''; 
-        } else {
-            card.style.display = 'none';
+        // ==================== 新增：自訂對話框 JS 控制邏輯 ====================
+        function callCustomAlert(title, message, callback, showCancel = true) {
+            document.getElementById('customAlertTitle').textContent = title;
+            document.getElementById('customAlertMessage').innerHTML = message;
+            
+            const cancelBtn = document.getElementById('customAlertCancelBtn');
+            if (showCancel) {
+                cancelBtn.classList.remove('hidden');
+            } else {
+                cancelBtn.classList.add('hidden');
+            }
+            
+            customAlertCallback = callback;
+            document.getElementById('customAlertModal').classList.remove('hidden');
         }
-    });
-}
 
-// ⌨️ 按下 Enter 鍵時觸發搜尋
-function handleSearchKeyPress(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault(); // 防止表單預設送出動作
-        filterShops();
-    }
-}
+        function closeCustomAlert(result) {
+            document.getElementById('customAlertModal').classList.add('hidden');
+            if (customAlertCallback) {
+                customAlertCallback(result);
+                customAlertCallback = null;
+            }
+        }
+        // =====================================================================
 
-// 1. 搜尋：自動捲動至頂部搜尋框並聚焦（ focus ）
-function focusSearchInput() {
-    const searchInput = document.getElementById('shopSearchInput');
-    if (searchInput) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setTimeout(() => {
-            searchInput.focus();
-        }, 300);
-    }
-}
+        // 開啟院區選擇 Modal
+        function openBranchModal() {
+            const modal = document.getElementById('branchModal');
+            if (modal) modal.classList.remove('hidden');
+        }
 
-// 2. 付款介紹：跳出付款方式彈窗說明
-function showPaymentInfo() {
-    alert("💳 付款方式說明：\n\n1. 中國信託轉帳 428540856354\n2. 現場現金支付\n3. 現場 iPass money");
-}
+        // 關閉院區選擇 Modal
+        function closeBranchModal(event) {
+            const modal = document.getElementById('branchModal');
+            if (modal) modal.classList.add('hidden');
+        }
 
-// 購物車按鈕：點擊後平滑滾動至「今日點餐紀錄」區塊
-function scrollToTodayHistory() {
-    const todaySection = document.getElementById('today-history-anchor');
-    if (todaySection) {
-        todaySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
+        // 開啟付款介紹 Modal
+        function showPaymentInfo() {
+            const modal = document.getElementById('paymentModal');
+            if (modal) modal.classList.remove('hidden');
+        }
 
-// 4. 回首頁：重置搜尋並平滑捲動回到頁面頂部
-function goHome() {
-    const searchInput = document.getElementById('shopSearchInput');
-    if (searchInput) {
-        searchInput.value = '';
-        filterShops(); // 清除搜尋結果，回復顯示所有店家
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+        // 關閉付款介紹 Modal
+        function closePaymentModal(event) {
+            const modal = document.getElementById('paymentModal');
+            if (modal) modal.classList.add('hidden');
+        }
 
-// 5. 曾點過：平滑捲動至歷史紀錄區塊（已存在）
-function scrollToHistory() {
-    const historySection = document.getElementById('history-anchor');
-    if (historySection) {
-        historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
+        // 開啟購物車 Modal
+        function openCartModal() {
+            if (loggedInCardId) {
+                fetchOrderHistory(loggedInCardId);
+            }
+            const modal = document.getElementById('cartModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        // 關閉購物車 Modal
+        function closeCartModal(event) {
+            const modal = document.getElementById('cartModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // 開啟「曾點過」 Modal
+        function openHistoryModal() {
+            if (loggedInCardId) {
+                fetchGlobalOrders(loggedInCardId);
+            }
+            const modal = document.getElementById('historyModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        // 關閉「曾點過」 Modal
+        function closeHistoryModal(event) {
+            const modal = document.getElementById('historyModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // 選擇院區處理
+        function selectBranch(branchName, element) {
+            updateBranchDisplay(branchName);
+            localStorage.setItem('selectedBranch', branchName);
+
+            // 更新彈窗內的選取點亮狀態
+            const items = document.querySelectorAll('.branch-item');
+            items.forEach(item => item.classList.remove('active'));
+            if (element) {
+                element.classList.add('active');
+            }
+
+            closeBranchModal();
+            console.log(`已切換院區為：${branchName}`);
+        }
+
+        // 更新頂部按鈕顯示（僅更新頂部 #current-branch-text）
+        function updateBranchDisplay(branchName) {
+            const currentBranchText = document.getElementById('current-branch-text');
+            if (currentBranchText) {
+                currentBranchText.textContent = branchName;
+            }
+
+            // 同步 Modal 選單點亮樣式
+            const items = document.querySelectorAll('.branch-item');
+            items.forEach(item => {
+                if (item.textContent.includes(branchName)) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // 🔍 搜尋過濾店家卡片函式
+        function filterShops() {
+            const searchInput = document.getElementById('shopSearchInput');
+            if (!searchInput) return;
+
+            const query = searchInput.value.toLowerCase().trim();
+            const shopCards = document.querySelectorAll('.shop-card');
+
+            shopCards.forEach(card => {
+                const shopName = (card.querySelector('.shop-name')?.textContent || '').toLowerCase();
+                const shopDesc = (card.querySelector('.shop-desc')?.textContent || '').toLowerCase();
+                const badgeText = (card.querySelector('.badge')?.textContent || '').toLowerCase();
+
+                const isMatch = shopName.includes(query) || shopDesc.includes(query) || badgeText.includes(query);
+                card.style.display = isMatch ? '' : 'none';
+            });
+        }
+
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                filterShops();
+            }
+        }
+
+        function focusSearchInput() {
+            const searchInput = document.getElementById('shopSearchInput');
+            if (searchInput) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setTimeout(() => {
+                    searchInput.focus();
+                }, 300);
+            }
+        }
+
+        function goHome() {
+            const searchInput = document.getElementById('shopSearchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                filterShops();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         async function executeLogin() {
             if (isSubmitting) return;
@@ -1139,7 +1414,8 @@ function scrollToHistory() {
         function redirectToShop(shopName, buttonEl) {
             const url = shopUrlMap[shopName];
             if (!url) {
-                alert(`尚未設定 ${shopName} 的對應點餐網頁。`);
+                // 原 alert() 改為自訂精美彈窗
+                callCustomAlert('提示', `⚠️ 尚未設定 <strong>${shopName}</strong> 的對應點餐網頁。`, null, false);
                 return;
             }
             
@@ -1149,9 +1425,12 @@ function scrollToHistory() {
         }
 
         function executeLogout() {
-            if (confirm('確定要登出系統嗎？')) {
-                showLoginSection();
-            }
+            // 原 confirm() 改為自訂精美彈窗
+            callCustomAlert('提示', '🚪 確定要登出系統嗎？', (confirmed) => {
+                if (confirmed) {
+                    showLoginSection();
+                }
+            }, true);
         }
 
         function navigateToAdmin() { window.location.href = 'admin.html'; }
@@ -1163,7 +1442,11 @@ function scrollToHistory() {
             localStorage.setItem('currentEmpName', empName || cardId);
             localStorage.setItem('isOfflineMode', isOffline ? 'true' : 'false');
 
-            document.getElementById('user-name').innerText = empName || cardId;
+            const userNameEl = document.getElementById('user-name');
+            if (userNameEl) {
+                userNameEl.textContent = empName || cardId;
+            }
+
             document.getElementById('offline-tag').style.display = isOffline ? 'inline' : 'none';
             
             document.getElementById('login-section').classList.add('hidden');
@@ -1176,76 +1459,66 @@ function scrollToHistory() {
         }
 
         function showLoginSection() {
-    loggedInCardId = '';
-    isSubmitting = false;
-    
-    localStorage.removeItem('currentCardId');
-    localStorage.removeItem('currentEmpName');
-    localStorage.removeItem('isOfflineMode');
-    document.getElementById('user-name').innerText = ''; 
-    
-    // === 修正這段：確保解鎖登入按鈕 ===
-    const loginBtn = document.getElementById('submit-login-btn');
-    if (loginBtn) { loginBtn.disabled = false; }
-    // ===================================
-    
-    const cardInput = document.getElementById('cardId');
-    if (cardInput) { cardInput.value = ''; cardInput.disabled = false; }
-    
-    document.getElementById('msg-display').innerText = ''; 
-    document.getElementById('offline-tag').style.display = 'none';
-    document.getElementById('order-section').classList.add('hidden');
-    document.getElementById('login-section').classList.remove('hidden');
-    document.body.classList.remove('order-mode');
-    document.body.classList.add('login-mode');
+            loggedInCardId = '';
+            isSubmitting = false;
+            
+            localStorage.removeItem('currentCardId');
+            localStorage.removeItem('currentEmpName');
+            localStorage.removeItem('isOfflineMode');
+            document.getElementById('user-name').innerText = ''; 
+            
+            const loginBtn = document.getElementById('submit-login-btn');
+            if (loginBtn) { loginBtn.disabled = false; }
+            
+            const cardInput = document.getElementById('cardId');
+            if (cardInput) { cardInput.value = ''; cardInput.disabled = false; }
+            
+            document.getElementById('msg-display').innerText = ''; 
+            document.getElementById('offline-tag').style.display = 'none';
+            document.getElementById('order-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            document.body.classList.remove('order-mode');
+            document.body.classList.add('login-mode');
 
-    requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
-}
+            requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
+        }
 
         function getMilliTimestamp(obj) {
-    if (!obj) return 0;
-    
-    // 優先抓取可能的時間欄位
-    let rawTime = obj.time || obj.Time || obj.date || obj.datetime || obj.timestamp || '';
-    rawTime = String(rawTime).trim();
-    if (!rawTime) return 0;
-
-    // 如果本身就是純數字（時間戳記）
-    if (/^\d+$/.test(rawTime)) {
-        const ts = Number(rawTime);
-        return ts < 9999999999 ? ts * 1000 : ts;
-    }
-
-    // 重點：處理中文的「上午/下午」格式 (例如：2026/7/13 下午8:13:58)
-    if (rawTime.includes('上午') || rawTime.includes('下午')) {
-        try {
-            const isPM = rawTime.includes('下午');
-            // 把 中文 拿掉，並將全形空格或多餘空格做清理
-            let cleanStr = rawTime.replace(/[上下]午/, ' ').replace(/\s+/g, ' ');
+            if (!obj) return 0;
             
-            // 拆出 日期 與 時間 部分
-            let [datePart, timePart] = cleanStr.trim().split(' ');
-            if (datePart && timePart) {
-                let [hrs, mins, secs] = timePart.split(':').map(Number);
-                
-                // 調整為 24 小時制
-                if (isPM && hrs < 12) hrs += 12;
-                if (!isPM && hrs === 12) hrs = 0; // 上午 12 點是 0 點
-                
-                // 重新拼回標準格式以便 Date 解析
-                const standardStr = `${datePart.replace(/\//g, '-')} ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
-                const parsed = Date.parse(standardStr);
-                if (!isNaN(parsed)) return parsed;
-            }
-        } catch (e) {
-            console.error("中文時間解析失敗，嘗試通用解析: ", e);
-        }
-    }
+            let rawTime = obj.time || obj.Time || obj.date || obj.datetime || obj.timestamp || '';
+            rawTime = String(rawTime).trim();
+            if (!rawTime) return 0;
 
-    // 通用後備解析
-    const parsedStr = Date.parse(rawTime.replace(/ /g, 'T').replace(/\//g, '-'));
-    return !isNaN(parsedStr) ? parsedStr : 0;
-}
+            if (/^\d+$/.test(rawTime)) {
+                const ts = Number(rawTime);
+                return ts < 9999999999 ? ts * 1000 : ts;
+            }
+
+            if (rawTime.includes('上午') || rawTime.includes('下午')) {
+                try {
+                    const isPM = rawTime.includes('下午');
+                    let cleanStr = rawTime.replace(/[上下]午/, ' ').replace(/\s+/g, ' ');
+                    
+                    let [datePart, timePart] = cleanStr.trim().split(' ');
+                    if (datePart && timePart) {
+                        let [hrs, mins, secs] = timePart.split(':').map(Number);
+                        
+                        if (isPM && hrs < 12) hrs += 12;
+                        if (!isPM && hrs === 12) hrs = 0;
+                        
+                        const standardStr = `${datePart.replace(/\//g, '-')} ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
+                        const parsed = Date.parse(standardStr);
+                        if (!isNaN(parsed)) return parsed;
+                    }
+                } catch (e) {
+                    console.error("中文時間解析失敗，嘗試通用解析: ", e);
+                }
+            }
+
+            const parsedStr = Date.parse(rawTime.replace(/ /g, 'T').replace(/\//g, '-'));
+            return !isNaN(parsedStr) ? parsedStr : 0;
+        }
 
         function isTodayOrder(orderObj) {
             const orderTs = getMilliTimestamp(orderObj);
@@ -1276,85 +1549,77 @@ function scrollToHistory() {
             return '-';
         }
 
-        // 清除當前卡號本機快照今日紀錄的處理函數
         function clearLocalTodayOrders() {
             if (!loggedInCardId) return;
-            if (confirm('確定要清除這台裝置上的今日點餐暫存紀錄嗎？\n(此操作不會影響全系統 orders.json 資料庫)')) {
-                const localKey = `orders_${loggedInCardId}`;
-                localStorage.removeItem(localKey);
-                fetchOrderHistory(loggedInCardId);
-            }
+            // 原 confirm() 改為自訂精美彈窗
+            callCustomAlert('提示', '🧹 確定要清除這台裝置上的今日點餐暫存紀錄嗎？<br><small style="color:#888;">(此操作不會影響全系統 orders.json 資料庫)</small>', (confirmed) => {
+                if (confirmed) {
+                    const localKey = `orders_${loggedInCardId}`;
+                    localStorage.removeItem(localKey);
+                    fetchOrderHistory(loggedInCardId);
+                }
+            }, true);
         }
 
         async function fetchOrderHistory(cardId) {
-    const historyList = document.getElementById('history-list');
-    if (!historyList) return;
+            const historyList = document.getElementById('history-list');
+            if (!historyList) return;
 
-    let apiOrders = [];
-    let localOrders = [];
-    let isApiSuccess = false;
+            let apiOrders = [];
+            let localOrders = [];
+            let isApiSuccess = false;
 
-    const localKey = `orders_${cardId}`;
-    try {
-        localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
-    } catch(e) { localOrders = []; }
+            const localKey = `orders_${cardId}`;
+            try {
+                localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+            } catch(e) { localOrders = []; }
 
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-        // 統一使用 /api/orders 接口
-        const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
-            apiOrders = await response.json();
-            isApiSuccess = true;
+                const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    apiOrders = await response.json();
+                    isApiSuccess = true;
+                }
+            } catch (error) {
+                console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
+            }
+
+            let merged = isApiSuccess ? apiOrders : localOrders;
+            let todayOrders = merged.filter(order => isTodayOrder(order));
+
+            todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+            if (todayOrders.length === 0) {
+                historyList.innerHTML = `<tr><td colspan="5" class="no-record">嗨！您今天尚無 any 點餐紀錄。</td></tr>`;
+                return;
+            }
+
+            historyList.innerHTML = todayOrders.map(order => {
+                const rawTotal = Number(order.total);
+                let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
+
+                if (!totalAmount && order.note) {
+                    const match = String(order.note).match(/總計:\s*\$(\d+)/);
+                    if (match) totalAmount = parseInt(match[1], 10);
+                }
+
+                return `
+                    <tr>
+                        <td>${order.cardId || cardId}</td>
+                        <td>${formatDisplayTime(order)}</td>
+                        <td>${order.meal || '無品項內容'}</td>
+                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
+                        <td>${order.note || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
         }
-    } catch (error) {
-        console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
-    }
 
-    // 合併資料並過濾出今日點餐
-    let merged = isApiSuccess ? apiOrders : localOrders;
-    let todayOrders = merged.filter(order => isTodayOrder(order));
-
-    // 按時間由新到舊排序
-    todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
-
-    if (todayOrders.length === 0) {
-        historyList.innerHTML = `<tr><td colspan="5" class="no-record">嗨！您今天尚無任何點餐紀錄。</td></tr>`;
-        return;
-    }
-
-    // ✨ 關鍵修正：精準渲染 5 個欄位（卡號姓名、時間、店家內容、金額、備註）
-    const empName = localStorage.getItem('currentEmpName') || cardId;
-
-// ✨ 根據 orders.json 格式完美對齊的 5 個欄位
-historyList.innerHTML = todayOrders.map(order => {
-    // 1. 抽離金額解析邏輯，避免 IIFE 在 HTML 模板字串中看起來過於混亂
-    const rawTotal = Number(order.total);
-    let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
-
-    // 2. 若 total 無效，彈性正則匹配 note 中的金額 (相容有無空格，例如 "總計:$180" 或 "總計: $180")
-    if (!totalAmount && order.note) {
-        const match = String(order.note).match(/總計:\s*\$(\d+)/);
-        if (match) totalAmount = parseInt(match[1], 10);
-    }
-
-    return `
-        <tr>
-            <td>${order.cardId || cardId}</td>
-            <td>${formatDisplayTime(order)}</td>
-            <td>${order.meal || '無品項內容'}</td>
-            <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
-            <td>${order.note || '-'}</td>
-        </tr>
-    `;
-}).join('');
-}
-
-        /* 異步載入 orders.json 歷史點餐軌跡 */
         async function fetchGlobalOrders(targetCardId) {
             const globalHistoryList = document.getElementById('global-history-list');
             if (!globalHistoryList) return;
@@ -1404,25 +1669,13 @@ historyList.innerHTML = todayOrders.map(order => {
                     tr.appendChild(tdUser);
                     tr.appendChild(tdTime);
                     tr.appendChild(tdMeal);
-                    tr.appendChild(tdPrice); // 歷史點餐軌跡依舊保留金額作為對照
+                    tr.appendChild(tdPrice);
                     tr.appendChild(tdNote);
                     globalHistoryList.appendChild(tr);
                 });
             } catch (error) {
                 console.error(error);
                 globalHistoryList.innerHTML = `<tr><td colspan="5" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡或 orders.json 檔案不存在。</td></tr>`;
-            }
-        }
-
-        function renderEmptyHistory(isApiSuccess, localLength) {
-            const historyList = document.getElementById('history-list');
-            if (!historyList) return;
-            
-            // 由於今日紀錄表格剩下 3 欄，空紀錄的 colspan 已同步修正為 3
-            if (!isApiSuccess && localLength === 0) {
-                historyList.innerHTML = `<tr><td colspan="5" class="no-record" style="color:#b5651d;">💡 您這台裝置目前無暫存紀錄。</td></tr>`;
-            } else {
-                historyList.innerHTML = `<tr><td colspan="5" class="no-record">嗨！您今天尚無任何點餐紀錄。</td></tr>`;
             }
         }
     </script>
