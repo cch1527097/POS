@@ -353,7 +353,7 @@
 <div class="navbar">
     <a href="#" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (如：健康低脂鹹豬肉)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (如：泰式打拋豬)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -397,7 +397,7 @@
             <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p></div>
             
             <div class="opt-group">
-                <label class="opt-title">🫙 口味與辣度需求</label>
+                <label class="opt-title">🫙 辣度需求</label>
                 <select id="spicy-level" class="select-box">
                     <option value="不辣">不辣</option>
                     <option value="微辣">微辣</option>
@@ -444,6 +444,10 @@ function goBack() {
 
 const rawMenuItems = [
     // 便當類
+    {name: "泰式打拋豬", price: 110, category: "便當類", icon:"🍱"},
+    {name: "椒麻雞翅", price: 110, category: "便當類", icon:"🍱"},
+    {name: "椒麻雞腿", price: 120, category: "便當類", icon:"🍱"},
+    {name: "椒麻無骨雞腿排", price: 135, category: "便當類", icon:"🍱"},
     {name: "健康低脂鹹豬肉", price: 110, category: "便當類", icon:"🍱"},
     {name: "香烤椒鹽二節翅", price: 110, category: "便當類", icon:"🍱"},
     {name: "香烤墨西哥二節翅", price: 110, category: "便當類", icon:"🍱"},
@@ -454,7 +458,16 @@ const rawMenuItems = [
     {name: "香烤墨西哥L型雞腿", price: 120, category: "便當類", icon:"🍱"},
     {name: "香烤蜜汁L型雞腿", price: 120, category: "便當類", icon:"🍱"},
     {name: "義式香烤無骨雞腿排", price: 135, category: "便當類", icon:"🍱"},
-    {name: "日式柴魚照燒雞腿排", price: 135, category: "便當類", icon:"🍱"}
+    {name: "日式柴魚照燒雞腿排", price: 135, category: "便當類", icon:"🍱"},
+
+    // 素食類
+    {name: "素食魚排（奶蛋素/純素）", price: 110, category: "素食類", icon:"🥗"},
+    {name: "素食魚排（純素）", price: 120, category: "素食類", icon:"🥗"},
+
+    // 單點加購區
+    {name: "加購韓式泡菜", price: 15, category: "單點加購區", icon:"🥬"},
+    {name: "加菜", price: 15, category: "單點加購區", icon:"🥬"},
+    {name: "半飯換菜", price: 5, category: "單點加購區", icon:"🥗"}
 ];
 
 // 自動替每一個菜單項目加入唯一 id
@@ -702,7 +715,7 @@ async function submitOrderToServer() {
     const orderMealSummary = `老聃飲食：${finalSummary.trim()}`;
     const fullNote = `便當需求：${sideDishesStr} / 醬料辣度：${spicyVal} / 總計：$${finalTotal}`;
 
-    // 格式化彈出內容 (完全比照圖片卡片與高亮樣式)
+    // 格式化彈出內容
     const modalHtml = `
         <div class="modal-body-item">餐點：${finalSummary.trim()}</div>
         <div class="modal-body-item">小菜項目：${sideDishesStr}</div>
