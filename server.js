@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool } = require('pg');
 
@@ -16,7 +17,7 @@ const pool = new Pool({
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// 預設員工資料 (僅在資料庫完全空白時寫入一次)
+// 預設員工資料
 const INITIAL_USER_DB = {
     '18445': '李珈豪', '601471': '陳永育', '11110': '林佳蘭', '11744': '施名娟',
     '10069': '許民芳', '13228': '宋筱湄', '12218': '沈佩琪', '10047': '許博捷',
@@ -26,10 +27,23 @@ const INITIAL_USER_DB = {
     '16294': '梁婧盈', '16925': '李宜珊', '17528': '曾雅琴', 'TEST': '測試員'
 };
 
-// 初始化資料庫資料表與預設資料
+// 輔助函式：同步寫入 public/orders.json (相容舊後台)
+async function syncOrdersJsonFile() {
+    try {
+        const result = await pool.query(
+            'SELECT order_id AS "orderId", card_id AS "cardId", name, meal, spicy, note, total, timestamp FROM orders ORDER BY order_id DESC;'
+        );
+        const jsonPath = path.join(__dirname, 'public', 'orders.json');
+        fs.writeFileSync(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
+        console.log('[系統提示] 已同步更新 public/orders.json 檔案');
+    } catch (err) {
+        console.error('❌ 同步 orders.json 失敗:', err.message);
+    }
+}
+
+// 初始化資料庫
 async function initDatabase() {
     try {
-        // 1. 建立 orders 表
         await pool.query(`
             CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
@@ -45,7 +59,6 @@ async function initDatabase() {
             );
         `);
 
-        // 2. 建立 users 表
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 card_id VARCHAR(50) PRIMARY KEY,
@@ -53,7 +66,6 @@ async function initDatabase() {
             );
         `);
 
-        // 3. 若 users 表無資料，將預設員工名單同步寫入 DB
         const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
         if (parseInt(userCheck.rows[0].count, 10) === 0) {
             console.log('[系統提示] 正在初始化預設員工名單至 PostgreSQL...');
@@ -66,6 +78,9 @@ async function initDatabase() {
         }
 
         console.log(`[系統提示] PostgreSQL 資料表與員工資料檢查完成！`);
+        
+        // 啟動時即同步一次 JSON 檔
+        await syncOrdersJsonFile();
     } catch (err) {
         console.error(`❌ 初始化 PostgreSQL 資料庫失敗：`, err.message);
     }
@@ -102,7 +117,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 2. 取得所有員工名單 (改從 DB 撈取)
+// 2. 取得所有員工名單
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name FROM users;');
@@ -117,7 +132,7 @@ app.get('/api/employees', async (req, res) => {
     }
 });
 
-// 3. 新增員工 (改寫入 DB)
+// 3. 新增員工
 app.post('/api/employees', async (req, res) => {
     const { cardId, name } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -141,7 +156,7 @@ app.post('/api/employees', async (req, res) => {
     }
 });
 
-// 4. 刪除員工 (改從 DB 刪除)
+// 4. 刪除員工
 app.delete('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -172,6 +187,9 @@ app.delete('/api/orders/:orderId', async (req, res) => {
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
+
+        // 同步更新 orders.json 檔案
+        await syncOrdersJsonFile();
 
         res.json({ success: true, message: `訂單 ${targetOrderIdStr} 已成功刪除。` });
     } catch (error) {
@@ -232,6 +250,9 @@ app.post('/api/order', async (req, res) => {
         await pool.query(insertQuery, values);
         console.log(`[新訂單提示] 收到來自 ${empName} (${cleanCardId}) 的訂單，已寫入 PostgreSQL！`);
 
+        // 同步更新 orders.json 檔案供舊版前端讀取
+        await syncOrdersJsonFile();
+
         res.json({ success: true, message: `🎉 訂單送出成功！` });
     } catch (error) {
         console.error('後端處理訂單發生錯誤:', error);
@@ -269,7 +290,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 9. 動態匯出 Excel 下載 (直接將 DB 資料導出成檔案供瀏覽器下載)
+// 9. 動態匯出 Excel 下載
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM orders ORDER BY order_id ASC;');
