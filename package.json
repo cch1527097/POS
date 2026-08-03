@@ -1,11 +1,11 @@
 {
   "name": "pos-system",
   "version": "1.0.0",
-  "description": "",
+  "description": "Lunch Ordering POS System connected to Neon PostgreSQL",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -20,8 +20,9 @@
   },
   "homepage": "https://github.com/cch1527097/POS#readme",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "exceljs": "^4.4.0",
-    "express": "^5.2.1",
+    "express": "^4.19.2",
     "pg": "^8.13.0"
   }
 }
