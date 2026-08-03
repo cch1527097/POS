@@ -1,8 +1,12 @@
+require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
+types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,52 +15,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// PostgreSQL 連線設定
+// PostgreSQL (Neon) 連線設定
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+    ssl: {
+        rejectUnauthorized: false // Neon 強制使用 SSL
+    }
 });
 
 // 預設員工資料
 const INITIAL_USER_DB = {
-    "4860": "呂佳玟",
-  "4931": "陳佳文",
-  "5514": "張淑娟",
-  "5853": "許家綾",
-  "6154": "許庭芬",
-  "6465": "呂盈瑩",
-  "6513": "李承州",
-  "6800": "吳修文",
-  "9844": "許毓芬",
-  "9864": "吳亞亭",
-  "10047": "許博捷",
-  "10069": "許民芳",
-  "11110": "林佳蘭",
-  "11258": "鄭秋燕",
-  "11744": "施名娟",
-  "12218": "沈佩琪",
-  "12757": "黃娉娟",
-  "12996": "鄭雅君",
-  "13228": "宋筱湄",
-  "13266": "梁薽予",
-  "14253": "李沛珊",
-  "14778": "施憶宣",
-  "15150": "黃珮瑄",
-  "15440": "施欣玫",
-  "16294": "梁婧盈",
-  "16508": "尹語璟",
-  "16661": "陳育倫",
-  "16696": "賴語婕",
-  "16925": "李宜珊",
-  "16984": "梁慧如",
-  "17020": "黃泓耀",
-  "17528": "曾雅琴",
-  "18445": "李珈豪",
-  "20133": "吳佳文",
-  "601207": "郭勝明",
-  "601471": "陳永育",
-  "601473": "李羽茹",
-  "TEST": "測試員"
+    "4860": "呂佳玟", "4931": "陳佳文", "5514": "張淑娟", "5853": "許家綾",
+    "6154": "許庭芬", "6465": "呂盈瑩", "6513": "李承州", "6800": "吳修文",
+    "9844": "許毓芬", "9864": "吳亞亭", "10047": "許博捷", "10069": "許民芳",
+    "11110": "林佳蘭", "11258": "鄭秋燕", "11744": "施名娟", "12218": "沈佩琪",
+    "12757": "黃娉娟", "12996": "鄭雅君", "13228": "宋筱湄", "13266": "梁薽予",
+    "14253": "李沛珊", "14778": "施憶宣", "15150": "黃珮瑄", "15440": "施欣玫",
+    "16294": "梁婧盈", "16508": "尹語璟", "16661": "陳育倫", "16696": "賴語婕",
+    "16925": "李宜珊", "16984": "梁慧如", "17020": "黃泓耀", "17528": "曾雅琴",
+    "18445": "李珈豪", "20133": "吳佳文", "601207": "郭勝明", "601471": "陳永育",
+    "601473": "李羽茹", "TEST": "測試員"
 };
 
 // 輔助函式：同步寫入 public/orders.json (相容舊後台)
@@ -100,7 +78,7 @@ async function initDatabase() {
 
         const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
         if (parseInt(userCheck.rows[0].count, 10) === 0) {
-            console.log('[系統提示] 正在初始化預設員工名單至 PostgreSQL...');
+            console.log('[系統提示] 正在初始化預設員工名單至 Neon PostgreSQL...');
             for (const [cardId, name] of Object.entries(INITIAL_USER_DB)) {
                 await pool.query(
                     'INSERT INTO users (card_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING;',
@@ -109,12 +87,10 @@ async function initDatabase() {
             }
         }
 
-        console.log(`[系統提示] PostgreSQL 資料表與員工資料檢查完成！`);
-        
-        // 啟動時即同步一次 JSON 檔
+        console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);
         await syncOrdersJsonFile();
     } catch (err) {
-        console.error(`❌ 初始化 PostgreSQL 資料庫失敗：`, err.message);
+        console.error(`❌ 初始化 Neon 資料庫失敗：`, err.message);
     }
 }
 
@@ -220,9 +196,7 @@ app.delete('/api/orders/:orderId', async (req, res) => {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
 
-        // 同步更新 orders.json 檔案
         await syncOrdersJsonFile();
-
         res.json({ success: true, message: `訂單 ${targetOrderIdStr} 已成功刪除。` });
     } catch (error) {
         console.error('後端處理刪除訂單發生錯誤:', error);
@@ -280,10 +254,10 @@ app.post('/api/order', async (req, res) => {
         ];
 
         await pool.query(insertQuery, values);
-        console.log(`[新訂單提示] 收到來自 ${empName} (${cleanCardId}) 的訂單，已寫入 PostgreSQL！`);
+        console.log(`[新訂單提示] 收到來自 ${empName} (${cleanCardId}) 的訂單，已寫入 Neon PostgreSQL！`);
 
-        // 同步更新 orders.json 檔案供舊版前端讀取
-        await syncOrdersJsonFile();
+        // 背景非同步寫入 JSON，加速 HTTP Response
+        syncOrdersJsonFile().catch(err => console.error(err));
 
         res.json({ success: true, message: `🎉 訂單送出成功！` });
     } catch (error) {
