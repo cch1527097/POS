@@ -28,18 +28,23 @@
         }
 
         /* ==================== 頂部 Header 樣式 ==================== */
-.nidin-header {
+.navbar {
     width: 100%;
     background-color: #ffffff;
-    border-bottom: 1px solid #eaeaea;
+    border-bottom: 1px solid var(--border-color);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    font-family: "Microsoft JhengHei", -apple-system, sans-serif;
-    color: #333;
+    padding: 12px 40px;
+    box-sizing: border-box;
 
-    /* 📌 新增：固定頂部關鍵屬性 */
-    position: sticky;      /* 或是使用 fixed */
-    top: 0;                /* 緊貼頁面最上方 */
-    z-index: 1000;         /* 確保層級高於下方內容，不會被其他元素遮擋 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative; /* 確保內部絕對方位的搜尋框以 navbar 為基準對齊 */
+
+    /* 固定置頂 */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
         .navbar-brand { 
             font-size: 24px; 
