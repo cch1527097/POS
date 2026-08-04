@@ -7,14 +7,24 @@
     <style>
 
 /* ==================== 頂部 Header 樣式 ==================== */
-.nidin-header {
-    width: 100%;
-    background-color: #ffffff;
-    border-bottom: 1px solid #eaeaea;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-    font-family: "Microsoft JhengHei", -apple-system, sans-serif;
-    color: #333;
-}
+/* 頂部導航列 */
+        .navbar {
+            background: #fff;
+            padding: 12px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            
+            /* 📌 修改與新增部分 */
+            position: sticky;      /* 或是使用 fixed */
+            top: 0;                /* 貼頂置頂 */
+            z-index: 1000;         /* 確保層級高於下方內容，避免被圖片或其它元素遮擋 */
+            
+            height: 60px;
+            box-sizing: border-box;
+        }
 
 /* 第一層：頂部工具列 */
 .nidin-top-bar {
