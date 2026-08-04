@@ -39,7 +39,12 @@
             justify-content: space-between;
             border-bottom: 1px solid var(--border-color);
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            position: relative;
+            
+            /* 📌 修改與新增部分 */
+            position: sticky;      /* 或是使用 fixed */
+            top: 0;                /* 貼頂置頂 */
+            z-index: 1000;         /* 確保層級高於下方內容，避免被圖片或其它元素遮擋 */
+            
             height: 60px;
             box-sizing: border-box;
         }
