@@ -11,13 +11,13 @@
         }
 
         :root { 
-            --primary: #9a3412;       /* 溫暖滷汁紅棕色 */
-            --primary-light: #ffedd5; /* 淺橘底色 */
-            --secondary: #f59e0b;      /* 金黃色 */
-            --accent: #dc2626;        /* 亮紅點綴 */
-            --bg-main: #fcfbf9;       /* 柔和底色 */
-            --text-dark: #1e293b;      /* 深色文字 */
-            --text-muted: #64748b;    /* 輔助灰色 */
+            --primary: #c0392b;       /* 主色調：質感深紅 */
+            --primary-light: #fbeee6; /* 淺紅底色 */
+            --secondary: #f1c40f;      /* 溫暖金黃 */
+            --accent: #e74c3c;        /* 亮紅點綴 */
+            --bg-main: #f4f6f9;       /* 輕灰底色 */
+            --text-dark: #2c3e50;      /* 深色文字 */
+            --text-muted: #7f8c8d;    /* 輔助灰色 */
             --border-color: #e2e8f0;  /* 邊框線條 */
         }
 
@@ -78,7 +78,7 @@
         .top-search-box:focus {
             border-color: var(--primary);
             background: #fff;
-            box-shadow: 0 0 0 3px rgba(154, 52, 18, 0.15);
+            box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15);
         }
 
         .container { 
@@ -103,7 +103,7 @@
         .store-logo {
             width: 60px;
             height: 60px;
-            background: var(--primary); 
+            background: #c0392b; 
             color: #fff;
             border-radius: 12px;
             display: flex;
@@ -142,7 +142,7 @@
             font-size: 13px;
         }
         .promo-badge {
-            background: #ea580c;
+            background: #ef4444;
             color: white;
             font-weight: bold;
             padding: 2px 8px;
@@ -151,13 +151,13 @@
         }
 
         .info-banner { 
-            background: #ffedd5; 
-            color: #9a3412; 
+            background: #e0f2fe; 
+            color: #0369a1; 
             padding: 12px 16px; 
             border-radius: 8px; 
             margin-bottom: 24px; 
             font-size: 13px; 
-            border-left: 5px solid #ea580c; 
+            border-left: 5px solid #0284c7; 
         }
 
         .main-layout { display: flex; gap: 20px; align-items: flex-start; }
@@ -204,6 +204,15 @@
         .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
         .item-info { flex: 1; padding-right: 12px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
         .item-name { font-weight: 700; color: var(--text-dark); font-size: 15px; margin-bottom: 2px; word-break: break-all; }
+        
+        .item-desc { 
+            font-size: 12px; 
+            color: #d97706; 
+            font-weight: 600;
+            margin-bottom: 8px; 
+            line-height: 1.3; 
+        }
+
         .item-price-zone { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
         .item-price { color: var(--text-dark); font-weight: 700; font-size: 15px; }
         
@@ -266,8 +275,8 @@
         .qty-num { min-width: 16px; text-align: center; font-weight: 700; font-size: 14px; }
 
         .total-box { font-size: 20px; font-weight: 700; color: var(--accent); text-align: right; margin: 16px 0; }
-        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(154, 52, 18, 0.2); transition: all 0.2s; }
-        .btn-submit:hover:not(:disabled) { background: #7c2d12; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(192, 57, 43, 0.2); transition: all 0.2s; }
+        .btn-submit:hover:not(:disabled) { background: #962d22; }
         .btn-submit:active:not(:disabled) { transform: scale(0.98); }
         .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
 
@@ -290,7 +299,7 @@
         }
         .btn-back:active { transform: scale(0.92); }
 
-        /* 自訂彈出視窗 (Modal) 樣式 */
+        /* Modal 樣式 */
         .custom-modal-overlay {
             position: fixed;
             top: 0;
@@ -356,8 +365,6 @@
             border-bottom: 1px solid #edf2f7;
             line-height: 1.6;
             word-break: break-all;
-            max-height: 60vh;
-            overflow-y: auto;
         }
         .custom-modal-footer {
             padding: 12px 20px;
@@ -386,57 +393,24 @@
             background: var(--primary);
             border: none;
             color: #fff;
-            box-shadow: 0 2px 6px rgba(154, 52, 18, 0.2);
+            box-shadow: 0 2px 6px rgba(192, 57, 43, 0.2);
         }
         .modal-btn-confirm:hover {
-            background: #7c2d12;
+            background: #962d22;
         }
 
-        /* 任選選項樣式 */
-        .option-grid {
+        .veg-checkbox-group {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin-top: 10px;
         }
-        .option-item {
+        .veg-checkbox-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: #f8fafc;
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
+            gap: 6px;
+            font-size: 14px;
             cursor: pointer;
-            user-select: none;
-        }
-        .option-item input {
-            cursor: pointer;
-            width: 16px;
-            height: 16px;
-        }
-
-        /* 單選選項 (Radio Option) */
-        .radio-option-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .radio-option-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f8fafc;
-            padding: 10px 14px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .radio-option-item input {
-            width: 18px;
-            height: 18px;
         }
 
         /* 響應式優化 */
@@ -495,7 +469,7 @@
     <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
-        <span class="promo-text">外送最低金額 <b>800</b> 元</span>
+        <span class="promo-text">外送最低金額 <b>1000</b> 元</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -513,15 +487,27 @@
             
             <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p></div>
 
-            <!-- 客製化選項 -->
+            <!-- 客製化選項：湯乾、辣度與麵體分裝 -->
             <div class="opt-group">
-                <label class="opt-title" for="spice-level">🌶️ 辣度需求</label>
-                <select id="spice-level" class="select-box">
+                <label class="opt-title" for="soup-type">🍲 湯乾選擇</label>
+                <select id="soup-type" class="select-box">
+                    <option value="湯滷味">湯滷味</option>
+                    <option value="乾滷味">乾滷味</option>
+                </select>
+
+                <label class="opt-title" for="spicy-level">🌶️ 辣度選擇</label>
+                <select id="spicy-level" class="select-box">
                     <option value="不辣">不辣</option>
                     <option value="微辣">微辣</option>
                     <option value="小辣">小辣</option>
                     <option value="中辣">中辣</option>
                     <option value="大辣">大辣</option>
+                </select>
+
+                <label class="opt-title" for="noodle-pack">🍜 麵體/湯頭處理</label>
+                <select id="noodle-pack" class="select-box">
+                    <option value="湯麵分開裝">湯麵分開裝</option>
+                    <option value="湯麵合裝">湯麵合裝</option>
                 </select>
             </div>
 
@@ -531,7 +517,7 @@
     </div>
 </div>
 
-<!-- 自訂 Modal 結構 -->
+<!-- Modal 結構 -->
 <div id="customModal" class="custom-modal-overlay">
     <div class="custom-modal">
         <div class="custom-modal-header">
@@ -549,6 +535,10 @@
 
 <script>
 let modalCallback = null;
+
+const vegOptions = [
+    "豆芽菜", "地瓜葉", "大陸妹", "高麗菜", "空心菜", "花椰菜", "水蓮"
+];
 
 function showModal(title, htmlContent, type = 'alert', callback = null) {
     document.getElementById('modalTitle').innerText = title;
@@ -596,112 +586,101 @@ function goBack() {
 }
 
 const rawMenuItems = [
-    // === 人氣套餐 === 
-    {name: "小資族套餐 (蒸煮麵+鑫鑫腸+魚餃+蟹肉棒+水晶餃+米血+白蘿蔔+黑輪+甜不辣)", price: 100, category: "人氣套餐", icon:"🍱", isNoodle: true},
-    {name: "滷味拼盤 (大豆干+豆皮+蘭花干+水晶餃*2+米血+白蘿蔔+黑輪+甜不辣)", price: 120, category: "人氣套餐", icon:"🍱"},
-    {name: "肉肉派對 (粉腸+隔間肉+豬肉片*2)", price: 160, category: "人氣套餐", icon:"🥗", isNoodle: true},
-    {
-        name: "今日吃菜 (方便素) (冬粉+玉米筍+金針菇+白蘿蔔+任挑三種菜)", 
-        price: 110, 
-        category: "人氣套餐", 
-        icon:"🥗", 
-        isNoodle: true,
-        selectVegCount: 3 // 設定需要挑選 3 種青菜
-    },
-    {
-        name: "豬肉小火鍋 (冬粉+玉米筍+金針菇+鳥蛋+鑫鑫腸+魚餃+蟹肉棒+水晶餃+豬肉片+任挑兩種菜)", 
-        price: 130, 
-        category: "人氣套餐", 
-        icon:"🍲", 
-        isNoodle: true, 
-        selectVegCount: 2 // 指定需要選擇2種青菜
-    },
+    // === 人氣套餐 ===
+    {name: "小資族套餐", price: 100, category: "人氣套餐", icon:"🍱", desc: "蒸煮麵、鑫鑫腸、魚餃、蟹肉棒、水晶餃、米血、白蘿蔔、黑輪、甜不辣", hasNoodle: true},
+    {name: "滷味拼盤", price: 120, category: "人氣套餐", icon:"🍱", desc: "大豆干、豆皮、蘭花干、水晶餃*2、米血、白蘿蔔、黑輪、甜不辣"},
+    {name: "今日吃菜 (方便素)", price: 110, category: "人氣套餐", icon:"🥗", desc: "冬粉、玉米筍、金針菇、白蘿蔔、任挑三種菜", selectVegCount: 3, hasNoodle: true},
+    {name: "肉肉派對", price: 160, category: "人氣套餐", icon:"🥩", desc: "粉腸、隔間肉、豬肉片*2"},
+    {name: "豬肉小火鍋", price: 130, category: "人氣套餐", icon:"🍲", desc: "冬粉、玉米筍、金針菇、鳥蛋、鑫鑫腸、魚餃、蟹肉棒、水晶餃、豬肉片、任挑兩種菜", selectVegCount: 2, hasNoodle: true},
 
     // === 麵食 ===
-    {name: "王子麵", price: 15, category: "麵食", icon:"🍜", isNoodle: true},
-    {name: "鍋燒意麵", price: 15, category: "麵食", icon:"🍜", isNoodle: true},
-    {name: "蒸煮麵", price: 20, category: "麵食", icon:"🍜", isNoodle: true},
-    {name: "韓國拉麵", price: 30, category: "麵食", icon:"🍜", isNoodle: true},
-    {name: "冬粉", price: 15, category: "麵食", icon:"🍜", isNoodle: true},
-    {name: "河粉", price: 15, category: "麵食", icon:"🍜", isNoodle: true},
-    {name: "烏龍麵", price: 25, category: "麵食", icon:"🍜", isNoodle: true},
+    {name: "王子麵", price: 15, category: "麵食", icon:"🍜", hasNoodle: true},
+    {name: "冬粉", price: 15, category: "麵食", icon:"🍜", hasNoodle: true},
+    {name: "鍋燒意麵", price: 15, category: "麵食", icon:"🍜", hasNoodle: true},
+    {name: "河粉", price: 15, category: "麵食", icon:"🍜", hasNoodle: true},
+    {name: "蒸煮麵", price: 20, category: "麵食", icon:"🍜", hasNoodle: true},
+    {name: "烏龍麵", price: 25, category: "麵食", icon:"🍜", hasNoodle: true},
+    {name: "韓國拉麵", price: 30, category: "麵食", icon:"🍜", hasNoodle: true},
 
     // === 青菜 ===
     {name: "豆芽菜", price: 15, category: "青菜", icon:"🥬"},
-    {name: "大陸妹", price: 25, category: "青菜", icon:"🥬"},
-    {name: "空心菜", price: 25, category: "青菜", icon:"🥬"},
-    {name: "水蓮", price: 25, category: "青菜", icon:"🥬"},
     {name: "地瓜葉", price: 25, category: "青菜", icon:"🥬"},
+    {name: "大陸妹", price: 25, category: "青菜", icon:"🥬"},
     {name: "高麗菜", price: 25, category: "青菜", icon:"🥬"},
+    {name: "空心菜", price: 25, category: "青菜", icon:"🥬"},
     {name: "花椰菜", price: 25, category: "青菜", icon:"🥦"},
+    {name: "水蓮", price: 25, category: "青菜", icon:"🥬"},
     {name: "娃娃菜", price: 40, category: "青菜", icon:"🥬"},
 
     // === 肉質擔當 ===
     {name: "豬肉片 (6片)", price: 30, category: "肉質擔當", icon:"🥓"},
     {name: "牛肉片 (6片)", price: 40, category: "肉質擔當", icon:"🥩"},
-    {name: "粉腸 (秤重 $50/兩)", price: 50, category: "肉質擔當", icon:"🍖"},
-    {name: "干連 (秤重 $50/兩)", price: 50, category: "肉質擔當", icon:"🍖"},
-    {name: "豬耳朵 (秤重 $50/兩)", price: 50, category: "肉質擔當", icon:"🐷"},
-    {name: "豬舌 (秤重 $50/兩)", price: 50, category: "肉質擔當", icon:"🥩"},
-    {name: "豬頭皮 (秤重 $50/兩)", price: 50, category: "肉質擔當", icon:"🐷"},
-    {name: "豬心 (秤重 $50/兩)", price: 50, category: "肉質擔當", icon:"🫀"},
+    {name: "粉腸 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🍖"},
+    {name: "干連 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🍖"},
+    {name: "豬耳朵 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🍖"},
+    {name: "豬舌 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🍖"},
+    {name: "豬頭皮 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🍖"},
+    {name: "豬心 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🍖"},
 
-    // === 單點小菜 & 菇類豆製品 ===
-    {name: "香菇", price: 15, category: "單點品項", icon:"🍄"},
-    {name: "金針菇", price: 15, category: "單點品項", icon:"🍄"},
-    {name: "杏鮑菇", price: 15, category: "單點品項", icon:"🍄"},
-    {name: "豆包", price: 15, category: "單點品項", icon:"🥟"},
-    {name: "★ 豆皮", price: 25, category: "單點品項", icon:"🥟"},
-    {name: "★ 大豆干", price: 20, category: "單點品項", icon:"🧈"},
-    {name: "百頁豆腐", price: 15, category: "單點品項", icon:"🧈"},
-    {name: "白蘿蔔", price: 10, category: "單點品項", icon:"🥕"},
-    {name: "鴨血", price: 10, category: "單點品項", icon:"🩸"},
-    {name: "★ 米血", price: 15, category: "單點品項", icon:"⬛"},
-    {name: "芋籤", price: 15, category: "單點品項", icon:"🍠"},
-    {name: "木耳", price: 15, category: "單點品項", icon:"🍄"},
-    {name: "★ 秘製滷蛋", price: 15, category: "單點品項", icon:"🥚"},
-    {name: "玉米筍", price: 20, category: "單點品項", icon:"🌽"},
-    {name: "★ 蘭花干", price: 25, category: "單點品項", icon:"🥟"},
-    {name: "★ 德國香腸", price: 25, category: "單點品項", icon:"🌭"},
-    {name: "黑輪餅", price: 25, category: "單點品項", icon:"🍥"},
-    {name: "水晶餃 (3個)", price: 20, category: "單點品項", icon:"🥟"},
-    {name: "魚餃 (3個)", price: 20, category: "單點品項", icon:"🥟"},
+    // === 單點 - 菇類 ===
+    {name: "香菇", price: 15, category: "單點 - 菇類", icon:"🍄"},
+    {name: "金針菇", price: 15, category: "單點 - 菇類", icon:"🍄"},
+    {name: "杏鮑菇", price: 15, category: "單點 - 菇類", icon:"🍄"},
 
-    // === 任選組合專區 ===
+    // === 單點 - 豆製品 ===
+    {name: "豆包", price: 15, category: "單點 - 豆製品", icon:"🧈"},
+    {name: "豆皮", price: 25, category: "單點 - 豆製品", icon:"🧈"},
+    {name: "大豆干", price: 20, category: "單點 - 豆製品", icon:"🧈"},
+    {name: "百頁豆腐", price: 15, category: "單點 - 豆製品", icon:"🧈"},
+
+    // === 單點 - 一般品項 ===
+    {name: "白蘿蔔", price: 10, category: "單點", icon:"🍢"},
+    {name: "鴨血", price: 10, category: "單點", icon:"🍢"},
+    {name: "米血", price: 15, category: "單點", icon:"🍢"},
+    {name: "芋籤", price: 15, category: "單點", icon:"🍢"},
+    {name: "木耳", price: 15, category: "單點", icon:"🍢"},
+    {name: "秘製滷蛋", price: 15, category: "單點", icon:"🥚"},
+    {name: "玉米筍", price: 20, category: "單點", icon:"🌽"},
+    {name: "蘭花干", price: 25, category: "單點", icon:"🍢"},
+    {name: "德國香腸", price: 25, category: "單點", icon:"🌭"},
+    {name: "黑輪餅", price: 25, category: "單點", icon:"🍢"},
+    {name: "水晶餃 (3個)", price: 20, category: "單點", icon:"🥟"},
+    {name: "魚餃 (3個)", price: 20, category: "單點", icon:"🥟"},
+
+    // === 任選優惠區 ===
     {
-        name: "任選 2 樣 $20", 
+        name: "任選2樣20元", 
         price: 20, 
-        category: "組合優惠", 
-        icon:"✨",
-        limit: 2,
+        category: "任選優惠區", 
+        icon: "✨",
+        requiredCount: 2,
         options: ["海帶", "黑輪", "凍豆腐", "甜不辣", "五香豆干"]
     },
     {
-        name: "任選 4 樣 $20", 
+        name: "任選4樣20元", 
         price: 20, 
-        category: "組合優惠", 
-        icon:"✨",
-        limit: 4,
+        category: "任選優惠區", 
+        icon: "✨",
+        requiredCount: 4,
         options: ["鳥蛋", "蒟蒻絲", "鑫鑫腸", "蟹肉棒", "韓式年糕"]
     },
     {
-        name: "任選 3 樣 $30", 
+        name: "任選3樣30元", 
         price: 30, 
-        category: "組合優惠", 
-        icon:"✨",
-        limit: 3,
+        category: "任選優惠區", 
+        icon: "✨",
+        requiredCount: 3,
         options: ["貢丸", "章魚丸", "牛肉丸", "北海貝", "龍蝦沙拉", "起司魚豆腐", "九層塔花枝燒"]
     },
 
     // === 加購推薦 ===
-    {name: "酸菜加量", price: 10, category: "加購推薦", icon:"🥬"},
-    {name: "另外加湯底一包", price: 30, category: "加購推薦", icon:"🥣"}
+    {name: "酸菜加量", price: 10, category: "加購推薦", icon:"➕"},
+    {name: "另外加湯底一包", price: 30, category: "加購推薦", icon:"🍲"}
 ];
 
 const menuItems = rawMenuItems.map((item, index) => ({ ...item, id: index + 1 }));
 
 let cart = {}; 
-let cartIndex = 0; // 購物車唯一識別碼
 let finalTotal = 0;
 let finalSummary = "";
 let currentCardId = "TEST";
@@ -723,11 +702,11 @@ function initCardId() {
         currentCardId = cardParam;
         localStorage.setItem('currentCardId', cardParam);
         statusDiv.innerHTML = `✅ <b>已從網址帶入卡號：${escapeHtml(currentCardId)}</b>`;
-        statusDiv.style.backgroundColor = "#ffedd5"; statusDiv.style.color = "#9a3412"; statusDiv.style.borderLeftColor = "#ea580c";
+        statusDiv.style.backgroundColor = "#d1fae5"; statusDiv.style.color = "#065f46"; statusDiv.style.borderLeftColor = "#10b981";
     } else if (savedCardId) {
         currentCardId = savedCardId;
         statusDiv.innerHTML = `✅ <b>已自動帶入卡號：${escapeHtml(currentCardId)}</b>`;
-        statusDiv.style.backgroundColor = "#ffedd5"; statusDiv.style.color = "#9a3412"; statusDiv.style.borderLeftColor = "#ea580c";
+        statusDiv.style.backgroundColor = "#d1fae5"; statusDiv.style.color = "#065f46"; statusDiv.style.borderLeftColor = "#10b981";
     } else {
         statusDiv.innerHTML = `⚠️ <b>提示：未偵測到登入卡號</b>，使用臨時卡號：${escapeHtml(currentCardId)}`;
         statusDiv.style.backgroundColor = "#fef3c7"; statusDiv.style.color = "#92400e"; statusDiv.style.borderLeftColor = "#f59e0b";
@@ -792,27 +771,33 @@ function renderMenu(items) {
 
         const catItems = items.filter(i => i.category === cat);
         catItems.forEach(item => {
+            // 計算購物車中相同 itemId 的總量
             let totalQty = 0;
-            Object.values(cart).forEach(c => {
-                if (c.itemId === item.id) totalQty += c.qty;
+            Object.values(cart).forEach(cartItem => {
+                if (cartItem.itemId === item.id) totalQty += cartItem.qty;
             });
 
             const card = document.createElement("div");
             card.className = "item-card";
             
+            const descHtml = item.desc ? `<div class="item-desc">${escapeHtml(item.desc)}</div>` : '';
+
             card.innerHTML = `
                 <div class="item-info">
-                    <div class="item-name">${escapeHtml(item.name)}</div>
+                    <div>
+                        <div class="item-name">${escapeHtml(item.name)}</div>
+                        ${descHtml}
+                    </div>
                     <div class="item-price-zone">
                         <span class="item-price">$${item.price}</span>
                         <div class="action-zone">
-                            <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
+                            <button class="btn-qty" onclick="changeQtyByBaseItem(${item.id}, -1)">-</button>
                             <span class="qty-num" id="q-id-${item.id}">${totalQty}</span>
-                            <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
+                            <button class="btn-qty" onclick="handleAddItem(${item.id})">+</button>
                         </div>
                     </div>
                 </div>
-                <div class="item-img-placeholder" onclick="changeQty(${item.id}, 1)">
+                <div class="item-img-placeholder" onclick="handleAddItem(${item.id})">
                     ${escapeHtml(item.icon || '🍲')}
                 </div>
             `;
@@ -824,6 +809,159 @@ function renderMenu(items) {
     });
 }
 
+function handleAddItem(itemId) {
+    const item = menuItems.find(m => m.id === itemId);
+    if (!item) return;
+
+    // 1. 若為任選優惠區品項
+    if (item.options && item.requiredCount) {
+        showComboSelectModal(item);
+    } 
+    // 2. 若為人氣套餐（含任選蔬菜，例如：今日吃菜、豬肉小火鍋）
+    else if (item.selectVegCount) {
+        showVegSelectModal(item);
+    } 
+    // 3. 一般單點品項
+    else {
+        changeQty(itemId, 1);
+    }
+}
+
+// 任選優惠彈窗處理
+function showComboSelectModal(item) {
+    let optionCheckboxes = item.options.map(opt => 
+        `<label class="veg-checkbox-item">
+            <input type="checkbox" name="combo-choice" value="${opt}" onchange="checkComboLimit(${item.requiredCount})"> ${opt}
+        </label>`
+    ).join('');
+
+    let content = `
+        <p>請選擇 <b style="color:var(--primary);">${item.requiredCount}</b> 樣菜色（已選 <span id="combo-selected-count" style="color:var(--accent); font-weight:bold;">0</span> / ${item.requiredCount}）：</p>
+        <div class="veg-checkbox-group">
+            ${optionCheckboxes}
+        </div>
+        <p id="combo-error-msg" style="color:#ef4444; font-size:12px; margin-top:8px; display:block;">⚠️ 請務必選擇剛好 ${item.requiredCount} 樣菜色！</p>
+    `;
+
+    showModal(`任選品項 - ${item.name}`, content, 'confirm', (confirmed) => {
+        if (confirmed) {
+            const checkedBoxes = Array.from(document.querySelectorAll('input[name="combo-choice"]:checked')).map(cb => cb.value);
+            
+            if (checkedBoxes.length !== item.requiredCount) {
+                showModal("提示", `⚠️ ${item.name} 必須選擇 ${item.requiredCount} 樣菜色才可加入！`, "alert");
+                return;
+            }
+
+            const customName = `${item.name} (${checkedBoxes.join(',')})`;
+            addCustomComboToCart(item, customName);
+        }
+    });
+
+    setTimeout(() => checkComboLimit(item.requiredCount), 50);
+}
+
+// 驗證任選優惠勾選數量
+function checkComboLimit(requiredCount) {
+    const checked = document.querySelectorAll('input[name="combo-choice"]:checked');
+    const countSpan = document.getElementById('combo-selected-count');
+    const errorMsg = document.getElementById('combo-error-msg');
+    const confirmBtn = document.querySelector('#modalFooter .modal-btn-confirm');
+
+    if (countSpan) countSpan.innerText = checked.length;
+
+    if (checked.length !== requiredCount) {
+        if (errorMsg) errorMsg.style.display = 'block';
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.style.opacity = '0.5';
+            confirmBtn.style.cursor = 'not-allowed';
+        }
+    } else {
+        if (errorMsg) errorMsg.style.display = 'none';
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = '1';
+            confirmBtn.style.cursor = 'pointer';
+        }
+    }
+}
+
+// 人氣套餐蔬菜多選彈窗（強制選滿指定數量，如 2 樣或 3 樣）
+function showVegSelectModal(item) {
+    let vegCheckboxes = vegOptions.map(v => 
+        `<label class="veg-checkbox-item">
+            <input type="checkbox" name="veg-choice" value="${v}" onchange="checkVegLimit(${item.selectVegCount})"> ${v}
+        </label>`
+    ).join('');
+
+    let content = `
+        <p>請選擇套餐搭配蔬菜（必須選擇 <b style="color:var(--primary);">${item.selectVegCount}</b> 種，已選 <span id="veg-selected-count" style="color:var(--accent); font-weight:bold;">0</span> / ${item.selectVegCount}）：</p>
+        <div class="veg-checkbox-group">
+            ${vegCheckboxes}
+        </div>
+        <p id="veg-error-msg" style="color:#ef4444; font-size:12px; margin-top:8px; display:block;">⚠️ 請務必選擇剛好 ${item.selectVegCount} 種蔬菜！</p>
+    `;
+
+    showModal(`選擇套餐蔬菜 - ${item.name}`, content, 'confirm', (confirmed) => {
+        if (confirmed) {
+            const checkedBoxes = Array.from(document.querySelectorAll('input[name="veg-choice"]:checked')).map(cb => cb.value);
+            
+            if (checkedBoxes.length !== item.selectVegCount) {
+                showModal("提示", `⚠️ ${item.name} 必須選擇 ${item.selectVegCount} 種蔬菜！`, "alert");
+                return;
+            }
+
+            const customName = `${item.name} (${checkedBoxes.join(',')})`;
+            addCustomComboToCart(item, customName);
+        }
+    });
+
+    setTimeout(() => checkVegLimit(item.selectVegCount), 50);
+}
+
+// 驗證蔬菜套餐的勾選數量
+function checkVegLimit(requiredCount) {
+    const checked = document.querySelectorAll('input[name="veg-choice"]:checked');
+    const countSpan = document.getElementById('veg-selected-count');
+    const errorMsg = document.getElementById('veg-error-msg');
+    const confirmBtn = document.querySelector('#modalFooter .modal-btn-confirm');
+
+    if (countSpan) countSpan.innerText = checked.length;
+
+    if (checked.length !== requiredCount) {
+        if (errorMsg) errorMsg.style.display = 'block';
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.style.opacity = '0.5';
+            confirmBtn.style.cursor = 'not-allowed';
+        }
+    } else {
+        if (errorMsg) errorMsg.style.display = 'none';
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = '1';
+            confirmBtn.style.cursor = 'pointer';
+        }
+    }
+}
+
+// 將客製化組合（任選或蔬菜套餐）獨立加入購物車
+function addCustomComboToCart(item, customName) {
+    const cartKey = `combo_${item.id}_${Date.now()}`;
+
+    cart[cartKey] = {
+        cartKey: cartKey,
+        itemId: item.id,
+        name: customName,
+        price: item.price,
+        qty: 1,
+        hasNoodle: item.hasNoodle || false
+    };
+
+    renderCart();
+    renderMenu(currentFilteredItems);
+}
+
 function debounceFilterMenu() {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
@@ -833,211 +971,53 @@ function debounceFilterMenu() {
     }, 250);
 }
 
-// 變更數量主邏輯
 function changeQty(itemId, delta) {
     const item = menuItems.find(m => m.id === itemId);
     if (!item) return;
 
-    if (delta > 0) {
-        // 1. 如果需要選青菜 (如：豬肉小火鍋)
-        if (item.selectVegCount) {
-            openVegSelectModal(item);
-            return;
-        }
+    const cartKey = `item_${itemId}`;
 
-        // 2. 如果是任選組合專區
-        if (item.options && item.options.length > 0) {
-            openOptionModal(item);
-            return;
-        }
-
-        // 3. 如果是麵食或含有麵食的套餐
-        if (item.category === "麵食" || item.isNoodle) {
-            openNoodlePackModal(item);
-            return;
-        }
-
-        // 4. 一般普通品項
-        let cartKey = `normal_${item.id}`;
-        if (!cart[cartKey]) {
-            cart[cartKey] = {
-                key: cartKey,
-                itemId: item.id,
-                name: item.name,
-                price: item.price,
-                qty: 0
-            };
-        }
-        cart[cartKey].qty += 1;
-    } else {
-        // 減少數量時，從最後加入的同類品項開始扣除
-        let matchingKeys = Object.keys(cart).filter(k => cart[k].itemId === itemId);
-        if (matchingKeys.length > 0) {
-            let lastKey = matchingKeys[matchingKeys.length - 1];
-            cart[lastKey].qty -= 1;
-            if (cart[lastKey].qty <= 0) {
-                delete cart[lastKey];
-            }
-        }
+    if (!cart[cartKey]) {
+        cart[cartKey] = {
+            cartKey: cartKey,
+            itemId: item.id,
+            name: item.name,
+            price: item.price,
+            qty: 0,
+            hasNoodle: item.hasNoodle || false
+        };
     }
 
-    updateQtyDisplay(itemId);
+    cart[cartKey].qty += delta;
+
+    if (cart[cartKey].qty <= 0) {
+        delete cart[cartKey];
+    }
+
     renderCart();
+    renderMenu(currentFilteredItems);
 }
 
-// 開啟豬肉小火鍋「挑選青菜」彈窗 (排除娃娃菜)
-function openVegSelectModal(item) {
-    // 取得青菜類品項並排除「娃娃菜」
-    const availableVegs = menuItems.filter(m => m.category === "青菜" && !m.name.includes("娃娃菜"));
-    
-    let html = `<b>請選擇 ${item.selectVegCount} 樣青菜 (娃娃菜不算)：</b><div class="option-grid">`;
-    availableVegs.forEach((veg) => {
-        html += `
-            <label class="option-item">
-                <input type="checkbox" name="veg_choice" value="${escapeHtml(veg.name)}" onchange="checkVegLimit(${item.selectVegCount})">
-                <span>${escapeHtml(veg.name)}</span>
-            </label>
-        `;
-    });
-    html += `</div>`;
+function changeCartQtyByKey(cartKey, delta) {
+    if (!cart[cartKey]) return;
 
-    showModal(`請選擇青菜 - ${item.name.split('(')[0]}`, html, 'confirm', (confirmed) => {
-        if (!confirmed) return;
+    cart[cartKey].qty += delta;
 
-        const checkedBoxes = Array.from(document.querySelectorAll('input[name="veg_choice"]:checked'));
-        if (checkedBoxes.length !== item.selectVegCount) {
-            alert(`⚠️ 請剛好選擇 ${item.selectVegCount} 樣青菜！`);
-            return;
-        }
-
-        const selectedVegs = checkedBoxes.map(cb => cb.value);
-        let customName = `${item.name} [搭配青菜: ${selectedVegs.join('、')}]`;
-
-        // 若含有麵食，接著詢問包裝
-        if (item.isNoodle) {
-            openNoodlePackModal(item, customName);
-        } else {
-            cartIndex++;
-            let cartKey = `veg_combo_${item.id}_${cartIndex}`;
-            cart[cartKey] = {
-                key: cartKey,
-                itemId: item.id,
-                name: customName,
-                price: item.price,
-                qty: 1
-            };
-            updateQtyDisplay(item.id);
-            renderCart();
-        }
-    });
-}
-
-function checkVegLimit(limit) {
-    const checked = document.querySelectorAll('input[name="veg_choice"]:checked');
-    if (checked.length > limit) {
-        event.target.checked = false;
-        alert(`豬肉小火鍋只能選擇 ${limit} 樣青菜喔！`);
+    if (cart[cartKey].qty <= 0) {
+        delete cart[cartKey];
     }
+
+    renderCart();
+    renderMenu(currentFilteredItems);
 }
 
-// 開啟麵食「分開裝 / 混煮」彈窗
-function openNoodlePackModal(item, baseName = null) {
-    const nameToUse = baseName || item.name;
-    let html = `
-        <div style="font-size:15px; margin-bottom:12px;">請問這份 <b>${escapeHtml(nameToUse)}</b> 要如何包裝？</div>
-        <div class="radio-option-list">
-            <label class="radio-option-item">
-                <input type="radio" name="noodle_pack" value="湯麵分開" checked>
-                <span>🥡 麵分開裝</span>
-            </label>
-            <label class="radio-option-item">
-                <input type="radio" name="noodle_pack" value="直接混煮">
-                <span>🍲 直接裝一起</span>
-            </label>
-        </div>
-    `;
+// 主菜單點擊「-」按鈕，優先扣除常規品項或最新新增的客製項目
+function changeQtyByBaseItem(itemId, delta) {
+    const cartKeys = Object.keys(cart).filter(k => cart[k].itemId === itemId);
+    if (cartKeys.length === 0) return;
 
-    showModal(`麵食包裝選擇`, html, 'confirm', (confirmed) => {
-        if (!confirmed) return;
-
-        const packOption = document.querySelector('input[name="noodle_pack"]:checked').value;
-        cartIndex++;
-        let cartKey = `noodle_${item.id}_${cartIndex}`;
-        let displayName = `${nameToUse} (${packOption})`;
-
-        cart[cartKey] = {
-            key: cartKey,
-            itemId: item.id,
-            name: displayName,
-            price: item.price,
-            qty: 1
-        };
-
-        updateQtyDisplay(item.id);
-        renderCart();
-    });
-}
-
-// 開啟任選彈窗
-function openOptionModal(item) {
-    let html = `<b>請選擇 ${item.limit} 樣品項：</b><div class="option-grid">`;
-    item.options.forEach((opt) => {
-        html += `
-            <label class="option-item">
-                <input type="checkbox" name="opt_choice" value="${escapeHtml(opt)}" onchange="checkLimit(${item.limit})">
-                <span>${escapeHtml(opt)}</span>
-            </label>
-        `;
-    });
-    html += `</div>`;
-
-    showModal(`自訂選項 - ${item.name}`, html, 'confirm', (confirmed) => {
-        if (!confirmed) return;
-
-        const checkedBoxes = Array.from(document.querySelectorAll('input[name="opt_choice"]:checked'));
-        if (checkedBoxes.length !== item.limit) {
-            alert(`⚠️ 請剛好選擇 ${item.limit} 樣商品！`);
-            return;
-        }
-
-        const selectedOpts = checkedBoxes.map(cb => cb.value);
-        cartIndex++;
-        let cartKey = `custom_${item.id}_${cartIndex}`;
-        let displayName = `${item.name} (${selectedOpts.join('、')})`;
-
-        cart[cartKey] = {
-            key: cartKey,
-            itemId: item.id,
-            name: displayName,
-            price: item.price,
-            qty: 1,
-            selectedOpts: selectedOpts
-        };
-
-        updateQtyDisplay(item.id);
-        renderCart();
-    });
-}
-
-// 限制複選框勾選數量
-function checkLimit(limit) {
-    const checked = document.querySelectorAll('input[name="opt_choice"]:checked');
-    if (checked.length > limit) {
-        event.target.checked = false;
-        alert(`此套餐最多只能選擇 ${limit} 樣品項喔！`);
-    }
-}
-
-// 更新菜單卡片上的總計數字
-function updateQtyDisplay(itemId) {
-    let totalQty = 0;
-    Object.values(cart).forEach(c => {
-        if (c.itemId === itemId) totalQty += c.qty;
-    });
-    const qtySpan = document.getElementById(`q-id-${itemId}`);
-    if (qtySpan) {
-        qtySpan.innerText = totalQty;
-    }
+    const targetKey = cartKeys[cartKeys.length - 1]; 
+    changeCartQtyByKey(targetKey, delta);
 }
 
 function clearCart() {
@@ -1091,9 +1071,9 @@ function renderCart() {
         const actionDiv = document.createElement("div");
         actionDiv.style.cssText = "display: flex; align-items: center; gap: 4px;";
         actionDiv.innerHTML = `
-            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="cartItemChangeQty('${key}', -1)">-</button>
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeCartQtyByKey('${item.cartKey}', -1)">-</button>
             <span style="width: 16px; text-align: center; font-weight: 700; font-size: 13px;">${item.qty}</span>
-            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="cartItemChangeQty('${key}', 1)">+</button>
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeCartQtyByKey('${item.cartKey}', 1)">+</button>
         `;
 
         div.appendChild(infoDiv);
@@ -1104,34 +1084,30 @@ function renderCart() {
     document.getElementById("total-amount").innerText = `總計: $${Math.round(finalTotal)}`;
 }
 
-// 購物車項目個別微調
-function cartItemChangeQty(key, delta) {
-    if (!cart[key]) return;
-    cart[key].qty += delta;
-    let itemId = cart[key].itemId;
-    if (cart[key].qty <= 0) {
-        delete cart[key];
-    }
-    updateQtyDisplay(itemId);
-    renderCart();
-}
-
 function submitOrderToServer() {
     if (finalTotal === 0) { 
         showModal("提示", "🛒 購物車是空的喔！", "alert");
         return; 
     }
 
-    const spiceSelect = document.getElementById("spice-level");
-    const spiceVal = spiceSelect ? spiceSelect.value : "不辣";
+    const soupSelect = document.getElementById("soup-type");
+    const soupVal = soupSelect ? soupSelect.value : "湯滷味";
+
+    const spicySelect = document.getElementById("spicy-level");
+    const spicyVal = spicySelect ? spicySelect.value : "不辣";
+
+    const noodleSelect = document.getElementById("noodle-pack");
+    const noodleVal = noodleSelect ? noodleSelect.value : "湯麵合裝";
 
     const orderMealSummary = `凡凡滷味：${finalSummary.trim()}`;
-    const fullNote = `辣度：${spiceVal}`;
+    const fullNote = `類型：${soupVal} / 辣度：${spicyVal} / 麵體：${noodleVal}`;
 
     let confirmHtml = 
         `請確認您的訂單內容：<br><br>` +
         `餐點：${escapeHtml(finalSummary.trim())}<br>` +
-        `辣度：${escapeHtml(spiceVal)}<br>` +
+        `湯乾：${escapeHtml(soupVal)}<br>` +
+        `辣度：${escapeHtml(spicyVal)}<br>` +
+        `麵體處理：<b style="color:var(--primary);">${escapeHtml(noodleVal)}</b><br>` +
         `總金額：<b style="color:var(--accent); font-size:16px;">$${finalTotal}</b> 元<br><br>確定要送出訂單嗎？`;
 
     showModal("請確認您的訂單內容", confirmHtml, "confirm", async (confirmed) => {
@@ -1145,8 +1121,9 @@ function submitOrderToServer() {
             cardId: currentCardId,
             meal: orderMealSummary,
             total: finalTotal,
-            diningType: "",
-            spiceLevel: spiceVal,
+            soup: soupVal,
+            spicy: spicyVal,
+            noodlePack: noodleVal,
             note: fullNote
         };
 
