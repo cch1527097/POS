@@ -399,20 +399,6 @@
             background: #962d22;
         }
 
-        .veg-checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .veg-checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
         /* 響應式優化 */
         @media (max-width: 1024px) {
             .main-layout { flex-direction: column; }
@@ -487,7 +473,7 @@
             
             <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p></div>
 
-            <!-- 客製化選項：湯乾、辣度與麵體分裝 -->
+            <!-- 客製化選項：湯乾、辣度、酸菜與麵體分裝 -->
             <div class="opt-group">
                 <label class="opt-title" for="soup-type">🍲 湯乾選擇</label>
                 <select id="soup-type" class="select-box">
@@ -502,6 +488,12 @@
                     <option value="小辣">小辣</option>
                     <option value="中辣">中辣</option>
                     <option value="大辣">大辣</option>
+                </select>
+
+                <label class="opt-title" for="sauerkraut-option">🥬 酸菜選擇</label>
+                <select id="sauerkraut-option" class="select-box">
+                    <option value="正常酸菜">正常酸菜</option>
+                    <option value="不要酸菜">不要酸菜</option>
                 </select>
 
                 <label class="opt-title" for="noodle-pack">🍜 麵體/湯頭處理</label>
@@ -539,6 +531,9 @@ let modalCallback = null;
 const vegOptions = [
     "豆芽菜", "地瓜葉", "大陸妹", "高麗菜", "空心菜", "花椰菜", "水蓮"
 ];
+
+// 全域變數，紀錄目前彈窗中（套餐蔬菜或任選區）的品項選擇數量
+let currentModalSelections = {};
 
 function showModal(title, htmlContent, type = 'alert', callback = null) {
     document.getElementById('modalTitle').innerText = title;
@@ -771,7 +766,6 @@ function renderMenu(items) {
 
         const catItems = items.filter(i => i.category === cat);
         catItems.forEach(item => {
-            // 計算購物車中相同 itemId 的總量
             let totalQty = 0;
             Object.values(cart).forEach(cartItem => {
                 if (cartItem.itemId === item.id) totalQty += cartItem.qty;
@@ -813,11 +807,11 @@ function handleAddItem(itemId) {
     const item = menuItems.find(m => m.id === itemId);
     if (!item) return;
 
-    // 1. 若為任選優惠區品項
+    // 1. 若為任選優惠區品項 (支援數量自由搭配與重複加總)
     if (item.options && item.requiredCount) {
         showComboSelectModal(item);
     } 
-    // 2. 若為人氣套餐（含任選蔬菜，例如：今日吃菜、豬肉小火鍋）
+    // 2. 若為人氣套餐（含任選蔬菜）
     else if (item.selectVegCount) {
         showVegSelectModal(item);
     } 
@@ -827,108 +821,148 @@ function handleAddItem(itemId) {
     }
 }
 
-// 任選優惠彈窗處理
+// 任選優惠彈窗處理（支援可重複選擇數量 +/ - 按鈕）
 function showComboSelectModal(item) {
-    let optionCheckboxes = item.options.map(opt => 
-        `<label class="veg-checkbox-item">
-            <input type="checkbox" name="combo-choice" value="${opt}" onchange="checkComboLimit(${item.requiredCount})"> ${opt}
-        </label>`
-    ).join('');
+    currentModalSelections = {};
+    item.options.forEach(opt => {
+        currentModalSelections[opt] = 0;
+    });
+
+    let optionRows = item.options.map(opt => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #edf2f7;">
+            <span style="font-size: 14px; font-weight: 600; color: #2c3e50;">${opt}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn-qty" style="width:26px; height:26px;" onclick="changeModalOptQty('${opt}', -1, ${item.requiredCount})">-</button>
+                <span id="modal-opt-${opt}" style="min-width: 18px; text-align: center; font-weight: 700; font-size: 14px;">0</span>
+                <button type="button" class="btn-qty" style="width:26px; height:26px;" onclick="changeModalOptQty('${opt}', 1, ${item.requiredCount})">+</button>
+            </div>
+        </div>
+    `).join('');
 
     let content = `
-        <p>請選擇 <b style="color:var(--primary);">${item.requiredCount}</b> 樣菜色（已選 <span id="combo-selected-count" style="color:var(--accent); font-weight:bold;">0</span> / ${item.requiredCount}）：</p>
-        <div class="veg-checkbox-group">
-            ${optionCheckboxes}
+        <p style="margin-top:0;">請選擇內容（總共需選擇 <b style="color:var(--primary);">${item.requiredCount}</b> 份，可重複選擇）：</p>
+        <div style="max-height: 240px; overflow-y: auto; padding-right: 4px;">
+            ${optionRows}
         </div>
-        <p id="combo-error-msg" style="color:#ef4444; font-size:12px; margin-top:8px; display:block;">⚠️ 請務必選擇剛好 ${item.requiredCount} 樣菜色！</p>
+        <div style="margin-top: 12px; font-size: 13px; font-weight: 600;">
+            已選數量：<span id="modal-selected-count" style="color:var(--accent); font-size: 16px;">0</span> / ${item.requiredCount}
+        </div>
+        <p id="modal-error-msg" style="color:#ef4444; font-size:12px; margin-top:6px; display:block;">⚠️ 請務必選擇總共 ${item.requiredCount} 份！</p>
     `;
 
-    showModal(`任選品項 - ${item.name}`, content, 'confirm', (confirmed) => {
+    showModal(`任選優惠 - ${item.name}`, content, 'confirm', (confirmed) => {
         if (confirmed) {
-            const checkedBoxes = Array.from(document.querySelectorAll('input[name="combo-choice"]:checked')).map(cb => cb.value);
+            let totalSelected = Object.values(currentModalSelections).reduce((a, b) => a + b, 0);
             
-            if (checkedBoxes.length !== item.requiredCount) {
-                showModal("提示", `⚠️ ${item.name} 必須選擇 ${item.requiredCount} 樣菜色才可加入！`, "alert");
+            if (totalSelected !== item.requiredCount) {
+                showModal("提示", `⚠️ ${item.name} 必須選擇總共 ${item.requiredCount} 份才可加入！`, "alert");
                 return;
             }
 
-            const customName = `${item.name} (${checkedBoxes.join(',')})`;
+            let selectedList = [];
+            Object.keys(currentModalSelections).forEach(opt => {
+                let count = currentModalSelections[opt];
+                if (count > 0) {
+                    selectedList.push(count > 1 ? `${opt}*${count}` : opt);
+                }
+            });
+
+            const customName = `${item.name} (${selectedList.join(',')})`;
             addCustomComboToCart(item, customName);
         }
     });
 
-    setTimeout(() => checkComboLimit(item.requiredCount), 50);
+    setTimeout(() => checkModalLimit(item.requiredCount), 50);
 }
 
-// 驗證任選優惠勾選數量
-function checkComboLimit(requiredCount) {
-    const checked = document.querySelectorAll('input[name="combo-choice"]:checked');
-    const countSpan = document.getElementById('combo-selected-count');
-    const errorMsg = document.getElementById('combo-error-msg');
-    const confirmBtn = document.querySelector('#modalFooter .modal-btn-confirm');
-
-    if (countSpan) countSpan.innerText = checked.length;
-
-    if (checked.length !== requiredCount) {
-        if (errorMsg) errorMsg.style.display = 'block';
-        if (confirmBtn) {
-            confirmBtn.disabled = true;
-            confirmBtn.style.opacity = '0.5';
-            confirmBtn.style.cursor = 'not-allowed';
-        }
-    } else {
-        if (errorMsg) errorMsg.style.display = 'none';
-        if (confirmBtn) {
-            confirmBtn.disabled = false;
-            confirmBtn.style.opacity = '1';
-            confirmBtn.style.cursor = 'pointer';
-        }
-    }
-}
-
-// 人氣套餐蔬菜多選彈窗（強制選滿指定數量，如 2 樣或 3 樣）
+// 人氣套餐蔬菜多選彈窗（支援重複選擇數量）
 function showVegSelectModal(item) {
-    let vegCheckboxes = vegOptions.map(v => 
-        `<label class="veg-checkbox-item">
-            <input type="checkbox" name="veg-choice" value="${v}" onchange="checkVegLimit(${item.selectVegCount})"> ${v}
-        </label>`
-    ).join('');
+    currentModalSelections = {};
+    vegOptions.forEach(v => {
+        currentModalSelections[v] = 0;
+    });
+
+    let vegRows = vegOptions.map(v => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #edf2f7;">
+            <span style="font-size: 14px; font-weight: 600; color: #2c3e50;">${v}</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn-qty" style="width:26px; height:26px;" onclick="changeModalOptQty('${v}', -1, ${item.selectVegCount})">-</button>
+                <span id="modal-opt-${v}" style="min-width: 18px; text-align: center; font-weight: 700; font-size: 14px;">0</span>
+                <button type="button" class="btn-qty" style="width:26px; height:26px;" onclick="changeModalOptQty('${v}', 1, ${item.selectVegCount})">+</button>
+            </div>
+        </div>
+    `).join('');
 
     let content = `
-        <p>請選擇套餐搭配蔬菜（必須選擇 <b style="color:var(--primary);">${item.selectVegCount}</b> 種，已選 <span id="veg-selected-count" style="color:var(--accent); font-weight:bold;">0</span> / ${item.selectVegCount}）：</p>
-        <div class="veg-checkbox-group">
-            ${vegCheckboxes}
+        <p style="margin-top:0;">請選擇套餐搭配蔬菜（總共需選擇 <b style="color:var(--primary);">${item.selectVegCount}</b> 份，可重複選擇）：</p>
+        <div style="max-height: 240px; overflow-y: auto; padding-right: 4px;">
+            ${vegRows}
         </div>
-        <p id="veg-error-msg" style="color:#ef4444; font-size:12px; margin-top:8px; display:block;">⚠️ 請務必選擇剛好 ${item.selectVegCount} 種蔬菜！</p>
+        <div style="margin-top: 12px; font-size: 13px; font-weight: 600;">
+            已選數量：<span id="modal-selected-count" style="color:var(--accent); font-size: 16px;">0</span> / ${item.selectVegCount}
+        </div>
+        <p id="modal-error-msg" style="color:#ef4444; font-size:12px; margin-top:6px; display:block;">⚠️ 請務必選擇總共 ${item.selectVegCount} 份蔬菜！</p>
     `;
 
     showModal(`選擇套餐蔬菜 - ${item.name}`, content, 'confirm', (confirmed) => {
         if (confirmed) {
-            const checkedBoxes = Array.from(document.querySelectorAll('input[name="veg-choice"]:checked')).map(cb => cb.value);
+            let totalSelected = Object.values(currentModalSelections).reduce((a, b) => a + b, 0);
             
-            if (checkedBoxes.length !== item.selectVegCount) {
-                showModal("提示", `⚠️ ${item.name} 必須選擇 ${item.selectVegCount} 種蔬菜！`, "alert");
+            if (totalSelected !== item.selectVegCount) {
+                showModal("提示", `⚠️ ${item.name} 必須選擇總共 ${item.selectVegCount} 份蔬菜！`, "alert");
                 return;
             }
 
-            const customName = `${item.name} (${checkedBoxes.join(',')})`;
+            let selectedList = [];
+            Object.keys(currentModalSelections).forEach(v => {
+                let count = currentModalSelections[v];
+                if (count > 0) {
+                    selectedList.push(count > 1 ? `${v}*${count}` : v);
+                }
+            });
+
+            const customName = `${item.name} (${selectedList.join(',')})`;
             addCustomComboToCart(item, customName);
         }
     });
 
-    setTimeout(() => checkVegLimit(item.selectVegCount), 50);
+    setTimeout(() => checkModalLimit(item.selectVegCount), 50);
 }
 
-// 驗證蔬菜套餐的勾選數量
-function checkVegLimit(requiredCount) {
-    const checked = document.querySelectorAll('input[name="veg-choice"]:checked');
-    const countSpan = document.getElementById('veg-selected-count');
-    const errorMsg = document.getElementById('veg-error-msg');
+// 調整彈窗內單項數量 (通用: 套餐與任選優惠)
+function changeModalOptQty(optName, delta, targetCount) {
+    let currentTotal = Object.values(currentModalSelections).reduce((a, b) => a + b, 0);
+    let currentQty = currentModalSelections[optName] || 0;
+
+    // 增加上限檢查
+    if (delta > 0 && currentTotal >= targetCount) {
+        return;
+    }
+
+    // 減少下限檢查
+    if (delta < 0 && currentQty <= 0) {
+        return;
+    }
+
+    currentModalSelections[optName] = currentQty + delta;
+    
+    // 更新 UI 上的數字
+    const spanEl = document.getElementById(`modal-opt-${optName}`);
+    if (spanEl) spanEl.innerText = currentModalSelections[optName];
+
+    checkModalLimit(targetCount);
+}
+
+// 驗證彈窗選擇總數量
+function checkModalLimit(targetCount) {
+    let totalSelected = Object.values(currentModalSelections).reduce((a, b) => a + b, 0);
+    const countSpan = document.getElementById('modal-selected-count');
+    const errorMsg = document.getElementById('modal-error-msg');
     const confirmBtn = document.querySelector('#modalFooter .modal-btn-confirm');
 
-    if (countSpan) countSpan.innerText = checked.length;
+    if (countSpan) countSpan.innerText = totalSelected;
 
-    if (checked.length !== requiredCount) {
+    if (totalSelected !== targetCount) {
         if (errorMsg) errorMsg.style.display = 'block';
         if (confirmBtn) {
             confirmBtn.disabled = true;
@@ -1011,7 +1045,6 @@ function changeCartQtyByKey(cartKey, delta) {
     renderMenu(currentFilteredItems);
 }
 
-// 主菜單點擊「-」按鈕，優先扣除常規品項或最新新增的客製項目
 function changeQtyByBaseItem(itemId, delta) {
     const cartKeys = Object.keys(cart).filter(k => cart[k].itemId === itemId);
     if (cartKeys.length === 0) return;
@@ -1096,17 +1129,21 @@ function submitOrderToServer() {
     const spicySelect = document.getElementById("spicy-level");
     const spicyVal = spicySelect ? spicySelect.value : "不辣";
 
+    const sauerkrautSelect = document.getElementById("sauerkraut-option");
+    const sauerkrautVal = sauerkrautSelect ? sauerkrautSelect.value : "正常酸菜";
+
     const noodleSelect = document.getElementById("noodle-pack");
     const noodleVal = noodleSelect ? noodleSelect.value : "湯麵合裝";
 
     const orderMealSummary = `凡凡滷味：${finalSummary.trim()}`;
-    const fullNote = `類型：${soupVal} / 辣度：${spicyVal} / 麵體：${noodleVal}`;
+    const fullNote = `類型：${soupVal} / 辣度：${spicyVal} / 酸菜：${sauerkrautVal} / 麵體：${noodleVal}`;
 
     let confirmHtml = 
         `請確認您的訂單內容：<br><br>` +
         `餐點：${escapeHtml(finalSummary.trim())}<br>` +
         `湯乾：${escapeHtml(soupVal)}<br>` +
         `辣度：${escapeHtml(spicyVal)}<br>` +
+        `酸菜：${escapeHtml(sauerkrautVal)}<br>` +
         `麵體處理：<b style="color:var(--primary);">${escapeHtml(noodleVal)}</b><br>` +
         `總金額：<b style="color:var(--accent); font-size:16px;">$${finalTotal}</b> 元<br><br>確定要送出訂單嗎？`;
 
@@ -1123,6 +1160,7 @@ function submitOrderToServer() {
             total: finalTotal,
             soup: soupVal,
             spicy: spicyVal,
+            sauerkraut: sauerkrautVal,
             noodlePack: noodleVal,
             note: fullNote
         };
