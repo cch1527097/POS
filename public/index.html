@@ -15,10 +15,10 @@
     font-family: "Microsoft JhengHei", -apple-system, sans-serif;
     color: #333;
 
-    /* 📌 新增：固定頂部關鍵屬性 */
-    position: sticky;      /* 或是使用 fixed */
-    top: 0;                /* 緊貼頁面最上方 */
-    z-index: 1000;         /* 確保層級高於下方內容，不會被其他元素遮擋 */
+    /* 📌 固定頂部關鍵屬性 */
+    position: sticky;      
+    top: 0;                
+    z-index: 1000;         
 }
 
 /* 第一層：頂部工具列 */
@@ -108,13 +108,13 @@
     color: #333;
 }
 
-/* 右側員工資訊區塊：確保置中且不被擠壓 */
+/* 右側員工資訊區塊 */
 .nidin-top-right {
     display: flex;
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
-    margin-left: auto; /* 在手機版自動推至最右側 */
+    margin-left: auto;
 }
 
 .nidin-user-info {
@@ -122,20 +122,18 @@
     align-items: center;
     gap: 4px;
     font-size: 15px;
-    font-weight: 600; /* 統一整體字型粗細 */
-    font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif; /* 強制統一字型 */
+    font-weight: 600;
+    font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
     color: #333;
     white-space: nowrap;
 }
 
-/* 確保內部所有的 span 都繼承相同的字型與粗細 */
 .nidin-user-info span {
     font-family: inherit;
     font-weight: inherit;
     font-size: inherit;
 }
 
-/* 動態顯示的使用者姓名樣式 */
 #user-name {
     color: #0091ff;
 }
@@ -163,8 +161,8 @@
     transition: color 0.2s, transform 0.1s;
     cursor: pointer;
     flex-shrink: 0;
-    user-select: none;          /* 避免文字被選取 */
-    -webkit-user-select: none;  /* Safari/Chrome 相容 */
+    user-select: none;
+    -webkit-user-select: none;
 }
 .nidin-nav-item:hover {
     color: #0091ff;
@@ -190,7 +188,7 @@
     stroke: #0091ff;
 }
 
-/* 📱 手機版 RWD 完美適應 */
+/* 📱 手機版 RWD 適應 */
 @media (max-width: 768px) {
     .nidin-top-bar {
         flex-direction: column;
@@ -249,7 +247,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #bcdcb4; /* 淡綠色大背景 */
+            background-color: #bcdcb4;
             min-height: 100vh;
             position: relative;
             transition: background-color 0.3s ease;
@@ -263,7 +261,7 @@
 
         body.order-mode {
             display: block;
-            background-color: #eef7ed; /* 清爽淺綠色大背景 */
+            background-color: #eef7ed;
         }
 
         .hidden { display: none !important; }
@@ -356,7 +354,7 @@
 
         .error-msg { font-size: 16px; margin-top: 15px; height: 20px; font-weight: bold; color: #a01010; text-align: center; }
 
-        /* ==================== 2. 點餐畫面區塊 ==================== */
+        /* ==================== 2. 點餐畫面區塊 (圖三精美圖片卡片風格) ==================== */
         .order-container {
             width: 100%;
             min-height: 100vh;
@@ -370,79 +368,117 @@
             width: 100%;
             padding: 40px 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
         }
 
+        /* 仿圖三：圖片卡片本體 */
         .shop-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(43, 76, 35, 0.04); 
+            background: #ffffff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07); 
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            border: 1px solid #d6ebd3; 
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            cursor: pointer;
+            border: 1px solid #e2ebe0;
         }
 
         .shop-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(43, 76, 35, 0.1);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
         }
 
-        .card-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
+        /* 圖片容器 */
+        .shop-img-wrapper {
+            position: relative;
+            width: 100%;
+            height: 190px;
+            background-color: #f2f5f1;
+            overflow: hidden;
         }
 
-        .shop-name {
-            font-size: 22px;
-            font-weight: bold;
-            color: #2b4c23; 
+        .shop-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.35s ease;
         }
 
+        .shop-card:hover .shop-img-wrapper img {
+            transform: scale(1.06);
+        }
+
+        /* 圖片左上方分類標籤 */
         .badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
             font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 6px;
+            padding: 5px 12px;
+            border-radius: 20px;
             color: white;
             font-weight: bold;
             white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            z-index: 2;
         }
         .badge.smart { background-color: #1f8a62; }   
         .badge.private { background-color: #618756; } 
         .badge.local { background-color: #7ba370; }    
         .badge.main { background-color: #436e37; }    
 
+        /* 圖片上方按鈕 */
+        .img-overlay-btn {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background-color: rgba(78, 128, 60, 0.9);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .shop-card:hover .img-overlay-btn {
+            background-color: #3f6b30;
+            transform: scale(1.05);
+        }
+
+        /* 卡片下方資訊內容 */
+        .shop-info {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            background: #ffffff;
+        }
+
+        .shop-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2b4c23; 
+            margin: 0;
+            line-height: 1.3;
+        }
+
         .shop-desc {
-            font-size: 15px;
+            font-size: 14px;
             color: #556b52; 
             line-height: 1.5;
-            margin-bottom: 25px;
-            flex: 1;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-
-        .go-btn {
-            width: 100%;
-            background-color: #4e803c; 
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(78, 128, 60, 0.15);
-        }
-
-        .go-btn:hover:not(:disabled) { background-color: #3f6b30; box-shadow: 0 6px 12px rgba(63, 107, 48, 0.25); }
-        .go-btn:active:not(:disabled) { transform: scale(0.99); }
-        .go-btn:disabled { background-color: #cccccc; cursor: not-allowed; box-shadow: none; }
 
         /* ==================== 3. 表格通用樣式 ==================== */
         .clear-local-btn {
@@ -526,7 +562,7 @@
             box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
         }
 
-        /* ==================== 4. 院區 / 付款 / 購物車 / 曾點過 選擇彈窗 Modal 樣式 ==================== */
+        /* ==================== 4. Modal 彈窗樣式 ==================== */
         .branch-modal-overlay {
             position: fixed;
             top: 0;
@@ -551,7 +587,6 @@
             animation: modalFadeIn 0.25s ease-out;
         }
 
-        /* 購物車 & 曾點過 Modal 寬度較寬 */
         .cart-modal-content {
             max-width: 800px !important;
         }
@@ -624,7 +659,6 @@
             display: inline;
         }
 
-        /* 付款介紹 Modal 專用內部樣式 */
         .payment-modal-body {
             padding: 20px;
             display: flex;
@@ -653,7 +687,7 @@
             color: #555;
         }
 
-        /* ==================== 5. 仿圖二自訂精美提示/確認對話框樣式 ==================== */
+        /* ==================== 5. 自訂精美提示/確認對話框樣式 ==================== */
         .custom-alert-box {
             max-width: 440px !important;
         }
@@ -698,7 +732,7 @@
             transition: background 0.2s, transform 0.1s !important;
         }
         .custom-btn-confirm-red {
-            background-color: #8b1a1a !important; /* 仿圖二深紅/紅棕色系 */
+            background-color: #8b1a1a !important;
             color: white !important;
         }
         .custom-btn-confirm-red:hover {
@@ -722,7 +756,7 @@
 </head>
 <body class="login-mode">
 
-    <!-- 登入畫面區塊 -->
+    <!-- 1. 登入畫面區塊 -->
     <div id="login-section" class="login-card">
         <img src="logo.gif" alt="系統Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
@@ -736,7 +770,7 @@
         <div id="msg-display" class="error-msg"></div>
     </div>
 
-    <!-- 點餐主畫面區塊 -->
+    <!-- 2. 點餐主畫面區塊 -->
     <div id="order-section" class="order-container hidden">
         <header class="nidin-header">
             <!-- 第一層：頂部工具列 -->
@@ -745,7 +779,6 @@
                     <div class="nidin-logo">智慧點餐系統<span class="dot">.</span></div>
                     <div class="nidin-divider"></div>
                     
-                    <!-- 頂部地點按鈕：點擊觸發開啟選擇院區 Modal -->
                     <button class="nidin-location-btn" onclick="openBranchModal()">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
@@ -757,7 +790,6 @@
                         </svg>
                     </button>
                     
-                    <!-- 即時搜尋框 -->
                     <div class="nidin-search-box">
                         <svg id="searchBtn" onclick="filterShops()" style="cursor: pointer;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
@@ -796,7 +828,6 @@
                     <span>付款介紹</span>
                 </a>
 
-                <!-- 點擊觸發開啟購物車 Modal -->
                 <a class="nidin-nav-item" href="javascript:void(0);" onclick="openCartModal()">
                     <div class="nidin-nav-icon">
                         <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
@@ -811,7 +842,6 @@
                     <span>回首頁</span>
                 </a>
 
-                <!-- 點擊觸發開啟「曾點過」 Modal -->
                 <a class="nidin-nav-item" href="javascript:void(0);" onclick="openHistoryModal()">
                     <div class="nidin-nav-icon">
                         <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
@@ -821,241 +851,321 @@
             </nav>
         </header>
 
+        <!-- 店家卡片列表區塊（仿圖三：頂部圖片 + 下方文字名牌） -->
         <div class="grid-container">
-            <!-- 店家卡片群 -->
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">榮郁香廣式燒臘</span>
-                    <span class="badge smart">主食精選</span>
-                </div>
-                <div class="shop-desc">道地廣式燒臘，外酥內嫩的美味首選。</div>
-                <button class="go-btn" onclick="redirectToShop('榮郁香廣式燒臘', this)">進入 榮郁香廣式燒臘 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">顏舍關東煮</span>
-                    <span class="badge smart">在地美食</span>
-                </div>
-                <div class="shop-desc">暖心熬煮鮮甜高湯，多款精緻關東煮食材。</div>
-                <button class="go-btn" onclick="redirectToShop('顏舍關東煮', this)">進入 顏舍關東煮 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">羹香鴨肉羹</span>
-                    <span class="badge smart">在地美食</span>
-                </div>
-                <div class="shop-desc">鮮美鴨肉與濃郁羹湯的完美結合。</div>
-                <button class="go-btn" onclick="redirectToShop('羹香鴨肉羹', this)">進入 羹香鴨肉羹 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">四海遊龍</span>
-                    <span class="badge smart">主食精選</span>
-                </div>
-                <div class="shop-desc">經典招牌鍋貼、水餃，現點現煎的美味。</div>
-                <button class="go-btn" onclick="redirectToShop('四海遊龍', this)">進入 四海遊龍 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">八方雲集</span>
-                    <span class="badge smart">主食精選</span>
-                </div>
-                <div class="shop-desc">皮Q餡飽滿的招牌鍋貼與各式經典水餃。</div>
-                <button class="go-btn" onclick="redirectToShop('八方雲集', this)">進入 八方雲集 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">鼎森泰式料理</span>
-                    <span class="badge main">主食精選</span>
-                </div>
-                <div class="shop-desc">酸辣開胃的道地泰式風味，配飯的最佳選擇。</div>
-                <button class="go-btn" onclick="redirectToShop('鼎森泰式料理', this)">進入 鼎森泰式料理 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">徊香麵線糊</span>
-                    <span class="badge private">在地美食</span>
-                </div>
-                <div class="shop-desc">古法傳承麵線糊，香氣四溢、在地必吃。</div>
-                <button class="go-btn" onclick="redirectToShop('徊香麵線糊', this)">進入 徊香麵線糊 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">寶北斗肉圓</span>
-                    <span class="badge local">在地美食</span>
-                </div>
-                <div class="shop-desc">外皮Q彈、內餡紮實的經典北斗肉圓。</div>
-                <button class="go-btn" onclick="redirectToShop('寶北斗肉圓', this)">進入 寶北斗肉圓 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">百華味滷味</span>
-                    <span class="badge local">人氣小吃</span>
-                </div>
-                <div class="shop-desc">獨門滷汁透入食材，宵夜點心的最佳拍檔。</div>
-                <button class="go-btn" onclick="redirectToShop('百華味滷味', this)">進入 百華味滷味 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">飯大廚</span>
-                    <span class="badge main">主食精選</span>
-                </div>
-                <div class="shop-desc">大火翻炒粒粒分明，炒飯料理的專家。</div>
-                <button class="go-btn" onclick="redirectToShop('飯大廚', this)">進入 飯大廚 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">老聃飲食</span>
-                    <span class="badge main">主食精選</span>
-                </div>
-                <div class="shop-desc">最平價也最實在的健康手作清爽餐盒在老聃。</div>
-                <button class="go-btn" onclick="redirectToShop('老聃飲食', this)">進入 老聃飲食 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">八廚職人弁当</span>
-                    <span class="badge main">主食精選</span>
-                </div>
-                <div class="shop-desc">主廚精選八種餐品，以最單純的食材堅持以現點現做。</div>
-                <button class="go-btn" onclick="redirectToShop('八廚職人弁当', this)">進入 八廚職人弁当 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">嵐 爌肉・豬腳飯</span>
-                    <span class="badge main">在地美食</span>
-                </div>
-                <div class="shop-desc">主打招牌爌肉飯、Q彈豬腳飯及特色蒸蛋飯。</div>
-                <button class="go-btn" onclick="redirectToShop('嵐 爌肉・豬腳飯', this)">進入 嵐 爌肉・豬腳飯 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">旺春豐傳統小吃</span>
-                    <span class="badge main">在地美食</span>
-                </div>
-                <div class="shop-desc">旺春豐滷肉飯台灣傳統小吃。</div>
-                <button class="go-btn" onclick="redirectToShop('旺春豐傳統小吃', this)">進入 旺春豐傳統小吃 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">咕雞 鹽水雞</span>
-                    <span class="badge main">在地美食</span>
-                </div>
-                <div class="shop-desc">每日蔬菜現買現煮新鮮食材。</div>
-                <button class="go-btn" onclick="redirectToShop('咕雞 鹽水雞', this)">進入 咕雞 鹽水雞 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">家灶 傳統爌肉 豬腳專賣</span>
-                    <span class="badge main">在地美食</span>
-                </div>
-                <div class="shop-desc">招牌爌肉慢慢滷至油亮軟嫩，有提供豬腳麵線、滷豆腐、白菜魯等。</div>
-                <button class="go-btn" onclick="redirectToShop('家灶 傳統爌肉 豬腳專賣', this)">進入 家灶 傳統爌肉 豬腳專賣 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">菓蔬輕蒔坊</span>
-                    <span class="badge main">在地美食</span>
-                </div>
-                <div class="shop-desc">時蔬佳餚現場備有豐富的炸物拼盤、豐盛時蔬。</div>
-                <button class="go-btn" onclick="redirectToShop('菓蔬輕蒔坊', this)">進入 菓蔬輕蒔坊 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">老蕭土魠魚羹麵館</span>
-                    <span class="badge main">在地美食</span>
-                </div>
-                <div class="shop-desc">土魠魚焿及羊肉焿類，豬排飯，厚切豬排特餐及咖哩豬排飯。</div>
-                <button class="go-btn" onclick="redirectToShop('老蕭土魠魚羹麵館', this)">進入 老蕭土魠魚羹麵館 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">小松丼丼食事處</span>
-                    <span class="badge main">主食精選</span>
-                </div>
-                <div class="shop-desc">主打平價、大份量的日式食堂。</div>
-                <button class="go-btn" onclick="redirectToShop('小松丼丼食事處', this)">進入 小松丼丼食事處 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">滿座燒肉丼飯屋</span>
-                    <span class="badge main">主食精選</span>
-                </div>
-                <div class="shop-desc">燒肉丼飯與咖喱飯料理集結了新鮮食材和精心熬煮的醬汁，每一口都能帶給您極致的享受。</div>
-                <button class="go-btn" onclick="redirectToShop('滿座燒肉丼飯屋', this)">進入 滿座燒肉丼飯屋 點餐 ➔</button>
-            </div>
-
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">地6攤排餐</span>
-                    <span class="badge main">主食精選</span>
-                </div>
-                <div class="shop-desc">排餐有沙朗牛排、香煎豬排、脆皮雞腿排三款人氣肉品。另有雙拼，一次滿足兩種美味，爽快又過癮！</div>
-                <button class="go-btn" onclick="redirectToShop('地6攤排餐', this)">進入 地6攤排餐 點餐 ➔</button>
-            </div>
             
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">八鮮雲吞</span>
-                    <span class="badge main">在地美食</span>
+            <div class="shop-card" onclick="redirectToShop('榮郁香廣式燒臘', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge smart">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop" alt="榮郁香廣式燒臘">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
-                <div class="shop-desc">餛飩皮是比較薄的類型，少了一點口感。 不過不只一種口味可以選。</div>
-                <button class="go-btn" onclick="redirectToShop('八鮮雲吞', this)">進入 八鮮雲吞 點餐 ➔</button>
+                <div class="shop-info">
+                    <h3 class="shop-name">榮郁香廣式燒臘</h3>
+                    <p class="shop-desc">道地廣式燒臘，外酥內嫩的美味首選。</p>
+                </div>
             </div>
 
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">明美快餐</span>
+            <div class="shop-card" onclick="redirectToShop('顏舍關東煮', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge smart">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop" alt="顏舍關東煮">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">顏舍關東煮</h3>
+                    <p class="shop-desc">暖心熬煮鮮甜高湯，多款精緻關東煮食材。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('羹香鴨肉羹', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge smart">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1547592180-85f173990554?w=600&auto=format&fit=crop" alt="羹香鴨肉羹">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">羹香鴨肉羹</h3>
+                    <p class="shop-desc">鮮美鴨肉與濃郁羹湯的完美結合。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('四海遊龍', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge smart">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=600&auto=format&fit=crop" alt="四海遊龍">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">四海遊龍</h3>
+                    <p class="shop-desc">經典招牌鍋貼、水餃，現點現煎的美味。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('八方雲集', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge smart">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?w=600&auto=format&fit=crop" alt="八方雲集">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">八方雲集</h3>
+                    <p class="shop-desc">皮Q餡飽滿的招牌鍋貼與各式經典水餃。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('鼎森泰式料理', this)">
+                <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&auto=format&fit=crop" alt="鼎森泰式料理">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
-                <div class="shop-desc">主打超大好吃的雞排便當與美味主菜。</div>
-                <button class="go-btn" onclick="redirectToShop('明美快餐', this)">進入 明美快餐 點餐 ➔</button>
+                <div class="shop-info">
+                    <h3 class="shop-name">鼎森泰式料理</h3>
+                    <p class="shop-desc">酸辣開胃的道地泰式風味，配飯的最佳選擇。</p>
+                </div>
             </div>
 
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">森晴餐盒製所</span>
+            <div class="shop-card" onclick="redirectToShop('徊香麵線糊', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge private">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600&auto=format&fit=crop" alt="徊香麵線糊">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">徊香麵線糊</h3>
+                    <p class="shop-desc">古法傳承麵線糊，香氣四溢、在地必吃。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('寶北斗肉圓', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge local">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop" alt="寶北斗肉圓">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">寶北斗肉圓</h3>
+                    <p class="shop-desc">外皮Q彈、內餡紮實的經典北斗肉圓。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('百華味滷味', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge local">人氣小吃</span>
+                    <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&auto=format&fit=crop" alt="百華味滷味">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">百華味滷味</h3>
+                    <p class="shop-desc">獨門滷汁透入食材，宵夜點心的最佳拍檔。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('飯大廚', this)">
+                <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&auto=format&fit=crop" alt="飯大廚">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
-                <div class="shop-desc">引進飯店級專業烤箱與獨家標準 化規格，沒廚藝背景的餐飲小白也能做出職人級美味。</div>
-                <button class="go-btn" onclick="redirectToShop('森晴餐盒製所', this)">進入 森晴餐盒製所 點餐 ➔</button>
+                <div class="shop-info">
+                    <h3 class="shop-name">飯大廚</h3>
+                    <p class="shop-desc">大火翻炒粒粒分明，炒飯料理的專家。</p>
+                </div>
             </div>
 
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">廈門沙茶麵</span>
+            <div class="shop-card" onclick="redirectToShop('老聃飲食', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop" alt="老聃飲食">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">老聃飲食</h3>
+                    <p class="shop-desc">最平價也最實在的健康手作清爽餐盒在老聃。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('八廚職人弁当', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1562967914-608f82629710?w=600&auto=format&fit=crop" alt="八廚職人弁当">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">八廚職人弁当</h3>
+                    <p class="shop-desc">主廚精選八種餐品，以最單純的食材堅持以現點現做。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('嵐 爌肉・豬腳飯', this)">
+                <div class="shop-img-wrapper">
                     <span class="badge main">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop" alt="嵐 爌肉・豬腳飯">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
-                <div class="shop-desc">廈門沙茶麵的湯頭是用沙茶醬加高湯，配料常見海鮮為主，像是花枝、蝦仁、蛤蜊，比較偏海味路線。</div>
-                <button class="go-btn" onclick="redirectToShop('廈門沙茶麵', this)">進入 廈門沙茶麵 點餐 ➔</button>
+                <div class="shop-info">
+                    <h3 class="shop-name">嵐 爌肉・豬腳飯</h3>
+                    <p class="shop-desc">主打招牌爌肉飯、Q彈豬腳飯及特色蒸蛋飯。</p>
+                </div>
             </div>
 
-            <div class="shop-card">
-                <div class="card-top">
-                    <span class="shop-name">凡凡滷味</span>
+            <div class="shop-card" onclick="redirectToShop('旺春豐傳統小吃', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1591814468924-caf88d1232e1?w=600&auto=format&fit=crop" alt="旺春豐傳統小吃">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">旺春豐傳統小吃</h3>
+                    <p class="shop-desc">旺春豐滷肉飯台灣傳統小吃。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('咕雞 鹽水雞', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=600&auto=format&fit=crop" alt="咕雞 鹽水雞">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">咕雞 鹽水雞</h3>
+                    <p class="shop-desc">每日蔬菜現買現煮新鮮食材。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('家灶 傳統爌肉 豬腳專賣', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop" alt="家灶 傳統爌肉 豬腳專賣">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">家灶 傳統爌肉 豬腳專賣</h3>
+                    <p class="shop-desc">招牌爌肉慢慢滷至油亮軟嫩，有提供豬腳麵線、滷豆腐、白菜魯等。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('菓蔬輕蒔坊', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop" alt="菓蔬輕蒔坊">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">菓蔬輕蒔坊</h3>
+                    <p class="shop-desc">時蔬佳餚現場備有豐富的炸物拼盤、豐盛時蔬。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('老蕭土魠魚羹麵館', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop" alt="老蕭土魠魚羹麵館">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">老蕭土魠魚羹麵館</h3>
+                    <p class="shop-desc">土魠魚焿及羊肉焿類，豬排飯，厚切豬排特餐及咖哩豬排飯。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('小松丼丼食事處', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?w=600&auto=format&fit=crop" alt="小松丼丼食事處">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">小松丼丼食事處</h3>
+                    <p class="shop-desc">主打平價、大份量的日式食堂。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('滿座燒肉丼飯屋', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1541544741938-0af808871cc0?w=600&auto=format&fit=crop" alt="滿座燒肉丼飯屋">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">滿座燒肉丼飯屋</h3>
+                    <p class="shop-desc">燒肉丼飯與咖喱飯料理集結了新鮮食材和精心熬煮的醬汁。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('地6攤排餐', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop" alt="地6攤排餐">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">地6攤排餐</h3>
+                    <p class="shop-desc">排餐有沙朗牛排、香煎豬排、脆皮雞腿排三款人氣肉品。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('八鮮雲吞', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=600&auto=format&fit=crop" alt="八鮮雲吞">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">八鮮雲吞</h3>
+                    <p class="shop-desc">餛飩皮是比較薄的類型，經典美味不只一種選擇。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('明美快餐', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1562967914-608f82629710?w=600&auto=format&fit=crop" alt="明美快餐">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">明美快餐</h3>
+                    <p class="shop-desc">主打超大好吃的雞排便當與美味主菜。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('森晴餐盒製所', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">主食精選</span>
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop" alt="森晴餐盒製所">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">森晴餐盒製所</h3>
+                    <p class="shop-desc">引進飯店級專業烤箱與獨家標準化規格。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('廈門沙茶麵', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=600&auto=format&fit=crop" alt="廈門沙茶麵">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">廈門沙茶麵</h3>
+                    <p class="shop-desc">廈門沙茶麵的湯頭是用沙茶醬加高湯，鮮美帶勁。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('凡凡滷味', this)">
+                <div class="shop-img-wrapper">
                     <span class="badge main">人氣小吃</span>
+                    <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&auto=format&fit=crop" alt="凡凡滷味">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
-                <div class="shop-desc">招牌特色以大量老薑與祖傳滷包慢火熬煮湯頭，口感溫潤順口不燥熱，深受在地人與饕客喜愛。</div>
-                <button class="go-btn" onclick="redirectToShop('凡凡滷味', this)">進入 凡凡滷味 點餐 ➔</button>
+                <div class="shop-info">
+                    <h3 class="shop-name">凡凡滷味</h3>
+                    <p class="shop-desc">招牌特色以大量老薑與祖傳滷包慢火熬煮湯頭。</p>
+                </div>
             </div>
+
         </div>
 
         <button class="logout-btn" onclick="executeLogout()">登出系統 ➔</button>
@@ -1189,7 +1299,7 @@
         </div>
     </div>
 
-    <!-- 新增：仿圖二客製化自訂提示/確認對話框 (Modal) -->
+    <!-- 客製化自訂提示/確認對話框 (Modal) -->
     <div id="customAlertModal" class="branch-modal-overlay hidden" onclick="closeCustomAlert(false)">
         <div class="branch-modal-content custom-alert-box" onclick="event.stopPropagation()">
             <div class="branch-modal-header custom-alert-header">
@@ -1209,7 +1319,7 @@
     <script>
         let loggedInCardId = ''; 
         let isSubmitting = false;
-        let customAlertCallback = null; // 用於處理自訂對話框的回傳事件
+        let customAlertCallback = null;
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -1256,14 +1366,12 @@
                 });
             }
 
-            // 載入與初始化記憶的院區
             const savedBranch = localStorage.getItem('selectedBranch');
             if (savedBranch) {
                 updateBranchDisplay(savedBranch);
             }
         });
 
-        // ==================== 新增：自訂對話框 JS 控制邏輯 ====================
         function callCustomAlert(title, message, callback, showCancel = true) {
             document.getElementById('customAlertTitle').textContent = title;
             document.getElementById('customAlertMessage').innerHTML = message;
@@ -1286,33 +1394,27 @@
                 customAlertCallback = null;
             }
         }
-        // =====================================================================
 
-        // 開啟院區選擇 Modal
         function openBranchModal() {
             const modal = document.getElementById('branchModal');
             if (modal) modal.classList.remove('hidden');
         }
 
-        // 關閉院區選擇 Modal
         function closeBranchModal(event) {
             const modal = document.getElementById('branchModal');
-            if (modal) modal.classList.add('hidden');
+            if (modal) modal.classList.remove('hidden');
         }
 
-        // 開啟付款介紹 Modal
         function showPaymentInfo() {
             const modal = document.getElementById('paymentModal');
             if (modal) modal.classList.remove('hidden');
         }
 
-        // 關閉付款介紹 Modal
         function closePaymentModal(event) {
             const modal = document.getElementById('paymentModal');
             if (modal) modal.classList.add('hidden');
         }
 
-        // 開啟購物車 Modal
         function openCartModal() {
             if (loggedInCardId) {
                 fetchOrderHistory(loggedInCardId);
@@ -1321,13 +1423,11 @@
             if (modal) modal.classList.remove('hidden');
         }
 
-        // 關閉購物車 Modal
         function closeCartModal(event) {
             const modal = document.getElementById('cartModal');
             if (modal) modal.classList.add('hidden');
         }
 
-        // 開啟「曾點過」 Modal
         function openHistoryModal() {
             if (loggedInCardId) {
                 fetchGlobalOrders(loggedInCardId);
@@ -1336,18 +1436,15 @@
             if (modal) modal.classList.remove('hidden');
         }
 
-        // 關閉「曾點過」 Modal
         function closeHistoryModal(event) {
             const modal = document.getElementById('historyModal');
             if (modal) modal.classList.add('hidden');
         }
 
-        // 選擇院區處理
         function selectBranch(branchName, element) {
             updateBranchDisplay(branchName);
             localStorage.setItem('selectedBranch', branchName);
 
-            // 更新彈窗內的選取點亮狀態
             const items = document.querySelectorAll('.branch-item');
             items.forEach(item => item.classList.remove('active'));
             if (element) {
@@ -1355,17 +1452,14 @@
             }
 
             closeBranchModal();
-            console.log(`已切換院區為：${branchName}`);
         }
 
-        // 更新頂部按鈕顯示（僅更新頂部 #current-branch-text）
         function updateBranchDisplay(branchName) {
             const currentBranchText = document.getElementById('current-branch-text');
             if (currentBranchText) {
                 currentBranchText.textContent = branchName;
             }
 
-            // 同步 Modal 選單點亮樣式
             const items = document.querySelectorAll('.branch-item');
             items.forEach(item => {
                 if (item.textContent.includes(branchName)) {
@@ -1376,7 +1470,6 @@
             });
         }
 
-        // 🔍 搜尋過濾店家卡片函式
         function filterShops() {
             const searchInput = document.getElementById('shopSearchInput');
             if (!searchInput) return;
@@ -1398,16 +1491,6 @@
             if (event.key === 'Enter') {
                 event.preventDefault();
                 filterShops();
-            }
-        }
-
-        function focusSearchInput() {
-            const searchInput = document.getElementById('shopSearchInput');
-            if (searchInput) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                setTimeout(() => {
-                    searchInput.focus();
-                }, 300);
             }
         }
 
@@ -1458,7 +1541,6 @@
                     isSubmitting = false;
                 }
             } catch (error) {
-                console.warn("🌐 無法連接 API，系統自動以離線模式進入。");
                 if (msgDisplay) msgDisplay.innerText = '';
                 if (loginBtn) loginBtn.disabled = false;
                 isSubmitting = false;
@@ -1466,10 +1548,9 @@
             }
         }
 
-        function redirectToShop(shopName, buttonEl) {
+        function redirectToShop(shopName, element) {
             const url = shopUrlMap[shopName];
             if (!url) {
-                // 原 alert() 改為自訂精美彈窗
                 callCustomAlert('提示', `⚠️ 尚未設定 <strong>${shopName}</strong> 的對應點餐網頁。`, null, false);
                 return;
             }
@@ -1480,7 +1561,6 @@
         }
 
         function executeLogout() {
-            // 原 confirm() 改為自訂精美彈窗
             callCustomAlert('提示', '🚪 確定要登出系統嗎？', (confirmed) => {
                 if (confirmed) {
                     showLoginSection();
@@ -1567,7 +1647,7 @@
                         if (!isNaN(parsed)) return parsed;
                     }
                 } catch (e) {
-                    console.error("中文時間解析失敗，嘗試通用解析: ", e);
+                    console.error("中文時間解析失敗: ", e);
                 }
             }
 
@@ -1606,7 +1686,6 @@
 
         function clearLocalTodayOrders() {
             if (!loggedInCardId) return;
-            // 原 confirm() 改為自訂精美彈窗
             callCustomAlert('提示', '🧹 確定要清除這台裝置上的今日點餐暫存紀錄嗎？<br><small style="color:#888;">(此操作不會影響全系統 orders.json 資料庫)</small>', (confirmed) => {
                 if (confirmed) {
                     const localKey = `orders_${loggedInCardId}`;
@@ -1650,7 +1729,7 @@
             todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
 
             if (todayOrders.length === 0) {
-                historyList.innerHTML = `<tr><td colspan="5" class="no-record">嗨！您今天尚無 any 點餐紀錄。</td></tr>`;
+                historyList.innerHTML = `<tr><td colspan="5" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
                 return;
             }
 
