@@ -549,19 +549,19 @@ function goBack() {
 // 依據「明美快餐」圖片修改後的品項與價格
 const rawMenuItems = [
     // === 快餐便當 ===
-    {name: "腐乳豬便當", price: 100, category: "快餐便當", icon:"🍱"},
-    {name: "照燒豬便當", price: 100, category: "快餐便當", icon:"🍱"},
-    {name: "雞排便當", price: 110, category: "快餐便當", icon:"🍱"},
-    {name: "燒雞腿便當", price: 115, category: "快餐便當", icon:"🍱"},
-    {name: "高鈣雞軟骨便當", price: 110, category: "快餐便當", icon:"🍱"},
+    {name: "腐乳豬便當", price: 100, category: "快餐便當", icon:"🐖🍱"},
+    {name: "照燒豬便當", price: 100, category: "快餐便當", icon:"🐖🍱"},
+    {name: "雞排便當", price: 110, category: "快餐便當", icon:"🐓🍱"},
+    {name: "燒雞腿便當", price: 115, category: "快餐便當", icon:"🍗🍱"},
+    {name: "高鈣雞軟骨便當", price: 110, category: "快餐便當", icon:"🦴🍱"},
 
     // === 主菜單點 ===
-    {name: "腐乳豬 (單點)", price: 60, category: "主菜單點", icon:"🥩"},
-    {name: "照燒豬 (單點)", price: 60, category: "主菜單點", icon:"🥩"},
-    {name: "雞排 (單點)", price: 75, category: "主菜單點", icon:"🍗"},
+    {name: "腐乳豬 (單點)", price: 60, category: "主菜單點", icon:"🐖"},
+    {name: "照燒豬 (單點)", price: 60, category: "主菜單點", icon:"🐖"},
+    {name: "雞排 (單點)", price: 75, category: "主菜單點", icon:"🐓"},
     {name: "燒雞腿 (單點)", price: 80, category: "主菜單點", icon:"🍗"},
-    {name: "高鈣雞軟骨 (單點)", price: 70, category: "主菜單點", icon:"🍗"},
-    {name: "白飯 (單點)", price: 10, category: "主菜單點", icon:"🍗"}
+    {name: "高鈣雞軟骨 (單點)", price: 70, category: "主菜單點", icon:"🦴"},
+    {name: "白飯 (單點)", price: 10, category: "主菜單點", icon:"🍚"}
 ];
 
 const menuItems = rawMenuItems.map((item, index) => ({ ...item, id: index + 1 }));
