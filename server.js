@@ -1,11 +1,10 @@
-require('dotenv').config(); // 載入 .env 環境變數
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
 
-// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
 types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
@@ -15,15 +14,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// PostgreSQL (Neon) 連線設定
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false // Neon 強制使用 SSL
-    }
+    ssl: { rejectUnauthorized: false }
 });
 
-// 預設員工資料
 const INITIAL_USER_DB = {
     "4860": "呂佳玟", "4931": "陳佳文", "5514": "張淑娟", "5853": "許家綾",
     "6154": "許庭芬", "6465": "呂盈瑩", "6513": "李承州", "6800": "吳修文",
@@ -37,12 +32,24 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：同步寫入 public/orders.json (相容舊後台)
+// 同步 orders.json 檔（含 isPaid 資訊）
 async function syncOrdersJsonFile() {
     try {
-        const result = await pool.query(
-            'SELECT order_id AS "orderId", card_id AS "cardId", name, meal, spicy, note, total, timestamp FROM orders ORDER BY order_id DESC;'
-        );
+        const result = await pool.query(`
+            SELECT 
+                o.order_id AS "orderId", 
+                o.card_id AS "cardId", 
+                o.name, 
+                o.meal, 
+                o.spicy, 
+                o.note, 
+                o.total, 
+                o.timestamp,
+                COALESCE(u.is_paid, false) AS "isPaid"
+            FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
+            ORDER BY o.order_id DESC;
+        `);
         const jsonPath = path.join(__dirname, 'public', 'orders.json');
         fs.writeFileSync(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
         console.log('[系統提示] 已同步更新 public/orders.json 檔案');
@@ -51,7 +58,6 @@ async function syncOrdersJsonFile() {
     }
 }
 
-// 初始化資料庫
 async function initDatabase() {
     try {
         await pool.query(`
@@ -72,8 +78,14 @@ async function initDatabase() {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 card_id VARCHAR(50) PRIMARY KEY,
-                name VARCHAR(100) NOT NULL
+                name VARCHAR(100) NOT NULL,
+                is_paid BOOLEAN DEFAULT FALSE
             );
+        `);
+
+        // 自動補全 is_paid 欄位（以防資料表早已建立過）
+        await pool.query(`
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
         `);
 
         const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
@@ -81,7 +93,7 @@ async function initDatabase() {
             console.log('[系統提示] 正在初始化預設員工名單至 Neon PostgreSQL...');
             for (const [cardId, name] of Object.entries(INITIAL_USER_DB)) {
                 await pool.query(
-                    'INSERT INTO users (card_id, name) VALUES ($1, $2) ON CONFLICT DO NOTHING;',
+                    'INSERT INTO users (card_id, name, is_paid) VALUES ($1, $2, false) ON CONFLICT DO NOTHING;',
                     [cardId, name]
                 );
             }
@@ -96,7 +108,6 @@ async function initDatabase() {
 
 initDatabase();
 
-// 輔助函式：判斷時間戳記是否為台北時間的今天
 function isTodayInTaipei(orderTimestampMs) {
     const orderDate = new Date(Number(orderTimestampMs));
     if (isNaN(orderDate.getTime())) return false;
@@ -112,12 +123,24 @@ function isTodayInTaipei(orderTimestampMs) {
 
 // ==================== API 路由 ====================
 
-// 1. 取得所有訂單
+// 1. 取得所有訂單（關聯員工繳費狀態）
 app.get('/api/orders', async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT order_id AS "orderId", card_id AS "cardId", name, meal, spicy, note, total, timestamp FROM orders ORDER BY order_id DESC;'
-        );
+        const result = await pool.query(`
+            SELECT 
+                o.order_id AS "orderId", 
+                o.card_id AS "cardId", 
+                o.name, 
+                o.meal, 
+                o.spicy, 
+                o.note, 
+                o.total, 
+                o.timestamp,
+                COALESCE(u.is_paid, false) AS "isPaid"
+            FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
+            ORDER BY o.order_id DESC;
+        `);
         res.json(result.rows);
     } catch (err) {
         console.error('獲取訂單失敗:', err.message);
@@ -125,13 +148,16 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 2. 取得所有員工名單
+// 2. 取得所有員工名單（含 isPaid 欄位）
 app.get('/api/employees', async (req, res) => {
     try {
-        const result = await pool.query('SELECT card_id, name FROM users;');
+        const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid FROM users;');
         const dbMap = {};
         result.rows.forEach(row => {
-            dbMap[row.card_id] = row.name;
+            dbMap[row.card_id] = {
+                name: row.name,
+                isPaid: row.is_paid
+            };
         });
         res.json(dbMap);
     } catch (err) {
@@ -142,9 +168,10 @@ app.get('/api/employees', async (req, res) => {
 
 // 3. 新增員工
 app.post('/api/employees', async (req, res) => {
-    const { cardId, name } = req.body;
+    const { cardId, name, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
     const cleanName = name ? String(name).trim() : '';
+    const paidBool = isPaid === true || isPaid === 'true';
 
     if (!cleanCardId || !cleanName) {
         return res.status(400).json({ success: false, message: '卡號與姓名不可為空！' });
@@ -156,7 +183,7 @@ app.post('/api/employees', async (req, res) => {
             return res.status(400).json({ success: false, message: '此卡號已經存在！' });
         }
 
-        await pool.query('INSERT INTO users (card_id, name) VALUES ($1, $2);', [cleanCardId, cleanName]);
+        await pool.query('INSERT INTO users (card_id, name, is_paid) VALUES ($1, $2, $3);', [cleanCardId, cleanName, paidBool]);
         res.json({ success: true, message: '新增成功' });
     } catch (err) {
         console.error('新增員工失敗:', err.message);
@@ -164,7 +191,32 @@ app.post('/api/employees', async (req, res) => {
     }
 });
 
-// 4. 刪除員工
+// 4. 修改員工繳費狀態 (新增的 API 路由)
+app.patch('/api/employees/:cardId/payment', async (req, res) => {
+    const { cardId } = req.params;
+    const { isPaid } = req.body;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    const paidBool = isPaid === true || isPaid === 'true';
+
+    try {
+        const result = await pool.query(
+            'UPDATE users SET is_paid = $1 WHERE card_id = $2 RETURNING *;',
+            [paidBool, cleanCardId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
+        }
+
+        await syncOrdersJsonFile(); // 更新 JSON
+        res.json({ success: true, message: '繳費狀態更新成功' });
+    } catch (err) {
+        console.error('更新員工繳費狀態失敗:', err.message);
+        res.status(500).json({ success: false, message: '更新失敗' });
+    }
+});
+
+// 5. 刪除員工
 app.delete('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -181,7 +233,7 @@ app.delete('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 5. 刪除訂單
+// 6. 刪除訂單
 app.delete('/api/orders/:orderId', async (req, res) => {
     const { orderId } = req.params;
     const targetOrderIdStr = orderId ? String(orderId).trim() : '';
@@ -204,7 +256,7 @@ app.delete('/api/orders/:orderId', async (req, res) => {
     }
 });
 
-// 6. 登入驗證
+// 7. 登入驗證
 app.post('/api/login', async (req, res) => {
     const { cardId } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -222,7 +274,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 7. 新增訂單
+// 8. 新增訂單
 app.post('/api/order', async (req, res) => {
     const { cardId, meal, note, spicy, total } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -256,7 +308,6 @@ app.post('/api/order', async (req, res) => {
         await pool.query(insertQuery, values);
         console.log(`[新訂單提示] 收到來自 ${empName} (${cleanCardId}) 的訂單，已寫入 Neon PostgreSQL！`);
 
-        // 背景非同步寫入 JSON，加速 HTTP Response
         syncOrdersJsonFile().catch(err => console.error(err));
 
         res.json({ success: true, message: `🎉 訂單送出成功！` });
@@ -266,7 +317,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 8. 取得個人歷史訂單紀錄
+// 9. 取得個人歷史訂單紀錄
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -296,10 +347,18 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 9. 動態匯出 Excel 下載
+// 10. 動態匯出 Excel 下載 (含繳費狀態)
 app.get('/api/export-excel', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM orders ORDER BY order_id ASC;');
+        const result = await pool.query(`
+            SELECT 
+                o.order_id, o.timestamp, o.card_id, o.name, o.meal, o.spicy, o.note, o.total,
+                COALESCE(u.is_paid, false) AS is_paid
+            FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
+            ORDER BY o.order_id ASC;
+        `);
+        
         const orders = result.rows.map(row => ({
             orderId: Number(row.order_id),
             timestamp: row.timestamp,
@@ -308,7 +367,8 @@ app.get('/api/export-excel', async (req, res) => {
             meal: row.meal,
             spicy: row.spicy,
             note: row.note,
-            total: Number(row.total)
+            total: Number(row.total),
+            isPaid: row.is_paid ? '已繳費' : '未繳費'
         }));
 
         const workbook = new ExcelJS.Workbook();
@@ -321,7 +381,8 @@ app.get('/api/export-excel', async (req, res) => {
             { header: '點餐店家/品項', key: 'meal', width: 25 },
             { header: '醬料辣度', key: 'spicy', width: 15 },
             { header: '備註', key: 'note', width: 25 },
-            { header: '金額', key: 'total', width: 12 }
+            { header: '金額', key: 'total', width: 12 },
+            { header: '繳費狀態', key: 'isPaid', width: 12 }
         ];
         
         const sheet2 = workbook.addWorksheet('店家點餐統計表');
@@ -339,7 +400,8 @@ app.get('/api/export-excel', async (req, res) => {
                 meal: order.meal,
                 spicy: order.spicy || '無',
                 note: order.note || '無',
-                total: !isNaN(order.total) ? order.total : 0
+                total: !isNaN(order.total) ? order.total : 0,
+                isPaid: order.isPaid
             });
         });
 
