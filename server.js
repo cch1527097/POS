@@ -85,13 +85,15 @@ async function initDatabase() {
             CREATE TABLE IF NOT EXISTS users (
                 card_id VARCHAR(50) PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
-                is_paid BOOLEAN DEFAULT FALSE
+                is_paid BOOLEAN DEFAULT FALSE,
+                department VARCHAR(100) DEFAULT '未劃分'
             );
         `);
 
-        // 自動檢查並為已建立的 users 表格擴充 is_paid 欄位
+        // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
         `);
 
         const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
@@ -99,8 +101,8 @@ async function initDatabase() {
             console.log('[系統提示] 正在初始化預設員工名單至 Neon PostgreSQL...');
             for (const [cardId, name] of Object.entries(INITIAL_USER_DB)) {
                 await pool.query(
-                    'INSERT INTO users (card_id, name, is_paid) VALUES ($1, $2, false) ON CONFLICT DO NOTHING;',
-                    [cardId, name]
+                    'INSERT INTO users (card_id, name, is_paid, department) VALUES ($1, $2, false, $3) ON CONFLICT DO NOTHING;',
+                    [cardId, name, '未劃分']
                 );
             }
         }
@@ -155,15 +157,16 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 2. 取得所有員工名單
+// 2. 取得所有員工名單 (包含 department)
 app.get('/api/employees', async (req, res) => {
     try {
-        const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid FROM users;');
+        const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
         const dbMap = {};
         result.rows.forEach(row => {
             dbMap[row.card_id] = {
                 name: row.name,
-                isPaid: row.is_paid
+                isPaid: row.is_paid,
+                department: row.department
             };
         });
         res.json(dbMap);
@@ -173,7 +176,7 @@ app.get('/api/employees', async (req, res) => {
     }
 });
 
-// 3. 切換員工繳費狀態 (由系統總覽按下「切換狀態」時呼叫)
+// 3. 切換員工繳費狀態
 app.patch('/api/employees/:cardId/payment', async (req, res) => {
     const { cardId } = req.params;
     const { isPaid } = req.body;
@@ -198,11 +201,46 @@ app.patch('/api/employees/:cardId/payment', async (req, res) => {
     }
 });
 
-// 4. 新增員工
-app.post('/api/employees', async (req, res) => {
-    const { cardId, name, isPaid } = req.body;
+// 4. 【新增】編輯員工姓名與部門 API
+app.put('/api/employees/:cardId', async (req, res) => {
+    const { cardId } = req.params;
+    const { name, department } = req.body;
+    
     const cleanCardId = cardId ? String(cardId).trim() : '';
     const cleanName = name ? String(name).trim() : '';
+    const cleanDept = department ? String(department).trim() : '未劃分';
+
+    if (!cleanCardId || !cleanName) {
+        return res.status(400).json({ success: false, message: '員工卡號與姓名不可為空！' });
+    }
+
+    try {
+        const result = await pool.query(
+            'UPDATE users SET name = $1, department = $2 WHERE card_id = $3 RETURNING *;',
+            [cleanName, cleanDept, cleanCardId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
+        }
+
+        // 同步更新 orders 裡面該員工歷史訂單顯示的姓名
+        await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
+        
+        await syncOrdersJsonFile();
+        res.json({ success: true, message: '員工資料更新成功' });
+    } catch (err) {
+        console.error('更新員工資料失敗:', err.message);
+        res.status(500).json({ success: false, message: '更新員工資料失敗' });
+    }
+});
+
+// 5. 新增員工 (包含 department)
+app.post('/api/employees', async (req, res) => {
+    const { cardId, name, department, isPaid } = req.body;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    const cleanName = name ? String(name).trim() : '';
+    const cleanDept = department ? String(department).trim() : '未劃分';
     const paidBool = isPaid === true || isPaid === 'true';
 
     if (!cleanCardId || !cleanName) {
@@ -215,7 +253,10 @@ app.post('/api/employees', async (req, res) => {
             return res.status(400).json({ success: false, message: '此卡號已經存在！' });
         }
 
-        await pool.query('INSERT INTO users (card_id, name, is_paid) VALUES ($1, $2, $3);', [cleanCardId, cleanName, paidBool]);
+        await pool.query(
+            'INSERT INTO users (card_id, name, is_paid, department) VALUES ($1, $2, $3, $4);', 
+            [cleanCardId, cleanName, paidBool, cleanDept]
+        );
         res.json({ success: true, message: '新增成功' });
     } catch (err) {
         console.error('新增員工失敗:', err.message);
@@ -223,7 +264,7 @@ app.post('/api/employees', async (req, res) => {
     }
 });
 
-// 5. 刪除員工
+// 6. 刪除員工
 app.delete('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -240,7 +281,7 @@ app.delete('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 6. 刪除訂單
+// 7. 刪除訂單
 app.delete('/api/orders/:orderId', async (req, res) => {
     const { orderId } = req.params;
     const targetOrderIdStr = orderId ? String(orderId).trim() : '';
@@ -263,7 +304,7 @@ app.delete('/api/orders/:orderId', async (req, res) => {
     }
 });
 
-// 7. 登入驗證
+// 8. 登入驗證
 app.post('/api/login', async (req, res) => {
     const { cardId } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -281,7 +322,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 8. 新增訂單
+// 9. 新增訂單
 app.post('/api/order', async (req, res) => {
     const { cardId, meal, note, spicy, total } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -324,7 +365,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 9. 取得個人歷史訂單紀錄
+// 10. 取得個人歷史訂單紀錄
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -354,7 +395,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 10. 動態匯出 Excel 下載 (包含繳費狀態)
+// 11. 動態匯出 Excel 下載 (包含繳費狀態)
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
