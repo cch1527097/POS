@@ -613,7 +613,7 @@
     </div>
 
     <script>
-        let USER_DB_PREVIEW = {}; // 資料結構支援 Object/Array
+        let USER_DB_PREVIEW = {}; 
         let currentTodayOrders = [];
         let currentFilteredTodayOrders = []; 
         let allHistoryOrders = []; 
@@ -657,6 +657,10 @@
 
             if(tabId === 'history-mgr') {
                 loadHistoryOrders();
+            } else if (tabId === 'overview') {
+                loadOrders();
+            } else if (tabId === 'employee-mgr') {
+                loadEmployees();
             }
         }
 
@@ -681,10 +685,10 @@
             }
         }
 
+        // 渲染 圖一：員工卡號管理（純顯示繳費狀態標籤）
         function renderEmployeeDirectory() {
             const tbody = document.getElementById('cardTableBody');
             
-            // 相容物件與陣列格式
             let employeeList = [];
             if (Array.isArray(USER_DB_PREVIEW)) {
                 employeeList = USER_DB_PREVIEW;
@@ -716,10 +720,7 @@
                         <td><code style="background:var(--primary-light); padding:4px 8px; border-radius:6px; color:var(--primary);">${cardId}</code></td>
                         <td><strong>${name}</strong></td>
                         <td><span class="badge">已授權登入</span></td>
-                        <td>
-                            ${paidBadge}
-                            <button class="btn-status" onclick="togglePaymentStatus('${cardId}', ${!isPaid})">切換狀態</button>
-                        </td>
+                        <td>${paidBadge}</td>
                         <td>
                             <button class="btn-delete" onclick="deleteEmployee('${cardId}')">❌ 刪除</button>
                         </td>
@@ -729,7 +730,7 @@
             tbody.innerHTML = rows.join('');
         }
 
-        // 切換員工繳費狀態
+        // 切換員工繳費狀態（主要於系統總覽點擊呼叫）
         async function togglePaymentStatus(cardId, newStatus) {
             try {
                 const response = await fetch(`/api/employees/${cardId}/payment`, {
@@ -739,7 +740,10 @@
                 });
 
                 if (response.ok) {
-                    await loadEmployees(); // 重新讀取員工資料
+                    await loadOrders(); // 重新讀取當天訂單
+                    if (document.getElementById('history-mgr').classList.contains('active')) {
+                        await loadHistoryOrders();
+                    }
                     showCustomModal({ message: `員工卡號 ${cardId} 的繳費狀態已更新！` });
                 } else {
                     const result = await response.json();
@@ -891,6 +895,7 @@
             }
         }
 
+        // 渲染 圖二：系統總覽（當天訂單紀錄）包含「繳費狀態標籤」與「切換狀態按鈕」
         function renderOrderTable(orders, tableBodyId, showFullTime = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -903,6 +908,7 @@
             const htmlRows = [...orders].reverse().map(order => {
                 const timeDisplay = showFullTime ? (order.timestamp || '-') : (order.timestamp && order.timestamp.includes(' ') ? order.timestamp.split(' ')[1] : order.timestamp);
                 const orderIdStr = order.orderId ? String(order.orderId) : '';
+                const cardId = order.cardId || '';
                 
                 // 讀取訂單或員工比對後的繳費狀態
                 const isPaid = order.isPaid === true || order.isPaid === 'true';
@@ -913,14 +919,20 @@
                 return `
                     <tr>
                         <td><code style="background:var(--primary-light); padding:4px 8px; border-radius:6px; color:var(--primary);">${order.orderId || '無'}</code></td>
-                        <td><b>${order.name || '未知'}</b> <span style="color:var(--text-sub); font-size:12px;">(${order.cardId || '無'})</span></td>
+                        <td><b>${order.name || '未知'}</b> <span style="color:var(--text-sub); font-size:12px;">(${cardId || '無'})</span></td>
                         <td>${timeDisplay || '-'}</td>
                         <td>
                             <span style="color:var(--primary); font-weight:700;">${order.meal || '未選擇'}</span><br>
                             <small style="color:var(--text-sub);">醬料辣度: ${order.spicy || '無'} | 備註: ${order.note || '無'}</small>
                         </td>
                         <td><strong style="color:var(--danger);">$${order.total || 0}</strong></td>
-                        <td>${paidBadge}</td>
+                        
+                        <!-- 繳費狀態與切換按鈕整合於系統總覽 -->
+                        <td>
+                            ${paidBadge}
+                            <button class="btn-status" onclick="togglePaymentStatus('${cardId}', ${!isPaid})">切換狀態</button>
+                        </td>
+
                         <td><span class="badge">已同步寫入</span></td>
                         <td>
                             <button class="btn-delete" onclick="deleteOrder('${orderIdStr}')">❌ 刪除</button>
