@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>志氣雞飯 - 智慧點餐系統</title>
+    <style>
+        html { 
+            scroll-behavior: smooth; 
+            scroll-padding-top: 90px;
+        }
+
+        :root { 
+            --primary: #d97706;       /* 志氣暖橙 */
+            --primary-light: #fef3c7; /* 淺黃底色 */
+            --secondary: #eab308;      /* 暖黃標籤 */
+            --accent: #dc2626;        /* 亮紅金額/標籤 */
+            --bg-main: #f8fafc;       /* 輕灰底色 */
+            --text-dark: #1e293b;      /* 深色文字 */
+            --border-color: #e2e8f0;  /* 邊框線條 */
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Microsoft JhengHei", sans-serif; 
+            background: var(--bg-main); 
+            margin: 0; 
+            padding: 0; 
+            color: var(--text-dark); 
+            line-height: 1.5;
+        }
+
+        /* 頂部導航列 */
+        .navbar {
+            background: #fff;
+            padding: 12px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+        .navbar-brand { 
+            font-size: 24px; 
+            font-weight: 800; 
+            color: var(--primary); 
+            text-decoration: none; 
+            z-index: 2;
+        }
+        
+        .search-wrapper { 
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 400px; 
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+        .top-search-box {
+            width: 100%;
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background: #f1f5f9;
+            font-size: 14px;
+            box-sizing: border-box;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .top-search-box:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+        }
+
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 24px 16px 100px 16px; 
+        }
+
+        /* 店家 Banner 樣式 */
+        .store-banner {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+        }
+        .store-info-left { display: flex; gap: 16px; align-items: center; }
+        .store-logo {
+            width: 60px;
+            height: 60px;
+            background: var(--primary); 
+            color: #fff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .store-details h1 { 
+            margin: 0 0 6px 0; 
+            font-size: 20px; 
+            font-weight: 800; 
+            color: #1a202c; 
+        }
+        
+        .store-meta { 
+            display: flex; 
+            flex-wrap: wrap; 
+            align-items: center; 
+            gap: 16px; 
+            font-size: 13px; 
+            color: #718096; 
+        }
+        .store-meta span { display: flex; align-items: center; gap: 4px; }
+
+        .promo-banner {
+            background: #fff7ed;
+            border: 1px solid #ffedd5;
+            color: #c2410c;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .promo-badge {
+            background: #f97316;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .info-banner { 
+            background: #e0f2fe; 
+            color: #0369a1; 
+            padding: 12px 16px; 
+            border-radius: 8px; 
+            margin-bottom: 24px; 
+            font-size: 13px; 
+            border-left: 5px solid #0284c7; 
+        }
+
+        .main-layout { display: flex; gap: 20px; align-items: flex-start; }
+        
+        .category-sidebar { 
+            flex: 0 0 200px; 
+            background: #fff; 
+            border-radius: 12px; 
+            padding: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); 
+            position: sticky; 
+            top: 90px; 
+        }
+        .side-cat-item { 
+            display: block; 
+            padding: 12px 16px; 
+            color: var(--text-dark); 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            transition: all 0.2s; 
+            margin-bottom: 4px; 
+        }
+        .side-cat-item:hover, .side-cat-item.active { background: var(--primary-light); color: var(--primary); }
+
+        .menu-content { flex: 1; }
+        .category-block { margin-bottom: 30px; scroll-margin-top: 100px; }
+        .category-title { font-size: 18px; font-weight: 700; color: var(--primary); margin: 0 0 14px 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 6px; }
+        
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        
+        .item-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.01);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
+        .item-info { flex: 1; padding-right: 12px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
+        .item-name { font-weight: 700; color: var(--text-dark); font-size: 15px; margin-bottom: 2px; word-break: break-all; }
+        .item-subtext { font-size: 12px; color: #64748b; margin-bottom: 6px; }
+        .item-price-zone { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+        .item-price { color: var(--text-dark); font-weight: 700; font-size: 15px; }
+        
+        .item-img-placeholder {
+            width: 75px;
+            height: 75px;
+            background: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 1px solid #f1f5f9;
+            flex-shrink: 0;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+        .item-img-placeholder:active { transform: scale(0.95); }
+
+        .cart-sidebar { 
+            flex: 0 0 320px; 
+            background: #fff; 
+            border: 1px solid var(--border-color); 
+            padding: 20px; 
+            border-radius: 12px; 
+            position: sticky; 
+            top: 90px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg-main); padding-bottom: 10px; margin-bottom: 16px; }
+        .cart-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
+        .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        .btn-clear-all:hover { background: #fca5a5; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
+        
+        .opt-group { margin-top: 16px; margin-bottom: 12px; }
+        .opt-title { font-size: 13px; font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 6px; }
+        
+        .select-box, .input-box { 
+            width: 100%; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            border: 1px solid var(--border-color); 
+            background: #f8fafc; 
+            font-size: 13px; 
+            outline: none; 
+            margin-bottom: 8px; 
+            box-sizing: border-box; 
+            transition: all 0.2s;
+        }
+        .select-box { cursor: pointer; }
+        .select-box:focus, .input-box:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+        }
+
+        .action-zone { display: flex; align-items: center; gap: 8px; }
+        .btn-qty { 
+            background: #f1f5f9; 
+            border: none; 
+            color: var(--text-dark); 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            user-select: none; 
+            transition: all 0.15s ease;
+        }
+        .btn-qty:hover { background: var(--primary); color: white; }
+        .btn-qty:active { transform: scale(0.85); }
+        .qty-num { min-width: 16px; text-align: center; font-weight: 700; font-size: 14px; }
+
+        .total-box { font-size: 20px; font-weight: 700; color: var(--accent); text-align: right; margin: 16px 0; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2); transition: all 0.2s; }
+        .btn-submit:hover:not(:disabled) { background: #b45309; }
+        .btn-submit:active:not(:disabled) { transform: scale(0.98); }
+        .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+
+        .btn-back { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 999; 
+            background: #1e293b; 
+            color: white; 
+            padding: 10px 18px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            border: none; 
+            transition: transform 0.15s;
+        }
+        .btn-back:active { transform: scale(0.92); }
+
+        /* 自訂彈出視窗 (Modal) 樣式 */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .custom-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-modal {
+            background: #fff;
+            width: 90%;
+            max-width: 440px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+        .custom-modal-overlay.active .custom-modal {
+            transform: scale(1);
+        }
+        .custom-modal-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .custom-modal-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        .custom-modal-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #a0aec0;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+        .custom-modal-close:hover {
+            color: #4a5568;
+        }
+        .custom-modal-body {
+            padding: 16px 20px;
+            font-size: 14px;
+            color: #4a5568;
+            border-top: 1px solid #edf2f7;
+            border-bottom: 1px solid #edf2f7;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+        .custom-modal-footer {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fff;
+        }
+        .modal-btn {
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-btn-cancel {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+        }
+        .modal-btn-cancel:hover {
+            background: #f1f5f9;
+        }
+        .modal-btn-confirm {
+            background: var(--primary);
+            border: none;
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(217, 119, 6, 0.2);
+        }
+        .modal-btn-confirm:hover {
+            background: #b45309;
+        }
+
+        /* 響應式優化 */
+        @media (max-width: 1024px) {
+            .main-layout { flex-direction: column; }
+            .category-sidebar { 
+                display: flex; flex: none; width: 100%; box-sizing: border-box; overflow-x: auto; white-space: nowrap; 
+                position: sticky; top: 70px; z-index: 100; background: #fff; padding: 10px 8px; margin-bottom: 16px; 
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; 
+            }
+            .category-sidebar::-webkit-scrollbar { display: none; }
+            .side-cat-item { flex: 0 0 auto; margin-right: 8px; margin-bottom: 0; padding: 8px 16px; font-size: 13px; background: #f1f5f9; border-radius: 20px; }
+            .side-cat-item.active { background: var(--primary); color: #fff; }
+            .category-block { scroll-margin-top: 130px; }
+            .cart-sidebar { width: 100%; box-sizing: border-box; position: static; }
+        }
+        
+        @media (max-width: 600px) {
+            html { scroll-padding-top: 140px; }
+            .navbar { flex-direction: column; gap: 10px; padding: 12px 16px; position: sticky; }
+            .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
+            .category-sidebar { top: 110px; }
+            .category-block { scroll-margin-top: 160px; }
+            .store-meta { gap: 8px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="#" class="navbar-brand">智慧點餐系統</a>
+    <div class="search-wrapper">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋餐點 (如：志氣雞飯、海南雞)..." oninput="debounceFilterMenu()">
+    </div>
+</div>
+
+<button class="btn-back" onclick="goBack()">⬅ 離開點餐</button>
+
+<div class="container">
+    <!-- 店家 Banner -->
+    <div class="store-banner">
+        <div class="store-info-left">
+            <div class="store-logo">志</div>
+            <div class="store-details">
+                <h1>志氣雞飯 鹿港店</h1>
+                <div class="store-meta">
+                    <span class="rating">⭐ 3.5 (54)</span>
+                    <span>🕒 11:00 ~ 14:00，17:00 ~ 20:00</span>
+                    <span>📍 505彰化縣鹿港鎮永安里鹿東路30號</span>
+                    <span>📞 0938-567-940</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 低消訊息橫幅 -->
+    <div class="promo-banner">
+        <span class="promo-badge">低消</span>
+        <span class="promo-text">外送最低金額 <b>800</b> 元</span>
+    </div>
+
+    <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
+
+    <div class="main-layout">
+        <div class="category-sidebar" id="side-cats"></div>
+
+        <div class="menu-content" id="menu-list"></div>
+
+        <div class="cart-sidebar">
+            <div class="cart-header">
+                <h3>🛒 已選點餐明細</h3>
+                <button class="btn-clear-all" onclick="clearCart()">🗑️ 清空</button>
+            </div>
+            
+            <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p></div>
+
+            <!-- 客製化選項 -->
+            <div class="opt-group">
+                <label class="opt-title" for="spice-level">🌶️ 辣度需求</label>
+                <select id="spice-level" class="select-box">
+                    <option value="不辣">不辣</option>
+                    <option value="小辣">小辣</option>
+                    <option value="中辣">中辣</option>
+                    <option value="大辣">大辣</option>
+                </select>
+            </div>
+
+            <div class="total-box" id="total-amount">總計: $0</div>
+            <button class="btn-submit" id="submit-btn" onclick="submitOrderToServer()">確認送出訂單</button>
+        </div>
+    </div>
+</div>
+
+<!-- 自訂彈出視窗 (Modal) -->
+<div id="customModal" class="custom-modal-overlay">
+    <div class="custom-modal">
+        <div class="custom-modal-header">
+            <h3 id="modalTitle" class="custom-modal-title">提示</h3>
+            <button class="custom-modal-close" onclick="closeModal(false)">&times;</button>
+        </div>
+        <div id="modalBody" class="custom-modal-body"></div>
+        <div id="modalFooter" class="custom-modal-footer"></div>
+    </div>
+</div>
+
+<script>
+let modalCallback = null;
+
+function showModal(title, htmlContent, type = 'alert', callback = null) {
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalBody').innerHTML = htmlContent;
+    modalCallback = callback;
+
+    const footer = document.getElementById('modalFooter');
+    footer.innerHTML = '';
+
+    if (type === 'confirm') {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'modal-btn modal-btn-cancel';
+        cancelBtn.innerText = '取消';
+        cancelBtn.onclick = () => closeModal(false);
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'modal-btn modal-btn-confirm';
+        confirmBtn.innerText = '確認送出';
+        confirmBtn.onclick = () => closeModal(true);
+
+        footer.appendChild(cancelBtn);
+        footer.appendChild(confirmBtn);
+    } else {
+        const okBtn = document.createElement('button');
+        okBtn.className = 'modal-btn modal-btn-confirm';
+        okBtn.innerText = '確定';
+        okBtn.onclick = () => closeModal(true);
+
+        footer.appendChild(okBtn);
+    }
+
+    document.getElementById('customModal').classList.add('active');
+}
+
+function closeModal(result) {
+    document.getElementById('customModal').classList.remove('active');
+    if (modalCallback) {
+        modalCallback(result);
+        modalCallback = null;
+    }
+}
+
+function goBack() {
+    window.location.href = 'index.html'; 
+}
+
+const rawMenuItems = [
+    // === 吃飽飽 ===
+    {name: "志氣雞飯", price: 120, category: "吃飽飽", sub: "優質雞腿肉切條後，淋上特製油膏與蔥油，老人小孩都愛吃！", icon:"🍗"},
+    {name: "海南雞飯", price: 130, category: "吃飽飽", sub: "優質雞腿肉，以舒肥手法鎖住肉質鮮嫩多汁，搭配主廚特製醬料", icon:"🍗"},
+    {name: "打拋雞/豬飯", price: 130, category: "吃飽飽", sub: "鮮嫩雞肉片/豬肉角與自製風味辣椒、小番茄、長豆丁以及九層塔爆炒", icon:"🍛"},
+    {name: "口水雞飯", price: 150, category: "吃飽飽", sub: "特選雞肉淋上獨門芝麻醬汁與蒜油，帶出川香豐富層次", icon:"🍗"},
+    {name: "泰式椒麻雞飯", price: 150, category: "吃飽飽", sub: "整隻雞腿沾粉酥炸，外層香酥，肉質鮮嫩，再淋上獨特醬汁", icon:"🍗"},
+    {name: "糖醋炸雞飯", price: 150, category: "吃飽飽", sub: "鮮嫩雞腿塊，沾粉酥炸，搭配酸甜風味醬汁", icon:"🍗"},
+    {name: "剁椒雞飯", price: 160, category: "吃飽飽", sub: "嚴選優質辣椒剁碎，爽中自然發酵，再拌入特製醬料", icon:"🍗"},
+
+    // === 功夫炒 ===
+    {name: "奶油鐵板激量雞肉炒飯", price: 150, category: "功夫炒", sub: "炙熱奶油香氣包裹每粒米飯，滿滿的雞肉量，入口蒜香十足", icon:"🍳"},
+    {name: "大阪燒炸雞炒飯", price: 160, category: "功夫炒", sub: "經典炒飯，搭配酥炸雞塊，淋上濃郁口感大阪燒醬", icon:"🍳"},
+
+    // === 暖呼呼 ===
+    {name: "小雞粥", price: 100, category: "暖呼呼", icon:"🥣"},
+    {name: "蔥雞湯", price: 120, category: "暖呼呼", icon:"🥣"},
+    {name: "剝皮辣椒雞湯", price: 130, category: "暖呼呼", icon:"🥣"},
+    {name: "烏龍麵", price: 25, category: "暖呼呼", icon:"🍜"},
+
+    // === 喝涼涼 ===
+    {name: "冷泡茶", price: 30, category: "喝涼涼", sub: "甜度固定", icon:"🥤"},
+    {name: "冰鎮紅茶", price: 30, category: "喝涼涼", sub: "甜度固定", icon:"🥤"},
+    {name: "泰式奶茶", price: 60, category: "喝涼涼", sub: "甜度固定", icon:"🥤"},
+
+    // === 單點主食/私房點心 ===
+    {name: "海南雞 (單點)", price: 100, category: "單點主食/私房點心", icon:"🍗"},
+    {name: "口水雞 (單點)", price: 120, category: "單點主食/私房點心", icon:"🍗"},
+    {name: "椒麻雞 (單點)", price: 120, category: "單點主食/私房點心", icon:"🍗"},
+    {name: "糖醋炸雞 (單點)", price: 120, category: "單點主食/私房點心", icon:"🍗"},
+    {name: "剁椒雞 (單點)", price: 130, category: "單點主食/私房點心", icon:"🍗"},
+    {name: "打拋雞/豬 (單點)", price: 145, category: "單點主食/私房點心", icon:"🥩"},
+    {name: "酥炸雲吞", price: 90, category: "單點主食/私房點心", icon:"🥟"},
+    {name: "黃金炸豆腐", price: 90, category: "單點主食/私房點心", icon:"🧊"}
+];
+
+const menuItems = rawMenuItems.map((item, index) => ({ ...item, id: index + 1 }));
+
+let cart = {}; 
+let finalTotal = 0;
+let finalSummary = "";
+let currentCardId = "TEST";
+let searchTimer = null;
+let currentFilteredItems = menuItems;
+
+window.onload = function() {
+    initCardId();
+    renderMenu(menuItems);
+};
+
+function initCardId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardParam = urlParams.get('cardId');
+    const savedCardId = localStorage.getItem('currentCardId');
+    const statusDiv = document.getElementById("card-status");
+    
+    if (cardParam) {
+        currentCardId = cardParam;
+        localStorage.setItem('currentCardId', cardParam);
+        statusDiv.innerHTML = `✅ <b>已從網址帶入卡號：${escapeHtml(currentCardId)}</b>`;
+        statusDiv.style.backgroundColor = "#d1fae5"; statusDiv.style.color = "#065f46"; statusDiv.style.borderLeftColor = "#10b981";
+    } else if (savedCardId) {
+        currentCardId = savedCardId;
+        statusDiv.innerHTML = `✅ <b>已自動帶入卡號：${escapeHtml(currentCardId)}</b>`;
+        statusDiv.style.backgroundColor = "#d1fae5"; statusDiv.style.color = "#065f46"; statusDiv.style.borderLeftColor = "#10b981";
+    } else {
+        statusDiv.innerHTML = `⚠️ <b>提示：未偵測到登入卡號</b>，使用臨時卡號：${escapeHtml(currentCardId)}`;
+        statusDiv.style.backgroundColor = "#fef3c7"; statusDiv.style.color = "#92400e"; statusDiv.style.borderLeftColor = "#f59e0b";
+    }
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function renderMenu(items) {
+    currentFilteredItems = items;
+    const listDiv = document.getElementById("menu-list");
+    const sideCatsDiv = document.getElementById("side-cats");
+    listDiv.innerHTML = "";
+    sideCatsDiv.innerHTML = "";
+    
+    if (items.length === 0) {
+        const noItem = document.createElement("p");
+        noItem.style.cssText = "color:#aaa; text-align:center; padding: 20px;";
+        noItem.textContent = "找不到相符的品項";
+        listDiv.appendChild(noItem);
+        return;
+    }
+
+    const categories = [...new Set(items.map(i => i.category))];
+    
+    categories.forEach((cat, index) => {
+        const sideLink = document.createElement("a");
+        sideLink.className = `side-cat-item ${index === 0 ? 'active' : ''}`;
+        sideLink.href = `#cat-${index}`;
+        sideLink.textContent = cat;
+        
+        sideLink.onclick = (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.side-cat-item').forEach(el => el.classList.remove('active'));
+            sideLink.classList.add('active');
+            const target = document.getElementById(`cat-${index}`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
+        sideCatsDiv.appendChild(sideLink);
+    });
+
+    categories.forEach((cat, index) => {
+        const catBlock = document.createElement("div");
+        catBlock.className = "category-block";
+        catBlock.id = `cat-${index}`;
+        
+        const title = document.createElement("h3");
+        title.className = "category-title";
+        title.textContent = cat;
+        catBlock.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "menu-grid";
+
+        const catItems = items.filter(i => i.category === cat);
+        catItems.forEach(item => {
+            const totalQty = cart[item.id] ? cart[item.id].qty : 0;
+
+            const card = document.createElement("div");
+            card.className = "item-card";
+            
+            card.innerHTML = `
+                <div class="item-info">
+                    <div>
+                        <div class="item-name">${escapeHtml(item.name)}</div>
+                        ${item.sub ? `<div class="item-subtext">${escapeHtml(item.sub)}</div>` : ''}
+                    </div>
+                    <div class="item-price-zone">
+                        <span class="item-price">$${item.price}</span>
+                        <div class="action-zone">
+                            <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
+                            <span class="qty-num" id="q-id-${item.id}">${totalQty}</span>
+                            <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-img-placeholder" onclick="changeQty(${item.id}, 1)">
+                    ${escapeHtml(item.icon || '🍱')}
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        catBlock.appendChild(grid);
+        listDiv.appendChild(catBlock);
+    });
+}
+
+function debounceFilterMenu() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        const kw = document.getElementById("search").value.trim().toLowerCase();
+        const filtered = menuItems.filter(i => i.name.toLowerCase().includes(kw));
+        renderMenu(filtered);
+    }, 250);
+}
+
+function changeQty(itemId, delta) {
+    const item = menuItems.find(m => m.id === itemId);
+    if (!item) return;
+
+    if (!cart[itemId]) {
+        cart[itemId] = {
+            itemId: item.id,
+            name: item.name,
+            price: item.price,
+            qty: 0
+        };
+    }
+
+    cart[itemId].qty += delta;
+
+    if (cart[itemId].qty <= 0) {
+        delete cart[itemId];
+    }
+
+    const currentQty = cart[itemId] ? cart[itemId].qty : 0;
+    const qtySpan = document.getElementById(`q-id-${itemId}`);
+    if (qtySpan) {
+        qtySpan.innerText = currentQty;
+    }
+
+    renderCart();
+}
+
+function clearCart() {
+    if (Object.keys(cart).length === 0) return;
+    showModal("提示", "確定要清空購物車內的所有餐點嗎？", "confirm", (confirmed) => {
+        if (confirmed) {
+            cart = {};
+            renderCart();
+            renderMenu(currentFilteredItems);
+        }
+    });
+}
+
+function renderCart() {
+    const cartDiv = document.getElementById("cart-list");
+    cartDiv.innerHTML = "";
+    finalTotal = 0;
+    finalSummary = "";
+    
+    const keys = Object.keys(cart);
+    if (keys.length === 0) {
+        cartDiv.innerHTML = '<p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p>';
+        document.getElementById("total-amount").innerText = "總計: $0";
+        return;
+    }
+    
+    keys.forEach(key => {
+        const item = cart[key];
+        const sub = item.qty * item.price;
+        finalTotal += sub;
+        
+        finalSummary += `${item.name}*${item.qty} `;
+        
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        
+        const infoDiv = document.createElement("div");
+        infoDiv.style.cssText = "flex: 1; min-width: 0; padding-right: 8px;";
+        
+        const nameDiv = document.createElement("div");
+        nameDiv.style.cssText = "font-weight: 600; word-break: break-all; font-size:13px;";
+        nameDiv.textContent = item.name;
+        
+        const subDiv = document.createElement("div");
+        subDiv.style.cssText = "color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 2px;";
+        subDiv.textContent = `$${sub}`;
+        
+        infoDiv.appendChild(nameDiv);
+        infoDiv.appendChild(subDiv);
+
+        const actionDiv = document.createElement("div");
+        actionDiv.style.cssText = "display: flex; align-items: center; gap: 4px;";
+        actionDiv.innerHTML = `
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.itemId}, -1)">-</button>
+            <span style="width: 16px; text-align: center; font-weight: 700; font-size: 13px;">${item.qty}</span>
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeQty(${item.itemId}, 1)">+</button>
+        `;
+
+        div.appendChild(infoDiv);
+        div.appendChild(actionDiv);
+        cartDiv.appendChild(div);
+    });
+
+    document.getElementById("total-amount").innerText = `總計: $${Math.round(finalTotal)}`;
+}
+
+async function submitOrderToServer() {
+    if (finalTotal === 0) { 
+        showModal("提示", "🛒 購物車是空的喔！", "alert");
+        return; 
+    }
+
+    const spiceInput = document.getElementById("spice-level");
+    const spiceVal = spiceInput ? spiceInput.value : "不辣";
+
+    const orderMealSummary = `志氣雞飯：${finalSummary.trim()}`;
+    const fullNote = `辣度需求：${spiceVal}`;
+
+    let confirmHtml = 
+        `請確認您的訂單內容：<br><br>` +
+        `餐點：${escapeHtml(finalSummary.trim())}<br>` +
+        `辣度需求：<b>${escapeHtml(spiceVal)}</b><br>` +
+        `總金額：<b style="color:var(--accent); font-size:16px;">$${finalTotal}</b> 元<br><br>確定要送出訂單嗎？`;
+
+    showModal("請確認您的訂單內容", confirmHtml, "confirm", async (confirmed) => {
+        if (!confirmed) return;
+
+        const btn = document.getElementById("submit-btn");
+        btn.disabled = true;
+        btn.innerText = "訂單傳送中...";
+
+        const payload = {
+            cardId: currentCardId,
+            meal: orderMealSummary,
+            total: finalTotal,
+            diningType: "",
+            note: fullNote
+        };
+
+        try {
+            const response = await fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`伺服器回應錯誤 (HTTP ${response.status})`);
+            }
+
+            const resData = await response.json();
+
+            if (resData.success) {
+                showModal("提示", "🎉 點餐成功！訂單已傳送到後端。", "alert");
+                const localKey = `orders_${currentCardId}`;
+                const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
+                existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
+                localStorage.setItem(localKey, JSON.stringify(existingOrders));
+                
+                cart = {};
+                renderCart();
+                renderMenu(currentFilteredItems);
+            } else {
+                showModal("提示", `⚠️ 送出失敗：${escapeHtml(resData.message || '請稍後再試')}`, "alert");
+            }
+        } catch (err) {
+            console.error("發送失敗:", err);
+            showModal("提示", `❌ 網路發送失敗（${escapeHtml(err.message)}），請確認網路連線或改用人工點餐！`, "alert");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+        }
+    });
+}
+</script>
+</body>
+</html>
