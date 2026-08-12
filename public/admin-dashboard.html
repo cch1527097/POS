@@ -862,7 +862,7 @@
             }
         }
 
-        // 切換員工繳費狀態（主要於系統總覽點擊呼叫）
+        // 切換員工繳費狀態
         async function togglePaymentStatus(cardId, newStatus) {
             try {
                 const response = await fetch(`/api/employees/${cardId}/payment`, {
@@ -1028,6 +1028,7 @@
             }
         }
 
+        /* 渲染訂單表格 (修正：日期與時間上下重疊) */
         function renderOrderTable(orders, tableBodyId, showFullTime = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1041,13 +1042,19 @@
                 const orderIdStr = order.orderId ? String(order.orderId) : '';
                 const cardId = order.cardId || '';
                 
+                // --- 拆分日期與時間，改為上下重疊 ---
                 let timeHtml = '-';
                 if (order.timestamp) {
-                    const parts = order.timestamp.trim().split(' ');
-                    if (parts.length >= 2) {
-                        timeHtml = `<span class="cell-stacked-title">${parts[0]}</span><span class="cell-stacked-sub">${parts.slice(1).join(' ')}</span>`;
+                    const trimmed = order.timestamp.trim();
+                    const firstSpaceIndex = trimmed.indexOf(' ');
+                    
+                    if (firstSpaceIndex !== -1) {
+                        const datePart = trimmed.substring(0, firstSpaceIndex);
+                        const timePart = trimmed.substring(firstSpaceIndex + 1);
+                        
+                        timeHtml = `<span class="cell-stacked-title">${datePart}</span><span class="cell-stacked-sub">${timePart}</span>`;
                     } else {
-                        timeHtml = `<span class="cell-stacked-title">${order.timestamp}</span>`;
+                        timeHtml = `<span class="cell-stacked-title">${trimmed}</span>`;
                     }
                 }
 
