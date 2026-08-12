@@ -250,9 +250,8 @@
         th:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
         th:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
         
-        /* 針對各欄位設定寬度與換行屬性 */
         .col-meal-detail {
-            white-space: normal; /* 餐點詳細內容允許換行 */
+            white-space: normal;
             min-width: 300px;
             max-width: 450px;
         }
@@ -262,7 +261,7 @@
         .col-amount { min-width: 100px; }
         .col-payment { min-width: 150px; }
         .col-status { min-width: 110px; }
-        .col-action { min-width: 100px; }
+        .col-action { min-width: 150px; }
 
         /* 重疊樣式輔助 */
         .cell-stacked-title {
@@ -286,6 +285,10 @@
             background-color: #e8f5e9;
             color: #2e7d32;
             display: inline-block;
+        }
+        .badge-dept {
+            background-color: #e3f2fd;
+            color: #1565c0;
         }
         .badge-paid {
             background-color: #e8f5e9;
@@ -312,6 +315,23 @@
             color: var(--primary);
         }
         
+        .btn-edit {
+            color: var(--primary);
+            background: var(--primary-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 6px 12px;
+            margin-right: 6px;
+            transition: all 0.2s;
+        }
+        .btn-edit:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
         .btn-delete {
             color: var(--danger);
             background: #fdeaea;
@@ -411,7 +431,7 @@
             border-top: 1px solid #edf2f0;
         }
         .btn-modal-confirm {
-            background-color: #8c1c1c;
+            background-color: var(--primary);
             color: white;
             border: none;
             border-radius: 8px;
@@ -421,7 +441,7 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .btn-modal-confirm:hover { background-color: #691414; }
+        .btn-modal-confirm:hover { background-color: #143016; }
         .btn-modal-cancel {
             background-color: #ffffff;
             color: #667c68;
@@ -606,7 +626,7 @@
 
             <div class="card">
                 <h3>新增員工卡號資料</h3>
-                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">在此輸入新員工的卡號、姓名與初始繳費狀態。</p>
+                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">在此輸入新員工的卡號、姓名與所屬部門。</p>
                 <div class="form-group">
                     <div>
                         <label for="newCardId">員工卡號</label>
@@ -617,11 +637,8 @@
                         <input type="text" id="newEmpName" placeholder="例如: 王小明">
                     </div>
                     <div>
-                        <label for="newIsPaid">繳費狀態</label>
-                        <select id="newIsPaid">
-                            <option value="false">未繳費</option>
-                            <option value="true">已繳費</option>
-                        </select>
+                        <label for="newDepartment">部門</label>
+                        <input type="text" id="newDepartment" placeholder="例如: 管理部 / 門診">
                     </div>
                     <div style="flex: 1; min-width: 200px; justify-content: flex-end;">
                         <button class="btn" style="width: 100%; margin-top: 24px;" onclick="addNewEmployee()">儲存並動態加入</button>
@@ -639,7 +656,7 @@
                                     <th>員工卡號</th>
                                     <th>員工姓名</th>
                                     <th>權限狀態</th>
-                                    <th>繳費狀態</th>
+                                    <th>部門</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -744,7 +761,7 @@
             }
         }
 
-        // 渲染 圖一：員工卡號管理（純顯示繳費狀態標籤）
+        // 渲染 員工卡號管理（將繳費狀態換成部門）
         function renderEmployeeDirectory() {
             const tbody = document.getElementById('cardTableBody');
             
@@ -756,7 +773,7 @@
                     if (typeof USER_DB_PREVIEW[cardId] === 'object') {
                         return { cardId, ...USER_DB_PREVIEW[cardId] };
                     }
-                    return { cardId, name: USER_DB_PREVIEW[cardId], isPaid: false };
+                    return { cardId, name: USER_DB_PREVIEW[cardId], department: '未劃分' };
                 });
             }
 
@@ -767,26 +784,82 @@
 
             const rows = employeeList.map(emp => {
                 const cardId = emp.cardId || emp.id;
-                const name = emp.name;
-                const isPaid = emp.isPaid === true || emp.isPaid === 'true';
-                
-                const paidBadge = isPaid 
-                    ? `<span class="badge badge-paid">已繳費</span>` 
-                    : `<span class="badge badge-unpaid">未繳費</span>`;
+                const name = emp.name || '未知';
+                const department = emp.department || '未設定';
 
                 return `
                     <tr>
                         <td><code style="background:var(--primary-light); padding:4px 8px; border-radius:6px; color:var(--primary);">${cardId}</code></td>
                         <td><strong>${name}</strong></td>
                         <td><span class="badge">已授權登入</span></td>
-                        <td>${paidBadge}</td>
+                        <td><span class="badge badge-dept">${department}</span></td>
                         <td>
+                            <button class="btn-edit" onclick="openEditEmployeeModal('${cardId}', '${name}', '${department}')">✏️ 編輯</button>
                             <button class="btn-delete" onclick="deleteEmployee('${cardId}')">❌ 刪除</button>
                         </td>
                     </tr>
                 `;
             });
             tbody.innerHTML = rows.join('');
+        }
+
+        // 開啟編輯員工視窗
+        function openEditEmployeeModal(cardId, currentName, currentDept) {
+            const modalContent = `
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div>
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 6px;">員工卡號 (無法修改)</label>
+                        <input type="text" value="${cardId}" disabled style="background:#edf2f0; color:#666; cursor:not-allowed;">
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 6px;">員工姓名</label>
+                        <input type="text" id="editEmpName" value="${currentName}">
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 6px;">部門</label>
+                        <input type="text" id="editEmpDepartment" value="${currentDept}">
+                    </div>
+                </div>
+            `;
+
+            showCustomModal({
+                title: `編輯員工資料 (${cardId})`,
+                message: modalContent,
+                isConfirm: true,
+                onConfirm: async () => {
+                    const newName = document.getElementById('editEmpName').value.trim();
+                    const newDept = document.getElementById('editEmpDepartment').value.trim();
+
+                    if (!newName) {
+                        showCustomModal({ message: '員工姓名不能為空！' });
+                        return;
+                    }
+
+                    await saveEmployeeEdit(cardId, newName, newDept);
+                }
+            });
+        }
+
+        // 送出編輯員工 API
+        async function saveEmployeeEdit(cardId, name, department) {
+            try {
+                const response = await fetch(`/api/employees/${cardId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, department })
+                });
+
+                if (response.ok) {
+                    await loadEmployees();
+                    showCustomModal({ message: `員工 ${name} (${cardId}) 資料已更新！` });
+                } else {
+                    const result = await response.json();
+                    showCustomModal({ message: `更新失敗：${result.message || '未知錯誤'}` });
+                }
+            } catch (error) {
+                console.error('更新員工資料失敗:', error);
+                showCustomModal({ message: '網路連線失敗，請確認後端 API！' });
+            }
         }
 
         // 切換員工繳費狀態（主要於系統總覽點擊呼叫）
@@ -799,7 +872,7 @@
                 });
 
                 if (response.ok) {
-                    await loadOrders(); // 重新讀取當天訂單
+                    await loadOrders(); 
                     if (document.getElementById('history-mgr').classList.contains('active')) {
                         await loadHistoryOrders();
                     }
@@ -817,11 +890,11 @@
         async function addNewEmployee() {
             const cardIdInput = document.getElementById('newCardId');
             const nameInput = document.getElementById('newEmpName');
-            const isPaidInput = document.getElementById('newIsPaid');
+            const deptInput = document.getElementById('newDepartment');
             
             const cardId = cardIdInput.value.trim();
             const name = nameInput.value.trim();
-            const isPaid = isPaidInput.value === 'true';
+            const department = deptInput.value.trim() || '未劃分';
 
             if (!cardId || !name) {
                 showCustomModal({ message: '請填寫完整的員工卡號與姓名！' });
@@ -832,7 +905,7 @@
                 const response = await fetch('/api/employees', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cardId, name, isPaid })
+                    body: JSON.stringify({ cardId, name, department })
                 });
 
                 const result = await response.json();
@@ -841,7 +914,8 @@
                     await loadEmployees();
                     cardIdInput.value = '';
                     nameInput.value = '';
-                    showCustomModal({ message: `成功新增員工並同步至後端：${name} (${cardId})` });
+                    deptInput.value = '';
+                    showCustomModal({ message: `成功新增員工並同步至後端：${name} (${cardId}) - ${department}` });
                 } else {
                     showCustomModal({ message: `新增失敗：${result.message || '未知錯誤'}` });
                 }
@@ -954,7 +1028,6 @@
             }
         }
 
-        // 渲染 圖二：系統總覽（當天訂單紀錄）包含「繳費狀態標籤」與「切換狀態按鈕」
         function renderOrderTable(orders, tableBodyId, showFullTime = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -968,7 +1041,6 @@
                 const orderIdStr = order.orderId ? String(order.orderId) : '';
                 const cardId = order.cardId || '';
                 
-                // 處理點餐時間：拆分為日期（上行）與時間（下行）
                 let timeHtml = '-';
                 if (order.timestamp) {
                     const parts = order.timestamp.trim().split(' ');
@@ -979,7 +1051,6 @@
                     }
                 }
 
-                // 讀取訂單或員工比對後的繳費狀態
                 const isPaid = order.isPaid === true || order.isPaid === 'true';
                 const paidBadge = isPaid 
                     ? `<span class="badge badge-paid">已繳費</span>` 
@@ -989,13 +1060,11 @@
                     <tr>
                         <td class="col-order-id"><code style="background:var(--primary-light); padding:4px 8px; border-radius:6px; color:var(--primary);">${order.orderId || '無'}</code></td>
                         
-                        <!-- 點餐人與卡號 重疊 -->
                         <td class="col-user">
                             <span class="cell-stacked-title">${order.name || '未知'}</span>
                             <span class="cell-stacked-sub">(${cardId || '無'})</span>
                         </td>
 
-                        <!-- 點餐時間（日期與時間）重疊 -->
                         <td class="col-time">${timeHtml}</td>
 
                         <td class="col-meal-detail">
@@ -1004,7 +1073,6 @@
                         </td>
                         <td class="col-amount"><strong style="color:var(--danger);">$${order.total || 0}</strong></td>
                         
-                        <!-- 繳費狀態與切換按鈕整合於系統總覽 -->
                         <td class="col-payment">
                             ${paidBadge}
                             <button class="btn-status" onclick="togglePaymentStatus('${cardId}', ${!isPaid})">切換狀態</button>
