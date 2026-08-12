@@ -1051,7 +1051,7 @@
             }
         }
 
-        /* 渲染訂單表格 (修正：時間強制上下分行) */
+        /* 渲染訂單表格 (修正：時間與「上午/下午」強制上下拆分) */
         function renderOrderTable(orders, tableBodyId, showFullTime = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1066,15 +1066,15 @@
                 const cardId = order.cardId || '';
                 const department = order.department || (USER_DB_PREVIEW[cardId] ? (USER_DB_PREVIEW[cardId].department || USER_DB_PREVIEW[cardId]) : '未劃分');
                 
-                // --- 拆分日期與時間，強制上下分行 ---
+                // --- 精準拆分：確保 上午/下午 及其時間移至第二行 ---
                 let timeHtml = '-';
                 if (order.timestamp) {
                     const trimmed = order.timestamp.trim();
-                    const firstSpaceIndex = trimmed.indexOf(' ');
+                    const match = trimmed.match(/(.+?)\s*([上下]午.+)/);
                     
-                    if (firstSpaceIndex !== -1) {
-                        const datePart = trimmed.substring(0, firstSpaceIndex);
-                        const timePart = trimmed.substring(firstSpaceIndex + 1);
+                    if (match) {
+                        const datePart = match[1]; // 日期部分 (例: 2026/8/12)
+                        const timePart = match[2]; // 時間部分 (例: 上午 9:20:13)
                         
                         timeHtml = `
                             <div class="time-stacked">
@@ -1082,7 +1082,18 @@
                                 <span class="time-part">${timePart}</span>
                             </div>`;
                     } else {
-                        timeHtml = `<div class="time-stacked"><span class="date-part">${trimmed}</span></div>`;
+                        const firstSpaceIndex = trimmed.indexOf(' ');
+                        if (firstSpaceIndex !== -1) {
+                            const datePart = trimmed.substring(0, firstSpaceIndex);
+                            const timePart = trimmed.substring(firstSpaceIndex + 1);
+                            timeHtml = `
+                                <div class="time-stacked">
+                                    <span class="date-part">${datePart}</span>
+                                    <span class="time-part">${timePart}</span>
+                                </div>`;
+                        } else {
+                            timeHtml = `<div class="time-stacked"><span class="date-part">${trimmed}</span></div>`;
+                        }
                     }
                 }
 
