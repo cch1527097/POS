@@ -735,16 +735,23 @@ async function changeQty(itemId, delta, targetCartKey = null) {
         let extraPrice = 0;
         let isExtra = false;
 
-        if (item.category === "烏龍湯麵") {
-            isExtra = await showModal("加麵詢問", `【${escapeHtml(item.name)}】需要加麵嗎？(+20元)`, true, "確定加麵");
-            if (isExtra) extraPrice = 20;
-        } else if (item.category === "炒物") {
-            isExtra = await showModal("加大詢問", `【${escapeHtml(item.name)}】需要升級加大/加麵嗎？(+30元)`, true, "確定加大");
-            if (isExtra) extraPrice = 30;
+        // 判斷商品類別並彈出對應詢問 Modal
+        if (item.category === "咖哩飯") {
+            isExtra = await showModal("換烏龍麵詢問", `【${escapeHtml(item.name)}】是否換烏龍麵？(+15元)`, true, "確定換烏龍麵");
+            if (isExtra) extraPrice = 15;
         }
 
         cartKey = isExtra ? `${itemId}_extra` : `${itemId}`;
-        const displayName = isExtra ? `${item.name} (加麵/加大)` : item.name;
+        
+        // 根據加價項目設定顯示名稱
+        let displayName = item.name;
+        if (isExtra) {
+            if (item.category === "咖哩飯") {
+                displayName = `${item.name} (換烏龍麵)`;
+            } else {
+                displayName = `${item.name} (加麵/加大)`;
+            }
+        }
 
         if (!cart[cartKey]) {
             cart[cartKey] = {
