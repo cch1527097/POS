@@ -1278,11 +1278,11 @@
             generateCSV(currentFilteredHistoryOrders, "歷史訂餐紀錄匯出");
         }
 
-        window.onload = function() {
-            loadEmployees(); 
-            loadOrders();
-            setInterval(loadOrders, 30000);
-        };
+        window.onload = async function() {
+    await loadEmployees(); // 先等員工與部門資料完全載入完畢
+    await loadOrders();    // 再載入訂單，此時就能正確比對並顯示部門了
+    setInterval(loadOrders, 30000);
+};
     </script>
 </body>
 </html>
