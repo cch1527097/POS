@@ -258,11 +258,31 @@
         .col-order-id { min-width: 140px; }
         .col-dept { min-width: 110px; }
         .col-user { min-width: 130px; }
-        .col-time { min-width: 140px; }
+        .col-time { 
+            white-space: normal !important; 
+            min-width: 140px; 
+        }
         .col-amount { min-width: 100px; }
         .col-payment { min-width: 150px; }
         .col-status { min-width: 110px; }
         .col-action { min-width: 150px; }
+
+        /* 時間強制上下行容器 */
+        .time-stacked {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.35;
+        }
+        .time-stacked .date-part {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 14px;
+        }
+        .time-stacked .time-part {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
 
         /* 重疊樣式輔助 */
         .cell-stacked-title {
@@ -1031,7 +1051,7 @@
             }
         }
 
-        /* 渲染訂單表格 (修正：在點餐人前方加入部門欄位) */
+        /* 渲染訂單表格 (修正：時間強制上下分行) */
         function renderOrderTable(orders, tableBodyId, showFullTime = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1046,7 +1066,7 @@
                 const cardId = order.cardId || '';
                 const department = order.department || (USER_DB_PREVIEW[cardId] ? (USER_DB_PREVIEW[cardId].department || USER_DB_PREVIEW[cardId]) : '未劃分');
                 
-                // --- 拆分日期與時間，改為上下重疊 ---
+                // --- 拆分日期與時間，強制上下分行 ---
                 let timeHtml = '-';
                 if (order.timestamp) {
                     const trimmed = order.timestamp.trim();
@@ -1056,9 +1076,13 @@
                         const datePart = trimmed.substring(0, firstSpaceIndex);
                         const timePart = trimmed.substring(firstSpaceIndex + 1);
                         
-                        timeHtml = `<span class="cell-stacked-title">${datePart}</span><span class="cell-stacked-sub">${timePart}</span>`;
+                        timeHtml = `
+                            <div class="time-stacked">
+                                <span class="date-part">${datePart}</span>
+                                <span class="time-part">${timePart}</span>
+                            </div>`;
                     } else {
-                        timeHtml = `<span class="cell-stacked-title">${trimmed}</span>`;
+                        timeHtml = `<div class="time-stacked"><span class="date-part">${trimmed}</span></div>`;
                     }
                 }
 
