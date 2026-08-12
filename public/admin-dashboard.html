@@ -256,6 +256,7 @@
             max-width: 450px;
         }
         .col-order-id { min-width: 140px; }
+        .col-dept { min-width: 110px; }
         .col-user { min-width: 130px; }
         .col-time { min-width: 140px; }
         .col-amount { min-width: 100px; }
@@ -556,6 +557,7 @@
                         <thead>
                             <tr>
                                 <th class="col-order-id">訂單編號</th>
+                                <th class="col-dept">部門</th>
                                 <th class="col-user">點餐人</th>
                                 <th class="col-time">點餐時間</th>
                                 <th class="col-meal-detail">餐點與備註明細</th>
@@ -566,7 +568,7 @@
                             </tr>
                         </thead>
                         <tbody id="orderTableBody">
-                            <tr><td colspan="8" style="text-align:center; color:#999;">資料載入中...</td></tr>
+                            <tr><td colspan="9" style="text-align:center; color:#999;">資料載入中...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -600,6 +602,7 @@
                             <thead>
                                 <tr>
                                     <th class="col-order-id">訂單編號</th>
+                                    <th class="col-dept">部門</th>
                                     <th class="col-user">點餐人</th>
                                     <th class="col-time">訂單完整時間</th>
                                     <th class="col-meal-detail">餐點與備註明細</th>
@@ -610,7 +613,7 @@
                                 </tr>
                             </thead>
                             <tbody id="historyTableBody">
-                                <tr><td colspan="8" style="text-align:center; color:#999;">資料載入中...</td></tr>
+                                <tr><td colspan="9" style="text-align:center; color:#999;">資料載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -998,7 +1001,7 @@
 
             } catch (error) {
                 console.error('後台讀取資料失敗:', error);
-                document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--danger);">資料同步失敗（請確認後端伺服器）</td></tr>`;
+                document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--danger);">資料同步失敗（請確認後端伺服器）</td></tr>`;
                 statusSpan.innerText = "同步失敗";
             }
         }
@@ -1024,23 +1027,24 @@
                 if(hStatusSpan) hStatusSpan.innerText = `歷史最後更新：${new Date().toLocaleTimeString('zh-TW', {hour12:false})}`;
             } catch (error) {
                 console.error('歷史資料讀取失敗:', error);
-                document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--danger);">無法讀取完整歷史檔案</td></tr>`;
+                document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--danger);">無法讀取完整歷史檔案</td></tr>`;
             }
         }
 
-        /* 渲染訂單表格 (修正：日期與時間上下重疊) */
+        /* 渲染訂單表格 (修正：在點餐人前方加入部門欄位) */
         function renderOrderTable(orders, tableBodyId, showFullTime = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
             
             if (orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#999;">目前尚無點餐紀錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#999;">目前尚無點餐紀錄</td></tr>`;
                 return;
             }
 
             const htmlRows = [...orders].reverse().map(order => {
                 const orderIdStr = order.orderId ? String(order.orderId) : '';
                 const cardId = order.cardId || '';
+                const department = order.department || (USER_DB_PREVIEW[cardId] ? (USER_DB_PREVIEW[cardId].department || USER_DB_PREVIEW[cardId]) : '未劃分');
                 
                 // --- 拆分日期與時間，改為上下重疊 ---
                 let timeHtml = '-';
@@ -1067,6 +1071,8 @@
                     <tr>
                         <td class="col-order-id"><code style="background:var(--primary-light); padding:4px 8px; border-radius:6px; color:var(--primary);">${order.orderId || '無'}</code></td>
                         
+                        <td class="col-dept"><span class="badge badge-dept">${department}</span></td>
+
                         <td class="col-user">
                             <span class="cell-stacked-title">${order.name || '未知'}</span>
                             <span class="cell-stacked-sub">(${cardId || '無'})</span>
@@ -1179,6 +1185,7 @@
             const filtered = targetSource.filter(order => {
                 const isPaidText = order.isPaid ? '已繳費' : '未繳費';
                 return (order.name || '').toLowerCase().includes(keyword) || 
+                       (order.department || '').toLowerCase().includes(keyword) ||
                        (order.cardId || '').toLowerCase().includes(keyword) || 
                        (order.meal || '').toLowerCase().includes(keyword) || 
                        (order.note || '').toLowerCase().includes(keyword) ||
@@ -1198,10 +1205,11 @@
                 return;
             }
 
-            const headers = ["訂單編號", "點餐人", "員工卡號", "訂單完整時間", "餐點項目", "醬料辣度", "備註", "總金額", "繳費狀態"];
+            const headers = ["訂單編號", "部門", "點餐人", "員工卡號", "訂單完整時間", "餐點項目", "醬料辣度", "備註", "總金額", "繳費狀態"];
             
             const rows = data.map(order => [
                 `"${(order.orderId || '').toString().replace(/"/g, '""')}"`,
+                `"${(order.department || '未劃分').toString().replace(/"/g, '""')}"`,
                 `"${(order.name || '未知').toString().replace(/"/g, '""')}"`,
                 `"${(order.cardId || '').toString().replace(/"/g, '""')}"`,
                 `"${(order.timestamp || '').toString().replace(/"/g, '""')}"`,
