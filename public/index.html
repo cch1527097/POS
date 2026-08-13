@@ -774,7 +774,7 @@
 </head>
 <body class="login-mode">
 
-    <!-- 1. 登入畫面區塊 -->
+    <!-- 1. 登入畫面區塊 (預設加入 hidden 防閃爍) -->
     <div id="login-section" class="login-card hidden">
         <img src="logo.gif" alt="系統Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
@@ -788,7 +788,7 @@
         <div id="msg-display" class="error-msg"></div>
     </div>
 
-    <!-- 2. 點餐畫面區塊 -->
+    <!-- 2. 點餐主畫面區塊 -->
     <div id="order-section" class="order-container hidden">
         <header class="nidin-header">
             <!-- 第一層：頂部工具列 -->
@@ -1576,21 +1576,16 @@
             const msgDisplay = document.getElementById('msg-display');
             const loginBtn = document.getElementById('submit-login-btn');
             
-            if (msgDisplay) msgDisplay.innerText = '';
-
+            // 修改處：未輸入卡號時，呼叫 browser 原生 reportValidity 氣泡提示，不顯示在下方
             if (!cardInput || !cardInput.value.trim()) {
-                if (msgDisplay) msgDisplay.innerText = '⚠️ 請輸入員工卡號！';
+                if (cardInput) cardInput.reportValidity();
                 return;
             }
 
             const cardId = cardInput.value.trim();
             isSubmitting = true;
-            
-            // 直接在按鈕上顯示「登入中...」並停用按鈕
-            if (loginBtn) {
-                loginBtn.innerText = '登入中...';
-                loginBtn.disabled = true;
-            }
+            if (msgDisplay) msgDisplay.innerText = '驗證中...';
+            if (loginBtn) loginBtn.disabled = true;
 
             try {
                 const controller = new AbortController();
@@ -1614,17 +1609,12 @@
                     showOrderSection(cardId, data.empName || cardId, dept, false);
                 } else {
                     if (msgDisplay) msgDisplay.innerText = `❌ ${data.message || '無此卡號'}`;
-                    if (loginBtn) {
-                        loginBtn.innerText = '登入';
-                        loginBtn.disabled = false;
-                    }
+                    if (loginBtn) loginBtn.disabled = false;
                     isSubmitting = false;
                 }
             } catch (error) {
-                if (loginBtn) {
-                    loginBtn.innerText = '登入';
-                    loginBtn.disabled = false;
-                }
+                if (msgDisplay) msgDisplay.innerText = '';
+                if (loginBtn) loginBtn.disabled = false;
                 isSubmitting = false;
                 
                 const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
@@ -1696,10 +1686,7 @@
             document.getElementById('user-department').innerText = '未劃分';
             
             const loginBtn = document.getElementById('submit-login-btn');
-            if (loginBtn) { 
-                loginBtn.innerText = '登入';
-                loginBtn.disabled = false; 
-            }
+            if (loginBtn) { loginBtn.disabled = false; }
             
             const cardInput = document.getElementById('cardId');
             if (cardInput) { cardInput.value = ''; cardInput.disabled = false; }
