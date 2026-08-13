@@ -162,16 +162,6 @@
             transform: scale(1.02);
         }
 
-        .error-msg { 
-            font-size: 16px; 
-            margin-top: 15px; 
-            min-height: 20px; 
-            font-weight: bold; 
-            text-align: center; 
-            width: 100%;
-            word-break: break-all; 
-        }
-
         /* ==================== 手機版 RWD 適應 ==================== */
         @media (max-width: 480px) {
             body {
@@ -197,7 +187,6 @@
                 max-width: 85%; 
             }
             .login-admin-link { font-size: 15px; margin-top: 20px; }
-            .error-msg { font-size: 14px; }
         }
 
         @media (max-width: 340px) {
@@ -220,7 +209,6 @@
                 <input type="text" id="adminUser" placeholder="請輸入管理員帳號" autocomplete="username" autofocus required onclick="this.select()">
             </div>
             <div class="input-wrapper">
-                <!-- 修正：改回標準 type="password" 確保相容性與自動填寫 -->
                 <input type="password" id="adminPass" placeholder="請輸入管理員密碼" autocomplete="current-password" required onclick="this.select()">
                 <span class="toggle-password" id="eye-icon" onclick="togglePasswordVisibility()">🔐</span>
             </div>
@@ -228,8 +216,6 @@
         </form>
         
         <button type="button" class="login-admin-link" onclick="navigateToHome()">🍀 返回訂餐系統 ➔</button>
-        
-        <div id="msg-display" class="error-msg"></div>
     </div>
 
     <script>
@@ -239,17 +225,16 @@
             window.location.href = 'index.html'; 
         }
 
-        /* 修正：透過切換 input 的 type 屬性來實現密碼顯示與隱藏，支援所有主流瀏覽器 */
         function togglePasswordVisibility() {
             const passInput = document.getElementById('adminPass');
             const eyeIcon = document.getElementById('eye-icon');
             
             if (passInput.type === 'password') {
                 passInput.type = 'text';
-                eyeIcon.textContent = '🔒'; // 明文顯示時：閉合鎖
+                eyeIcon.textContent = '🔒';
             } else {
                 passInput.type = 'password';
-                eyeIcon.textContent = '🔐'; // 隱藏密碼時：帶鑰匙鎖
+                eyeIcon.textContent = '🔐';
             }
         }
 
@@ -259,20 +244,18 @@
 
             const userInput = document.getElementById('adminUser');
             const passInput = document.getElementById('adminPass');
-            const msgDisplay = document.getElementById('msg-display');
             const loginBtn = document.getElementById('submit-login-btn');
 
             userInput.classList.remove('input-error');
             passInput.classList.remove('input-error');
 
             const username = userInput.value.trim();
-            const password = passInput.value; // 修正：不要去除密碼前後的空白
+            const password = passInput.value;
 
             if (!username || !password) {
-                msgDisplay.style.color = '#a01010';
-                msgDisplay.innerText = '❌ 請完整輸入帳號與密碼！';
                 if(!username) userInput.classList.add('input-error');
                 if(!password) passInput.classList.add('input-error');
+                alert('❌ 請完整輸入帳號與密碼！');
                 return;
             }
 
@@ -280,38 +263,35 @@
             loginBtn.disabled = true;
             userInput.disabled = true;
             passInput.disabled = true;
-            msgDisplay.style.color = '#556b52';
-            msgDisplay.innerText = '⏳ 安全認證中，請稍候...';
+            loginBtn.innerText = '⏳ 認證中...';
 
             function resetInputs(focusOnPassword = true) {
                 isSubmitting = false;
                 loginBtn.disabled = false;
                 userInput.disabled = false;
                 passInput.disabled = false;
+                loginBtn.innerText = '登入';
+                
                 if (focusOnPassword) {
                     passInput.value = '';
-                    passInput.type = 'password'; // 重設為隱藏狀態
+                    passInput.type = 'password';
                     document.getElementById('eye-icon').textContent = '🔐';
                     passInput.focus();
                 }
             }
 
             setTimeout(async () => {
-                // 修正：修正 Key 重複問題，使用陣列容納多個合法密碼
                 const validAdmins = {
                     '18445': ['zxc456456', '601471', '11110']
                 };
 
                 // 本地預設測試帳密驗證
                 if (validAdmins[username] && validAdmins[username].includes(password)) {
-                    msgDisplay.style.color = '#1f8a62';
-                    msgDisplay.innerText = '🎉 認證成功！正在進入管理後台...';
-                    
-                    resetInputs(false); 
+                    loginBtn.innerText = '🎉 認證成功！';
                     
                     setTimeout(() => {
                         window.location.href = 'admin-dashboard.html';
-                    }, 800);
+                    }, 600);
                     return; 
                 } 
                 
@@ -326,29 +306,26 @@
                     const data = await response.json();
 
                     if (response.ok && data.success) {
-                        msgDisplay.style.color = '#1f8a62';
-                        msgDisplay.innerText = '🎉 認證成功！正在進入管理後台...';
-                        
-                        resetInputs(false);
+                        loginBtn.innerText = '🎉 認證成功！';
                         
                         setTimeout(() => {
                             window.location.href = 'admin-dashboard.html';
-                        }, 800);
+                        }, 600);
                         return; 
                     } else {
-                        msgDisplay.style.color = '#a01010';
-                        msgDisplay.innerText = '❌ ' + (data.message || '帳號或密碼錯誤！');
                         userInput.classList.add('input-error');
                         passInput.classList.add('input-error');
+                        resetInputs(true);
+                        alert('❌ ' + (data.message || '帳號或密碼錯誤！'));
+                        return;
                     }
                 } catch (error) {
-                    msgDisplay.style.color = '#a01010';
-                    msgDisplay.innerText = '❌ 帳號或密碼錯誤！（網路認證失敗）';
                     userInput.classList.add('input-error');
                     passInput.classList.add('input-error');
+                    resetInputs(true);
+                    alert('❌ 帳號或密碼錯誤！（網路認證失敗）');
+                    return;
                 }
-
-                resetInputs(true);
 
             }, 600);
         }
