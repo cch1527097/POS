@@ -15,7 +15,7 @@
     font-family: "Microsoft JhengHei", -apple-system, sans-serif;
     color: #333;
 
-    /* 固定頂部關鍵屬性 */
+    /* 📌 固定頂部關鍵屬性 */
     position: sticky;      
     top: 0;                
     z-index: 1000;         
@@ -120,7 +120,7 @@
 .nidin-user-info {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     font-size: 15px;
     font-weight: 600;
     font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -138,10 +138,16 @@
     color: #0091ff;
 }
 
-#user-dept {
-    color: #2b4c23;
+/* 部門膠囊標籤樣式 */
+.dept-badge {
+    background-color: #e8f4fd;
+    color: #1e88e5;
+    border: 1px solid #bbdefb;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 13px;
     font-weight: bold;
-    margin-right: 8px;
+    display: inline-block;
 }
 
 /* 第二層：導覽選單 */
@@ -360,7 +366,7 @@
 
         .error-msg { font-size: 16px; margin-top: 15px; height: 20px; font-weight: bold; color: #a01010; text-align: center; }
 
-        /* ==================== 2. 點餐畫面區塊 (圖三精美圖片卡片風格) ==================== */
+        /* ==================== 2. 點餐畫面區塊 ==================== */
         .order-container {
             width: 100%;
             min-height: 100vh;
@@ -378,7 +384,6 @@
             gap: 25px;
         }
 
-        /* 仿圖三：圖片卡片本體 */
         .shop-card {
             background: #ffffff;
             border-radius: 18px;
@@ -396,7 +401,6 @@
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
         }
 
-        /* 圖片容器 */
         .shop-img-wrapper {
             position: relative;
             width: 100%;
@@ -416,7 +420,6 @@
             transform: scale(1.06);
         }
 
-        /* 圖片左上方分類標籤 */
         .badge {
             position: absolute;
             top: 12px;
@@ -435,7 +438,6 @@
         .badge.local { background-color: #7ba370; }    
         .badge.main { background-color: #436e37; }    
 
-        /* 圖片上方按鈕 */
         .img-overlay-btn {
             position: absolute;
             bottom: 12px;
@@ -457,7 +459,6 @@
             transform: scale(1.05);
         }
 
-        /* 卡片下方資訊內容 */
         .shop-info {
             padding: 18px;
             display: flex;
@@ -517,7 +518,7 @@
             border-collapse: collapse;
             text-align: left;
             font-size: 16px;
-            min-width: 500px;
+            min-width: 550px;
         }
 
         .history-table th {
@@ -594,7 +595,7 @@
         }
 
         .cart-modal-content {
-            max-width: 800px !important;
+            max-width: 850px !important;
         }
 
         @keyframes modalFadeIn {
@@ -622,7 +623,6 @@
             cursor: pointer;
             color: #888;
             line-height: 1;
-            user-select: none;
         }
 
         .branch-modal-header .close-btn:hover { color: #333; }
@@ -808,10 +808,10 @@
 
                 <div class="nidin-top-right">
                     <div class="nidin-user-info">
-                        <span>部門：</span>
-                        <span id="user-dept"></span>
-                        <span>目前登入員工：</span>
-                        <span id="user-name"></span>
+                        <span>目前登入：</span>
+                        <!-- 💡 新增：部門標籤顯示區 -->
+                        <span id="user-department" class="dept-badge">未劃分</span>
+                        <span id="user-name" style="color: #0091ff;"></span>
                         <span id="offline-tag" style="color: #ff4d4f; display: none;">(離線)</span>
                     </div>
                 </div>
@@ -860,7 +860,7 @@
             </nav>
         </header>
 
-        <!-- 店家卡片列表區塊（仿圖三：頂部圖片 + 下方文字名牌） -->
+        <!-- 店家卡片列表區塊 -->
         <div class="grid-container">
             
             <div class="shop-card" onclick="redirectToShop('榮郁香廣式燒臘', this)">
@@ -1209,7 +1209,7 @@
         <div class="branch-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
                 <h3>請選擇服務院區</h3>
-                <span class="close-btn" onclick="closeBranchModal(event)" style="cursor: pointer; user-select: none;">&times;</span>
+                <span class="close-btn" onclick="closeBranchModal()">&times;</span>
             </div>
             <div class="branch-list">
                 <div class="branch-item active" onclick="selectBranch('彰濱秀傳紀念醫院', this)">
@@ -1245,7 +1245,7 @@
         <div class="branch-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
                 <h3>💳 付款方式說明</h3>
-                <span class="close-btn" onclick="closePaymentModal(event)" style="cursor: pointer; user-select: none;">&times;</span>
+                <span class="close-btn" onclick="closePaymentModal()">&times;</span>
             </div>
             <div class="payment-modal-body">
                 <div class="payment-item">
@@ -1271,7 +1271,7 @@
                 <h3>📋 我的購物車 (今日點餐)</h3>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
-                    <span class="close-btn" onclick="closeCartModal(event)" style="cursor: pointer; user-select: none;">&times;</span>
+                    <span class="close-btn" onclick="closeCartModal()">&times;</span>
                 </div>
             </div>
             <div style="padding: 20px; max-height: 450px; overflow-y: auto;">
@@ -1279,16 +1279,17 @@
                     <table class="history-table">
                         <thead>
                             <tr>
-                                <th style="width: 20%">卡號 / 姓名</th>
+                                <th style="width: 15%">卡號 / 姓名</th>
+                                <th style="width: 15%">部門</th> <!-- 💡 新增：部門欄位 -->
                                 <th style="width: 20%">日期時間</th>
-                                <th style="width: 30%">點餐店家 / 內容</th>
-                                <th style="width: 15%">金額</th>
-                                <th style="width: 15%">備註說明</th>
+                                <th style="width: 25%">點餐店家 / 內容</th>
+                                <th style="width: 12%">金額</th>
+                                <th style="width: 13%">備註說明</th>
                             </tr>
                         </thead>
                         <tbody id="history-list">
                             <tr>
-                                <td colspan="5" class="no-record">載入紀錄中...</td>
+                                <td colspan="6" class="no-record">載入紀錄中...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1304,7 +1305,7 @@
                 <h3 style="display: flex; align-items: center; gap: 8px;">
                     🗄️ 曾點過歷史點餐軌跡 (歷年完整紀錄)
                 </h3>
-                <span class="close-btn" onclick="closeHistoryModal(event)" style="cursor: pointer; user-select: none;">&times;</span>
+                <span class="close-btn" onclick="closeHistoryModal()">&times;</span>
             </div>
             <div style="padding: 20px; max-height: 500px; overflow-y: auto;">
                 <div style="margin-bottom: 12px; font-size: 13px; color: #668062; font-weight: bold; text-align: right;">
@@ -1314,16 +1315,17 @@
                     <table class="history-table">
                         <thead>
                             <tr>
-                                <th style="width: 20%; background-color: #eff7ee;">卡號 / 姓名</th>
+                                <th style="width: 15%; background-color: #eff7ee;">卡號 / 姓名</th>
+                                <th style="width: 15%; background-color: #eff7ee;">部門</th> <!-- 💡 新增：部門欄位 -->
                                 <th style="width: 20%; background-color: #eff7ee;">日期時間</th>
-                                <th style="width: 30%; background-color: #eff7ee;">點餐店家 / 內容</th>
-                                <th style="width: 15%; background-color: #eff7ee;">金額</th>
-                                <th style="width: 15%; background-color: #eff7ee;">備註說明</th>
+                                <th style="width: 25%; background-color: #eff7ee;">點餐店家 / 內容</th>
+                                <th style="width: 12%; background-color: #eff7ee;">金額</th>
+                                <th style="width: 13%; background-color: #eff7ee;">備註說明</th>
                             </tr>
                         </thead>
                         <tbody id="global-history-list">
                             <tr>
-                                <td colspan="5" class="no-record">核心資料庫載入中...</td>
+                                <td colspan="6" class="no-record">核心資料庫載入中...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1333,18 +1335,18 @@
     </div>
 
     <!-- 客製化自訂提示/確認對話框 (Modal) -->
-    <div id="customAlertModal" class="branch-modal-overlay hidden" onclick="closeCustomAlert(false, event)">
+    <div id="customAlertModal" class="branch-modal-overlay hidden" onclick="closeCustomAlert(false)">
         <div class="branch-modal-content custom-alert-box" onclick="event.stopPropagation()">
             <div class="branch-modal-header custom-alert-header">
                 <h3 id="customAlertTitle">提示</h3>
-                <span class="close-btn" onclick="closeCustomAlert(false, event)" style="cursor: pointer; user-select: none;">&times;</span>
+                <span class="close-btn" onclick="closeCustomAlert(false)">&times;</span>
             </div>
             <div class="payment-modal-body custom-alert-body" id="customAlertMessage">
                 提示內容
             </div>
             <div class="custom-alert-footer">
-                <button id="customAlertCancelBtn" class="custom-btn-action custom-btn-cancel-gray" onclick="closeCustomAlert(false, event)">取消</button>
-                <button id="customAlertConfirmBtn" class="custom-btn-action custom-btn-confirm-red" onclick="closeCustomAlert(true, event)">確定</button>
+                <button id="customAlertCancelBtn" class="custom-btn-action custom-btn-cancel-gray" onclick="closeCustomAlert(false)">取消</button>
+                <button id="customAlertConfirmBtn" class="custom-btn-action custom-btn-confirm-red" onclick="closeCustomAlert(true)">確定</button>
             </div>
         </div>
     </div>
@@ -1353,6 +1355,7 @@
         let loggedInCardId = ''; 
         let isSubmitting = false;
         let customAlertCallback = null;
+        let globalEmployeesMap = {}; // 快取員工對照表 (含部門資訊)
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -1385,14 +1388,17 @@
             '志氣雞飯': '志氣雞飯.html'
         };
 
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 💡 頁面初始化時，先載入員工對照表
+            await fetchEmployeeList();
+
             const savedCardId = localStorage.getItem('currentCardId');
             const savedEmpName = localStorage.getItem('currentEmpName');
-            const savedDept = localStorage.getItem('currentDept');
+            const savedDept = localStorage.getItem('currentDepartment');
             const savedOffline = localStorage.getItem('isOfflineMode') === 'true';
             
             if (savedCardId) {
-                showOrderSection(savedCardId, savedEmpName, savedOffline, savedDept);
+                showOrderSection(savedCardId, savedEmpName, savedDept, savedOffline);
             }
 
             const cardInput = document.getElementById('cardId');
@@ -1408,16 +1414,17 @@
             }
         });
 
-        // 監聽鍵盤 Esc 按鍵關閉所有 Modal
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeCartModal();
-                closeBranchModal();
-                closePaymentModal();
-                closeHistoryModal();
-                closeCustomAlert(false);
+        // 💡 獲取員工清單 API (包含部門欄位)
+        async function fetchEmployeeList() {
+            try {
+                const response = await fetch('/api/employees');
+                if (response.ok) {
+                    globalEmployeesMap = await response.json();
+                }
+            } catch (err) {
+                console.warn('⚠️ 無法載入員工部門清單:', err);
             }
-        });
+        }
 
         function callCustomAlert(title, message, callback, showCancel = true) {
             document.getElementById('customAlertTitle').textContent = title;
@@ -1434,8 +1441,7 @@
             document.getElementById('customAlertModal').classList.remove('hidden');
         }
 
-        function closeCustomAlert(result, event) {
-            if (event) event.stopPropagation();
+        function closeCustomAlert(result) {
             document.getElementById('customAlertModal').classList.add('hidden');
             if (customAlertCallback) {
                 customAlertCallback(result);
@@ -1449,7 +1455,6 @@
         }
 
         function closeBranchModal(event) {
-            if (event) event.stopPropagation();
             const modal = document.getElementById('branchModal');
             if (modal) modal.classList.add('hidden');
         }
@@ -1460,7 +1465,6 @@
         }
 
         function closePaymentModal(event) {
-            if (event) event.stopPropagation();
             const modal = document.getElementById('paymentModal');
             if (modal) modal.classList.add('hidden');
         }
@@ -1474,7 +1478,6 @@
         }
 
         function closeCartModal(event) {
-            if (event) event.stopPropagation();
             const modal = document.getElementById('cartModal');
             if (modal) modal.classList.add('hidden');
         }
@@ -1488,7 +1491,6 @@
         }
 
         function closeHistoryModal(event) {
-            if (event) event.stopPropagation();
             const modal = document.getElementById('historyModal');
             if (modal) modal.classList.add('hidden');
         }
@@ -1586,7 +1588,13 @@
                 
                 const data = await response.json();
                 if (data.success) {
-                    showOrderSection(cardId, data.empName || cardId, false, data.dept || data.department || '');
+                    // 💡 如果尚未取得員工表，重新讀取一次
+                    if (!globalEmployeesMap || !globalEmployeesMap[cardId]) {
+                        await fetchEmployeeList();
+                    }
+                    const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
+                    
+                    showOrderSection(cardId, data.empName || cardId, dept, false);
                 } else {
                     if (msgDisplay) msgDisplay.innerText = `❌ ${data.message || '無此卡號'}`;
                     if (loginBtn) loginBtn.disabled = false;
@@ -1596,7 +1604,9 @@
                 if (msgDisplay) msgDisplay.innerText = '';
                 if (loginBtn) loginBtn.disabled = false;
                 isSubmitting = false;
-                showOrderSection(cardId, cardId, true, '');
+                
+                const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
+                showOrderSection(cardId, cardId, dept, true);
             }
         }
 
@@ -1608,8 +1618,7 @@
             }
             
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
-            const deptName = localStorage.getItem('currentDept') || '';
-            const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}&dept=${encodeURIComponent(deptName)}`;
+            const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}`;
             window.location.href = targetUrl;
         }
 
@@ -1623,13 +1632,14 @@
 
         function navigateToAdmin() { window.location.href = 'admin.html'; }
 
-        function showOrderSection(cardId, empName, isOffline = false, deptName = '') {
+        // 💡 擴充顯示邏輯：帶入 department
+        function showOrderSection(cardId, empName, department, isOffline = false) {
             loggedInCardId = cardId; 
-            const savedDept = deptName || localStorage.getItem('currentDept') || '';
-            
+            const userDept = department || (globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : '未劃分');
+
             localStorage.setItem('currentCardId', cardId);
             localStorage.setItem('currentEmpName', empName || cardId);
-            localStorage.setItem('currentDept', savedDept);
+            localStorage.setItem('currentDepartment', userDept);
             localStorage.setItem('isOfflineMode', isOffline ? 'true' : 'false');
 
             const userNameEl = document.getElementById('user-name');
@@ -1637,9 +1647,10 @@
                 userNameEl.textContent = empName || cardId;
             }
 
-            const userDeptEl = document.getElementById('user-dept');
+            // 💡 更新頂部部門標籤
+            const userDeptEl = document.getElementById('user-department');
             if (userDeptEl) {
-                userDeptEl.textContent = savedDept;
+                userDeptEl.textContent = userDept;
             }
 
             document.getElementById('offline-tag').style.display = isOffline ? 'inline' : 'none';
@@ -1659,12 +1670,10 @@
             
             localStorage.removeItem('currentCardId');
             localStorage.removeItem('currentEmpName');
-            localStorage.removeItem('currentDept');
+            localStorage.removeItem('currentDepartment');
             localStorage.removeItem('isOfflineMode');
             document.getElementById('user-name').innerText = ''; 
-            
-            const userDeptEl = document.getElementById('user-dept');
-            if (userDeptEl) { userDeptEl.innerText = ''; }
+            document.getElementById('user-department').innerText = '未劃分';
             
             const loginBtn = document.getElementById('submit-login-btn');
             if (loginBtn) { loginBtn.disabled = false; }
@@ -1793,9 +1802,12 @@
             todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
 
             if (todayOrders.length === 0) {
-                historyList.innerHTML = `<tr><td colspan="5" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
+                historyList.innerHTML = `<tr><td colspan="6" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
                 return;
             }
+
+            // 💡 取得當前部門
+            const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
 
             historyList.innerHTML = todayOrders.map(order => {
                 const rawTotal = Number(order.total);
@@ -1809,6 +1821,7 @@
                 return `
                     <tr>
                         <td>${order.cardId || cardId}</td>
+                        <td><span class="dept-badge">${userDept}</span></td>
                         <td>${formatDisplayTime(order)}</td>
                         <td>${order.meal || '無品項內容'}</td>
                         <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
@@ -1837,11 +1850,14 @@
                 });
 
                 if (userOrders.length === 0) {
-                    globalHistoryList.innerHTML = `<tr><td colspan="5" class="no-record">💡 您在歷年全系統資料庫中尚無任何點餐軌跡。</td></tr>`;
+                    globalHistoryList.innerHTML = `<tr><td colspan="6" class="no-record">💡 您在歷年全系統資料庫中尚無任何點餐軌跡。</td></tr>`;
                     return;
                 }
 
                 userOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+                // 💡 取得對應部門
+                const userDept = globalEmployeesMap[targetCardId] ? globalEmployeesMap[targetCardId].department : '未劃分';
 
                 globalHistoryList.innerHTML = '';
                 userOrders.forEach(order => {
@@ -1849,6 +1865,10 @@
                     
                     const tdUser = document.createElement('td');
                     tdUser.textContent = `${order.cardId || ''} ${order.empName || order.name || ''}`;
+
+                    // 💡 動態新增部門欄位
+                    const tdDept = document.createElement('td');
+                    tdDept.innerHTML = `<span class="dept-badge">${userDept}</span>`;
                     
                     const tdTime = document.createElement('td');
                     tdTime.textContent = formatDisplayTime(order);
@@ -1865,6 +1885,7 @@
                     tdNote.textContent = order.note || '-';
                     
                     tr.appendChild(tdUser);
+                    tr.appendChild(tdDept);
                     tr.appendChild(tdTime);
                     tr.appendChild(tdMeal);
                     tr.appendChild(tdPrice);
@@ -1873,7 +1894,7 @@
                 });
             } catch (error) {
                 console.error(error);
-                globalHistoryList.innerHTML = `<tr><td colspan="5" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡或 orders.json 檔案不存在。</td></tr>`;
+                globalHistoryList.innerHTML = `<tr><td colspan="6" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡或 orders.json 檔案不存在。</td></tr>`;
             }
         }
     </script>
