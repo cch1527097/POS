@@ -1051,7 +1051,7 @@
             }
         }
 
-        /* 渲染訂單表格 (修正：時間與「上午/下午」強制上下拆分) */
+        /* 渲染訂單表格 (修正：時間與「上午/下午」強制上下拆分，同步寫回部門資料) */
         function renderOrderTable(orders, tableBodyId, showFullTime = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1064,7 +1064,10 @@
             const htmlRows = [...orders].reverse().map(order => {
                 const orderIdStr = order.orderId ? String(order.orderId) : '';
                 const cardId = order.cardId || '';
-                const department = order.department || (USER_DB_PREVIEW[cardId] ? (USER_DB_PREVIEW[cardId].department || USER_DB_PREVIEW[cardId]) : '未劃分');
+                
+                // 修正：動態補全 order 物件的 department 屬性，確保資料一致
+                order.department = order.department || (USER_DB_PREVIEW[cardId] ? (USER_DB_PREVIEW[cardId].department || USER_DB_PREVIEW[cardId]) : '未劃分');
+                const department = order.department;
                 
                 // --- 精準拆分：確保 上午/下午 及其時間移至第二行 ---
                 let timeHtml = '-';
@@ -1234,6 +1237,7 @@
             renderOrderTable(filtered, targetTbody, !isToday);
         }
 
+        /* 匯出 CSV 函式 (修正：自動向 USER_DB_PREVIEW 比對部門) */
         function generateCSV(data, fileNamePrefix) {
             if (!data || data.length === 0) {
                 showCustomModal({ message: '目前沒有可匯出的訂餐資料！' });
@@ -1242,18 +1246,29 @@
 
             const headers = ["訂單編號", "部門", "點餐人", "員工卡號", "訂單完整時間", "餐點項目", "醬料辣度", "備註", "總金額", "繳費狀態"];
             
-            const rows = data.map(order => [
-                `"${(order.orderId || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.department || '未劃分').toString().replace(/"/g, '""')}"`,
-                `"${(order.name || '未知').toString().replace(/"/g, '""')}"`,
-                `"${(order.cardId || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.timestamp || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.spicy || '無').toString().replace(/"/g, '""')}"`,
-                `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
-                `"${order.total || 0}"`,
-                `"${order.isPaid ? '已繳費' : '未繳費'}"`
-            ]);
+            const rows = data.map(order => {
+                const cardId = order.cardId || '';
+                
+                // 若 order 物件內無 department，則從 USER_DB_PREVIEW 員工對照表自動補上
+                let dept = order.department;
+                if (!dept && cardId && USER_DB_PREVIEW[cardId]) {
+                    dept = USER_DB_PREVIEW[cardId].department || USER_DB_PREVIEW[cardId];
+                }
+                if (!dept) dept = '未劃分';
+
+                return [
+                    `"${(order.orderId || '').toString().replace(/"/g, '""')}"`,
+                    `"${dept.toString().replace(/"/g, '""')}"`,
+                    `"${(order.name || '未知').toString().replace(/"/g, '""')}"`,
+                    `"${cardId.toString().replace(/"/g, '""')}"`,
+                    `"${(order.timestamp || '').toString().replace(/"/g, '""')}"`,
+                    `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
+                    `"${(order.spicy || '無').toString().replace(/"/g, '""')}"`,
+                    `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
+                    `"${order.total || 0}"`,
+                    `"${order.isPaid ? '已繳費' : '未繳費'}"`
+                ];
+            });
 
             const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
 
@@ -1279,10 +1294,10 @@
         }
 
         window.onload = async function() {
-    await loadEmployees(); // 先等員工與部門資料完全載入完畢
-    await loadOrders();    // 再載入訂單，此時就能正確比對並顯示部門了
-    setInterval(loadOrders, 30000);
-};
+            await loadEmployees(); // 先等員工與部門資料完全載入完畢
+            await loadOrders();    // 再載入訂單，此時就能正確比對並顯示部門了
+            setInterval(loadOrders, 30000);
+        };
     </script>
 </body>
 </html>
