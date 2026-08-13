@@ -5,256 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>美食訂餐系統</title>
     <style>
-
-/* ==================== 頂部 Header 樣式 ==================== */
-.nidin-header {
-    width: 100%;
-    background-color: #ffffff;
-    border-bottom: 1px solid #eaeaea;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    font-family: "Microsoft JhengHei", -apple-system, sans-serif;
-    color: #333;
-
-    /* 📌 固定頂部關鍵屬性 */
-    position: sticky;      
-    top: 0;                
-    z-index: 1000;         
-}
-
-/* 第一層：頂部工具列 */
-.nidin-top-bar {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-}
-
-.nidin-top-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex: 1;
-    min-width: 0; /* 避免 flex 子元素擠爆 */
-}
-
-/* Logo 樣式 */
-.nidin-logo {
-    font-size: 26px;
-    font-weight: 800;
-    color: #0091ff;
-    letter-spacing: -0.5px;
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    user-select: none;
-}
-.nidin-logo .dot {
-    color: #ff4d4f;
-    font-size: 22px;
-}
-
-.nidin-divider {
-    width: 1px;
-    height: 20px;
-    background-color: #e0e0e0;
-    flex-shrink: 0;
-}
-
-/* 定位下拉按鈕 */
-.nidin-location-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 15px;
-    color: #4a4a4a;
-    cursor: pointer;
-    background: none;
-    border: none;
-    padding: 6px 8px;
-    border-radius: 6px;
-    transition: background-color 0.2s;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.nidin-location-btn:hover {
-    background-color: #f5f5f5;
-}
-
-/* 搜尋框 */
-.nidin-search-box {
-    display: flex;
-    align-items: center;
-    background-color: #f2f3f5;
-    border-radius: 20px;
-    padding: 8px 16px;
-    width: 100%;
-    max-width: 320px;
-    transition: background-color 0.2s, box-shadow 0.2s;
-}
-.nidin-search-box:focus-within {
-    background-color: #ffffff;
-    box-shadow: 0 0 0 2px #0091ff;
-}
-.nidin-search-box input {
-    border: none;
-    background: transparent;
-    outline: none;
-    font-size: 14px;
-    margin-left: 8px;
-    width: 100%;
-    color: #333;
-}
-
-/* 右側員工資訊區塊 */
-.nidin-top-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    margin-left: auto;
-}
-
-.nidin-user-info {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 15px;
-    font-weight: 600;
-    font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #333;
-    white-space: nowrap;
-}
-
-.nidin-user-info span {
-    font-family: inherit;
-    font-weight: inherit;
-    font-size: inherit;
-}
-
-#user-name {
-    color: #0091ff;
-}
-
-/* 部門膠囊標籤樣式 */
-.dept-badge {
-    background-color: #e8f4fd;
-    color: #1e88e5;
-    border: 1px solid #bbdefb;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: bold;
-    display: inline-block;
-}
-
-/* 第二層：導覽選單 */
-.nidin-nav-bar {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 10px 20px 14px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 28px;
-}
-
-.nidin-nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-    color: #222;
-    font-size: 13px;
-    font-weight: 500;
-    transition: color 0.2s, transform 0.1s;
-    cursor: pointer;
-    flex-shrink: 0;
-    user-select: none;
-    -webkit-user-select: none;
-}
-.nidin-nav-item:hover {
-    color: #0091ff;
-    transform: translateY(-1px);
-}
-.nidin-nav-icon {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.nidin-nav-icon svg {
-    width: 24px;
-    height: 24px;
-    stroke: #333;
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-.nidin-nav-item:hover .nidin-nav-icon svg {
-    stroke: #0091ff;
-}
-
-/* 📱 手機版 RWD 適應 */
-@media (max-width: 768px) {
-    .nidin-top-bar {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 12px 15px;
-        gap: 12px;
-    }
-
-    .nidin-top-left {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        gap: 10px;
-    }
-
-    .nidin-top-right {
-        width: 100%;
-        justify-content: center;
-        margin-left: 0;
-    }
-
-    .nidin-user-info {
-        justify-content: center;
-        width: 100%;
-    }
-
-    .nidin-divider, .nidin-location-btn {
-        display: none;
-    }
-
-    .nidin-search-box {
-        order: 3;
-        width: 100%;
-        max-width: 100%;
-        margin-top: 2px;
-        box-sizing: border-box;
-        justify-content: center;
-    }
-
-    .nidin-search-box input {
-        text-align: center;
-    }
-
-    .nidin-nav-bar {
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 15px;
-        padding: 10px 15px 15px 15px;
-    }
-}
-
-        * { box-sizing: border-box; font-family: "Microsoft JhengHei", sans-serif; }
+        /* ==================== 全局與基礎樣式 ==================== */
+        * { 
+            box-sizing: border-box; 
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif; 
+        }
         
         body {
             margin: 0;
@@ -277,6 +32,196 @@
         }
 
         .hidden { display: none !important; }
+
+        /* ==================== 頂部 Header 樣式 ==================== */
+        .nidin-header {
+            width: 100%;
+            background-color: #ffffff;
+            border-bottom: 1px solid #eaeaea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            color: #333;
+            position: sticky;      
+            top: 0;                
+            z-index: 1000;         
+        }
+
+        /* 第一層：頂部工具列 */
+        .nidin-top-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .nidin-top-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Logo 樣式 */
+        .nidin-logo {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0091ff;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .nidin-logo .dot {
+            color: #ff4d4f;
+            font-size: 22px;
+        }
+
+        .nidin-divider {
+            width: 1px;
+            height: 20px;
+            background-color: #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        /* 定位下拉按鈕 */
+        .nidin-location-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            color: #4a4a4a;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .nidin-location-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 搜尋框 */
+        .nidin-search-box {
+            display: flex;
+            align-items: center;
+            background-color: #f2f3f5;
+            border-radius: 20px;
+            padding: 8px 16px;
+            width: 100%;
+            max-width: 320px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        .nidin-search-box:focus-within {
+            background-color: #ffffff;
+            box-shadow: 0 0 0 2px #0091ff;
+        }
+        .nidin-search-box input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+            margin-left: 8px;
+            width: 100%;
+            color: #333;
+        }
+
+        /* 右側員工資訊區塊 */
+        .nidin-top-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+
+        .nidin-user-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .nidin-user-info span {
+            font-family: inherit;
+            font-weight: inherit;
+            font-size: inherit;
+        }
+
+        #user-name {
+            color: #0091ff;
+        }
+
+        /* 部門膠囊標籤樣式 */
+        .dept-badge {
+            background-color: #e8f4fd;
+            color: #1e88e5;
+            border: 1px solid #bbdefb;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        /* 第二層：導覽選單 */
+        .nidin-nav-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px 20px 14px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .nidin-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: #222;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s, transform 0.1s;
+            cursor: pointer;
+            flex-shrink: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .nidin-nav-item:hover {
+            color: #0091ff;
+            transform: translateY(-1px);
+        }
+        .nidin-nav-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nidin-nav-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: #333;
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .nidin-nav-item:hover .nidin-nav-icon svg {
+            stroke: #0091ff;
+        }
 
         /* ==================== 1. 登入畫面區塊 ==================== */
         .login-card {
@@ -594,16 +539,7 @@
             animation: modalFadeIn 0.25s ease-out;
         }
 
-        /* 修改：讓購物車彈窗與歷史點餐軌跡保持相同的加大寬度與高彈性佈局 */
-        .cart-modal-content {
-            width: 92vw !important;
-            max-width: 1300px !important;
-            max-height: 85vh !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-
-        /* 加大歷史點餐軌跡彈窗的寬度與高度規格 */
+        .cart-modal-content,
         .history-modal-content {
             width: 92vw !important;
             max-width: 1300px !important;
@@ -771,6 +707,60 @@
         }
         .custom-btn-cancel-gray:hover {
             background-color: #e2e8f0 !important;
+        }
+
+        /* 📱 手機版 RWD 適應 */
+        @media (max-width: 768px) {
+            .nidin-top-bar {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 15px;
+                gap: 12px;
+            }
+
+            .nidin-top-left {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .nidin-top-right {
+                width: 100%;
+                justify-content: center;
+                margin-left: 0;
+            }
+
+            .nidin-user-info {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .nidin-divider, .nidin-location-btn {
+                display: none;
+            }
+
+            .nidin-search-box {
+                order: 3;
+                width: 100%;
+                max-width: 100%;
+                margin-top: 2px;
+                box-sizing: border-box;
+                justify-content: center;
+            }
+
+            .nidin-search-box input {
+                text-align: center;
+            }
+
+            .nidin-nav-bar {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 15px;
+                padding: 10px 15px 15px 15px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1284,7 +1274,7 @@
         </div>
     </div>
 
-    <!-- 購物車彈窗 (Modal) - 已加大面板尺寸與高度結構 -->
+    <!-- 購物車彈窗 (Modal) -->
     <div id="cartModal" class="branch-modal-overlay hidden" onclick="closeCartModal(event)">
         <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
@@ -1299,12 +1289,12 @@
                     <table class="history-table">
                         <thead>
                             <tr>
-                                <th style="width: 15%; background-color: #eff7ee;">卡號 / 姓名</th>
-                                <th style="width: 12%; background-color: #eff7ee;">部門</th>
-                                <th style="width: 18%; background-color: #eff7ee;">日期時間</th>
-                                <th style="width: 30%; background-color: #eff7ee;">點餐店家 / 內容</th>
-                                <th style="width: 10%; background-color: #eff7ee;">金額</th>
-                                <th style="width: 15%; background-color: #eff7ee;">備註說明</th>
+                                <th style="width: 15%">卡號 / 姓名</th>
+                                <th style="width: 15%">部門</th>
+                                <th style="width: 20%">日期時間</th>
+                                <th style="width: 25%">點餐店家 / 內容</th>
+                                <th style="width: 12%">金額</th>
+                                <th style="width: 13%">備註說明</th>
                             </tr>
                         </thead>
                         <tbody id="history-list">
@@ -1318,7 +1308,7 @@
         </div>
     </div>
 
-    <!-- 曾點過歷史紀錄彈窗 (Modal) - 已加大面板尺寸 -->
+    <!-- 曾點過歷史紀錄彈窗 (Modal) -->
     <div id="historyModal" class="branch-modal-overlay hidden" onclick="closeHistoryModal(event)">
         <div class="branch-modal-content history-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
