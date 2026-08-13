@@ -809,7 +809,6 @@
                 <div class="nidin-top-right">
                     <div class="nidin-user-info">
                         <span>目前登入：</span>
-                        <!-- 💡 新增：部門標籤顯示區 -->
                         <span id="user-department" class="dept-badge">未劃分</span>
                         <span id="user-name" style="color: #0091ff;"></span>
                         <span id="offline-tag" style="color: #ff4d4f; display: none;">(離線)</span>
@@ -1280,7 +1279,7 @@
                         <thead>
                             <tr>
                                 <th style="width: 15%">卡號 / 姓名</th>
-                                <th style="width: 15%">部門</th> <!-- 💡 新增：部門欄位 -->
+                                <th style="width: 15%">部門</th>
                                 <th style="width: 20%">日期時間</th>
                                 <th style="width: 25%">點餐店家 / 內容</th>
                                 <th style="width: 12%">金額</th>
@@ -1316,7 +1315,7 @@
                         <thead>
                             <tr>
                                 <th style="width: 15%; background-color: #eff7ee;">卡號 / 姓名</th>
-                                <th style="width: 15%; background-color: #eff7ee;">部門</th> <!-- 💡 新增：部門欄位 -->
+                                <th style="width: 15%; background-color: #eff7ee;">部門</th>
                                 <th style="width: 20%; background-color: #eff7ee;">日期時間</th>
                                 <th style="width: 25%; background-color: #eff7ee;">點餐店家 / 內容</th>
                                 <th style="width: 12%; background-color: #eff7ee;">金額</th>
@@ -1389,7 +1388,6 @@
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
-            // 💡 頁面初始化時，先載入員工對照表
             await fetchEmployeeList();
 
             const savedCardId = localStorage.getItem('currentCardId');
@@ -1414,7 +1412,7 @@
             }
         });
 
-        // 💡 獲取員工清單 API (包含部門欄位)
+        // 獲取員工清單 API (包含部門欄位)
         async function fetchEmployeeList() {
             try {
                 const response = await fetch('/api/employees');
@@ -1588,7 +1586,6 @@
                 
                 const data = await response.json();
                 if (data.success) {
-                    // 💡 如果尚未取得員工表，重新讀取一次
                     if (!globalEmployeesMap || !globalEmployeesMap[cardId]) {
                         await fetchEmployeeList();
                     }
@@ -1632,7 +1629,6 @@
 
         function navigateToAdmin() { window.location.href = 'admin.html'; }
 
-        // 💡 擴充顯示邏輯：帶入 department
         function showOrderSection(cardId, empName, department, isOffline = false) {
             loggedInCardId = cardId; 
             const userDept = department || (globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : '未劃分');
@@ -1647,7 +1643,6 @@
                 userNameEl.textContent = empName || cardId;
             }
 
-            // 💡 更新頂部部門標籤
             const userDeptEl = document.getElementById('user-department');
             if (userDeptEl) {
                 userDeptEl.textContent = userDept;
@@ -1806,7 +1801,6 @@
                 return;
             }
 
-            // 💡 取得當前部門
             const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
 
             historyList.innerHTML = todayOrders.map(order => {
@@ -1856,7 +1850,6 @@
 
                 userOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
 
-                // 💡 取得對應部門
                 const userDept = globalEmployeesMap[targetCardId] ? globalEmployeesMap[targetCardId].department : '未劃分';
 
                 globalHistoryList.innerHTML = '';
@@ -1866,7 +1859,6 @@
                     const tdUser = document.createElement('td');
                     tdUser.textContent = `${order.cardId || ''} ${order.empName || order.name || ''}`;
 
-                    // 💡 動態新增部門欄位
                     const tdDept = document.createElement('td');
                     tdDept.innerHTML = `<span class="dept-badge">${userDept}</span>`;
                     
