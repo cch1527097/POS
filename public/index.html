@@ -598,6 +598,21 @@
             max-width: 850px !important;
         }
 
+        /* 加大歷史點餐軌跡彈窗的寬度與高度規格 */
+        .history-modal-content {
+            width: 92vw !important;
+            max-width: 1300px !important;
+            max-height: 85vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .history-modal-body {
+            padding: 24px !important;
+            overflow-y: auto !important;
+            flex: 1 !important;
+        }
+
         @keyframes modalFadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -758,6 +773,7 @@
             .title { font-size: 28px; margin-bottom: 40px; }
             .input-group input { width: 240px; max-width: 85%; font-size: 22px; }
             .clear-local-btn { width: 100%; justify-content: center; }
+            .history-modal-content { width: 95vw !important; }
         }
     </style>
 </head>
@@ -1297,16 +1313,16 @@
         </div>
     </div>
 
-    <!-- 曾點過歷史紀錄彈窗 (Modal) -->
+    <!-- 曾點過歷史紀錄彈窗 (Modal) - 已加大面板尺寸 -->
     <div id="historyModal" class="branch-modal-overlay hidden" onclick="closeHistoryModal(event)">
-        <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
+        <div class="branch-modal-content history-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
                 <h3 style="display: flex; align-items: center; gap: 8px;">
                     🗄️ 曾點過歷史點餐軌跡 (歷年完整紀錄)
                 </h3>
                 <span class="close-btn" onclick="closeHistoryModal()">&times;</span>
             </div>
-            <div style="padding: 20px; max-height: 500px; overflow-y: auto;">
+            <div class="history-modal-body">
                 <div style="margin-bottom: 12px; font-size: 13px; color: #668062; font-weight: bold; text-align: right;">
                     資料來源：orders.json 資料庫
                 </div>
@@ -1315,11 +1331,11 @@
                         <thead>
                             <tr>
                                 <th style="width: 15%; background-color: #eff7ee;">卡號 / 姓名</th>
-                                <th style="width: 15%; background-color: #eff7ee;">部門</th>
-                                <th style="width: 20%; background-color: #eff7ee;">日期時間</th>
-                                <th style="width: 25%; background-color: #eff7ee;">點餐店家 / 內容</th>
-                                <th style="width: 12%; background-color: #eff7ee;">金額</th>
-                                <th style="width: 13%; background-color: #eff7ee;">備註說明</th>
+                                <th style="width: 12%; background-color: #eff7ee;">部門</th>
+                                <th style="width: 18%; background-color: #eff7ee;">日期時間</th>
+                                <th style="width: 30%; background-color: #eff7ee;">點餐店家 / 內容</th>
+                                <th style="width: 10%; background-color: #eff7ee;">金額</th>
+                                <th style="width: 15%; background-color: #eff7ee;">備註說明</th>
                             </tr>
                         </thead>
                         <tbody id="global-history-list">
