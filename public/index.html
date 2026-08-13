@@ -1613,7 +1613,7 @@
                     showOrderSection(cardId, data.empName || cardId, dept, false);
                 } else {
                     // 驗證失敗：將錯誤訊息寫入輸入框之 CustomValidity，並彈出原生氣泡
-                    cardInput.setCustomValidity(`❌ ${data.message || '無此卡號'}`);
+                    cardInput.setCustomValidity(`${data.message || '無此卡號'}`);
                     cardInput.reportValidity();
                     if (loginBtn) loginBtn.disabled = false;
                     isSubmitting = false;
