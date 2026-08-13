@@ -138,6 +138,12 @@
     color: #0091ff;
 }
 
+#user-dept {
+    color: #2b4c23;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
 /* 第二層：導覽選單 */
 .nidin-nav-bar {
     max-width: 1200px;
@@ -801,8 +807,10 @@
 
                 <div class="nidin-top-right">
                     <div class="nidin-user-info">
+                        <span>部門：</span>
+                        <span id="user-dept"></span>
                         <span>目前登入員工：</span>
-                        <span id="user-name" style="color: #0091ff;"></span>
+                        <span id="user-name"></span>
                         <span id="offline-tag" style="color: #ff4d4f; display: none;">(離線)</span>
                     </div>
                 </div>
@@ -1379,10 +1387,11 @@
         window.addEventListener('DOMContentLoaded', () => {
             const savedCardId = localStorage.getItem('currentCardId');
             const savedEmpName = localStorage.getItem('currentEmpName');
+            const savedDept = localStorage.getItem('currentDept');
             const savedOffline = localStorage.getItem('isOfflineMode') === 'true';
             
             if (savedCardId) {
-                showOrderSection(savedCardId, savedEmpName, savedOffline);
+                showOrderSection(savedCardId, savedEmpName, savedOffline, savedDept);
             }
 
             const cardInput = document.getElementById('cardId');
@@ -1560,7 +1569,7 @@
                 
                 const data = await response.json();
                 if (data.success) {
-                    showOrderSection(cardId, data.empName || cardId, false);
+                    showOrderSection(cardId, data.empName || cardId, false, data.dept || data.department || '');
                 } else {
                     if (msgDisplay) msgDisplay.innerText = `❌ ${data.message || '無此卡號'}`;
                     if (loginBtn) loginBtn.disabled = false;
@@ -1570,7 +1579,7 @@
                 if (msgDisplay) msgDisplay.innerText = '';
                 if (loginBtn) loginBtn.disabled = false;
                 isSubmitting = false;
-                showOrderSection(cardId, cardId, true);
+                showOrderSection(cardId, cardId, true, '');
             }
         }
 
@@ -1582,7 +1591,8 @@
             }
             
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
-            const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}`;
+            const deptName = localStorage.getItem('currentDept') || '';
+            const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}&dept=${encodeURIComponent(deptName)}`;
             window.location.href = targetUrl;
         }
 
@@ -1596,16 +1606,23 @@
 
         function navigateToAdmin() { window.location.href = 'admin.html'; }
 
-        function showOrderSection(cardId, empName, isOffline = false) {
+        function showOrderSection(cardId, empName, isOffline = false, deptName = '') {
             loggedInCardId = cardId; 
+            const savedDept = deptName || localStorage.getItem('currentDept') || '';
             
             localStorage.setItem('currentCardId', cardId);
             localStorage.setItem('currentEmpName', empName || cardId);
+            localStorage.setItem('currentDept', savedDept);
             localStorage.setItem('isOfflineMode', isOffline ? 'true' : 'false');
 
             const userNameEl = document.getElementById('user-name');
             if (userNameEl) {
                 userNameEl.textContent = empName || cardId;
+            }
+
+            const userDeptEl = document.getElementById('user-dept');
+            if (userDeptEl) {
+                userDeptEl.textContent = savedDept;
             }
 
             document.getElementById('offline-tag').style.display = isOffline ? 'inline' : 'none';
@@ -1625,8 +1642,12 @@
             
             localStorage.removeItem('currentCardId');
             localStorage.removeItem('currentEmpName');
+            localStorage.removeItem('currentDept');
             localStorage.removeItem('isOfflineMode');
             document.getElementById('user-name').innerText = ''; 
+            
+            const userDeptEl = document.getElementById('user-dept');
+            if (userDeptEl) { userDeptEl.innerText = ''; }
             
             const loginBtn = document.getElementById('submit-login-btn');
             if (loginBtn) { loginBtn.disabled = false; }
