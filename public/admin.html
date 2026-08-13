@@ -266,7 +266,7 @@
                 if(!password) passInput.classList.add('input-error');
                 
                 loginBtn.classList.add('btn-msg');
-                loginBtn.innerText = '❌ 請完整輸入帳密！';
+                loginBtn.innerText = '請完整輸入帳密！';
                 setTimeout(() => {
                     loginBtn.classList.remove('btn-msg');
                     loginBtn.innerText = '登入';
@@ -311,7 +311,7 @@
 
                 // 本地預設測試帳密驗證
                 if (validAdmins[username] && validAdmins[username].includes(password)) {
-                    loginBtn.innerText = '🎉 認證成功！';
+                    loginBtn.innerText = '認證成功！';
                     
                     setTimeout(() => {
                         window.location.href = 'admin-dashboard.html';
@@ -330,18 +330,18 @@
                     const data = await response.json();
 
                     if (response.ok && data.success) {
-                        loginBtn.innerText = '🎉 認證成功！';
+                        loginBtn.innerText = '認證成功！';
                         
                         setTimeout(() => {
                             window.location.href = 'admin-dashboard.html';
                         }, 600);
                         return; 
                     } else {
-                        showLoginError('❌ ' + (data.message || '帳號或密碼錯誤！'));
+                        showLoginError(data.message || '帳號或密碼錯誤！');
                         return;
                     }
                 } catch (error) {
-                    showLoginError('❌ 帳號或密碼錯誤！');
+                    showLoginError('帳號或密碼錯誤！');
                     return;
                 }
 
