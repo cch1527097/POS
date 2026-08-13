@@ -309,8 +309,6 @@
 
         .login-admin-link:hover { color: #2b4c23; transform: scale(1.02); }
 
-        .error-msg { font-size: 16px; margin-top: 15px; height: 20px; font-weight: bold; color: #a01010; text-align: center; }
-
         /* ==================== 2. 點餐畫面區塊 ==================== */
         .order-container {
             width: 100%;
@@ -785,7 +783,6 @@
 
         <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入</button>
         <button class="login-admin-link" onclick="navigateToAdmin()">⚙️ 後台管理系統 ➔</button>
-        <div id="msg-display" class="error-msg"></div>
     </div>
 
     <!-- 2. 點餐主畫面區塊 -->
@@ -1415,6 +1412,10 @@
 
             const cardInput = document.getElementById('cardId');
             if (cardInput) {
+                // 輸入時即時清空自訂提示
+                cardInput.addEventListener('input', () => {
+                    cardInput.setCustomValidity('');
+                });
                 cardInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') executeLogin();
                 });
@@ -1573,18 +1574,21 @@
             if (isSubmitting) return;
             
             const cardInput = document.getElementById('cardId');
-            const msgDisplay = document.getElementById('msg-display');
             const loginBtn = document.getElementById('submit-login-btn');
             
-            // 修改處：未輸入卡號時，呼叫 browser 原生 reportValidity 氣泡提示，不顯示在下方
-            if (!cardInput || !cardInput.value.trim()) {
-                if (cardInput) cardInput.reportValidity();
+            if (!cardInput) return;
+
+            // 清空先前的自訂錯誤
+            cardInput.setCustomValidity('');
+
+            // 未輸入卡號，觸發預設「請填寫這個欄位」氣泡提示
+            if (!cardInput.value.trim()) {
+                cardInput.reportValidity();
                 return;
             }
 
             const cardId = cardInput.value.trim();
             isSubmitting = true;
-            if (msgDisplay) msgDisplay.innerText = '驗證中...';
             if (loginBtn) loginBtn.disabled = true;
 
             try {
@@ -1608,12 +1612,13 @@
                     
                     showOrderSection(cardId, data.empName || cardId, dept, false);
                 } else {
-                    if (msgDisplay) msgDisplay.innerText = `❌ ${data.message || '無此卡號'}`;
+                    // 驗證失敗：將錯誤訊息寫入輸入框之 CustomValidity，並彈出原生氣泡
+                    cardInput.setCustomValidity(`❌ ${data.message || '無此卡號'}`);
+                    cardInput.reportValidity();
                     if (loginBtn) loginBtn.disabled = false;
                     isSubmitting = false;
                 }
             } catch (error) {
-                if (msgDisplay) msgDisplay.innerText = '';
                 if (loginBtn) loginBtn.disabled = false;
                 isSubmitting = false;
                 
@@ -1689,9 +1694,12 @@
             if (loginBtn) { loginBtn.disabled = false; }
             
             const cardInput = document.getElementById('cardId');
-            if (cardInput) { cardInput.value = ''; cardInput.disabled = false; }
+            if (cardInput) { 
+                cardInput.value = ''; 
+                cardInput.disabled = false; 
+                cardInput.setCustomValidity(''); 
+            }
             
-            document.getElementById('msg-display').innerText = ''; 
             document.getElementById('offline-tag').style.display = 'none';
             document.getElementById('order-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
