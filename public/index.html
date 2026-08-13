@@ -1284,11 +1284,11 @@
         </div>
     </div>
 
-    <!-- 購物車彈窗 (Modal) - 已加大面板尺寸與高度結構 -->
+    <!-- 購物車彈窗 (Modal) - 已套用與歷史點餐相同的加大面板尺寸與風格 -->
     <div id="cartModal" class="branch-modal-overlay hidden" onclick="closeCartModal(event)">
         <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
-                <h3>📋 我的購物車 (今日點餐)</h3>
+                <h3 style="display: flex; align-items: center; gap: 8px;">📋 我的購物車 (今日點餐)</h3>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
                     <span class="close-btn" onclick="closeCartModal()">&times;</span>
@@ -1299,12 +1299,12 @@
                     <table class="history-table">
                         <thead>
                             <tr>
-                                <th style="width: 15%">卡號 / 姓名</th>
-                                <th style="width: 15%">部門</th>
-                                <th style="width: 20%">日期時間</th>
-                                <th style="width: 25%">點餐店家 / 內容</th>
-                                <th style="width: 12%">金額</th>
-                                <th style="width: 13%">備註說明</th>
+                                <th style="width: 15%; background-color: #eff7ee;">卡號 / 姓名</th>
+                                <th style="width: 12%; background-color: #eff7ee;">部門</th>
+                                <th style="width: 18%; background-color: #eff7ee;">日期時間</th>
+                                <th style="width: 30%; background-color: #eff7ee;">點餐店家 / 內容</th>
+                                <th style="width: 10%; background-color: #eff7ee;">金額</th>
+                                <th style="width: 15%; background-color: #eff7ee;">備註說明</th>
                             </tr>
                         </thead>
                         <tbody id="history-list">
