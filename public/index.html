@@ -594,8 +594,13 @@
             animation: modalFadeIn 0.25s ease-out;
         }
 
+        /* 修改：讓購物車彈窗與歷史點餐軌跡保持相同的加大寬度與高彈性佈局 */
         .cart-modal-content {
-            max-width: 850px !important;
+            width: 92vw !important;
+            max-width: 1300px !important;
+            max-height: 85vh !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
 
         /* 加大歷史點餐軌跡彈窗的寬度與高度規格 */
@@ -773,7 +778,7 @@
             .title { font-size: 28px; margin-bottom: 40px; }
             .input-group input { width: 240px; max-width: 85%; font-size: 22px; }
             .clear-local-btn { width: 100%; justify-content: center; }
-            .history-modal-content { width: 95vw !important; }
+            .history-modal-content, .cart-modal-content { width: 95vw !important; }
         }
     </style>
 </head>
@@ -1279,7 +1284,7 @@
         </div>
     </div>
 
-    <!-- 購物車彈窗 (Modal) -->
+    <!-- 購物車彈窗 (Modal) - 已加大面板尺寸與高度結構 -->
     <div id="cartModal" class="branch-modal-overlay hidden" onclick="closeCartModal(event)">
         <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
@@ -1289,7 +1294,7 @@
                     <span class="close-btn" onclick="closeCartModal()">&times;</span>
                 </div>
             </div>
-            <div style="padding: 20px; max-height: 450px; overflow-y: auto;">
+            <div class="history-modal-body">
                 <div class="history-table-wrapper">
                     <table class="history-table">
                         <thead>
