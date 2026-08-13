@@ -774,8 +774,8 @@
 </head>
 <body class="login-mode">
 
-    <!-- 1. 登入畫面區塊 -->
-    <div id="login-section" class="login-card">
+    <!-- 1. 登入畫面區塊 (預設加入 hidden 防閃爍) -->
+    <div id="login-section" class="login-card hidden">
         <img src="logo.gif" alt="系統Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
          
@@ -1399,16 +1399,19 @@
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
-            await fetchEmployeeList();
-
             const savedCardId = localStorage.getItem('currentCardId');
             const savedEmpName = localStorage.getItem('currentEmpName');
             const savedDept = localStorage.getItem('currentDepartment');
             const savedOffline = localStorage.getItem('isOfflineMode') === 'true';
             
+            // 判斷登入狀態，直接顯現對應視圖，避免先顯示登入頁產生的閃爍問題
             if (savedCardId) {
                 showOrderSection(savedCardId, savedEmpName, savedDept, savedOffline);
+            } else {
+                showLoginSection();
             }
+
+            await fetchEmployeeList();
 
             const cardInput = document.getElementById('cardId');
             if (cardInput) {
