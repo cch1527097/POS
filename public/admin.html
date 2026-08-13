@@ -129,16 +129,21 @@
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 24px;
-            padding: 10px 0;
+            font-size: 22px;
+            padding: 10px 10px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
             font-weight: bold;
             margin-top: 15px;
             width: 100%;
-            max-width: 200px; /* 寬度同步 index.html 的按鈕配比 */
+            max-width: 220px; /* 稍微微調寬度容納提示文字 */
             white-space: nowrap; 
+        }
+
+        /* 當顯示錯誤或訊息時的按鈕字級調整 */
+        .login-btn.btn-msg {
+            font-size: 16px;
         }
 
         .login-btn:hover:not(:disabled) { background-color: #93c48c; transform: scale(1.03); }
@@ -183,8 +188,11 @@
             .toggle-password { right: 4px; bottom: 8px; font-size: 18px; }
             
             .login-btn {
-                font-size: 20px;
+                font-size: 18px;
                 max-width: 85%; 
+            }
+            .login-btn.btn-msg {
+                font-size: 14px;
             }
             .login-admin-link { font-size: 15px; margin-top: 20px; }
         }
@@ -252,10 +260,17 @@
             const username = userInput.value.trim();
             const password = passInput.value;
 
+            // 帳密未完整輸入時的處理
             if (!username || !password) {
                 if(!username) userInput.classList.add('input-error');
                 if(!password) passInput.classList.add('input-error');
-                alert('❌ 請完整輸入帳號與密碼！');
+                
+                loginBtn.classList.add('btn-msg');
+                loginBtn.innerText = '❌ 請完整輸入帳密！';
+                setTimeout(() => {
+                    loginBtn.classList.remove('btn-msg');
+                    loginBtn.innerText = '登入';
+                }, 2000);
                 return;
             }
 
@@ -263,21 +278,30 @@
             loginBtn.disabled = true;
             userInput.disabled = true;
             passInput.disabled = true;
+            loginBtn.classList.add('btn-msg');
             loginBtn.innerText = '⏳ 認證中...';
 
-            function resetInputs(focusOnPassword = true) {
-                isSubmitting = false;
-                loginBtn.disabled = false;
-                userInput.disabled = false;
-                passInput.disabled = false;
-                loginBtn.innerText = '登入';
+            // 顯示錯誤訊息並自動還原
+            function showLoginError(msg) {
+                userInput.classList.add('input-error');
+                passInput.classList.add('input-error');
                 
-                if (focusOnPassword) {
+                loginBtn.classList.add('btn-msg');
+                loginBtn.innerText = msg;
+                
+                setTimeout(() => {
+                    isSubmitting = false;
+                    loginBtn.disabled = false;
+                    userInput.disabled = false;
+                    passInput.disabled = false;
+                    loginBtn.classList.remove('btn-msg');
+                    loginBtn.innerText = '登入';
+                    
                     passInput.value = '';
                     passInput.type = 'password';
                     document.getElementById('eye-icon').textContent = '🔐';
                     passInput.focus();
-                }
+                }, 2000);
             }
 
             setTimeout(async () => {
@@ -313,17 +337,11 @@
                         }, 600);
                         return; 
                     } else {
-                        userInput.classList.add('input-error');
-                        passInput.classList.add('input-error');
-                        resetInputs(true);
-                        alert('❌ ' + (data.message || '帳號或密碼錯誤！'));
+                        showLoginError('❌ ' + (data.message || '帳號或密碼錯誤！'));
                         return;
                     }
                 } catch (error) {
-                    userInput.classList.add('input-error');
-                    passInput.classList.add('input-error');
-                    resetInputs(true);
-                    alert('❌ 帳號或密碼錯誤！（網路認證失敗）');
+                    showLoginError('❌ 帳號或密碼錯誤！');
                     return;
                 }
 
