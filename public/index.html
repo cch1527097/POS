@@ -223,7 +223,7 @@
             stroke: #0091ff;
         }
 
-        /* ==================== 1. 登入畫面區塊 ==================== */
+        /* ==================== 1. 登入畫面區塊 (同步 Admin 樣式) ==================== */
         .login-card {
             background-color: #ffffff; 
             border-radius: 60px;       
@@ -243,6 +243,7 @@
             height: auto;
             margin-bottom: 25px;
             object-fit: contain;
+            flex-shrink: 0;
         }
 
         .title {
@@ -250,13 +251,24 @@
             color: #2b4c23; 
             font-weight: bold;
             letter-spacing: 2px;
-            margin-bottom: 60px; 
+            margin-bottom: 5px; 
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #7ba370;
+            font-weight: bold;
+            letter-spacing: 4px;
+            margin-bottom: 50px;
+            text-transform: uppercase;
+            text-align: center;
         }
 
         .input-group {
             display: flex;
             align-items: center;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             width: 100%;
             justify-content: center;
         }
@@ -265,12 +277,17 @@
             background: transparent;
             border: none;
             border-bottom: 2px solid #e0e0e0; 
-            font-size: 26px;
+            font-size: 24px;
             width: 260px;
             text-align: center;
             outline: none;
             padding-bottom: 8px;
             color: #2b4c23;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-bottom-color: #4e803c;
         }
 
         .input-group input::placeholder {
@@ -283,12 +300,13 @@
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 24px;
+            font-size: 22px;
             padding: 10px 65px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
             font-weight: bold;
+            margin-top: 10px;
         }
 
         .login-btn:hover:not(:disabled) { background-color: #93c48c; transform: scale(1.03); }
@@ -305,6 +323,7 @@
             cursor: pointer;
             transition: color 0.2s, transform 0.2s;
             text-decoration: none;
+            text-align: center;
         }
 
         .login-admin-link:hover { color: #2b4c23; transform: scale(1.02); }
@@ -763,7 +782,8 @@
 
         @media (max-width: 480px) {
             .login-card { width: 90%; height: auto; padding: 40px 20px; border-radius: 35px; }
-            .title { font-size: 28px; margin-bottom: 40px; }
+            .title { font-size: 28px; margin-bottom: 2px; }
+            .subtitle { font-size: 12px; margin-bottom: 30px; letter-spacing: 2px; }
             .input-group input { width: 240px; max-width: 85%; font-size: 22px; }
             .clear-local-btn { width: 100%; justify-content: center; }
             .history-modal-content, .cart-modal-content { width: 95vw !important; }
@@ -776,6 +796,7 @@
     <div id="login-section" class="login-card hidden">
         <img src="logo.gif" alt="系統Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
+        <div class="subtitle">ORDERING SYSTEM</div>
          
         <div class="input-group">
             <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required inputmode="text" onclick="this.select()">
