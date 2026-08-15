@@ -503,14 +503,14 @@
             </div>
         </div>
 
-        <!-- 分頁二：喝涼涼專區 -->
+        <!-- 分頁二：喝涼涼專區 (歷史紀錄) -->
         <div id="drink-mgr" class="tab-content">
             <div class="header">
-                <h1>🥤 喝涼涼 - 飲料專區</h1>
-                <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('today', 'drink')">📥 匯出飲料 CSV 表格</button>
+                <h1>🥤 喝涼涼 - 飲料歷史紀錄</h1>
+                <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('history', 'drink')">📥 匯出歷史飲料 CSV 表格</button>
             </div>
             <div class="card">
-                <h3>即時飲料訂單處理區</h3>
+                <h3>完整歷史飲料訂單紀錄</h3>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -533,14 +533,14 @@
             </div>
         </div>
 
-        <!-- 分頁三：美味餐點專區 -->
+        <!-- 分頁三：美味餐點專區 (歷史紀錄) -->
         <div id="food-mgr" class="tab-content">
             <div class="header">
-                <h1>🍱 美味餐點 - 正餐專區</h1>
-                <button class="btn btn-excel-food" onclick="exportCategoryToCSV('today', 'food')">📥 匯出正餐 CSV 表格</button>
+                <h1>🍱 美味餐點 - 正餐歷史紀錄</h1>
+                <button class="btn btn-excel-food" onclick="exportCategoryToCSV('history', 'food')">📥 匯出歷史正餐 CSV 表格</button>
             </div>
             <div class="card">
-                <h3>即時餐點訂單處理區</h3>
+                <h3>完整歷史餐點訂單紀錄</h3>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -733,9 +733,9 @@
             document.getElementById(tabId).classList.add('active');
             menuItem.classList.add('active');
 
-            if(tabId === 'history-mgr') {
+            if(tabId === 'history-mgr' || tabId === 'drink-mgr' || tabId === 'food-mgr') {
                 loadHistoryOrders();
-            } else if (tabId === 'overview' || tabId === 'drink-mgr' || tabId === 'food-mgr') {
+            } else if (tabId === 'overview') {
                 loadOrders();
             } else if (tabId === 'employee-mgr') {
                 loadEmployees();
@@ -744,8 +744,8 @@
 
         function refreshCurrentTab() {
             const activeTab = document.querySelector('.tab-content.active');
-            if (activeTab.id === 'overview' || activeTab.id === 'drink-mgr' || activeTab.id === 'food-mgr') loadOrders();
-            else if (activeTab.id === 'history-mgr') loadHistoryOrders();
+            if (activeTab.id === 'overview') loadOrders();
+            else if (activeTab.id === 'history-mgr' || activeTab.id === 'drink-mgr' || activeTab.id === 'food-mgr') loadHistoryOrders();
             else if (activeTab.id === 'employee-mgr') loadEmployees();
         }
 
@@ -878,9 +878,7 @@
 
                 if (response.ok) {
                     await loadOrders(); 
-                    if (document.getElementById('history-mgr').classList.contains('active')) {
-                        await loadHistoryOrders();
-                    }
+                    await loadHistoryOrders();
                     showCustomModal({ message: `員工卡號 ${cardId} 的繳費狀態已更新！` });
                 } else {
                     const result = await response.json();
@@ -995,13 +993,6 @@
                 } else {
                     executeFilter('', 'today');
                 }
-
-                // 渲染獨立頁籤 (喝涼涼專區 & 美味餐點專區)
-                const drinkOrders = currentTodayOrders.filter(o => isDrinkOrder(o));
-                const foodOrders = currentTodayOrders.filter(o => !isDrinkOrder(o));
-                
-                renderOrderTable(drinkOrders, 'drinkTableBody', false, true);
-                renderOrderTable(foodOrders, 'foodTableBody', false, true);
                 
                 if(statusSpan) statusSpan.innerText = `最後更新：${new Date().toLocaleTimeString('zh-TW', {hour12:false})}`;
 
@@ -1029,6 +1020,13 @@
                 } else {
                     renderOrderTable(allHistoryOrders, 'historyTableBody', true, false);
                 }
+
+                // 同時更新「喝涼涼」與「美味餐點」的歷史紀錄
+                const drinkHistoryOrders = allHistoryOrders.filter(o => isDrinkOrder(o));
+                const foodHistoryOrders = allHistoryOrders.filter(o => !isDrinkOrder(o));
+                
+                renderOrderTable(drinkHistoryOrders, 'drinkTableBody', true, true);
+                renderOrderTable(foodHistoryOrders, 'foodTableBody', true, true);
 
                 if(hStatusSpan) hStatusSpan.innerText = `歷史最後更新：${new Date().toLocaleTimeString('zh-TW', {hour12:false})}`;
             } catch (error) {
@@ -1293,6 +1291,7 @@
         window.onload = async function() {
             await loadEmployees();
             await loadOrders();
+            await loadHistoryOrders();
             setInterval(loadOrders, 30000);
         };
     </script>
