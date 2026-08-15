@@ -10,7 +10,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #bcdcb4; /* 與 index.html 完全一致的淡綠色大背景 */
+            background-color: #bcdcb4;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -19,22 +19,20 @@
             overflow-x: hidden;
         }
 
-        /* ==================== 完美同步 index.html 規格的登入卡片 ==================== */
         .login-card {
             background-color: #ffffff; 
-            border-radius: 60px;       /* 相同的超大圓角 */  
-            width: 450px;              /* 完美同步 index.html 寬度 */
-            height: 620px;             /* 完美同步 index.html 高度 */
+            border-radius: 60px;
+            width: 450px;
+            height: 620px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-            padding: 40px;             /* 相同內邊距 */
+            padding: 40px;
             position: relative;
         }
 
-        /* Logo 圖片樣式，完美與點餐首頁同步 */
         .login-logo {
             width: 80px;
             height: auto;
@@ -45,10 +43,10 @@
 
         .title {
             font-size: 36px;
-            color: #2b4c23; /* 深綠色文字 */
+            color: #2b4c23;
             font-weight: bold;
             letter-spacing: 2px;
-            margin-bottom: 5px; /* 為副標留出微調空間 */
+            margin-bottom: 5px;
             text-align: center;
         }
 
@@ -57,7 +55,7 @@
             color: #7ba370;
             font-weight: bold;
             letter-spacing: 4px;
-            margin-bottom: 50px; /* 拉開與輸入框的整體比例 */
+            margin-bottom: 50px;
             text-transform: uppercase;
             text-align: center;
         }
@@ -65,18 +63,17 @@
         .login-form {
             display: flex;
             align-items: center;
-            margin-bottom: 40px; /* 與 index.html 下方區塊間距對齊 */
+            margin-bottom: 40px;
             width: 100%;
             justify-content: center;
             flex-direction: column;
             gap: 20px;
         }
 
-        /* 包裹輸入框的容器 */
         .input-wrapper {
             position: relative;
             width: 100%;
-            max-width: 260px; /* 完美對齊輸入框寬度 */
+            max-width: 260px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -85,8 +82,8 @@
         .login-form input {
             background: transparent;
             border: none;
-            border-bottom: 2px solid #e0e0e0; /* 淡色下底線 */
-            font-size: 24px; /* 調近 index.html 的 26px 視覺感 */
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 24px;
             width: 100%;
             text-align: center;
             outline: none;
@@ -110,7 +107,6 @@
             font-weight: normal;
         }
 
-        /* 自訂鎖頭切換按鈕的絕對定位 */
         .toggle-password {
             position: absolute;
             right: 5px;
@@ -123,9 +119,8 @@
             line-height: 1;
         }
 
-        /* ==================== 完美同步 index.html 的粉綠色按鈕 ==================== */
         .login-btn {
-            background-color: #a4d49d; /* 完全同步 index.html 的粉綠色 */
+            background-color: #a4d49d;
             color: white;
             border: none;
             border-radius: 12px;
@@ -137,11 +132,10 @@
             font-weight: bold;
             margin-top: 15px;
             width: 100%;
-            max-width: 220px; /* 稍微微調寬度容納提示文字 */
+            max-width: 220px;
             white-space: nowrap; 
         }
 
-        /* 當顯示錯誤或訊息時的按鈕字級調整 */
         .login-btn.btn-msg {
             font-size: 16px;
         }
@@ -167,11 +161,8 @@
             transform: scale(1.02);
         }
 
-        /* ==================== 手機版 RWD 適應 ==================== */
         @media (max-width: 480px) {
-            body {
-                padding: 10px;
-            }
+            body { padding: 10px; }
             .login-card {
                 width: 90%;
                 height: auto;
@@ -181,19 +172,11 @@
             .title { font-size: 28px; }
             .subtitle { margin-bottom: 30px; font-size: 13px; letter-spacing: 3px; }
             .login-form { margin-bottom: 25px; }
-            
             .input-wrapper { max-width: 85%; } 
             .login-form input { font-size: 20px; padding-left: 30px; padding-right: 30px; }
-            
             .toggle-password { right: 4px; bottom: 8px; font-size: 18px; }
-            
-            .login-btn {
-                font-size: 18px;
-                max-width: 85%; 
-            }
-            .login-btn.btn-msg {
-                font-size: 14px;
-            }
+            .login-btn { font-size: 18px; max-width: 85%; }
+            .login-btn.btn-msg { font-size: 14px; }
             .login-admin-link { font-size: 15px; margin-top: 20px; }
         }
 
@@ -246,118 +229,116 @@
             }
         }
 
-        // 1. 建立管理員卡號與姓名對照表
-const ADMIN_NAMES = {
-    '18445': '李珈豪',
-    '11110': '林佳蘭'
-};
-
-async function executeAdminLogin(event) {
-    if (event) event.preventDefault();
-    if (isSubmitting) return;
-
-    const userInput = document.getElementById('adminUser');
-    const passInput = document.getElementById('adminPass');
-    const loginBtn = document.getElementById('submit-login-btn');
-
-    userInput.classList.remove('input-error');
-    passInput.classList.remove('input-error');
-
-    const username = userInput.value.trim();
-    const password = passInput.value;
-
-    if (!username || !password) {
-        if(!username) userInput.classList.add('input-error');
-        if(!password) passInput.classList.add('input-error');
-        
-        loginBtn.classList.add('btn-msg');
-        loginBtn.innerText = '請完整輸入帳密！';
-        setTimeout(() => {
-            loginBtn.classList.remove('btn-msg');
-            loginBtn.innerText = '登入';
-        }, 2000);
-        return;
-    }
-
-    isSubmitting = true;
-    loginBtn.disabled = true;
-    userInput.disabled = true;
-    passInput.disabled = true;
-    loginBtn.classList.add('btn-msg');
-    loginBtn.innerText = '認證中...';
-
-    function showLoginError(msg) {
-        userInput.classList.add('input-error');
-        passInput.classList.add('input-error');
-        
-        loginBtn.classList.add('btn-msg');
-        loginBtn.innerText = msg;
-        
-        setTimeout(() => {
-            isSubmitting = false;
-            loginBtn.disabled = false;
-            userInput.disabled = false;
-            passInput.disabled = false;
-            loginBtn.classList.remove('btn-msg');
-            loginBtn.innerText = '登入';
-            
-            passInput.value = '';
-            passInput.type = 'password';
-            document.getElementById('eye-icon').textContent = '🔐';
-            passInput.focus();
-        }, 2000);
-    }
-
-    setTimeout(async () => {
-        const validAdmins = {
-            '18445': ['zxc456456']
-            '11110': ['12345678']
+        const ADMIN_NAMES = {
+            '18445': '李珈豪',
+            '11110': '林佳蘭'
         };
 
-        // 本地預設測試帳密驗證
-        if (validAdmins[username] && validAdmins[username].includes(password)) {
-            // 取得對應姓名（若無設定則預設顯示「管理員」）
-            const adminName = ADMIN_NAMES[username] || '管理員';
-            localStorage.setItem('currentAdminName', adminName); // 儲存至本地
+        async function executeAdminLogin(event) {
+            if (event) event.preventDefault();
+            if (isSubmitting) return;
 
-            loginBtn.innerText = '認證成功！';
-            setTimeout(() => {
-                window.location.href = 'admin-dashboard.html';
-            }, 600);
-            return; 
-        } 
-        
-        // API 驗證請求
-        try {
-            const response = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
+            const userInput = document.getElementById('adminUser');
+            const passInput = document.getElementById('adminPass');
+            const loginBtn = document.getElementById('submit-login-btn');
 
-            const data = await response.json();
+            userInput.classList.remove('input-error');
+            passInput.classList.remove('input-error');
 
-            if (response.ok && data.success) {
-                // 若後端有回傳姓名則使用後端姓名，否則查表
-                const adminName = data.name || ADMIN_NAMES[username] || '管理員';
-                localStorage.setItem('currentAdminName', adminName);
+            const username = userInput.value.trim();
+            const password = passInput.value;
 
-                loginBtn.innerText = '認證成功！';
+            if (!username || !password) {
+                if(!username) userInput.classList.add('input-error');
+                if(!password) passInput.classList.add('input-error');
+                
+                loginBtn.classList.add('btn-msg');
+                loginBtn.innerText = '請完整輸入帳密！';
                 setTimeout(() => {
-                    window.location.href = 'admin-dashboard.html';
-                }, 600);
-                return; 
-            } else {
-                showLoginError(data.message || '帳號或密碼錯誤！');
+                    loginBtn.classList.remove('btn-msg');
+                    loginBtn.innerText = '登入';
+                }, 2000);
                 return;
             }
-        } catch (error) {
-            showLoginError('帳號或密碼錯誤！');
-            return;
-        }
 
-    }, 600);
-}
+            isSubmitting = true;
+            loginBtn.disabled = true;
+            userInput.disabled = true;
+            passInput.disabled = true;
+            loginBtn.classList.add('btn-msg');
+            loginBtn.innerText = '認證中...';
+
+            function showLoginError(msg) {
+                userInput.classList.add('input-error');
+                passInput.classList.add('input-error');
+                
+                loginBtn.classList.add('btn-msg');
+                loginBtn.innerText = msg;
+                
+                setTimeout(() => {
+                    isSubmitting = false;
+                    loginBtn.disabled = false;
+                    userInput.disabled = false;
+                    passInput.disabled = false;
+                    loginBtn.classList.remove('btn-msg');
+                    loginBtn.innerText = '登入';
+                    
+                    passInput.value = '';
+                    passInput.type = 'password';
+                    document.getElementById('eye-icon').textContent = '🔐';
+                    passInput.focus();
+                }, 2000);
+            }
+
+            setTimeout(async () => {
+                // 已更新帳號密碼設定
+                const validAdmins = {
+                    '18445': ['zxc456456'],
+                    '11110': ['12345678']
+                };
+
+                // 本地預設測試帳密驗證
+                if (validAdmins[username] && validAdmins[username].includes(password)) {
+                    const adminName = ADMIN_NAMES[username] || '管理員';
+                    localStorage.setItem('currentAdminName', adminName);
+
+                    loginBtn.innerText = '認證成功！';
+                    setTimeout(() => {
+                        window.location.href = 'admin-dashboard.html';
+                    }, 600);
+                    return; 
+                } 
+                
+                // API 驗證請求
+                try {
+                    const response = await fetch('/api/admin/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        const adminName = data.name || ADMIN_NAMES[username] || '管理員';
+                        localStorage.setItem('currentAdminName', adminName);
+
+                        loginBtn.innerText = '認證成功！';
+                        setTimeout(() => {
+                            window.location.href = 'admin-dashboard.html';
+                        }, 600);
+                        return; 
+                    } else {
+                        showLoginError(data.message || '帳號或密碼錯誤！');
+                        return;
+                    }
+                } catch (error) {
+                    showLoginError('帳號或密碼錯誤！');
+                    return;
+                }
+
+            }, 600);
+        }
     </script>
 </body>
 </html>
