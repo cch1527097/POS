@@ -1010,8 +1010,11 @@ function submitOrderToServer() {
         btn.disabled = true;
         btn.innerText = "訂單傳送中...";
 
+        // 💡 修正處：帶上 category 與 type，後台即可精準分類
         const payload = {
             cardId: currentCardId,
+            category: "drink",
+            type: "drink",
             meal: orderMealSummary,
             total: finalTotal,
             diningType: "",
