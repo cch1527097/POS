@@ -8,7 +8,7 @@
         /* ==================== 全局與基礎樣式 ==================== */
         * { 
             box-sizing: border-box; 
-            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif; 
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
         }
         
         body {
@@ -74,6 +74,7 @@
             align-items: center;
             white-space: nowrap;
             user-select: none;
+            cursor: pointer;
         }
         .nidin-logo .dot {
             color: #ff4d4f;
@@ -223,7 +224,7 @@
             stroke: #0091ff;
         }
 
-        /* ==================== 1. 登入畫面區塊 (同步 Admin 樣式) ==================== */
+        /* ==================== 1. 登入畫面區塊 ==================== */
         .login-card {
             background-color: #ffffff; 
             border-radius: 60px;       
@@ -337,14 +338,28 @@
             align-items: center;
         }
 
+        /* 區塊標題樣式 */
+        .category-header {
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto 0 auto;
+            padding: 0 20px 8px 20px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #2b4c23;
+            border-bottom: 2px solid #a4d49d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .grid-container {
             max-width: 1200px;
             width: 100%;
-            padding: 40px 20px;
+            padding: 20px 20px 30px 20px;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
-            flex: 1;
         }
 
         .shop-card {
@@ -400,6 +415,7 @@
         .badge.private { background-color: #618756; } 
         .badge.local { background-color: #7ba370; }    
         .badge.main { background-color: #436e37; }    
+        .badge.drink { background-color: #008080; }
 
         .img-overlay-btn {
             position: absolute;
@@ -459,7 +475,7 @@
             font-size: 14px;
             color: #555555;
             text-align: center;
-            margin-top: auto;
+            margin-top: 40px;
             line-height: 1.8;
         }
 
@@ -830,7 +846,7 @@
 </head>
 <body class="login-mode">
 
-    <!-- 1. 登入畫面區塊 (預設加入 hidden 防閃爍) -->
+    <!-- 1. 登入畫面區塊 -->
     <div id="login-section" class="login-card hidden">
         <img src="logo.gif" alt="系統Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
@@ -844,13 +860,13 @@
         <button class="login-admin-link" onclick="navigateToAdmin()">⚙️ 後台管理系統 ➔</button>
     </div>
 
-    <!-- 2. 點餐主畫面區塊 -->
+    <!-- 2. 點餐畫面區塊 -->
     <div id="order-section" class="order-container hidden">
         <header class="nidin-header">
             <!-- 第一層：頂部工具列 -->
             <div class="nidin-top-bar">
                 <div class="nidin-top-left">
-                    <div class="nidin-logo">智慧點餐系統<span class="dot">.</span></div>
+                    <div class="nidin-logo" onclick="showAllCategories()">智慧點餐系統<span class="dot">.</span></div>
                     <div class="nidin-divider"></div>
                     
                     <button class="nidin-location-btn" onclick="openBranchModal()">
@@ -910,11 +926,25 @@
                     <span>購物車</span>
                 </a>
 
-                <a class="nidin-nav-item" href="javascript:void(0);" onclick="goHome()">
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="showAllCategories()">
                     <div class="nidin-nav-icon">
                         <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     </div>
                     <span>回首頁</span>
+                </a>
+
+                <!-- 🌟 動態切換美味餐點與喝涼涼的按鈕 -->
+                <a class="nidin-nav-item" id="nav-toggle-btn" href="javascript:void(0);" onclick="toggleFoodDrinkView()">
+                    <div class="nidin-nav-icon" id="nav-toggle-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M17 8h1a4 4 0 0 1 0 8h-1"/>
+                            <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+                            <line x1="6" y1="2" x2="6" y2="5"/>
+                            <line x1="10" y1="2" x2="10" y2="5"/>
+                            <line x1="14" y1="2" x2="14" y2="5"/>
+                        </svg>
+                    </div>
+                    <span id="nav-toggle-text">喝涼涼</span>
                 </a>
 
                 <a class="nidin-nav-item" href="javascript:void(0);" onclick="openHistoryModal()">
@@ -926,9 +956,11 @@
             </nav>
         </header>
 
-        <!-- 店家卡片列表區塊 -->
-        <div class="grid-container">
-            
+        <!-- 第一區塊：美味餐點 -->
+        <div class="category-header" id="food-section">
+            🍱 美味餐點
+        </div>
+        <div class="grid-container" id="food-container">
             <div class="shop-card" onclick="redirectToShop('榮郁香廣式燒臘', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">主食精選</span>
@@ -1164,7 +1196,7 @@
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
-                    <h3 class="shop-name">滿座燒肉丼飯屋</h3>
+                    <h3 class="shop-name">滿座烧肉丼飯屋</h3>
                     <p class="shop-desc">燒肉丼飯與咖喱飯料理集結了新鮮食材和精心熬煮的醬汁。</p>
                 </div>
             </div>
@@ -1276,22 +1308,51 @@
                     <p class="shop-desc">酸辣開胃的道地泰式風味，配飯的最佳選擇。</p>
                 </div>
             </div>
+        </div>
 
+        <!-- 🌟 第二區塊：喝涼涼 -->
+        <div class="category-header hidden" id="drink-section">
+            🥤 喝涼涼
+        </div>
+        <div class="grid-container hidden" id="drink-container">
             <div class="shop-card" onclick="redirectToShop('50嵐', this)">
                 <div class="shop-img-wrapper">
-                    <span class="badge main">喝涼涼</span>
-                    <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600&auto=format&fit=crop" alt="50嵐">
+                    <span class="badge drink">手搖經典</span>
+                    <img src="https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=600&auto=format&fit=crop" alt="50嵐">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
                     <h3 class="shop-name">50嵐</h3>
-                    <p class="shop-desc">多年來以穩定的品質與經典茶香成為手搖飲標竿。</p>
+                    <p class="shop-desc">經典台灣手搖飲，四季春茶與波霸奶茶首選。</p>
                 </div>
             </div>
 
+            <div class="shop-card" onclick="redirectToShop('麻古茶坊', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge drink">鮮果飲品</span>
+                    <img src="https://images.unsplash.com/photo-1556881286-fc6915169721?w=600&auto=format&fit=crop" alt="麻古茶坊">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">麻古茶坊</h3>
+                    <p class="shop-desc">主打現切新鮮水果特調，楊枝甘露與芝芝系列人氣強強滾。</p>
+                </div>
+            </div>
+
+            <div class="shop-card" onclick="redirectToShop('可不可熟成紅茶', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge drink">熟成紅茶</span>
+                    <img src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=600&auto=format&fit=crop" alt="可不可熟成紅茶">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">可不可熟成紅茶</h3>
+                    <p class="shop-desc">解油脂解糯米的解藥，熟成紅茶解膩首選。</p>
+                </div>
+            </div>
         </div>
 
-        <!-- 頁尾區塊 (新增)[cite: 1] -->
+        <!-- 頁尾區塊 -->
         <footer class="site-footer">
             <div class="footer-info-row">
                 <span>505 彰化縣鹿港鎮鹿工路6號</span>
@@ -1458,6 +1519,7 @@
         let isSubmitting = false;
         let customAlertCallback = null;
         let globalEmployeesMap = {}; // 快取員工對照表 (含部門資訊)
+        let currentCategoryView = 'food'; // 🌟 紀錄當前版面狀態：'food' 或 'drink'
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -1489,7 +1551,9 @@
             '員湘園': '員湘園.html',
             '志氣雞飯': '志氣雞飯.html',
             '竑食 泰式拌飯': '竑食 泰式拌飯.html',
-            '50嵐': '50嵐.html'
+            '50 嵐': '50 嵐.html',
+            '麻古茶坊': 'macu.html',
+            '可不可熟成紅茶': 'kebuke.html'
         };
 
         window.addEventListener('DOMContentLoaded', async () => {
@@ -1498,7 +1562,6 @@
             const savedDept = localStorage.getItem('currentDepartment');
             const savedOffline = localStorage.getItem('isOfflineMode') === 'true';
             
-            // 判斷登入狀態，直接顯現對應視圖，避免先顯示登入頁產生的閃爍問題
             if (savedCardId) {
                 showOrderSection(savedCardId, savedEmpName, savedDept, savedOffline);
             } else {
@@ -1509,7 +1572,6 @@
 
             const cardInput = document.getElementById('cardId');
             if (cardInput) {
-                // 輸入時即時清空自訂提示
                 cardInput.addEventListener('input', () => {
                     cardInput.setCustomValidity('');
                 });
@@ -1524,7 +1586,6 @@
             }
         });
 
-        // 獲取員工清單 API (包含部門欄位)
         async function fetchEmployeeList() {
             try {
                 const response = await fetch('/api/employees');
@@ -1649,6 +1710,15 @@
                 const isMatch = shopName.includes(query) || shopDesc.includes(query) || badgeText.includes(query);
                 card.style.display = isMatch ? '' : 'none';
             });
+
+            // 根據過濾結果動態隱藏/顯示分類標題
+            document.querySelectorAll('.category-header').forEach(header => {
+                const container = header.nextElementSibling;
+                if (container && container.classList.contains('grid-container')) {
+                    const visibleCards = container.querySelectorAll('.shop-card:not([style*="display: none"])');
+                    header.style.display = visibleCards.length > 0 ? '' : 'none';
+                }
+            });
         }
 
         function handleSearchKeyPress(event) {
@@ -1658,13 +1728,89 @@
             }
         }
 
-        function goHome() {
+        /* 🌟 版面切換控制：美味餐點 ↔ 喝涼涼 切換核心函數 */
+        function toggleFoodDrinkView() {
+            if (currentCategoryView === 'food') {
+                showDrinkOnly();
+            } else {
+                showFoodOnly();
+            }
+        }
+
+        /* 🌟 切換至「喝涼涼」版面 */
+        function showDrinkOnly() {
+            currentCategoryView = 'drink';
+
+            // 隱藏美味餐點，顯示喝涼涼
+            document.getElementById('food-section')?.classList.add('hidden');
+            document.getElementById('food-container')?.classList.add('hidden');
+            document.getElementById('drink-section')?.classList.remove('hidden');
+            document.getElementById('drink-container')?.classList.remove('hidden');
+
+            // 頂部按鈕自動更換成「美味餐點」文字與圖示
+            document.getElementById('nav-toggle-text').textContent = '美味餐點';
+            document.getElementById('nav-toggle-icon').innerHTML = `
+                <svg viewBox="0 0 24 24">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                    <line x1="6" y1="1" x2="6" y2="4"/>
+                    <line x1="10" y1="1" x2="10" y2="4"/>
+                    <line x1="14" y1="1" x2="14" y2="4"/>
+                </svg>
+            `;
+
+            resetSearch();
+        }
+
+        /* 🌟 切換至「美味餐點」版面 */
+        function showFoodOnly() {
+            currentCategoryView = 'food';
+
+            // 顯示美味餐點，隱藏喝涼涼
+            document.getElementById('food-section')?.classList.remove('hidden');
+            document.getElementById('food-container')?.classList.remove('hidden');
+            document.getElementById('drink-section')?.classList.add('hidden');
+            document.getElementById('drink-container')?.classList.add('hidden');
+
+            // 頂部按鈕自動更換成「喝涼涼」文字與圖示
+            document.getElementById('nav-toggle-text').textContent = '喝涼涼';
+            document.getElementById('nav-toggle-icon').innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 8h1a4 4 0 0 1 0 8h-1"/>
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+                    <line x1="6" y1="2" x2="6" y2="5"/>
+                    <line x1="10" y1="2" x2="10" y2="5"/>
+                    <line x1="14" y1="2" x2="14" y2="5"/>
+                </svg>
+            `;
+
+            resetSearch();
+        }
+
+        /* 重置搜尋框與滾動至頂部 */
+        function resetSearch() {
             const searchInput = document.getElementById('shopSearchInput');
             if (searchInput) {
                 searchInput.value = '';
                 filterShops();
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* 版面切換控制：顯示全部（回首頁預設為美味餐點） */
+        function showAllCategories() {
+            showFoodOnly();
+        }
+
+        function goHome() {
+            showAllCategories();
+        }
+
+        function scrollToCategory(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+            }
         }
 
         async function executeLogin() {
@@ -1675,10 +1821,8 @@
             
             if (!cardInput) return;
 
-            // 清空先前的自訂錯誤
             cardInput.setCustomValidity('');
 
-            // 未輸入卡號，觸發預設「請填寫這個欄位」氣泡提示
             if (!cardInput.value.trim()) {
                 cardInput.reportValidity();
                 return;
@@ -1709,7 +1853,6 @@
                     
                     showOrderSection(cardId, data.empName || cardId, dept, false);
                 } else {
-                    // 驗證失敗：將錯誤訊息寫入輸入框之 CustomValidity，並彈出原生氣泡
                     cardInput.setCustomValidity(`${data.message || '無此卡號'}`);
                     cardInput.reportValidity();
                     if (loginBtn) loginBtn.disabled = false;
@@ -1772,6 +1915,7 @@
             document.body.classList.remove('login-mode');
             document.body.classList.add('order-mode');
             
+            showAllCategories();
             fetchOrderHistory(cardId);
             fetchGlobalOrders(cardId);
         }
