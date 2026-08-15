@@ -690,19 +690,20 @@
         let currentOverviewCategory = 'all';
         let searchTimeout = null;
 
-        // 判斷訂單是否屬於飲料(喝涼涼) - 已加入「老聃飲食」與「沙茶」正餐排除機制
-        function isDrinkOrder(order) {
-            if (order.category === 'drink' || order.type === 'drink') return true;
-            
-            const mealStr = (order.meal || '').toLowerCase();
-            
-            // 正餐關鍵字排除 (防止包含「茶/飲」而被誤判為飲料)
-            if (mealStr.includes('老聃飲食') || mealStr.includes('沙茶')) return false;
+        // 判斷訂單是否屬於飲料(喝涼涼)
+function isDrinkOrder(order) {
+    if (order.category === 'drink' || order.type === 'drink') return true;
+    
+    const mealStr = (order.meal || '').toLowerCase();
+    
+    // 1. 正餐關鍵字排除 (避免名稱內含「茶/飲」等字的非飲料餐點被誤判)
+    const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '茶', '水', '湯'];
+    if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
 
-            // 飲料關鍵字
-            const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品'];
-            return drinkKeywords.some(kw => mealStr.includes(kw));
-        }
+    // 2. 飲料專用關鍵字比對
+    const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品'];
+    return drinkKeywords.some(kw => mealStr.includes(kw));
+}
 
         function showCustomModal({ title = '提示', message = '', isConfirm = false, onConfirm = null }) {
             document.getElementById('modalTitle').innerText = title;
