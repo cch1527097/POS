@@ -37,7 +37,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：同步寫入 public/orders.json (相容舊後台與關聯繳費狀態)
+// 輔助函式：同步寫入 public/orders.json (非同步寫入避免阻塞)
 async function syncOrdersJsonFile() {
     try {
         const result = await pool.query(`
@@ -56,7 +56,7 @@ async function syncOrdersJsonFile() {
             ORDER BY o.order_id DESC;
         `);
         const jsonPath = path.join(__dirname, 'public', 'orders.json');
-        fs.writeFileSync(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
+        await fs.promises.writeFile(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
         console.log('[系統提示] 已同步更新 public/orders.json 檔案');
     } catch (err) {
         console.error('❌ 同步 orders.json 失敗:', err.message);
@@ -201,7 +201,7 @@ app.patch('/api/employees/:cardId/payment', async (req, res) => {
     }
 });
 
-// 4. 【新增】編輯員工姓名與部門 API
+// 4. 編輯員工姓名與部門 API
 app.put('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const { name, department } = req.body;
@@ -365,7 +365,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄
+// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -375,6 +375,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
+        // ✅ 安全修改：改為參數化查詢，防止 SQL 注入
         const result = await pool.query(
             'SELECT order_id, meal, spicy, note, total, timestamp FROM orders WHERE card_id = $1 ORDER BY order_id DESC;',
             [cleanCardId]
