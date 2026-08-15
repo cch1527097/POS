@@ -734,6 +734,8 @@ async function submitOrderToServer() {
 
     const payload = {
         cardId: currentCardId,
+        category: "food",
+        type: "food",
         meal: orderMealSummary,
         spicy: spicyVal,
         total: finalTotal,
