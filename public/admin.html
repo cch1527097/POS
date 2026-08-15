@@ -246,107 +246,117 @@
             }
         }
 
-        async function executeAdminLogin(event) {
-            if (event) event.preventDefault();
-            if (isSubmitting) return;
+        // 1. 建立管理員卡號與姓名對照表
+const ADMIN_NAMES = {
+    '18445': '李珈豪',
+    '11110': '林佳蘭'
+};
 
-            const userInput = document.getElementById('adminUser');
-            const passInput = document.getElementById('adminPass');
-            const loginBtn = document.getElementById('submit-login-btn');
+async function executeAdminLogin(event) {
+    if (event) event.preventDefault();
+    if (isSubmitting) return;
 
-            userInput.classList.remove('input-error');
-            passInput.classList.remove('input-error');
+    const userInput = document.getElementById('adminUser');
+    const passInput = document.getElementById('adminPass');
+    const loginBtn = document.getElementById('submit-login-btn');
 
-            const username = userInput.value.trim();
-            const password = passInput.value;
+    userInput.classList.remove('input-error');
+    passInput.classList.remove('input-error');
 
-            // 帳密未完整輸入時的處理
-            if (!username || !password) {
-                if(!username) userInput.classList.add('input-error');
-                if(!password) passInput.classList.add('input-error');
-                
-                loginBtn.classList.add('btn-msg');
-                loginBtn.innerText = '請完整輸入帳密！';
+    const username = userInput.value.trim();
+    const password = passInput.value;
+
+    if (!username || !password) {
+        if(!username) userInput.classList.add('input-error');
+        if(!password) passInput.classList.add('input-error');
+        
+        loginBtn.classList.add('btn-msg');
+        loginBtn.innerText = '請完整輸入帳密！';
+        setTimeout(() => {
+            loginBtn.classList.remove('btn-msg');
+            loginBtn.innerText = '登入';
+        }, 2000);
+        return;
+    }
+
+    isSubmitting = true;
+    loginBtn.disabled = true;
+    userInput.disabled = true;
+    passInput.disabled = true;
+    loginBtn.classList.add('btn-msg');
+    loginBtn.innerText = '認證中...';
+
+    function showLoginError(msg) {
+        userInput.classList.add('input-error');
+        passInput.classList.add('input-error');
+        
+        loginBtn.classList.add('btn-msg');
+        loginBtn.innerText = msg;
+        
+        setTimeout(() => {
+            isSubmitting = false;
+            loginBtn.disabled = false;
+            userInput.disabled = false;
+            passInput.disabled = false;
+            loginBtn.classList.remove('btn-msg');
+            loginBtn.innerText = '登入';
+            
+            passInput.value = '';
+            passInput.type = 'password';
+            document.getElementById('eye-icon').textContent = '🔐';
+            passInput.focus();
+        }, 2000);
+    }
+
+    setTimeout(async () => {
+        const validAdmins = {
+            '18445': ['zxc456456', '601471', '11110']
+        };
+
+        // 本地預設測試帳密驗證
+        if (validAdmins[username] && validAdmins[username].includes(password)) {
+            // 取得對應姓名（若無設定則預設顯示「管理員」）
+            const adminName = ADMIN_NAMES[username] || '管理員';
+            localStorage.setItem('currentAdminName', adminName); // 儲存至本地
+
+            loginBtn.innerText = '認證成功！';
+            setTimeout(() => {
+                window.location.href = 'admin-dashboard.html';
+            }, 600);
+            return; 
+        } 
+        
+        // API 驗證請求
+        try {
+            const response = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // 若後端有回傳姓名則使用後端姓名，否則查表
+                const adminName = data.name || ADMIN_NAMES[username] || '管理員';
+                localStorage.setItem('currentAdminName', adminName);
+
+                loginBtn.innerText = '認證成功！';
                 setTimeout(() => {
-                    loginBtn.classList.remove('btn-msg');
-                    loginBtn.innerText = '登入';
-                }, 2000);
+                    window.location.href = 'admin-dashboard.html';
+                }, 600);
+                return; 
+            } else {
+                showLoginError(data.message || '帳號或密碼錯誤！');
                 return;
             }
-
-            isSubmitting = true;
-            loginBtn.disabled = true;
-            userInput.disabled = true;
-            passInput.disabled = true;
-            loginBtn.classList.add('btn-msg');
-            loginBtn.innerText = '認證中...';
-
-            // 顯示錯誤訊息並自動還原
-            function showLoginError(msg) {
-                userInput.classList.add('input-error');
-                passInput.classList.add('input-error');
-                
-                loginBtn.classList.add('btn-msg');
-                loginBtn.innerText = msg;
-                
-                setTimeout(() => {
-                    isSubmitting = false;
-                    loginBtn.disabled = false;
-                    userInput.disabled = false;
-                    passInput.disabled = false;
-                    loginBtn.classList.remove('btn-msg');
-                    loginBtn.innerText = '登入';
-                    
-                    passInput.value = '';
-                    passInput.type = 'password';
-                    document.getElementById('eye-icon').textContent = '🔐';
-                    passInput.focus();
-                }, 2000);
-            }
-
-            setTimeout(async () => {
-                const validAdmins = {
-                    '18445': ['zxc456456', '601471', '11110']
-                };
-
-                // 本地預設測試帳密驗證
-                if (validAdmins[username] && validAdmins[username].includes(password)) {
-                    loginBtn.innerText = '認證成功！';
-                    
-                    setTimeout(() => {
-                        window.location.href = 'admin-dashboard.html';
-                    }, 600);
-                    return; 
-                } 
-                
-                // API 驗證請求
-                try {
-                    const response = await fetch('/api/admin/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, password })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok && data.success) {
-                        loginBtn.innerText = '認證成功！';
-                        
-                        setTimeout(() => {
-                            window.location.href = 'admin-dashboard.html';
-                        }, 600);
-                        return; 
-                    } else {
-                        showLoginError(data.message || '帳號或密碼錯誤！');
-                        return;
-                    }
-                } catch (error) {
-                    showLoginError('帳號或密碼錯誤！');
-                    return;
-                }
-
-            }, 600);
+        } catch (error) {
+            showLoginError('帳號或密碼錯誤！');
+            return;
         }
+
+    }, 600);
+}
     </script>
 </body>
 </html>
