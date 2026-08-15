@@ -423,7 +423,7 @@
     <!-- 側邊欄選單 -->
     <div class="sidebar">
         <h2>後台管理系統</h2>
-        <div class="user-info">☁️ 管理員: 18445 [已上線]</div>
+        <div class="user-info" id="adminDisplayInfo">☁️ 管理員: [加載中...] [已上線]</div>
         <hr>
         <div class="menu-container">
             <button type="button" class="menu-item active" onclick="switchTab('overview', this)">📊 全部訂單總覽</button>
@@ -1296,11 +1296,18 @@ function isDrinkOrder(order) {
         }
 
         window.onload = async function() {
-            await loadEmployees();
-            await loadOrders();
-            await loadHistoryOrders();
-            setInterval(loadOrders, 30000);
-        };
+    // 讀取登入時儲存的管理員姓名
+    const currentAdminName = localStorage.getItem('currentAdminName') || '管理員';
+    const adminInfoElem = document.getElementById('adminDisplayInfo');
+    if (adminInfoElem) {
+        adminInfoElem.innerText = `☁️ 管理員: ${currentAdminName} [已上線]`;
+    }
+
+    await loadEmployees();
+    await loadOrders();
+    await loadHistoryOrders();
+    setInterval(loadOrders, 30000);
+};
     </script>
 </body>
 </html>
