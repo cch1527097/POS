@@ -697,7 +697,7 @@ function isDrinkOrder(order) {
     const mealStr = (order.meal || '').toLowerCase();
     
     // 1. 正餐關鍵字排除 (避免名稱內含「茶/飲」等字的非飲料餐點被誤判)
-    const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '茶', '水', '湯', '烏龍麵', '冰', '熱', '甜', '汁', '飲'];
+    const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵'];
     if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
 
     // 2. 飲料專用關鍵字比對
