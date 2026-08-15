@@ -828,6 +828,8 @@ function submitOrderToServer() {
 
     pendingPayload = {
         cardId: currentCardId,
+        category: "food",
+        type: "food",
         meal: orderMealSummary,
         spicy: spicyVal,
         total: finalTotal,
