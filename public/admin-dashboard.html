@@ -691,19 +691,57 @@
         let searchTimeout = null;
 
         // 判斷訂單是否屬於飲料(喝涼涼)
-function isDrinkOrder(order) {
-    if (order.category === 'drink' || order.type === 'drink') return true;
-    
-    const mealStr = (order.meal || '').toLowerCase();
-    
-    // 1. 正餐關鍵字排除 (避免名稱內含「茶/飲」等字的非飲料餐點被誤判)
-    const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵'];
-    if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
+        function isDrinkOrder(order) {
+            if (order.category === 'drink' || order.type === 'drink') return true;
+            
+            const mealStr = (order.meal || '').toLowerCase();
+            
+            // 1. 正餐關鍵字排除 (避免名稱內含「茶/飲」等字的非飲料餐點被誤判)
+            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵'];
+            if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
 
-    // 2. 飲料專用關鍵字比對
-    const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品'];
-    return drinkKeywords.some(kw => mealStr.includes(kw));
-}
+            // 2. 飲料專用關鍵字比對
+            const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品'];
+            return drinkKeywords.some(kw => mealStr.includes(kw));
+        }
+
+        // 解析日期時間格式（支援 2026/8/3 上午9:32:45 等多種字串格式）
+        function parseTimestamp(ts) {
+            if (!ts) return 0;
+            let str = String(ts).trim();
+            
+            // 解析 12 小時制「上午/下午」
+            const isPM = str.includes('下午');
+            const isAM = str.includes('上午');
+            str = str.replace('上午', '').replace('下午', '').trim();
+            
+            // 將連字號轉為斜線，以利 Date 解析
+            str = str.replace(/-/g, '/');
+            
+            const parts = str.split(' ');
+            if (parts.length >= 2) {
+                const datePart = parts[0];
+                const timePart = parts[1];
+                const tParts = timePart.split(':');
+                let hour = parseInt(tParts[0], 10) || 0;
+                const min = parseInt(tParts[1], 10) || 0;
+                const sec = parseInt(tParts[2], 10) || 0;
+
+                if (isPM && hour < 12) hour += 12;
+                if (isAM && hour === 12) hour = 0;
+
+                const dParts = datePart.split('/');
+                if (dParts.length === 3) {
+                    const year = parseInt(dParts[0], 10);
+                    const month = parseInt(dParts[1], 10) - 1;
+                    const day = parseInt(dParts[2], 10);
+                    return new Date(year, month, day, hour, min, sec).getTime();
+                }
+            }
+
+            const parsed = Date.parse(str);
+            return isNaN(parsed) ? 0 : parsed;
+        }
 
         function showCustomModal({ title = '提示', message = '', isConfirm = false, onConfirm = null }) {
             document.getElementById('modalTitle').innerText = title;
@@ -1042,7 +1080,7 @@ function isDrinkOrder(order) {
             }
         }
 
-        /* 渲染訂單表格 */
+        /* 渲染訂單表格 (已修改為由新到舊/降序 排序) */
         function renderOrderTable(orders, tableBodyId, showFullTime = false, hideCategoryCol = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1054,7 +1092,18 @@ function isDrinkOrder(order) {
                 return;
             }
 
-            const htmlRows = [...orders].reverse().map(order => {
+            // 依照點餐時間 (timestamp) 解析時間戳記並進行「由新到舊」降序排序
+            const sortedOrders = [...orders].sort((a, b) => {
+                const timeA = parseTimestamp(a.timestamp);
+                const timeB = parseTimestamp(b.timestamp);
+                if (timeA !== timeB) {
+                    return timeB - timeA; // 時間越新的越靠前
+                }
+                // 若時間相同則比對訂單編號大小
+                return String(b.orderId || '').localeCompare(String(a.orderId || ''));
+            });
+
+            const htmlRows = sortedOrders.map(order => {
                 const orderIdStr = order.orderId ? String(order.orderId) : '';
                 const cardId = order.cardId || '';
                 
@@ -1296,18 +1345,18 @@ function isDrinkOrder(order) {
         }
 
         window.onload = async function() {
-    // 讀取登入時儲存的管理員姓名
-    const currentAdminName = localStorage.getItem('currentAdminName') || '管理員';
-    const adminInfoElem = document.getElementById('adminDisplayInfo');
-    if (adminInfoElem) {
-        adminInfoElem.innerText = `☁️ 管理員: ${currentAdminName} [已上線]`;
-    }
+            // 讀取登入時儲存的管理員姓名
+            const currentAdminName = localStorage.getItem('currentAdminName') || '管理員';
+            const adminInfoElem = document.getElementById('adminDisplayInfo');
+            if (adminInfoElem) {
+                adminInfoElem.innerText = `☁️ 管理員: ${currentAdminName} [已上線]`;
+            }
 
-    await loadEmployees();
-    await loadOrders();
-    await loadHistoryOrders();
-    setInterval(loadOrders, 30000);
-};
+            await loadEmployees();
+            await loadOrders();
+            await loadHistoryOrders();
+            setInterval(loadOrders, 30000);
+        };
     </script>
 </body>
 </html>
