@@ -821,9 +821,14 @@
             }
 
             const rows = employeeList.map(emp => {
-                const cardId = emp.cardId || emp.id;
+                const cardId = emp.cardId || emp.id || '';
                 const name = emp.name || '未知';
                 const department = emp.department || '未設定';
+
+                // 安全轉碼，防止引號導致 HTML/JS 爆開 BUG
+                const encCardId = encodeURIComponent(cardId);
+                const encName = encodeURIComponent(name);
+                const encDept = encodeURIComponent(department);
 
                 return `
                     <tr>
@@ -832,8 +837,8 @@
                         <td><span class="badge">已授權登入</span></td>
                         <td><span class="badge badge-dept">${department}</span></td>
                         <td>
-                            <button class="btn-edit" onclick="openEditEmployeeModal('${cardId}', '${name}', '${department}')">✏️ 編輯</button>
-                            <button class="btn-delete" onclick="deleteEmployee('${cardId}')">❌ 刪除</button>
+                            <button class="btn-edit" onclick="openEditEmployeeModal('${encCardId}', '${encName}', '${encDept}')">✏️ 編輯</button>
+                            <button class="btn-delete" onclick="deleteEmployee('${encCardId}')">❌ 刪除</button>
                         </td>
                     </tr>
                 `;
@@ -841,7 +846,11 @@
             tbody.innerHTML = rows.join('');
         }
 
-        function openEditEmployeeModal(cardId, currentName, currentDept) {
+        function openEditEmployeeModal(encCardId, encName, encDept) {
+            const cardId = decodeURIComponent(encCardId);
+            const currentName = decodeURIComponent(encName);
+            const currentDept = decodeURIComponent(encDept);
+
             const modalContent = `
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     <div>
@@ -898,9 +907,10 @@
             }
         }
 
-        async function togglePaymentStatus(cardId, newStatus) {
+        async function togglePaymentStatus(orderId, newStatus) {
             try {
-                const response = await fetch(`/api/employees/${cardId}/payment`, {
+                // 將切換目標改為特定的 orderId 確保精確度
+                const response = await fetch(`/api/orders/${orderId}/payment`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ isPaid: newStatus })
@@ -909,7 +919,7 @@
                 if (response.ok) {
                     await loadOrders(); 
                     await loadHistoryOrders();
-                    showCustomModal({ message: `員工卡號 ${cardId} 的繳費狀態已更新！` });
+                    showCustomModal({ message: `訂單編號 ${orderId} 的繳費狀態已更新！` });
                 } else {
                     const result = await response.json();
                     showCustomModal({ message: `狀態更新失敗：${result.message || '未知錯誤'}` });
@@ -925,9 +935,9 @@
             const nameInput = document.getElementById('newEmpName');
             const deptInput = document.getElementById('newDepartment');
             
-            const cardId = cardIdInput.value.trim();
-            const name = nameInput.value.trim();
-            const department = deptInput.value.trim() || '未劃分';
+            const cardId = cardIdInput ? cardIdInput.value.trim() : '';
+            const name = nameInput ? nameInput.value.trim() : '';
+            const department = (deptInput && deptInput.value.trim()) ? deptInput.value.trim() : '未劃分';
 
             if (!cardId || !name) {
                 showCustomModal({ message: '請填寫完整的員工卡號與姓名！' });
@@ -945,9 +955,9 @@
 
                 if (response.ok) {
                     await loadEmployees();
-                    cardIdInput.value = '';
-                    nameInput.value = '';
-                    deptInput.value = '';
+                    if (cardIdInput) cardIdInput.value = '';
+                    if (nameInput) nameInput.value = '';
+                    if (deptInput) deptInput.value = '';
                     showCustomModal({ message: `成功新增員工並同步至後端：${name} (${cardId}) - ${department}` });
                 } else {
                     showCustomModal({ message: `新增失敗：${result.message || '未知錯誤'}` });
@@ -958,7 +968,8 @@
             }
         }
 
-        async function deleteEmployee(cardId) {
+        async function deleteEmployee(encCardId) {
+            const cardId = decodeURIComponent(encCardId);
             let empName = cardId;
             if (Array.isArray(USER_DB_PREVIEW)) {
                 const found = USER_DB_PREVIEW.find(e => (e.cardId || e.id) === cardId);
@@ -1065,7 +1076,7 @@
             }
         }
 
-        /* 渲染訂單表格（已被修改為強制依時間/單號『由新到舊』排序） */
+        /* 渲染訂單表格（依時間/單號『由新到舊』排序） */
         function renderOrderTable(orders, tableBodyId, showFullTime = false, hideCategoryCol = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1077,14 +1088,12 @@
                 return;
             }
 
-            // 【修改處】：精確的『由新到舊』排序邏輯 (依據 timestamp，若相同則比較 orderId)
             const sortedOrders = [...orders].sort((a, b) => {
                 const timeA = parseOrderTime(a.timestamp);
                 const timeB = parseOrderTime(b.timestamp);
                 if (timeA !== timeB) {
-                    return timeB - timeA; // 時間較大的（較新）排前面
+                    return timeB - timeA; 
                 }
-                // 若時間解析相同，再以 orderId 進行降冪比對
                 const idA = Number(a.orderId) || 0;
                 const idB = Number(b.orderId) || 0;
                 return idB - idA;
@@ -1157,7 +1166,7 @@
                         
                         <td class="col-payment">
                             ${paidBadge}
-                            <button class="btn-status" onclick="togglePaymentStatus('${cardId}', ${!isPaid})">切換狀態</button>
+                            <button class="btn-status" onclick="togglePaymentStatus('${orderIdStr}', ${!isPaid})">切換狀態</button>
                         </td>
 
                         ${hideCategoryCol ? '' : `<td class="col-status"><span class="badge">已同步寫入</span></td>`}
