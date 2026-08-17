@@ -288,7 +288,7 @@
                 if(!username) userInput.classList.add('input-error');
                 if(!password) passInput.classList.add('input-error');
                 
-                loginBtn.innerText = '請完整輸入帳密！';
+                loginBtn.innerText = '請完整輸入帳密';
                 setTimeout(() => {
                     loginBtn.innerText = '登入系統';
                 }, 2000);
@@ -331,7 +331,7 @@
                     const adminName = ADMIN_NAMES[username] || '管理員';
                     localStorage.setItem('currentAdminName', adminName);
 
-                    loginBtn.innerText = '認證成功！';
+                    loginBtn.innerText = '認證成功';
                     setTimeout(() => {
                         window.location.href = 'admin-dashboard.html';
                     }, 600);
@@ -351,17 +351,17 @@
                         const adminName = data.name || ADMIN_NAMES[username] || '管理員';
                         localStorage.setItem('currentAdminName', adminName);
 
-                        loginBtn.innerText = '認證成功！';
+                        loginBtn.innerText = '認證成功';
                         setTimeout(() => {
                             window.location.href = 'admin-dashboard.html';
                         }, 600);
                         return; 
                     } else {
-                        showLoginError(data.message || '帳號或密碼錯誤！');
+                        showLoginError(data.message || '帳號或密碼錯誤');
                         return;
                     }
                 } catch (error) {
-                    showLoginError('帳號或密碼錯誤！');
+                    showLoginError('帳號或密碼錯誤');
                     return;
                 }
 
