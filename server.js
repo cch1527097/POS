@@ -15,6 +15,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 設定檔路徑
+const settingsPath = path.join(__dirname, 'public', 'settings.json');
+
 // PostgreSQL (Neon) 連線設定
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -22,11 +25,6 @@ const pool = new Pool({
         rejectUnauthorized: false // Neon 強制使用 SSL
     }
 });
-
-// === 👇 新增：系統設定變數 ===
-// 設定系統預設的點餐截止時間 (格式: "HH:mm"，24小時制，空字串代表不鎖定)
-let ORDER_CUTOFF_TIME = ""; 
-// === 👆 新增結束 ===
 
 // 預設員工資料
 const INITIAL_USER_DB = {
@@ -95,7 +93,6 @@ async function initDatabase() {
             );
         `);
 
-        // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
@@ -137,7 +134,7 @@ function isTodayInTaipei(orderTimestampMs) {
 
 // ==================== API 路由 ====================
 
-// 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
+// 1. 取得所有訂單
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -162,7 +159,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 2. 取得所有員工名單 (包含 department)
+// 2. 取得所有員工名單
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
@@ -229,9 +226,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
-        // 同步更新 orders 裡面該員工歷史訂單顯示的姓名
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
-        
         await syncOrdersJsonFile();
         res.json({ success: true, message: '員工資料更新成功' });
     } catch (err) {
@@ -240,7 +235,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 5. 新增員工 (包含 department)
+// 5. 新增員工
 app.post('/api/employees', async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -327,50 +322,46 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單
+// 9. 新增訂單 (修復版：即時檢查 settings.json 狀態)
 app.post('/api/order', async (req, res) => {
-    // === 👇 新增：檢查是否超過點餐截止時間 ===
-    if (ORDER_CUTOFF_TIME) {
-        const now = new Date();
-        // 確保以台灣時間為基準進行比對
-        const twTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
-        const currentHour = twTime.getHours();
-        const currentMinute = twTime.getMinutes();
-        
-        // 解析設定的鎖定時間
-        const [cutoffHour, cutoffMinute] = ORDER_CUTOFF_TIME.split(':').map(Number);
-        
-        // 判斷當下時間是否已經超過截止時間
-        if (currentHour > cutoffHour || (currentHour === cutoffHour && currentMinute >= cutoffMinute)) {
-            return res.status(403).json({ 
-                success: false, 
-                message: `系統已鎖定！今日點餐時間已於 ${ORDER_CUTOFF_TIME} 截止，無法再送出訂單。` 
-            });
-        }
-    }
+    try {
+        // === 🔐 檢查系統設定檔 (settings.json) ===
+        if (fs.existsSync(settingsPath)) {
+            const rawData = await fs.promises.readFile(settingsPath, 'utf-8');
+            const settings = JSON.parse(rawData);
 
-    const settingsPath = path.join(__dirname, 'public', 'settings.json');[cite: 3]
-        if (fs.existsSync(settingsPath)) {[cite: 3]
-            const settings = JSON.parse(await fs.promises.readFile(settingsPath, 'utf-8'));[cite: 3]
-            const currentHM = new Date().toTimeString().substring(0, 5);
+            const systemStatus = settings.systemStatus || settings.overrideStatus || 'auto';
+            const cutoffTime = settings.cutoffTime || settings.autoCutoffTime || '';
 
-            const isLocked = settings.systemStatus === 'locked' || 
-                             settings.systemStatus === 'closed' || 
-                             (settings.systemStatus === 'auto' && currentHM >= settings.cutoffTime);
-
-            if (isLocked) {
+            // 判斷 1: 是否為強制鎖定/停止接單
+            if (systemStatus === 'locked' || systemStatus === 'closed' || systemStatus === 'manual_closed') {
                 return res.status(403).json({ 
                     success: false, 
-                    message: "系統目前已鎖定結單，無法接受新訂單！" 
+                    message: '⛔ 系統目前已設定為「強制鎖定」，暫停接受訂單！' 
                 });
             }
-        }
-    // === 👆 新增結束 ===
 
-    const { cardId, meal, note, spicy, total } = req.body;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
-    
-    try {
+            // 判斷 2: 處於自動模式且設定了截止時間
+            if (systemStatus === 'auto' && cutoffTime) {
+                const now = new Date();
+                const twTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+                const currentHour = twTime.getHours();
+                const currentMinute = twTime.getMinutes();
+
+                const [cutoffHour, cutoffMinute] = cutoffTime.split(':').map(Number);
+
+                if (currentHour > cutoffHour || (currentHour === cutoffHour && currentMinute >= cutoffMinute)) {
+                    return res.status(403).json({ 
+                        success: false, 
+                        message: `⛔ 今日點餐已於 ${cutoffTime} 截止，無法再送出訂單。` 
+                    });
+                }
+            }
+        }
+
+        const { cardId, meal, note, spicy, total } = req.body;
+        const cleanCardId = cardId ? String(cardId).trim() : '';
+
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
@@ -408,7 +399,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
+// 10. 取得個人歷史訂單紀錄
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -438,7 +429,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 11. 動態匯出 Excel 下載 (包含繳費狀態)
+// 11. 動態匯出 Excel 下載
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -540,43 +531,13 @@ app.get('/api/export-excel', async (req, res) => {
     }
 });
 
-// === 👇 新增：動態設定/取得時間鎖定 API ===
-
-// 12. 取得目前的鎖定時間
-app.get('/api/settings/lock-time', (req, res) => {
-    res.json({ success: true, lockTime: ORDER_CUTOFF_TIME });
-});
-
-// 13. 後台設定點餐鎖定時間
-app.post('/api/settings/lock-time', (req, res) => {
-    const { time } = req.body; // 預期接收格式: "10:30" 或是 "" (解除鎖定)
-    
-    // 如果傳入空字串，代表解除時間鎖定
-    if (time === '') {
-        ORDER_CUTOFF_TIME = '';
-        return res.json({ success: true, message: '✅ 已解除點餐時間限制' });
-    }
-
-    // 簡易的格式驗證 (正則表達式檢查 HH:mm)
-    if (time && /^([01]\d|2[0-3]):([0-5]\d)$/.test(time)) {
-        ORDER_CUTOFF_TIME = time;
-        res.json({ success: true, message: `✅ 已成功將點餐截止時間更新為 ${ORDER_CUTOFF_TIME}` });
-    } else {
-        res.status(400).json({ success: false, message: '❌ 請提供有效的時間格式 (例如 10:30)' });
-    }
-});
-
-// 輔助函式：確保 settings.json 存在
-const settingsPath = path.join(__dirname, 'public', 'settings.json');
-
-// 取得系統設定 API
+// 12. 取得系統設定 API
 app.get('/api/settings', async (req, res) => {
     try {
         if (fs.existsSync(settingsPath)) {
             const data = await fs.promises.readFile(settingsPath, 'utf-8');
             return res.json(JSON.parse(data));
         }
-        // 預設值
         res.json({ cutoffTime: '10:30', systemStatus: 'auto' });
     } catch (err) {
         console.error('讀取系統設定失敗:', err.message);
@@ -584,19 +545,17 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-// 儲存系統設定 API
+// 13. 儲存系統設定 API
 app.post('/api/settings', async (req, res) => {
     try {
         const { cutoffTime, systemStatus, autoCutoffTime, overrideStatus } = req.body;
         
-        // 整理前端傳入的資料（兼顧不同欄位命名）
         const settingsData = {
             cutoffTime: cutoffTime || autoCutoffTime || '10:30',
             systemStatus: systemStatus || overrideStatus || 'auto',
             updatedAt: new Date().toISOString()
         };
 
-        // 將設定寫入 public/settings.json 檔案儲存
         await fs.promises.writeFile(settingsPath, JSON.stringify(settingsData, null, 2), 'utf-8');
         console.log('[系統提示] 系統設定更新成功：', settingsData);
 
@@ -606,7 +565,6 @@ app.post('/api/settings', async (req, res) => {
         res.status(500).json({ success: false, message: '儲存系統設定失敗' });
     }
 });
-// === 👆 新增結束 ===
 
 app.listen(PORT, () => {
     console.log(`================================================================`);
