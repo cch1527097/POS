@@ -548,6 +548,47 @@ app.post('/api/settings/lock-time', (req, res) => {
         res.status(400).json({ success: false, message: '❌ 請提供有效的時間格式 (例如 10:30)' });
     }
 });
+
+// 輔助函式：確保 settings.json 存在
+const settingsPath = path.join(__dirname, 'public', 'settings.json');
+
+// 取得系統設定 API
+app.get('/api/settings', async (req, res) => {
+    try {
+        if (fs.existsSync(settingsPath)) {
+            const data = await fs.promises.readFile(settingsPath, 'utf-8');
+            return res.json(JSON.parse(data));
+        }
+        // 預設值
+        res.json({ cutoffTime: '10:30', systemStatus: 'auto' });
+    } catch (err) {
+        console.error('讀取系統設定失敗:', err.message);
+        res.status(500).json({ success: false, message: '無法讀取系統設定' });
+    }
+});
+
+// 儲存系統設定 API
+app.post('/api/settings', async (req, res) => {
+    try {
+        const { cutoffTime, systemStatus, autoCutoffTime, overrideStatus } = req.body;
+        
+        // 整理前端傳入的資料（兼顧不同欄位命名）
+        const settingsData = {
+            cutoffTime: cutoffTime || autoCutoffTime || '10:30',
+            systemStatus: systemStatus || overrideStatus || 'auto',
+            updatedAt: new Date().toISOString()
+        };
+
+        // 將設定寫入 public/settings.json 檔案儲存
+        await fs.promises.writeFile(settingsPath, JSON.stringify(settingsData, null, 2), 'utf-8');
+        console.log('[系統提示] 系統設定更新成功：', settingsData);
+
+        res.json({ success: true, message: '系統設定儲存成功！', settings: settingsData });
+    } catch (err) {
+        console.error('儲存系統設定失敗:', err.message);
+        res.status(500).json({ success: false, message: '儲存系統設定失敗' });
+    }
+});
 // === 👆 新增結束 ===
 
 app.listen(PORT, () => {
