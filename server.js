@@ -37,7 +37,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：同步寫入 public/orders.json (非同步寫入避免阻塞)
+// 輔助函式：同步寫入 public/orders.json
 async function syncOrdersJsonFile() {
     try {
         const result = await pool.query(`
@@ -90,7 +90,6 @@ async function initDatabase() {
             );
         `);
 
-        // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
@@ -114,22 +113,32 @@ async function initDatabase() {
     }
 }
 
-// 全局記憶體鎖定設定 (預設狀態)
+// 全局記憶體鎖定設定
 let orderLockConfig = {
     isManualLocked: false,
     cutoffTime: '10:30'
 };
 
-// 輔助函式：判斷當前台北時間是否已過截止點或已被手動鎖定
+// 輔助函式：判斷當前台北時間是否已被鎖定
 function isOrderLocked() {
     if (orderLockConfig.isManualLocked) return true;
     if (!orderLockConfig.cutoffTime) return false;
 
-    // 取得台北時間的時與分
-    const nowTaipei = new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' });
-    const taipeiDate = new Date(nowTaipei);
-    
-    const currentMin = taipeiDate.getHours() * 60 + taipeiDate.getMinutes();
+    // 精確取得台北時間的小時與分鐘
+    const taipeiParts = new Intl.DateTimeFormat('zh-TW', {
+        timeZone: 'Asia/Taipei',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false
+    }).formatToParts(new Date());
+
+    let hour = 0, minute = 0;
+    for (const part of taipeiParts) {
+        if (part.type === 'hour') hour = parseInt(part.value, 10);
+        if (part.type === 'minute') minute = parseInt(part.value, 10);
+    }
+
+    const currentMin = hour * 60 + minute;
     const [cutoffHour, cutoffMin] = orderLockConfig.cutoffTime.split(':').map(Number);
     const targetMin = cutoffHour * 60 + cutoffMin;
 
@@ -154,7 +163,7 @@ function isTodayInTaipei(orderTimestampMs) {
 
 // ==================== API 路由 ====================
 
-// 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
+// 1. 取得所有訂單
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -179,7 +188,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 取得當前點餐鎖定狀態
+// 2. 取得點餐鎖定狀態
 app.get('/api/order-lock', (req, res) => {
     res.json({
         isManualLocked: orderLockConfig.isManualLocked,
@@ -188,7 +197,7 @@ app.get('/api/order-lock', (req, res) => {
     });
 });
 
-// 更新點餐鎖定設定 (手動鎖定開關 / 修改截止時間)
+// 3. 更新鎖定設定
 app.post('/api/order-lock', (req, res) => {
     const { isManualLocked, cutoffTime } = req.body;
     
@@ -203,7 +212,7 @@ app.post('/api/order-lock', (req, res) => {
     res.json({ success: true, message: '鎖定設定更新成功', config: orderLockConfig });
 });
 
-// 2. 取得所有員工名單 (包含 department)
+// 4. 取得員工名單
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
@@ -222,7 +231,7 @@ app.get('/api/employees', async (req, res) => {
     }
 });
 
-// 3. 切換員工繳費狀態
+// 5. 切換員工繳費狀態
 app.patch('/api/employees/:cardId/payment', async (req, res) => {
     const { cardId } = req.params;
     const { isPaid } = req.body;
@@ -247,7 +256,7 @@ app.patch('/api/employees/:cardId/payment', async (req, res) => {
     }
 });
 
-// 4. 編輯員工姓名與部門 API
+// 6. 編輯員工姓名與部門
 app.put('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const { name, department } = req.body;
@@ -270,9 +279,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
-        // 同步更新 orders 裡面該員工歷史訂單顯示的姓名
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
-        
         await syncOrdersJsonFile();
         res.json({ success: true, message: '員工資料更新成功' });
     } catch (err) {
@@ -281,7 +288,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 5. 新增員工 (包含 department)
+// 7. 新增員工
 app.post('/api/employees', async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -310,9 +317,67 @@ app.post('/api/employees', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (加入鎖定檢查)
+// 8. 刪除員工
+app.delete('/api/employees/:cardId', async (req, res) => {
+    const { cardId } = req.params;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+
+    try {
+        const result = await pool.query('DELETE FROM users WHERE card_id = $1 RETURNING *;', [cleanCardId]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
+        }
+        res.json({ success: true, message: '刪除成功' });
+    } catch (err) {
+        console.error('刪除員工失敗:', err.message);
+        res.status(500).json({ success: false, message: '刪除員工失敗' });
+    }
+});
+
+// 9. 刪除訂單
+app.delete('/api/orders/:orderId', async (req, res) => {
+    const { orderId } = req.params;
+    const targetOrderIdStr = orderId ? String(orderId).trim() : '';
+
+    if (!targetOrderIdStr) {
+        return res.status(400).json({ success: false, message: '無效的訂單編號！' });
+    }
+
+    try {
+        const result = await pool.query('DELETE FROM orders WHERE order_id = $1 RETURNING *;', [targetOrderIdStr]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
+        }
+
+        await syncOrdersJsonFile();
+        res.json({ success: true, message: `訂單 ${targetOrderIdStr} 已成功刪除。` });
+    } catch (error) {
+        console.error('後端處理刪除訂單發生錯誤:', error);
+        res.status(500).json({ success: false, message: '伺服器刪除資料失敗。' });
+    }
+});
+
+// 10. 登入驗證
+app.post('/api/login', async (req, res) => {
+    const { cardId } = req.body;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    
+    try {
+        const result = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
+        if (result.rows.length > 0) {
+            res.json({ success: true, message: '登入成功', empName: result.rows[0].name });
+        } else {
+            res.json({ success: false, message: '卡號無效，拒絕存取' });
+        }
+    } catch (err) {
+        console.error('登入驗證錯誤:', err.message);
+        res.status(500).json({ success: false, message: '系統錯誤' });
+    }
+});
+
+// 11. 新增訂單 (已保留單一正確的 API，帶有鎖定檢查)
 app.post('/api/order', async (req, res) => {
-    // 🛑 1. 鎖定驗證：若系統已鎖定，拒絕下單
+    // 🛑 鎖定驗證
     if (isOrderLocked()) {
         const reason = orderLockConfig.isManualLocked 
             ? '管理員已手動關閉點餐系統！' 
@@ -361,108 +426,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 6. 刪除員工
-app.delete('/api/employees/:cardId', async (req, res) => {
-    const { cardId } = req.params;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
-
-    try {
-        const result = await pool.query('DELETE FROM users WHERE card_id = $1 RETURNING *;', [cleanCardId]);
-        if (result.rowCount === 0) {
-            return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
-        }
-        res.json({ success: true, message: '刪除成功' });
-    } catch (err) {
-        console.error('刪除員工失敗:', err.message);
-        res.status(500).json({ success: false, message: '刪除員工失敗' });
-    }
-});
-
-// 7. 刪除訂單
-app.delete('/api/orders/:orderId', async (req, res) => {
-    const { orderId } = req.params;
-    const targetOrderIdStr = orderId ? String(orderId).trim() : '';
-
-    if (!targetOrderIdStr) {
-        return res.status(400).json({ success: false, message: '無效的訂單編號！' });
-    }
-
-    try {
-        const result = await pool.query('DELETE FROM orders WHERE order_id = $1 RETURNING *;', [targetOrderIdStr]);
-        if (result.rowCount === 0) {
-            return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
-        }
-
-        await syncOrdersJsonFile();
-        res.json({ success: true, message: `訂單 ${targetOrderIdStr} 已成功刪除。` });
-    } catch (error) {
-        console.error('後端處理刪除訂單發生錯誤:', error);
-        res.status(500).json({ success: false, message: '伺服器刪除資料失敗。' });
-    }
-});
-
-// 8. 登入驗證
-app.post('/api/login', async (req, res) => {
-    const { cardId } = req.body;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
-    
-    try {
-        const result = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
-        if (result.rows.length > 0) {
-            res.json({ success: true, message: '登入成功', empName: result.rows[0].name });
-        } else {
-            res.json({ success: false, message: '卡號無效，拒絕存取' });
-        }
-    } catch (err) {
-        console.error('登入驗證錯誤:', err.message);
-        res.status(500).json({ success: false, message: '系統錯誤' });
-    }
-});
-
-// 9. 新增訂單
-app.post('/api/order', async (req, res) => {
-    const { cardId, meal, note, spicy, total } = req.body;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
-    
-    try {
-        const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
-        if (!cleanCardId || userRes.rows.length === 0) {
-            return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
-        }
-
-        const empName = userRes.rows[0].name;
-        const numTotal = Number(total);
-        const orderIdVal = Date.now();
-        const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
-
-        const insertQuery = `
-            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
-        `;
-        const values = [
-            orderIdVal,
-            cleanCardId,
-            empName,
-            meal ? String(meal).trim() : "未知餐點",
-            spicy ? String(spicy).trim() : "無",
-            note ? String(note).trim() : "無",
-            !isNaN(numTotal) ? numTotal : 0,
-            timestampStr
-        ];
-
-        await pool.query(insertQuery, values);
-        console.log(`[新訂單提示] 收到來自 ${empName} (${cleanCardId}) 的訂單，已寫入 Neon PostgreSQL！`);
-
-        syncOrdersJsonFile().catch(err => console.error(err));
-
-        res.json({ success: true, message: `🎉 訂單送出成功！` });
-    } catch (error) {
-        console.error('後端處理訂單發生錯誤:', error);
-        res.status(500).json({ success: false, message: '伺服器寫入資料庫失敗。' });
-    }
-});
-
-// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
+// 12. 取得個人歷史訂單紀錄
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -472,7 +436,6 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // ✅ 安全修改：改為參數化查詢，防止 SQL 注入
         const result = await pool.query(
             'SELECT order_id, meal, spicy, note, total, timestamp FROM orders WHERE card_id = $1 ORDER BY order_id DESC;',
             [cleanCardId]
@@ -493,7 +456,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 11. 動態匯出 Excel 下載 (包含繳費狀態)
+// 13. 動態匯出 Excel 下載
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
