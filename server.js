@@ -15,9 +15,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 設定檔路徑
-const settingsPath = path.join(__dirname, 'public', 'settings.json');
-
 // PostgreSQL (Neon) 連線設定
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -93,6 +90,7 @@ async function initDatabase() {
             );
         `);
 
+        // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
@@ -134,7 +132,7 @@ function isTodayInTaipei(orderTimestampMs) {
 
 // ==================== API 路由 ====================
 
-// 1. 取得所有訂單
+// 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -159,7 +157,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 2. 取得所有員工名單
+// 2. 取得所有員工名單 (包含 department)
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
@@ -226,7 +224,9 @@ app.put('/api/employees/:cardId', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
+        // 同步更新 orders 裡面該員工歷史訂單顯示的姓名
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
+        
         await syncOrdersJsonFile();
         res.json({ success: true, message: '員工資料更新成功' });
     } catch (err) {
@@ -235,7 +235,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 5. 新增員工
+// 5. 新增員工 (包含 department)
 app.post('/api/employees', async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -322,46 +322,12 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (修復版：即時檢查 settings.json 狀態)
+// 9. 新增訂單
 app.post('/api/order', async (req, res) => {
+    const { cardId, meal, note, spicy, total } = req.body;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    
     try {
-        // === 🔐 檢查系統設定檔 (settings.json) ===
-        if (fs.existsSync(settingsPath)) {
-            const rawData = await fs.promises.readFile(settingsPath, 'utf-8');
-            const settings = JSON.parse(rawData);
-
-            const systemStatus = settings.systemStatus || settings.overrideStatus || 'auto';
-            const cutoffTime = settings.cutoffTime || settings.autoCutoffTime || '';
-
-            // 判斷 1: 是否為強制鎖定/停止接單
-            if (systemStatus === 'locked' || systemStatus === 'closed' || systemStatus === 'manual_closed') {
-                return res.status(403).json({ 
-                    success: false, 
-                    message: '⛔ 系統目前已設定為「強制鎖定」，暫停接受訂單！' 
-                });
-            }
-
-            // 判斷 2: 處於自動模式且設定了截止時間
-            if (systemStatus === 'auto' && cutoffTime) {
-                const now = new Date();
-                const twTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
-                const currentHour = twTime.getHours();
-                const currentMinute = twTime.getMinutes();
-
-                const [cutoffHour, cutoffMinute] = cutoffTime.split(':').map(Number);
-
-                if (currentHour > cutoffHour || (currentHour === cutoffHour && currentMinute >= cutoffMinute)) {
-                    return res.status(403).json({ 
-                        success: false, 
-                        message: `⛔ 今日點餐已於 ${cutoffTime} 截止，無法再送出訂單。` 
-                    });
-                }
-            }
-        }
-
-        const { cardId, meal, note, spicy, total } = req.body;
-        const cleanCardId = cardId ? String(cardId).trim() : '';
-
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
@@ -399,7 +365,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄
+// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -409,6 +375,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
+        // ✅ 安全修改：改為參數化查詢，防止 SQL 注入
         const result = await pool.query(
             'SELECT order_id, meal, spicy, note, total, timestamp FROM orders WHERE card_id = $1 ORDER BY order_id DESC;',
             [cleanCardId]
@@ -429,7 +396,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 11. 動態匯出 Excel 下載
+// 11. 動態匯出 Excel 下載 (包含繳費狀態)
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -528,41 +495,6 @@ app.get('/api/export-excel', async (req, res) => {
     } catch (err) {
         console.error('導出 Excel 失敗:', err.message);
         res.status(500).json({ success: false, message: '無法產生 Excel 報表' });
-    }
-});
-
-// 12. 取得系統設定 API
-app.get('/api/settings', async (req, res) => {
-    try {
-        if (fs.existsSync(settingsPath)) {
-            const data = await fs.promises.readFile(settingsPath, 'utf-8');
-            return res.json(JSON.parse(data));
-        }
-        res.json({ cutoffTime: '10:30', systemStatus: 'auto' });
-    } catch (err) {
-        console.error('讀取系統設定失敗:', err.message);
-        res.status(500).json({ success: false, message: '無法讀取系統設定' });
-    }
-});
-
-// 13. 儲存系統設定 API
-app.post('/api/settings', async (req, res) => {
-    try {
-        const { cutoffTime, systemStatus, autoCutoffTime, overrideStatus } = req.body;
-        
-        const settingsData = {
-            cutoffTime: cutoffTime || autoCutoffTime || '10:30',
-            systemStatus: systemStatus || overrideStatus || 'auto',
-            updatedAt: new Date().toISOString()
-        };
-
-        await fs.promises.writeFile(settingsPath, JSON.stringify(settingsData, null, 2), 'utf-8');
-        console.log('[系統提示] 系統設定更新成功：', settingsData);
-
-        res.json({ success: true, message: '系統設定儲存成功！', settings: settingsData });
-    } catch (err) {
-        console.error('儲存系統設定失敗:', err.message);
-        res.status(500).json({ success: false, message: '儲存系統設定失敗' });
     }
 });
 
