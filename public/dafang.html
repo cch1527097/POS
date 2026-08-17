@@ -770,6 +770,52 @@ async function submitOrderToServer() {
         note: fullNote
     };
 
+    window.onload = async function() {
+    initCardId();[cite: 4]
+    renderMenu(menuItems);[cite: 4]
+    await checkSystemStatus(); // 載入頁面時檢查是否鎖定[cite: 4]
+};
+
+async function checkSystemStatus() {
+    const btn = document.getElementById("submit-btn");[cite: 4]
+    const statusDiv = document.getElementById("card-status");[cite: 4]
+
+    try {
+        const res = await fetch('/api/settings');[cite: 3]
+        if (!res.ok) return;
+
+        const settings = await res.json();[cite: 3]
+        const now = new Date();
+        const currentHM = now.toTimeString().substring(0, 5); // 取得當前時間 "HH:MM"
+
+        let isLocked = false;
+        let lockReason = "";
+
+        // 判斷是否鎖定：手動設為鎖定 OR (自動模式且超過時間)
+        if (settings.systemStatus === 'locked' || settings.systemStatus === 'closed') {
+            isLocked = true;
+            lockReason = "系統目前已設定為強制鎖定（暫停接單）";
+        } else if (settings.systemStatus === 'auto' && settings.cutoffTime && currentHM >= settings.cutoffTime) {
+            isLocked = true;
+            lockReason = `已超過本日點餐截止時間（${settings.cutoffTime}），暫停接單`;
+        }
+
+        // 強制反灰禁用按鈕[cite: 4]
+        if (isLocked) {
+            btn.disabled = true;[cite: 4]
+            btn.innerText = "已鎖定時間 (停止接單)";[cite: 4]
+            if (statusDiv) {
+                statusDiv.innerHTML = `⛔ <b>${lockReason}</b>`;
+                statusDiv.style.backgroundColor = "#fee2e2";
+                statusDiv.style.color = "#991b1b";
+                statusDiv.style.borderLeftColor = "#ef4444";
+            }
+        }
+    } catch (err) {
+        console.error("無法取得系統狀態:", err);
+    }
+}
+
     async function checkSystemStatus() {
     const btn = document.getElementById("submit-btn");
     const statusDiv = document.getElementById("card-status");
