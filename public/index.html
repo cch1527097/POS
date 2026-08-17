@@ -20,10 +20,40 @@
             transition: background-color 0.3s ease;
         }
 
+        /* ==================== 登入版面全螢幕背景與裝飾 ==================== */
         body.login-mode {
             display: flex;
             justify-content: center;
             align-items: center;
+            background: #f8fcf7;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 左上角與右下角的流線波浪背景裝飾 */
+        body.login-mode::before,
+        body.login-mode::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(10px);
+            z-index: 0;
+        }
+
+        body.login-mode::before {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(188, 235, 190, 0.8) 0%, rgba(215, 245, 217, 0.4) 60%, rgba(255, 255, 255, 0) 100%);
+            top: -200px;
+            left: -200px;
+        }
+
+        body.login-mode::after {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(188, 235, 190, 0.8) 0%, rgba(215, 245, 217, 0.4) 60%, rgba(255, 255, 255, 0) 100%);
+            bottom: -250px;
+            right: -250px;
         }
 
         body.order-mode {
@@ -227,41 +257,42 @@
         /* ==================== 1. 登入畫面區塊 ==================== */
         .login-card {
             background-color: #ffffff; 
-            border-radius: 60px;       
-            width: 450px;
-            height: 620px;
+            border-radius: 16px;       
+            width: 580px;
+            min-height: 480px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-            padding: 40px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.05);
+            padding: 50px 40px;
             position: relative;
+            z-index: 5;
+            border: 1px solid rgba(220, 235, 218, 0.5);
         }
 
+        /* 登入頁 Logo 樣式 */
         .login-logo {
             width: 80px;
             height: auto;
-            margin-bottom: 25px;
-            object-fit: contain;
-            flex-shrink: 0;
+            margin-bottom: 16px;
         }
 
         .title {
-            font-size: 36px;
+            font-size: 30px;
             color: #2b4c23; 
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-bottom: 5px; 
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px; 
             text-align: center;
         }
 
         .subtitle {
-            font-size: 16px;
+            font-size: 14px;
             color: #7ba370;
-            font-weight: bold;
-            letter-spacing: 4px;
-            margin-bottom: 50px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            margin-bottom: 40px;
             text-transform: uppercase;
             text-align: center;
         }
@@ -269,65 +300,88 @@
         .input-group {
             display: flex;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             width: 100%;
             justify-content: center;
         }
 
         .input-group input {
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid #e0e0e0; 
-            font-size: 24px;
-            width: 260px;
+            background: #f7faf6;
+            border: 1px solid #d0e3ce; 
+            border-radius: 10px;
+            font-size: 18px;
+            width: 320px;
             text-align: center;
             outline: none;
-            padding-bottom: 8px;
+            padding: 14px 20px;
             color: #2b4c23;
-            transition: border-color 0.2s;
+            transition: all 0.25s ease;
         }
 
         .input-group input:focus {
-            border-bottom-color: #4e803c;
+            border-color: #4e803c;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(78, 128, 60, 0.15);
         }
 
         .input-group input::placeholder {
-            color: #d2d2d2;
+            color: #a3baa0;
             font-weight: normal;
         }
 
         .login-btn {
-            background-color: #a4d49d; 
+            background-color: #4e803c; 
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 22px;
-            padding: 10px 65px;
+            border-radius: 10px;
+            font-size: 18px;
+            width: 320px;
+            padding: 13px 0;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(78, 128, 60, 0.2);
             transition: all 0.2s ease;
-            font-weight: bold;
-            margin-top: 10px;
+            font-weight: 600;
         }
 
-        .login-btn:hover:not(:disabled) { background-color: #93c48c; transform: scale(1.03); }
+        .login-btn:hover:not(:disabled) { 
+            background-color: #3f6b30; 
+            transform: translateY(-1px);
+        }
         .login-btn:active:not(:disabled) { transform: scale(0.98); }
         .login-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
         
         .login-admin-link {
-            background: none;
-            border: none;
-            color: #7ba370;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 25px;
-            cursor: pointer;
-            transition: color 0.2s, transform 0.2s;
-            text-decoration: none;
-            text-align: center;
-        }
+    background-color: #f0f0f0;  /* 淺灰底色 */
+    color: #0f805a;             /* 深綠色字樣 */
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 25px;
+    padding: 12px 20px;         /* 上下左右內邊距 */
+    border: none;
+    border-radius: 12px;        /* 圓角邊框 */
+    width: 320px;               /* 寬度與登入按鈕一致 */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    text-align: center;
+    box-sizing: border-border-box;
+}
 
-        .login-admin-link:hover { color: #2b4c23; transform: scale(1.02); }
+.login-admin-link:hover {
+    background-color: #e4e4e4;  /* 滑鼠懸停時微調底色 */
+    color: #0a5c41;
+}
+
+        /* 登入頁底部版權宣告 */
+        .login-footer-copy {
+            position: absolute;
+            bottom: 25px;
+            width: 100%;
+            text-align: center;
+            font-size: 13.5px;
+            color: #668062;
+            z-index: 10;
+        }
 
         /* ==================== 2. 點餐畫面區塊 ==================== */
         .order-container {
@@ -835,10 +889,11 @@
         }
 
         @media (max-width: 480px) {
-            .login-card { width: 90%; height: auto; padding: 40px 20px; border-radius: 35px; }
-            .title { font-size: 28px; margin-bottom: 2px; }
+            .login-card { width: 90%; height: auto; padding: 40px 20px; border-radius: 16px; }
+            .title { font-size: 26px; margin-bottom: 2px; }
             .subtitle { font-size: 12px; margin-bottom: 30px; letter-spacing: 2px; }
-            .input-group input { width: 240px; max-width: 85%; font-size: 22px; }
+            .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
+            .login-btn { width: 100%; max-width: 280px; }
             .clear-local-btn { width: 100%; justify-content: center; }
             .history-modal-content, .cart-modal-content { width: 95vw !important; }
         }
@@ -848,16 +903,21 @@
 
     <!-- 1. 登入畫面區塊 -->
     <div id="login-section" class="login-card hidden">
-        <img src="logo.gif" alt="系統Logo" class="login-logo">
+        <img src="logo.gif" alt="Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
-        <div class="subtitle">ORDERING SYSTEM</div>
+        <div class="subtitle">ORDERING SYSTEM LOGIN</div>
          
         <div class="input-group">
             <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required inputmode="text" onclick="this.select()">
         </div>
 
-        <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入</button>
-        <button class="login-admin-link" onclick="navigateToAdmin()">⚙️ 後台管理系統 ➔</button>
+        <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入系統</button>
+        <button class="login-admin-link" onclick="navigateToAdmin()">後台管理系統</button>
+    </div>
+
+    <!-- 頁尾宣告 -->
+    <div class="login-footer-copy">
+        © 秀傳醫療財團法人彰濱秀傳紀念醫院 版權所有
     </div>
 
     <!-- 2. 點餐畫面區塊 -->
