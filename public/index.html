@@ -1139,6 +1139,29 @@
             });
         }
 
+        // 前台驗證邏輯
+function checkLockStatusBeforeOrder() {
+    const lockConfig = JSON.parse(localStorage.getItem('orderLockConfig') || '{"isManualLocked":false,"cutoffTime":"10:30"}');
+    
+    if (lockConfig.isManualLocked) {
+        alert("今日點餐已鎖定，無法再送出訂單！");
+        return false;
+    }
+    
+    if (lockConfig.cutoffTime) {
+        const now = new Date();
+        const [cutoffHour, cutoffMin] = lockConfig.cutoffTime.split(':').map(Number);
+        const currentMin = now.getHours() * 60 + now.getMinutes();
+        const targetMin = cutoffHour * 60 + cutoffMin;
+        
+        if (currentMin >= targetMin) {
+            alert(`已超過今日截止點餐時間 (${lockConfig.cutoffTime})！`);
+            return false;
+        }
+    }
+    return true;
+}
+
         async function loadOrders() {
             const statusSpan = document.getElementById('syncStatus');
             if(statusSpan) statusSpan.innerText = "連線中...";
