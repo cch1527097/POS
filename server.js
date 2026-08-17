@@ -37,7 +37,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：同步寫入 public/orders.json
+// 輔助函式：同步寫入 public/orders.json (非同步寫入避免阻塞)
 async function syncOrdersJsonFile() {
     try {
         const result = await pool.query(`
@@ -90,22 +90,7 @@ async function initDatabase() {
             );
         `);
 
-        // 系統設定資料表 (儲存鎖定時間與開關)
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS settings (
-                key VARCHAR(50) PRIMARY KEY,
-                value TEXT NOT NULL
-            );
-        `);
-
-        // 寫入預設設定 (若不存在)
-        await pool.query(`
-            INSERT INTO settings (key, value) VALUES 
-            ('order_lock_enabled', 'enabled'),
-            ('order_cutoff_time', '07:00')
-            ON CONFLICT (key) DO NOTHING;
-        `);
-
+        // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
@@ -145,100 +130,9 @@ function isTodayInTaipei(orderTimestampMs) {
     return orderDateStr === todayDateStr;
 }
 
-// 輔助函式：檢查目前是否已過結單時間 (強制採用台北時間 Asia/Taipei)
-async function checkIsOrderLocked() {
-    try {
-        const res = await pool.query("SELECT key, value FROM settings WHERE key IN ('order_lock_enabled', 'order_cutoff_time');");
-        const settings = {};
-        res.rows.forEach(r => settings[r.key] = r.value);
-
-        const isEnabled = settings['order_lock_enabled'] || 'enabled';
-        if (isEnabled === 'disabled') return { isLocked: false, cutoffTime: settings['order_cutoff_time'] || '07:00' };
-
-        const cutoffTimeStr = settings['order_cutoff_time'] || '07:00';
-        const [targetHour, targetMinute] = cutoffTimeStr.split(':').map(Number);
-
-        // 🔒 關鍵修正：透過 Intl 強制取得正確的台北「時」與「分」
-        const now = new Date();
-        const formatter = new Intl.DateTimeFormat('zh-TW', {
-            timeZone: 'Asia/Taipei',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: false
-        });
-
-        const parts = formatter.formatToParts(now);
-        let currentHour = 0;
-        let currentMinute = 0;
-
-        parts.forEach(part => {
-            if (part.type === 'hour') currentHour = parseInt(part.value, 10);
-            if (part.type === 'minute') currentMinute = parseInt(part.value, 10);
-        });
-
-        // 處理 Intl 在某些環境下回傳 24 時的情況
-        if (currentHour === 24) currentHour = 0;
-
-        const currentTotalMinutes = currentHour * 60 + currentMinute;
-        const targetTotalMinutes = targetHour * 60 + targetMinute;
-
-        const isLocked = currentTotalMinutes >= targetTotalMinutes;
-        
-        console.log(`[時間檢查] 台北時間: ${currentHour}:${currentMinute} | 截止時間: ${cutoffTimeStr} | 鎖定狀態: ${isLocked}`);
-        
-        return { isLocked, cutoffTime: cutoffTimeStr };
-    } catch (err) {
-        console.error('檢查鎖定狀態失敗:', err);
-        return { isLocked: false, cutoffTime: '07:00' };
-    }
-}
-
 // ==================== API 路由 ====================
 
-// 核心更新：提供即時系統收單狀態給前端
-app.get('/api/system-status', async (req, res) => {
-    try {
-        const { isLocked, cutoffTime } = await checkIsOrderLocked();
-        res.json({
-            success: true,
-            isLocked: isLocked,
-            cutoffTime: cutoffTime,
-            canOrder: !isLocked
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: '無法讀取系統收單狀態' });
-    }
-});
-
-// 取得系統結單設定 API
-app.get('/api/settings', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT key, value FROM settings;');
-        const settingsMap = {};
-        result.rows.forEach(r => settingsMap[r.key] = r.value);
-        res.json({ success: true, settings: settingsMap });
-    } catch (err) {
-        res.status(500).json({ success: false, message: '無法讀取系統設定' });
-    }
-});
-
-// 更新系統結單設定 API
-app.post('/api/settings', async (req, res) => {
-    const { order_lock_enabled, order_cutoff_time } = req.body;
-    try {
-        if (order_lock_enabled) {
-            await pool.query("INSERT INTO settings (key, value) VALUES ('order_lock_enabled', $1) ON CONFLICT (key) DO UPDATE SET value = $1;", [order_lock_enabled]);
-        }
-        if (order_cutoff_time) {
-            await pool.query("INSERT INTO settings (key, value) VALUES ('order_cutoff_time', $1) ON CONFLICT (key) DO UPDATE SET value = $1;", [order_cutoff_time]);
-        }
-        res.json({ success: true, message: '設定儲存成功！' });
-    } catch (err) {
-        res.status(500).json({ success: false, message: '儲存設定失敗' });
-    }
-});
-
-// 1. 取得所有訂單
+// 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -263,7 +157,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 2. 取得所有員工名單
+// 2. 取得所有員工名單 (包含 department)
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
@@ -330,6 +224,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
+        // 同步更新 orders 裡面該員工歷史訂單顯示的姓名
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
         
         await syncOrdersJsonFile();
@@ -340,7 +235,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 5. 新增員工
+// 5. 新增員工 (包含 department)
 app.post('/api/employees', async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -427,21 +322,12 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (嚴格時間鎖定驗證)
+// 9. 新增訂單
 app.post('/api/order', async (req, res) => {
     const { cardId, meal, note, spicy, total } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
-
+    
     try {
-        // 🔒 強制驗證是否已鎖定/截止點餐
-        const { isLocked, cutoffTime } = await checkIsOrderLocked();
-        if (isLocked) {
-            return res.status(400).json({ 
-                success: false, 
-                message: `🔒 系統已於 ${cutoffTime} 截止收單，無法再接收新訂單！` 
-            });
-        }
-
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
@@ -479,7 +365,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄
+// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -489,6 +375,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
+        // ✅ 安全修改：改為參數化查詢，防止 SQL 注入
         const result = await pool.query(
             'SELECT order_id, meal, spicy, note, total, timestamp FROM orders WHERE card_id = $1 ORDER BY order_id DESC;',
             [cleanCardId]
@@ -509,7 +396,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 11. 動態匯出 Excel 下載
+// 11. 動態匯出 Excel 下載 (包含繳費狀態)
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
