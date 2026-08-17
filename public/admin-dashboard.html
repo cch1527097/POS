@@ -691,19 +691,42 @@
         let searchTimeout = null;
 
         // 判斷訂單是否屬於飲料(喝涼涼)
-function isDrinkOrder(order) {
-    if (order.category === 'drink' || order.type === 'drink') return true;
-    
-    const mealStr = (order.meal || '').toLowerCase();
-    
-    // 1. 正餐關鍵字排除 (避免名稱內含「茶/飲」等字的非飲料餐點被誤判)
-    const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵'];
-    if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
+        function isDrinkOrder(order) {
+            if (order.category === 'drink' || order.type === 'drink') return true;
+            
+            const mealStr = (order.meal || '').toLowerCase();
+            
+            // 1. 正餐關鍵字排除 (避免名稱內含「茶/飲」等字的非飲料餐點被誤判)
+            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵'];
+            if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
 
-    // 2. 飲料專用關鍵字比對
-    const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品'];
-    return drinkKeywords.some(kw => mealStr.includes(kw));
-}
+            // 2. 飲料專用關鍵字比對
+            const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品'];
+            return drinkKeywords.some(kw => mealStr.includes(kw));
+        }
+
+        // 解析時間字串輔助函式（將 "2026/8/3 上午9:32:45" 轉為微秒數）
+        function parseOrderTime(timestampStr) {
+            if (!timestampStr) return 0;
+            let str = timestampStr.trim().replace(/-/g, '/');
+            let isPM = str.includes('下午');
+            let isAM = str.includes('上午');
+            
+            // 移除 上午/下午 字樣以方便 JavaScript 解析 Date
+            str = str.replace('上午', '').replace('下午', '').trim();
+            let d = new Date(str);
+            let timeVal = d.getTime();
+
+            if (isNaN(timeVal)) return 0;
+
+            // 如果包含下午且小時數不大於12，進行12小時制轉換
+            if (isPM && d.getHours() < 12) {
+                timeVal += 12 * 60 * 60 * 1000;
+            } else if (isAM && d.getHours() === 12) {
+                timeVal -= 12 * 60 * 60 * 1000;
+            }
+            return timeVal;
+        }
 
         function showCustomModal({ title = '提示', message = '', isConfirm = false, onConfirm = null }) {
             document.getElementById('modalTitle').innerText = title;
@@ -1042,7 +1065,7 @@ function isDrinkOrder(order) {
             }
         }
 
-        /* 渲染訂單表格 */
+        /* 渲染訂單表格（已被修改為強制依時間/單號『由新到舊』排序） */
         function renderOrderTable(orders, tableBodyId, showFullTime = false, hideCategoryCol = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1054,7 +1077,20 @@ function isDrinkOrder(order) {
                 return;
             }
 
-            const htmlRows = [...orders].reverse().map(order => {
+            // 【修改處】：精確的『由新到舊』排序邏輯 (依據 timestamp，若相同則比較 orderId)
+            const sortedOrders = [...orders].sort((a, b) => {
+                const timeA = parseOrderTime(a.timestamp);
+                const timeB = parseOrderTime(b.timestamp);
+                if (timeA !== timeB) {
+                    return timeB - timeA; // 時間較大的（較新）排前面
+                }
+                // 若時間解析相同，再以 orderId 進行降冪比對
+                const idA = Number(a.orderId) || 0;
+                const idB = Number(b.orderId) || 0;
+                return idB - idA;
+            });
+
+            const htmlRows = sortedOrders.map(order => {
                 const orderIdStr = order.orderId ? String(order.orderId) : '';
                 const cardId = order.cardId || '';
                 
@@ -1296,18 +1332,18 @@ function isDrinkOrder(order) {
         }
 
         window.onload = async function() {
-    // 讀取登入時儲存的管理員姓名
-    const currentAdminName = localStorage.getItem('currentAdminName') || '管理員';
-    const adminInfoElem = document.getElementById('adminDisplayInfo');
-    if (adminInfoElem) {
-        adminInfoElem.innerText = `☁️ 管理員: ${currentAdminName} [已上線]`;
-    }
+            // 讀取登入時儲存的管理員姓名
+            const currentAdminName = localStorage.getItem('currentAdminName') || '管理員';
+            const adminInfoElem = document.getElementById('adminDisplayInfo');
+            if (adminInfoElem) {
+                adminInfoElem.innerText = `☁️ 管理員: ${currentAdminName} [已上線]`;
+            }
 
-    await loadEmployees();
-    await loadOrders();
-    await loadHistoryOrders();
-    setInterval(loadOrders, 30000);
-};
+            await loadEmployees();
+            await loadOrders();
+            await loadHistoryOrders();
+            setInterval(loadOrders, 30000);
+        };
     </script>
 </body>
 </html>
