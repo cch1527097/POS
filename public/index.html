@@ -1139,6 +1139,41 @@
             });
         }
 
+        async function submitOrder() {
+    // 1. 呼叫後端 API 檢查鎖定狀態
+    try {
+        const lockRes = await fetch('/api/order-lock');
+        const lockData = await lockRes.json();
+        
+        if (lockData.isLocked) {
+            alert('⚠️ 目前已關閉點餐服務，無法提交訂單！');
+            return;
+        }
+    } catch(e) {
+        console.warn('無法確認鎖定狀態，將由後端最後把關');
+    }
+
+    // 2. 正常送出訂單
+    const response = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            cardId: currentCardId,
+            meal: selectedMeal,
+            spicy: selectedSpicy,
+            note: userNote,
+            total: totalPrice
+        })
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+        alert(result.message); // 若後端回傳 403 鎖定訊息會在此提示
+    } else {
+        alert(result.message);
+    }
+}
+
         // 前台驗證邏輯
 function checkLockStatusBeforeOrder() {
     const lockConfig = JSON.parse(localStorage.getItem('orderLockConfig') || '{"isManualLocked":false,"cutoffTime":"10:30"}');
