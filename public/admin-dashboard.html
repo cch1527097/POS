@@ -445,21 +445,23 @@
                 <button class="btn" onclick="window.open('index.html', '_blank')">開啟前台點餐 ➔</button>
             </div>
 
-            <!-- 新增：點餐鎖定時間設定卡片 -->
-            <div class="card" style="border-left: 4px solid var(--accent);">
-                <h3>⏰ 每日點餐截止 / 鎖定時間設定</h3>
-                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 16px;">
-                    設定每日截止點餐時間，當系統時間到達或超過此設定後，員工將無法再於前台新增訂單。
-                </p>
-                <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <label for="lockTimeInput" style="font-weight: 600; font-size: 14px;">每日截止時間：</label>
-                        <input type="time" id="lockTimeInput" value="10:30" style="width: auto; padding: 8px 12px;">
-                    </div>
-                    <button class="btn" onclick="saveLockTime()">💾 儲存鎖定時間</button>
-                    <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
-                </div>
-            </div>
+            <!-- 點餐鎖定時間設定卡片 -->
+<div class="card" style="border-left: 4px solid var(--accent);">
+    <h3>⏰ 每日點餐截止 / 鎖定時間設定</h3>
+    <p style="color:var(--text-sub); font-size:14px; margin-bottom: 16px;">
+        設定每日截止點餐時間，當系統時間到達或超過此設定後，員工將無法再於前台新增訂單。
+    </p>
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="lockTimeInput" style="font-weight: 600; font-size: 14px;">每日截止時間：</label>
+            <input type="time" id="lockTimeInput" value="10:30" style="width: auto; padding: 8px 12px;">
+        </div>
+        <button class="btn" onclick="saveLockTime()">💾 儲存鎖定時間</button>
+        <!-- 新增解除鎖定按鈕 -->
+        <button class="btn btn-secondary" style="background-color: #ffebee; color: #c62828;" onclick="unlockOrderTime()">🔓 解除鎖定</button>
+        <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
+    </div>
+</div>
 
             <div class="summary-container">
                 <div class="summary-box">
