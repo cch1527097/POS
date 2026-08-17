@@ -23,6 +23,11 @@ const pool = new Pool({
     }
 });
 
+// === 👇 新增：系統設定變數 ===
+// 設定系統預設的點餐截止時間 (格式: "HH:mm"，24小時制，空字串代表不鎖定)
+let ORDER_CUTOFF_TIME = ""; 
+// === 👆 新增結束 ===
+
 // 預設員工資料
 const INITIAL_USER_DB = {
     "4860": "呂佳玟", "4931": "陳佳文", "5514": "張淑娟", "5853": "許家綾",
@@ -324,6 +329,27 @@ app.post('/api/login', async (req, res) => {
 
 // 9. 新增訂單
 app.post('/api/order', async (req, res) => {
+    // === 👇 新增：檢查是否超過點餐截止時間 ===
+    if (ORDER_CUTOFF_TIME) {
+        const now = new Date();
+        // 確保以台灣時間為基準進行比對
+        const twTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+        const currentHour = twTime.getHours();
+        const currentMinute = twTime.getMinutes();
+        
+        // 解析設定的鎖定時間
+        const [cutoffHour, cutoffMinute] = ORDER_CUTOFF_TIME.split(':').map(Number);
+        
+        // 判斷當下時間是否已經超過截止時間
+        if (currentHour > cutoffHour || (currentHour === cutoffHour && currentMinute >= cutoffMinute)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: `系統已鎖定！今日點餐時間已於 ${ORDER_CUTOFF_TIME} 截止，無法再送出訂單。` 
+            });
+        }
+    }
+    // === 👆 新增結束 ===
+
     const { cardId, meal, note, spicy, total } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
     
@@ -375,7 +401,6 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // ✅ 安全修改：改為參數化查詢，防止 SQL 注入
         const result = await pool.query(
             'SELECT order_id, meal, spicy, note, total, timestamp FROM orders WHERE card_id = $1 ORDER BY order_id DESC;',
             [cleanCardId]
@@ -497,6 +522,33 @@ app.get('/api/export-excel', async (req, res) => {
         res.status(500).json({ success: false, message: '無法產生 Excel 報表' });
     }
 });
+
+// === 👇 新增：動態設定/取得時間鎖定 API ===
+
+// 12. 取得目前的鎖定時間
+app.get('/api/settings/lock-time', (req, res) => {
+    res.json({ success: true, lockTime: ORDER_CUTOFF_TIME });
+});
+
+// 13. 後台設定點餐鎖定時間
+app.post('/api/settings/lock-time', (req, res) => {
+    const { time } = req.body; // 預期接收格式: "10:30" 或是 "" (解除鎖定)
+    
+    // 如果傳入空字串，代表解除時間鎖定
+    if (time === '') {
+        ORDER_CUTOFF_TIME = '';
+        return res.json({ success: true, message: '✅ 已解除點餐時間限制' });
+    }
+
+    // 簡易的格式驗證 (正則表達式檢查 HH:mm)
+    if (time && /^([01]\d|2[0-3]):([0-5]\d)$/.test(time)) {
+        ORDER_CUTOFF_TIME = time;
+        res.json({ success: true, message: `✅ 已成功將點餐截止時間更新為 ${ORDER_CUTOFF_TIME}` });
+    } else {
+        res.status(400).json({ success: false, message: '❌ 請提供有效的時間格式 (例如 10:30)' });
+    }
+});
+// === 👆 新增結束 ===
 
 app.listen(PORT, () => {
     console.log(`================================================================`);
