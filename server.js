@@ -348,6 +348,23 @@ app.post('/api/order', async (req, res) => {
             });
         }
     }
+
+    const settingsPath = path.join(__dirname, 'public', 'settings.json');[cite: 3]
+        if (fs.existsSync(settingsPath)) {[cite: 3]
+            const settings = JSON.parse(await fs.promises.readFile(settingsPath, 'utf-8'));[cite: 3]
+            const currentHM = new Date().toTimeString().substring(0, 5);
+
+            const isLocked = settings.systemStatus === 'locked' || 
+                             settings.systemStatus === 'closed' || 
+                             (settings.systemStatus === 'auto' && currentHM >= settings.cutoffTime);
+
+            if (isLocked) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: "系統目前已鎖定結單，無法接受新訂單！" 
+                });
+            }
+        }
     // === 👆 新增結束 ===
 
     const { cardId, meal, note, spicy, total } = req.body;
