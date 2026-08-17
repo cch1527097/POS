@@ -145,7 +145,7 @@ function isTodayInTaipei(orderTimestampMs) {
     return orderDateStr === todayDateStr;
 }
 
-// 輔助函式：檢查目前是否已過結單時間 (台北時間)
+// 輔助函式：檢查目前是否已過結單時間 (強制採用台北時間 Asia/Taipei)
 async function checkIsOrderLocked() {
     try {
         const res = await pool.query("SELECT key, value FROM settings WHERE key IN ('order_lock_enabled', 'order_cutoff_time');");
@@ -158,18 +158,34 @@ async function checkIsOrderLocked() {
         const cutoffTimeStr = settings['order_cutoff_time'] || '07:00';
         const [targetHour, targetMinute] = cutoffTimeStr.split(':').map(Number);
 
-        // 取得當前台北時間
+        // 🔒 關鍵修正：透過 Intl 強制取得正確的台北「時」與「分」
         const now = new Date();
-        const taipeiTimeString = now.toLocaleString("en-US", { timeZone: "Asia/Taipei" });
-        const taipeiDate = new Date(taipeiTimeString);
+        const formatter = new Intl.DateTimeFormat('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false
+        });
 
-        const currentHour = taipeiDate.getHours();
-        const currentMinute = taipeiDate.getMinutes();
+        const parts = formatter.formatToParts(now);
+        let currentHour = 0;
+        let currentMinute = 0;
+
+        parts.forEach(part => {
+            if (part.type === 'hour') currentHour = parseInt(part.value, 10);
+            if (part.type === 'minute') currentMinute = parseInt(part.value, 10);
+        });
+
+        // 處理 Intl 在某些環境下回傳 24 時的情況
+        if (currentHour === 24) currentHour = 0;
 
         const currentTotalMinutes = currentHour * 60 + currentMinute;
         const targetTotalMinutes = targetHour * 60 + targetMinute;
 
         const isLocked = currentTotalMinutes >= targetTotalMinutes;
+        
+        console.log(`[時間檢查] 台北時間: ${currentHour}:${currentMinute} | 截止時間: ${cutoffTimeStr} | 鎖定狀態: ${isLocked}`);
+        
         return { isLocked, cutoffTime: cutoffTimeStr };
     } catch (err) {
         console.error('檢查鎖定狀態失敗:', err);
