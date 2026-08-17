@@ -28,24 +28,24 @@
         }
 
         /* ==================== 頂部 Header 樣式 ==================== */
-.navbar {
-    width: 100%;
-    background-color: #ffffff;
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    padding: 12px 40px;
-    box-sizing: border-box;
+        .navbar {
+            width: 100%;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 12px 40px;
+            box-sizing: border-box;
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative; /* 確保內部絕對方位的搜尋框以 navbar 為基準對齊 */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative; /* 確保內部絕對方位的搜尋框以 navbar 為基準對齊 */
 
-    /* 固定置頂 */
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
+            /* 固定置頂 */
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
         .navbar-brand { 
             font-size: 24px; 
             font-weight: 800; 
@@ -892,6 +892,23 @@ async function submitOrderToServer() {
             confirmText: "確定",
             showCancel: false
         });
+    }
+
+    // 🔒 0. 第一道防線：向後端驗證系統是否鎖定
+    try {
+        const checkRes = await fetch('/api/system-status');
+        const checkData = await checkRes.json();
+        
+        if (checkData.isLocked) {
+            return showCustomModal({
+                title: "系統提示",
+                bodyHtml: "🔒 目前後台點餐功能已鎖定，暫不接受新訂單！",
+                confirmText: "我知道了",
+                showCancel: false
+            });
+        }
+    } catch (err) {
+        console.warn("無法即時連線驗證鎖定狀態:", err);
     }
 
     // 1. 安全取得選單 DOM 數值
