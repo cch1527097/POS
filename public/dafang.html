@@ -36,12 +36,9 @@
             justify-content: space-between;
             border-bottom: 1px solid var(--border-color);
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            
-            /* 📌 修改與新增部分 */
-            position: sticky;      /* 或是使用 fixed */
-            top: 0;                /* 貼頂置頂 */
-            z-index: 1000;         /* 確保層級高於下方內容，避免被圖片或其它元素遮擋 */
-            
+            position: sticky;
+            top: 0;
+            z-index: 1000;
             height: 60px;
             box-sizing: border-box;
         }
@@ -115,7 +112,6 @@
         .store-meta span { display: flex; align-items: center; gap: 4px; }
         .store-meta .rating { color: #f1c40f; font-weight: bold; }
 
-        /* 低消提示橫幅樣式 */
         .promo-banner {
             display: flex;
             align-items: center;
@@ -238,7 +234,6 @@
             border: none; 
         }
 
-        /* 自訂 Modal 彈窗 CSS */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -326,7 +321,6 @@
         }
         .modal-btn-confirm:hover { background: #82170e; }
 
-        /* 響應式手機/平板優化 */
         @media (max-width: 1024px) {
             .main-layout { 
                 flex-direction: column; 
@@ -449,7 +443,6 @@
     </div>
 </div>
 
-<!-- 通用 Custom Modal 結構 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -509,7 +502,7 @@ let modalResolver = null;
 window.onload = async function() {
     initCardId();
     renderMenu(menuItems);
-    await checkSystemStatus(); // 載入頁面時檢查是否已鎖定/結單
+    await checkSystemStatus(); 
 };
 
 /* Modal 控制函式 */
@@ -721,6 +714,46 @@ function renderCart() {
     document.getElementById("total-amount").innerText = `總計: $${Math.round(finalTotal)}`;
 }
 
+async function checkSystemStatus() {
+    const btn = document.getElementById("submit-btn");
+    const statusDiv = document.getElementById("card-status");
+
+    try {
+        const res = await fetch('/api/settings');
+        if (!res.ok) return;
+
+        const settings = await res.json();
+        const now = new Date();
+        const currentHM = now.toTimeString().substring(0, 5);
+
+        let isLocked = false;
+        let lockReason = "";
+
+        if (settings.systemStatus === 'closed' || settings.systemStatus === 'manual_closed' || settings.systemStatus === 'locked') {
+            isLocked = true;
+            lockReason = "系統目前已停止接單（已結單）";
+        } 
+        else if (settings.cutoffTime && currentHM >= settings.cutoffTime) {
+            isLocked = true;
+            lockReason = `已超過本日點餐截止時間（${settings.cutoffTime}），系統已鎖定`;
+        }
+
+        if (isLocked) {
+            btn.disabled = true;
+            btn.innerText = "已鎖定時間 (停止接單)";
+            
+            if (statusDiv) {
+                statusDiv.innerHTML = `⛔ <b>${lockReason}</b>`;
+                statusDiv.style.backgroundColor = "#fee2e2";
+                statusDiv.style.color = "#991b1b";
+                statusDiv.style.borderLeftColor = "#ef4444";
+            }
+        }
+    } catch (err) {
+        console.error("無法取得系統狀態:", err);
+    }
+}
+
 async function submitOrderToServer() {
     if (finalTotal === 0) { 
         return showModal({
@@ -737,7 +770,6 @@ async function submitOrderToServer() {
     const orderMealSummary = `榮郁香廣式燒臘：${finalSummary.trim()}`;
     const fullNote = `醬料/辣度：${spicyVal} / 總計：$${finalTotal}`;
 
-    // 格式化彈窗內容（比照圖片樣式）
     const confirmHtml = `
         <p><strong>餐點：</strong>${finalSummary.trim()}</p>
         <p><strong>醬料/辣度：</strong>${spicyVal}</p>
@@ -752,9 +784,7 @@ async function submitOrderToServer() {
         cancelText: "取消"
     });
 
-    if (!isConfirmed) {
-        return; 
-    }
+    if (!isConfirmed) return; 
 
     const btn = document.getElementById("submit-btn");
     btn.disabled = true;
@@ -769,95 +799,6 @@ async function submitOrderToServer() {
         total: finalTotal,
         note: fullNote
     };
-
-    window.onload = async function() {
-    initCardId();[cite: 4]
-    renderMenu(menuItems);[cite: 4]
-    await checkSystemStatus(); // 載入頁面時檢查是否鎖定[cite: 4]
-};
-
-async function checkSystemStatus() {
-    const btn = document.getElementById("submit-btn");[cite: 4]
-    const statusDiv = document.getElementById("card-status");[cite: 4]
-
-    try {
-        const res = await fetch('/api/settings');[cite: 3]
-        if (!res.ok) return;
-
-        const settings = await res.json();[cite: 3]
-        const now = new Date();
-        const currentHM = now.toTimeString().substring(0, 5); // 取得當前時間 "HH:MM"
-
-        let isLocked = false;
-        let lockReason = "";
-
-        // 判斷是否鎖定：手動設為鎖定 OR (自動模式且超過時間)
-        if (settings.systemStatus === 'locked' || settings.systemStatus === 'closed') {
-            isLocked = true;
-            lockReason = "系統目前已設定為強制鎖定（暫停接單）";
-        } else if (settings.systemStatus === 'auto' && settings.cutoffTime && currentHM >= settings.cutoffTime) {
-            isLocked = true;
-            lockReason = `已超過本日點餐截止時間（${settings.cutoffTime}），暫停接單`;
-        }
-
-        // 強制反灰禁用按鈕[cite: 4]
-        if (isLocked) {
-            btn.disabled = true;[cite: 4]
-            btn.innerText = "已鎖定時間 (停止接單)";[cite: 4]
-            if (statusDiv) {
-                statusDiv.innerHTML = `⛔ <b>${lockReason}</b>`;
-                statusDiv.style.backgroundColor = "#fee2e2";
-                statusDiv.style.color = "#991b1b";
-                statusDiv.style.borderLeftColor = "#ef4444";
-            }
-        }
-    } catch (err) {
-        console.error("無法取得系統狀態:", err);
-    }
-}
-
-    async function checkSystemStatus() {
-    const btn = document.getElementById("submit-btn");
-    const statusDiv = document.getElementById("card-status");
-
-    try {
-        // 向後端取得最新的系統設定
-        const res = await fetch('/api/settings');
-        if (!res.ok) return;
-
-        const settings = await res.json();
-        const now = new Date();
-        const currentHM = now.toTimeString().substring(0, 5); // 取得當前時間 "HH:MM"
-
-        let isLocked = false;
-        let lockReason = "";
-
-        // 判斷 1：若系統被手動設為「強制關閉/已結單」
-        if (settings.systemStatus === 'closed' || settings.systemStatus === 'manual_closed') {
-            isLocked = true;
-            lockReason = "系統目前已停止接單（已結單）";
-        } 
-        // 判斷 2：若系統為自動模式，且當前時間超過設定的截止時間
-        else if (settings.cutoffTime && currentHM >= settings.cutoffTime) {
-            isLocked = true;
-            lockReason = `已超過本日點餐截止時間（${settings.cutoffTime}），系統已鎖定`;
-        }
-
-        // 若滿足鎖定條件，將按鈕禁用反灰並顯示提示
-        if (isLocked) {
-            btn.disabled = true;
-            btn.innerText = "已鎖定時間 (停止接單)";
-            
-            // 提示 banner 變更為紅底警告
-            statusDiv.innerHTML = `⛔ <b>${lockReason}</b>`;
-            statusDiv.style.backgroundColor = "#fee2e2";
-            statusDiv.style.color = "#991b1b";
-            statusDiv.style.borderLeftColor = "#ef4444";
-        }
-    } catch (err) {
-        console.error("無法取得系統狀態:", err);
-    }
-}
 
     try {
         const response = await fetch('/api/order', {
