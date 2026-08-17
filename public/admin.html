@@ -2,211 +2,247 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>後台管理系統 - 登入</title>
     <style>
-        * { box-sizing: border-box; font-family: "Microsoft JhengHei", sans-serif; }
+        /* ==================== 全局與基礎樣式 ==================== */
+        * { 
+            box-sizing: border-box; 
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        }
         
         body {
             margin: 0;
             padding: 0;
             background-color: #bcdcb4;
             min-height: 100vh;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        /* ==================== 全螢幕背景與裝飾 (與 index 一致) ==================== */
+        body.login-mode {
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: background-color 0.3s ease;
-            overflow-x: hidden;
+            background: #f8fcf7;
+            position: relative;
+            overflow: hidden;
         }
 
+        /* 左上角與右下角的流線波浪背景裝飾 */
+        body.login-mode::before,
+        body.login-mode::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(10px);
+            z-index: 0;
+        }
+
+        body.login-mode::before {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(188, 235, 190, 0.8) 0%, rgba(215, 245, 217, 0.4) 60%, rgba(255, 255, 255, 0) 100%);
+            top: -200px;
+            left: -200px;
+        }
+
+        body.login-mode::after {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(188, 235, 190, 0.8) 0%, rgba(215, 245, 217, 0.4) 60%, rgba(255, 255, 255, 0) 100%);
+            bottom: -250px;
+            right: -250px;
+        }
+
+        /* ==================== 登入卡片區塊 ==================== */
         .login-card {
             background-color: #ffffff; 
-            border-radius: 60px;
-            width: 450px;
-            height: 620px;
+            border-radius: 16px;       
+            width: 580px;
+            min-height: 480px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-            padding: 40px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.05);
+            padding: 50px 40px;
             position: relative;
+            z-index: 5;
+            border: 1px solid rgba(220, 235, 218, 0.5);
         }
 
         .login-logo {
             width: 80px;
             height: auto;
-            margin-bottom: 25px;
-            object-fit: contain;
-            flex-shrink: 0;
+            margin-bottom: 16px;
         }
 
         .title {
-            font-size: 36px;
-            color: #2b4c23;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
+            font-size: 30px;
+            color: #2b4c23; 
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px; 
             text-align: center;
         }
 
         .subtitle {
-            font-size: 16px;
+            font-size: 14px;
             color: #7ba370;
-            font-weight: bold;
-            letter-spacing: 4px;
-            margin-bottom: 50px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
             text-transform: uppercase;
             text-align: center;
         }
 
         .login-form {
             display: flex;
-            align-items: center;
-            margin-bottom: 40px;
-            width: 100%;
-            justify-content: center;
             flex-direction: column;
-            gap: 20px;
+            align-items: center;
+            width: 100%;
+            gap: 16px;
         }
 
-        .input-wrapper {
+        .input-group {
             position: relative;
-            width: 100%;
-            max-width: 260px;
             display: flex;
             align-items: center;
+            width: 100%;
             justify-content: center;
         }
 
-        .login-form input {
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid #e0e0e0;
-            font-size: 24px;
-            width: 100%;
+        .input-group input {
+            background: #f7faf6;
+            border: 1px solid #d0e3ce; 
+            border-radius: 10px;
+            font-size: 16px;
+            width: 320px;
             text-align: center;
             outline: none;
-            padding-bottom: 8px;
+            padding: 14px 20px;
             color: #2b4c23;
-            transition: border-color 0.2s;
-            padding-left: 35px;
-            padding-right: 35px;
+            transition: all 0.25s ease;
         }
 
-        .login-form input:focus {
-            border-bottom-color: #4e803c;
+        .input-group input:focus {
+            border-color: #4e803c;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(78, 128, 60, 0.15);
         }
 
-        .login-form input.input-error {
-            border-bottom-color: #a01010 !important;
+        .input-group input.input-error {
+            border-color: #a01010 !important;
+            box-shadow: 0 0 0 3px rgba(160, 16, 16, 0.15) !important;
         }
 
-        .login-form input::placeholder {
-            color: #d2d2d2;
+        .input-group input::placeholder {
+            color: #a3baa0;
             font-weight: normal;
         }
 
         .toggle-password {
             position: absolute;
-            right: 5px;
-            bottom: 10px;
+            right: auto;
+            transform: translateX(130px);
             cursor: pointer;
-            font-size: 20px;
+            font-size: 18px;
             user-select: none;
-            z-index: 15;
-            display: inline-block;
-            line-height: 1;
+            z-index: 10;
         }
 
         .login-btn {
-            background-color: #a4d49d;
+            background-color: #4e803c; 
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 22px;
-            padding: 10px 10px;
+            border-radius: 10px;
+            font-size: 18px;
+            width: 320px;
+            padding: 13px 0;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(78, 128, 60, 0.2);
             transition: all 0.2s ease;
-            font-weight: bold;
-            margin-top: 15px;
-            width: 100%;
-            max-width: 220px;
-            white-space: nowrap; 
+            font-weight: 600;
+            margin-top: 10px;
         }
 
-        .login-btn.btn-msg {
-            font-size: 16px;
+        .login-btn:hover:not(:disabled) { 
+            background-color: #3f6b30; 
+            transform: translateY(-1px);
         }
-
-        .login-btn:hover:not(:disabled) { background-color: #93c48c; transform: scale(1.03); }
         .login-btn:active:not(:disabled) { transform: scale(0.98); }
         .login-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
         
         .login-admin-link {
-            background: none;
+            background-color: #f0f0f0;  
+            color: #0f805a;             
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 15px;
+            padding: 12px 20px;         
             border: none;
-            color: #7ba370;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 25px;
+            border-radius: 12px;        
+            width: 320px;               
             cursor: pointer;
-            transition: color 0.2s, transform 0.2s;
+            transition: all 0.2s ease;
             text-decoration: none;
             text-align: center;
         }
+
         .login-admin-link:hover {
-            color: #2b4c23;
-            transform: scale(1.02);
+            background-color: #e4e4e4;  
+            color: #0a5c41;
         }
 
+        /* 登入頁底部版權宣告 */
+        .login-footer-copy {
+            position: absolute;
+            bottom: 25px;
+            width: 100%;
+            text-align: center;
+            font-size: 13.5px;
+            color: #668062;
+            z-index: 10;
+        }
+
+        /* 📱 手機版 RWD 適應 */
         @media (max-width: 480px) {
-            body { padding: 10px; }
-            .login-card {
-                width: 90%;
-                height: auto;
-                padding: 40px 20px;
-                border-radius: 35px;
-            }
-            .title { font-size: 28px; }
-            .subtitle { margin-bottom: 30px; font-size: 13px; letter-spacing: 3px; }
-            .login-form { margin-bottom: 25px; }
-            .input-wrapper { max-width: 85%; } 
-            .login-form input { font-size: 20px; padding-left: 30px; padding-right: 30px; }
-            .toggle-password { right: 4px; bottom: 8px; font-size: 18px; }
-            .login-btn { font-size: 18px; max-width: 85%; }
-            .login-btn.btn-msg { font-size: 14px; }
-            .login-admin-link { font-size: 15px; margin-top: 20px; }
-        }
-
-        @media (max-width: 340px) {
-            .title { font-size: 24px; }
-            .login-card { padding-top: 40px; border-radius: 30px; }
-            .input-wrapper, .login-btn { max-width: 90%; }
+            .login-card { width: 90%; min-height: auto; padding: 40px 20px; border-radius: 16px; }
+            .title { font-size: 26px; margin-bottom: 2px; }
+            .subtitle { font-size: 12px; margin-bottom: 25px; letter-spacing: 2px; }
+            .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
+            .toggle-password { transform: translateX(110px); }
+            .login-btn, .login-admin-link { width: 100%; max-width: 280px; }
         }
     </style>
 </head>
-<body>
+<body class="login-mode">
 
+    <!-- 後台登入卡片 -->
     <div id="login-section" class="login-card">
         <img src="logo.gif" alt="系統Logo" class="login-logo">
         
         <div class="title">後台管理系統</div>
-        <div class="subtitle">MANAGEMENT</div>
+        <div class="subtitle">MANAGEMENT SYSTEM LOGIN</div>
         
         <form class="login-form" id="loginForm" onsubmit="executeAdminLogin(event)">
-            <div class="input-wrapper">
+            <div class="input-group">
                 <input type="text" id="adminUser" placeholder="請輸入管理員帳號" autocomplete="username" autofocus required onclick="this.select()">
             </div>
-            <div class="input-wrapper">
+            <div class="input-group">
                 <input type="password" id="adminPass" placeholder="請輸入管理員密碼" autocomplete="current-password" required onclick="this.select()">
                 <span class="toggle-password" id="eye-icon" onclick="togglePasswordVisibility()">🔐</span>
             </div>
-            <button type="submit" class="login-btn" id="submit-login-btn">登入</button>
+            <button type="submit" class="login-btn" id="submit-login-btn">登入系統</button>
+            <button type="button" class="login-admin-link" onclick="navigateToHome()">🍀 返回點餐系統 ➔</button>
         </form>
-        
-        <button type="button" class="login-admin-link" onclick="navigateToHome()">🍀 返回訂餐系統 ➔</button>
+    </div>
+
+    <!-- 頁尾宣告 -->
+    <div class="login-footer-copy">
+        © 秀傳醫療財團法人彰濱秀傳紀念醫院 版權所有
     </div>
 
     <script>
@@ -252,11 +288,9 @@
                 if(!username) userInput.classList.add('input-error');
                 if(!password) passInput.classList.add('input-error');
                 
-                loginBtn.classList.add('btn-msg');
                 loginBtn.innerText = '請完整輸入帳密！';
                 setTimeout(() => {
-                    loginBtn.classList.remove('btn-msg');
-                    loginBtn.innerText = '登入';
+                    loginBtn.innerText = '登入系統';
                 }, 2000);
                 return;
             }
@@ -265,14 +299,12 @@
             loginBtn.disabled = true;
             userInput.disabled = true;
             passInput.disabled = true;
-            loginBtn.classList.add('btn-msg');
             loginBtn.innerText = '認證中...';
 
             function showLoginError(msg) {
                 userInput.classList.add('input-error');
                 passInput.classList.add('input-error');
                 
-                loginBtn.classList.add('btn-msg');
                 loginBtn.innerText = msg;
                 
                 setTimeout(() => {
@@ -280,8 +312,7 @@
                     loginBtn.disabled = false;
                     userInput.disabled = false;
                     passInput.disabled = false;
-                    loginBtn.classList.remove('btn-msg');
-                    loginBtn.innerText = '登入';
+                    loginBtn.innerText = '登入系統';
                     
                     passInput.value = '';
                     passInput.type = 'password';
@@ -291,13 +322,11 @@
             }
 
             setTimeout(async () => {
-                // 已更新帳號密碼設定
                 const validAdmins = {
                     '18445': ['zxc456456'],
                     '11110': ['12345678']
                 };
 
-                // 本地預設測試帳密驗證
                 if (validAdmins[username] && validAdmins[username].includes(password)) {
                     const adminName = ADMIN_NAMES[username] || '管理員';
                     localStorage.setItem('currentAdminName', adminName);
@@ -309,7 +338,6 @@
                     return; 
                 } 
                 
-                // API 驗證請求
                 try {
                     const response = await fetch('/api/admin/login', {
                         method: 'POST',
