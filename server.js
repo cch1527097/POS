@@ -15,6 +15,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 全域變數：預設點餐鎖定/截止時間 (HH:mm 格式)
+let orderLockTime = "10:30";
+
 // PostgreSQL (Neon) 連線設定
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -131,6 +134,21 @@ function isTodayInTaipei(orderTimestampMs) {
 }
 
 // ==================== API 路由 ====================
+
+// 0. 鎖定時間控制 API
+app.get('/api/lock-time', (req, res) => {
+    res.json({ success: true, lockTime: orderLockTime });
+});
+
+app.post('/api/lock-time', (req, res) => {
+    const { lockTime } = req.body;
+    if (lockTime) {
+        orderLockTime = lockTime;
+        console.log(`[系統提示] 管理員將點餐截止時間更新為：${orderLockTime}`);
+        return res.json({ success: true, message: `已成功將點餐截止時間設定為 ${orderLockTime}` });
+    }
+    res.status(400).json({ success: false, message: '鎖定時間格式不正確！' });
+});
 
 // 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
 app.get('/api/orders', async (req, res) => {
@@ -322,8 +340,27 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單
+// 9. 新增訂單 (加入鎖定時間檢查)
 app.post('/api/order', async (req, res) => {
+    // ---- 點餐鎖定時間比對邏輯 ----
+    if (orderLockTime) {
+        const now = new Date();
+        const taipeiTimeStr = now.toLocaleTimeString("zh-TW", { timeZone: "Asia/Taipei", hour12: false });
+        const [curH, curM] = taipeiTimeStr.split(':').map(Number);
+        const [lockH, lockM] = orderLockTime.split(':').map(Number);
+
+        const currentTotalMinutes = curH * 60 + curM;
+        const lockTotalMinutes = lockH * 60 + lockM;
+
+        if (currentTotalMinutes >= lockTotalMinutes) {
+            return res.status(403).json({
+                success: false,
+                message: `⏰ 點餐已截止！今日點餐時間限制至 ${orderLockTime}，系統目前已鎖定無法再下單。`
+            });
+        }
+    }
+    // ---- 點餐鎖定檢查結束 ----
+
     const { cardId, meal, note, spicy, total } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
     
@@ -365,7 +402,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
+// 10. 取得個人歷史訂單紀錄
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -375,7 +412,6 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // ✅ 安全修改：改為參數化查詢，防止 SQL 注入
         const result = await pool.query(
             'SELECT order_id, meal, spicy, note, total, timestamp FROM orders WHERE card_id = $1 ORDER BY order_id DESC;',
             [cleanCardId]
