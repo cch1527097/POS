@@ -90,7 +90,7 @@ async function initDatabase() {
             );
         `);
 
-        // 新增：系統設定資料表 (儲存鎖定時間與開關)
+        // 系統設定資料表 (儲存鎖定時間與開關)
         await pool.query(`
             CREATE TABLE IF NOT EXISTS settings (
                 key VARCHAR(50) PRIMARY KEY,
@@ -102,7 +102,7 @@ async function initDatabase() {
         await pool.query(`
             INSERT INTO settings (key, value) VALUES 
             ('order_lock_enabled', 'enabled'),
-            ('order_cutoff_time', '10:30')
+            ('order_cutoff_time', '07:00')
             ON CONFLICT (key) DO NOTHING;
         `);
 
@@ -153,9 +153,9 @@ async function checkIsOrderLocked() {
         res.rows.forEach(r => settings[r.key] = r.value);
 
         const isEnabled = settings['order_lock_enabled'] || 'enabled';
-        if (isEnabled === 'disabled') return false;
+        if (isEnabled === 'disabled') return { isLocked: false, cutoffTime: settings['order_cutoff_time'] || '07:00' };
 
-        const cutoffTimeStr = settings['order_cutoff_time'] || '10:30';
+        const cutoffTimeStr = settings['order_cutoff_time'] || '07:00';
         const [targetHour, targetMinute] = cutoffTimeStr.split(':').map(Number);
 
         // 取得當前台北時間
@@ -169,16 +169,32 @@ async function checkIsOrderLocked() {
         const currentTotalMinutes = currentHour * 60 + currentMinute;
         const targetTotalMinutes = targetHour * 60 + targetMinute;
 
-        return currentTotalMinutes >= targetTotalMinutes;
+        const isLocked = currentTotalMinutes >= targetTotalMinutes;
+        return { isLocked, cutoffTime: cutoffTimeStr };
     } catch (err) {
         console.error('檢查鎖定狀態失敗:', err);
-        return false;
+        return { isLocked: false, cutoffTime: '07:00' };
     }
 }
 
 // ==================== API 路由 ====================
 
-// 新增：取得系統結單設定 API (供前台/後台載入)
+// 核心更新：提供即時系統收單狀態給前端
+app.get('/api/system-status', async (req, res) => {
+    try {
+        const { isLocked, cutoffTime } = await checkIsOrderLocked();
+        res.json({
+            success: true,
+            isLocked: isLocked,
+            cutoffTime: cutoffTime,
+            canOrder: !isLocked
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: '無法讀取系統收單狀態' });
+    }
+});
+
+// 取得系統結單設定 API
 app.get('/api/settings', async (req, res) => {
     try {
         const result = await pool.query('SELECT key, value FROM settings;');
@@ -190,7 +206,7 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-// 新增：更新系統結單設定 API
+// 更新系統結單設定 API
 app.post('/api/settings', async (req, res) => {
     const { order_lock_enabled, order_cutoff_time } = req.body;
     try {
@@ -395,18 +411,18 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (加入時間鎖定攔截驗證)
+// 9. 新增訂單 (嚴格時間鎖定驗證)
 app.post('/api/order', async (req, res) => {
     const { cardId, meal, note, spicy, total } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
 
     try {
-        // 🔥【關鍵修復】下單前先驗證是否已鎖定/截止點餐
-        const locked = await checkIsOrderLocked();
-        if (locked) {
+        // 🔒 強制驗證是否已鎖定/截止點餐
+        const { isLocked, cutoffTime } = await checkIsOrderLocked();
+        if (isLocked) {
             return res.status(400).json({ 
                 success: false, 
-                message: '❌ 已超過今日點餐截止時間，系統已停止收單！' 
+                message: `🔒 系統已於 ${cutoffTime} 截止收單，無法再接收新訂單！` 
             });
         }
 
