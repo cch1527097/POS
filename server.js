@@ -1,6 +1,6 @@
 require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
-const path = require('path');
+const path = path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
@@ -96,6 +96,23 @@ async function initDatabase() {
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
         `);
 
+        // 新增系統設定表 (控制鎖定狀態與截止時間)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS system_settings (
+                id INT PRIMARY KEY DEFAULT 1,
+                is_locked BOOLEAN DEFAULT FALSE,
+                cutoff_time VARCHAR(10) DEFAULT '10:30',
+                CONSTRAINT single_row CHECK (id = 1)
+            );
+        `);
+
+        // 初始化系統設定預設值
+        await pool.query(`
+            INSERT INTO system_settings (id, is_locked, cutoff_time)
+            VALUES (1, false, '10:30')
+            ON CONFLICT (id) DO NOTHING;
+        `);
+
         const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
         if (parseInt(userCheck.rows[0].count, 10) === 0) {
             console.log('[系統提示] 正在初始化預設員工名單至 Neon PostgreSQL...');
@@ -130,7 +147,83 @@ function isTodayInTaipei(orderTimestampMs) {
     return orderDateStr === todayDateStr;
 }
 
+// 輔助函式：後端校驗點餐系統是否已鎖定或超時
+async function checkIsOrderingLocked() {
+    const res = await pool.query('SELECT is_locked, cutoff_time FROM system_settings WHERE id = 1;');
+    if (res.rows.length === 0) {
+        return { isLocked: false, reason: '' };
+    }
+
+    const { is_locked, cutoff_time } = res.rows[0];
+
+    // 1. 手動鎖定判斷
+    if (is_locked) {
+        return { isLocked: true, reason: '已由管理員手動關閉點餐' };
+    }
+
+    // 2. 每日截止時間判斷 (以台北時間 Asia/Taipei 為準)
+    if (cutoff_time) {
+        const now = new Date();
+        const options = { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' };
+        const currentTimeStr = new Intl.DateTimeFormat('zh-TW', options).format(now);
+
+        if (currentTimeStr >= cutoff_time) {
+            return { isLocked: true, reason: `已超過每日截止時間 (${cutoff_time})` };
+        }
+    }
+
+    return { isLocked: false, reason: '' };
+}
+
 // ==================== API 路由 ====================
+
+// 0. 取得與更新系統點餐狀態 (鎖定與截止時間)
+app.get('/api/settings', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT is_locked AS "isLocked", cutoff_time AS "cutoffTime" FROM system_settings WHERE id = 1;');
+        const statusCheck = await checkIsOrderingLocked();
+        
+        const settings = result.rows[0] || { isLocked: false, cutoffTime: '10:30' };
+        res.json({
+            success: true,
+            isLocked: settings.isLocked,
+            cutoffTime: settings.cutoffTime,
+            currentlyLocked: statusCheck.isLocked,
+            lockReason: statusCheck.reason
+        });
+    } catch (err) {
+        console.error('讀取系統設定失敗:', err.message);
+        res.status(500).json({ success: false, message: '讀取系統設定失敗' });
+    }
+});
+
+app.post('/api/settings', async (req, res) => {
+    const { isLocked, cutoffTime } = req.body;
+
+    try {
+        if (typeof isLocked === 'boolean' && cutoffTime) {
+            await pool.query(
+                'UPDATE system_settings SET is_locked = $1, cutoff_time = $2 WHERE id = 1;',
+                [isLocked, String(cutoffTime).trim()]
+            );
+        } else if (typeof isLocked === 'boolean') {
+            await pool.query(
+                'UPDATE system_settings SET is_locked = $1 WHERE id = 1;',
+                [isLocked]
+            );
+        } else if (cutoffTime) {
+            await pool.query(
+                'UPDATE system_settings SET cutoff_time = $1 WHERE id = 1;',
+                [String(cutoffTime).trim()]
+            );
+        }
+
+        res.json({ success: true, message: '系統點餐狀態設定已更新！' });
+    } catch (err) {
+        console.error('更新系統設定失敗:', err.message);
+        res.status(500).json({ success: false, message: '更新系統設定失敗' });
+    }
+});
 
 // 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
 app.get('/api/orders', async (req, res) => {
@@ -322,12 +415,21 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單
+// 9. 新增訂單 (已加入強效鎖定狀態校驗)
 app.post('/api/order', async (req, res) => {
-    const { cardId, meal, note, spicy, total } = req.body;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
-    
     try {
+        // 🔒 [關鍵防護] 檢查目前系統是否已被手動鎖定或超過截止時間
+        const statusCheck = await checkIsOrderingLocked();
+        if (statusCheck.isLocked) {
+            return res.status(403).json({
+                success: false,
+                message: `無法送出訂單：點餐系統目前已鎖定 (${statusCheck.reason})`
+            });
+        }
+
+        const { cardId, meal, note, spicy, total } = req.body;
+        const cleanCardId = cardId ? String(cardId).trim() : '';
+
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
@@ -365,7 +467,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
+// 10. 取得個人歷史訂單紀錄
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -375,7 +477,6 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // ✅ 安全修改：改為參數化查詢，防止 SQL 注入
         const result = await pool.query(
             'SELECT order_id, meal, spicy, note, total, timestamp FROM orders WHERE card_id = $1 ORDER BY order_id DESC;',
             [cleanCardId]
