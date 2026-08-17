@@ -1,6 +1,6 @@
 require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
-const path = path = require('path');
+const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
@@ -37,6 +37,20 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
+// 輔助函式：判斷餐點是否為飲料類別 (喝涼涼)
+function isDrinkOrder(mealName) {
+    if (!mealName) return false;
+    const mealStr = mealName.toLowerCase();
+    
+    // 正餐關鍵字排除
+    const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵'];
+    if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
+
+    // 飲料關鍵字
+    const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品'];
+    return drinkKeywords.some(kw => mealStr.includes(kw));
+}
+
 // 輔助函式：同步寫入 public/orders.json (非同步寫入避免阻塞)
 async function syncOrdersJsonFile() {
     try {
@@ -50,7 +64,8 @@ async function syncOrdersJsonFile() {
                 o.note, 
                 o.total, 
                 o.timestamp,
-                COALESCE(u.is_paid, false) AS "isPaid"
+                COALESCE(u.is_paid, false) AS "isPaid",
+                COALESCE(u.department, '未劃分') AS "department"
             FROM orders o
             LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id DESC;
@@ -96,23 +111,6 @@ async function initDatabase() {
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
         `);
 
-        // 新增系統設定表 (控制鎖定狀態與截止時間)
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS system_settings (
-                id INT PRIMARY KEY DEFAULT 1,
-                is_locked BOOLEAN DEFAULT FALSE,
-                cutoff_time VARCHAR(10) DEFAULT '10:30',
-                CONSTRAINT single_row CHECK (id = 1)
-            );
-        `);
-
-        // 初始化系統設定預設值
-        await pool.query(`
-            INSERT INTO system_settings (id, is_locked, cutoff_time)
-            VALUES (1, false, '10:30')
-            ON CONFLICT (id) DO NOTHING;
-        `);
-
         const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
         if (parseInt(userCheck.rows[0].count, 10) === 0) {
             console.log('[系統提示] 正在初始化預設員工名單至 Neon PostgreSQL...');
@@ -147,85 +145,9 @@ function isTodayInTaipei(orderTimestampMs) {
     return orderDateStr === todayDateStr;
 }
 
-// 輔助函式：後端校驗點餐系統是否已鎖定或超時
-async function checkIsOrderingLocked() {
-    const res = await pool.query('SELECT is_locked, cutoff_time FROM system_settings WHERE id = 1;');
-    if (res.rows.length === 0) {
-        return { isLocked: false, reason: '' };
-    }
-
-    const { is_locked, cutoff_time } = res.rows[0];
-
-    // 1. 手動鎖定判斷
-    if (is_locked) {
-        return { isLocked: true, reason: '已由管理員手動關閉點餐' };
-    }
-
-    // 2. 每日截止時間判斷 (以台北時間 Asia/Taipei 為準)
-    if (cutoff_time) {
-        const now = new Date();
-        const options = { timeZone: 'Asia/Taipei', hour12: false, hour: '2-digit', minute: '2-digit' };
-        const currentTimeStr = new Intl.DateTimeFormat('zh-TW', options).format(now);
-
-        if (currentTimeStr >= cutoff_time) {
-            return { isLocked: true, reason: `已超過每日截止時間 (${cutoff_time})` };
-        }
-    }
-
-    return { isLocked: false, reason: '' };
-}
-
 // ==================== API 路由 ====================
 
-// 0. 取得與更新系統點餐狀態 (鎖定與截止時間)
-app.get('/api/settings', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT is_locked AS "isLocked", cutoff_time AS "cutoffTime" FROM system_settings WHERE id = 1;');
-        const statusCheck = await checkIsOrderingLocked();
-        
-        const settings = result.rows[0] || { isLocked: false, cutoffTime: '10:30' };
-        res.json({
-            success: true,
-            isLocked: settings.isLocked,
-            cutoffTime: settings.cutoffTime,
-            currentlyLocked: statusCheck.isLocked,
-            lockReason: statusCheck.reason
-        });
-    } catch (err) {
-        console.error('讀取系統設定失敗:', err.message);
-        res.status(500).json({ success: false, message: '讀取系統設定失敗' });
-    }
-});
-
-app.post('/api/settings', async (req, res) => {
-    const { isLocked, cutoffTime } = req.body;
-
-    try {
-        if (typeof isLocked === 'boolean' && cutoffTime) {
-            await pool.query(
-                'UPDATE system_settings SET is_locked = $1, cutoff_time = $2 WHERE id = 1;',
-                [isLocked, String(cutoffTime).trim()]
-            );
-        } else if (typeof isLocked === 'boolean') {
-            await pool.query(
-                'UPDATE system_settings SET is_locked = $1 WHERE id = 1;',
-                [isLocked]
-            );
-        } else if (cutoffTime) {
-            await pool.query(
-                'UPDATE system_settings SET cutoff_time = $1 WHERE id = 1;',
-                [String(cutoffTime).trim()]
-            );
-        }
-
-        res.json({ success: true, message: '系統點餐狀態設定已更新！' });
-    } catch (err) {
-        console.error('更新系統設定失敗:', err.message);
-        res.status(500).json({ success: false, message: '更新系統設定失敗' });
-    }
-});
-
-// 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
+// 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid 與部門 department)
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -238,7 +160,8 @@ app.get('/api/orders', async (req, res) => {
                 o.note, 
                 o.total, 
                 o.timestamp,
-                COALESCE(u.is_paid, false) AS "isPaid"
+                COALESCE(u.is_paid, false) AS "isPaid",
+                COALESCE(u.department, '未劃分') AS "department"
             FROM orders o
             LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id DESC;
@@ -415,21 +338,12 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (已加入強效鎖定狀態校驗)
+// 9. 新增訂單
 app.post('/api/order', async (req, res) => {
+    const { cardId, meal, note, spicy, total } = req.body;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    
     try {
-        // 🔒 [關鍵防護] 檢查目前系統是否已被手動鎖定或超過截止時間
-        const statusCheck = await checkIsOrderingLocked();
-        if (statusCheck.isLocked) {
-            return res.status(403).json({
-                success: false,
-                message: `無法送出訂單：點餐系統目前已鎖定 (${statusCheck.reason})`
-            });
-        }
-
-        const { cardId, meal, note, spicy, total } = req.body;
-        const cleanCardId = cardId ? String(cardId).trim() : '';
-
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
@@ -467,7 +381,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄
+// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -596,6 +510,66 @@ app.get('/api/export-excel', async (req, res) => {
     } catch (err) {
         console.error('導出 Excel 失敗:', err.message);
         res.status(500).json({ success: false, message: '無法產生 Excel 報表' });
+    }
+});
+
+// 12. 動態匯出分類 CSV 報表 API (支援 type: drink/food, timeframe: today/history)
+app.get('/api/export-csv', async (req, res) => {
+    const { type, timeframe } = req.query; // type: drink | food, timeframe: today | history
+
+    try {
+        const result = await pool.query(`
+            SELECT 
+                o.order_id, o.timestamp, o.card_id, o.name, o.meal, o.spicy, o.note, o.total,
+                COALESCE(u.is_paid, false) AS is_paid,
+                COALESCE(u.department, '未劃分') AS department
+            FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
+            ORDER BY o.order_id DESC;
+        `);
+
+        let rows = result.rows;
+
+        // 1. 時間篩選
+        if (timeframe === 'today') {
+            rows = rows.filter(row => isTodayInTaipei(row.order_id));
+        }
+
+        // 2. 分類篩選
+        if (type === 'drink') {
+            rows = rows.filter(row => isDrinkOrder(row.meal));
+        } else if (type === 'food') {
+            rows = rows.filter(row => !isDrinkOrder(row.meal));
+        }
+
+        const csvHeaders = ["訂單編號", "類別", "部門", "點餐人", "員工卡號", "訂單完整時間", "餐點項目", "備註/甜度辣度", "備註", "總金額", "繳費狀態"];
+        
+        const csvRows = rows.map(order => {
+            const cat = isDrinkOrder(order.meal) ? '喝涼涼' : '美味餐點';
+            return [
+                `"${(order.order_id || '').toString().replace(/"/g, '""')}"`,
+                `"${cat}"`,
+                `"${(order.department || '未劃分').toString().replace(/"/g, '""')}"`,
+                `"${(order.name || '未知').toString().replace(/"/g, '""')}"`,
+                `"${(order.card_id || '').toString().replace(/"/g, '""')}"`,
+                `"${(order.timestamp || '').toString().replace(/"/g, '""')}"`,
+                `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
+                `"${(order.spicy || '無').toString().replace(/"/g, '""')}"`,
+                `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
+                `"${order.total || 0}"`,
+                `"${order.is_paid ? '已繳費' : '未繳費'}"`
+            ];
+        });
+
+        const csvContent = "\uFEFF" + [csvHeaders.join(","), ...csvRows.map(r => r.join(","))].join("\n");
+        const fileName = `${timeframe === 'today' ? '今日' : '歷史'}_${type === 'drink' ? '喝涼涼' : '美味餐點'}_${Date.now()}.csv`;
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+        res.status(200).send(csvContent);
+    } catch (err) {
+        console.error('導出 CSV 失敗:', err.message);
+        res.status(500).json({ success: false, message: '無法產生 CSV 報表' });
     }
 });
 
