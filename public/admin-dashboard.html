@@ -445,6 +445,22 @@
                 <button class="btn" onclick="window.open('index.html', '_blank')">開啟前台點餐 ➔</button>
             </div>
 
+            <!-- 新增：點餐鎖定時間設定卡片 -->
+            <div class="card" style="border-left: 4px solid var(--accent);">
+                <h3>⏰ 每日點餐截止 / 鎖定時間設定</h3>
+                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 16px;">
+                    設定每日截止點餐時間，當系統時間到達或超過此設定後，員工將無法再於前台新增訂單。
+                </p>
+                <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="lockTimeInput" style="font-weight: 600; font-size: 14px;">每日截止時間：</label>
+                        <input type="time" id="lockTimeInput" value="10:30" style="width: auto; padding: 8px 12px;">
+                    </div>
+                    <button class="btn" onclick="saveLockTime()">💾 儲存鎖定時間</button>
+                    <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
+                </div>
+            </div>
+
             <div class="summary-container">
                 <div class="summary-box">
                     <span class="title">今日總訂單數</span>
@@ -690,13 +706,55 @@
         let currentOverviewCategory = 'all';
         let searchTimeout = null;
 
+        // 讀取目前的點餐鎖定時間
+        async function loadLockTime() {
+            try {
+                const response = await fetch('/api/lock-time');
+                const data = await response.json();
+                if (data.success && data.lockTime) {
+                    document.getElementById('lockTimeInput').value = data.lockTime;
+                    document.getElementById('lockTimeDisplay').innerText = `[目前截止設定：${data.lockTime}]`;
+                }
+            } catch (error) {
+                console.error('讀取鎖定時間失敗:', error);
+            }
+        }
+
+        // 儲存新的鎖定時間
+        async function saveLockTime() {
+            const lockTime = document.getElementById('lockTimeInput').value;
+            if (!lockTime) {
+                showCustomModal({ message: '請選擇有效的時間！' });
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/lock-time', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lockTime })
+                });
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showCustomModal({ message: result.message });
+                    document.getElementById('lockTimeDisplay').innerText = `[目前截止設定：${lockTime}]`;
+                } else {
+                    showCustomModal({ message: `設定失敗：${result.message || '未知錯誤'}` });
+                }
+            } catch (error) {
+                console.error('更新點餐鎖定時間失敗:', error);
+                showCustomModal({ message: '網路連線失敗，無法更新鎖定時間！' });
+            }
+        }
+
         // 判斷訂單是否屬於飲料(喝涼涼)
         function isDrinkOrder(order) {
             if (order.category === 'drink' || order.type === 'drink') return true;
             
             const mealStr = (order.meal || '').toLowerCase();
             
-            // 1. 正餐關鍵字排除 (避免名稱內含「茶/飲」等字的非飲料餐點被誤判)
+            // 1. 正餐關鍵字排除
             const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵'];
             if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
 
@@ -705,17 +763,15 @@
             return drinkKeywords.some(kw => mealStr.includes(kw));
         }
 
-        // 解析日期時間格式（支援 2026/8/3 上午9:32:45 等多種字串格式）
+        // 解析日期時間格式
         function parseTimestamp(ts) {
             if (!ts) return 0;
             let str = String(ts).trim();
             
-            // 解析 12 小時制「上午/下午」
             const isPM = str.includes('下午');
             const isAM = str.includes('上午');
             str = str.replace('上午', '').replace('下午', '').trim();
             
-            // 將連字號轉為斜線，以利 Date 解析
             str = str.replace(/-/g, '/');
             
             const parts = str.split(' ');
@@ -1080,7 +1136,7 @@
             }
         }
 
-        /* 渲染訂單表格 (已修改為由新到舊/降序 排序) */
+        /* 渲染訂單表格 */
         function renderOrderTable(orders, tableBodyId, showFullTime = false, hideCategoryCol = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1092,14 +1148,12 @@
                 return;
             }
 
-            // 依照點餐時間 (timestamp) 解析時間戳記並進行「由新到舊」降序排序
             const sortedOrders = [...orders].sort((a, b) => {
                 const timeA = parseTimestamp(a.timestamp);
                 const timeB = parseTimestamp(b.timestamp);
                 if (timeA !== timeB) {
-                    return timeB - timeA; // 時間越新的越靠前
+                    return timeB - timeA;
                 }
-                // 若時間相同則比對訂單編號大小
                 return String(b.orderId || '').localeCompare(String(a.orderId || ''));
             });
 
@@ -1329,7 +1383,6 @@
             document.body.removeChild(link);
         }
 
-        // 分開匯出：可選取 today / history，以及 drink / food 類別
         function exportCategoryToCSV(sourceType, targetCategory) {
             const rawData = (sourceType === 'today') ? currentTodayOrders : allHistoryOrders;
             const prefix = (sourceType === 'today') ? "今日訂單" : "歷史訂單";
@@ -1345,13 +1398,13 @@
         }
 
         window.onload = async function() {
-            // 讀取登入時儲存的管理員姓名
             const currentAdminName = localStorage.getItem('currentAdminName') || '管理員';
             const adminInfoElem = document.getElementById('adminDisplayInfo');
             if (adminInfoElem) {
                 adminInfoElem.innerText = `☁️ 管理員: ${currentAdminName} [已上線]`;
             }
 
+            await loadLockTime(); // 載入目前設定的點餐截止時間
             await loadEmployees();
             await loadOrders();
             await loadHistoryOrders();
