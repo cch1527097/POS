@@ -158,6 +158,7 @@
             background-color: var(--primary);
         }
         .summary-box:nth-child(2)::after { background-color: var(--accent); }
+        .summary-box:nth-child(3)::after { background-color: #f57c00; }
         .summary-box .title { color: var(--text-sub); font-size: 13px; font-weight: 500; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         .summary-box .value { color: var(--text-main); font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
 
@@ -301,6 +302,8 @@
         .badge-dept { background-color: #e3f2fd; color: #1565c0; }
         .badge-paid { background-color: #e8f5e9; color: #2e7d32; }
         .badge-unpaid { background-color: #ffebee; color: #c62828; }
+        .badge-locked { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .badge-open { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
         
         /* 類別專用 Badge */
         .badge-drink { background-color: #e0f7fa; color: #00838f; border: 1px solid #b2ebf2; }
@@ -431,6 +434,7 @@
             <button type="button" class="menu-item" onclick="switchTab('food-mgr', this)">🍱 美味餐點訂單</button>
             <button type="button" class="menu-item" onclick="switchTab('history-mgr', this)">📜 歷史紀錄</button>
             <button type="button" class="menu-item" onclick="switchTab('employee-mgr', this)">🪪 員工管理</button>
+            <button type="button" class="menu-item" onclick="switchTab('settings-mgr', this)">⏰ 結單時間設定</button>
             <button type="button" class="menu-item" onclick="refreshCurrentTab()">🔄 重新整理</button>
             <a href="admin.html" class="menu-item logout">⇦ 登出後台</a>
         </div>
@@ -453,6 +457,10 @@
                 <div class="summary-box">
                     <span class="title">今日總營業額</span>
                     <span class="value" id="summaryAmount">$0</span>
+                </div>
+                <div class="summary-box">
+                    <span class="title">收單狀態</span>
+                    <span class="value" id="summaryLockStatus" style="font-size: 20px; margin-top: 6px;">檢查中...</span>
                 </div>
             </div>
 
@@ -662,6 +670,45 @@
             </div>
         </div>
 
+        <!-- 分頁六：結單時間與時間鎖定設定 -->
+        <div id="settings-mgr" class="tab-content">
+            <div class="header">
+                <h1>⏰ 結單時間鎖定設定</h1>
+            </div>
+
+            <div class="card">
+                <h3>設定每日自動結單時間</h3>
+                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
+                    開啟時間鎖定後，一旦到達或超過設定的時間點，前台系統將會自動阻止員工繼續提交訂單。
+                </p>
+                
+                <div class="form-group">
+                    <div>
+                        <label for="lockToggle">時間鎖定開關</label>
+                        <select id="lockToggle">
+                            <option value="enabled">開啟時間鎖定</option>
+                            <option value="disabled">關閉 (允許全天點餐)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="cutoffTime">每日結單時間 (24小時制)</label>
+                        <input type="time" id="cutoffTime" value="10:30">
+                    </div>
+                    <div style="flex: 1; min-width: 200px; justify-content: flex-end;">
+                        <button class="btn" style="width: 100%; margin-top: 24px;" onclick="saveTimeLockSettings()">儲存結單時間設定</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>目前收單狀態測試與預覽</h3>
+                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 15px;">根據您目前的設定與現在時間比對結果：</p>
+                <div id="lockStatusPreview" style="font-size: 16px; font-weight: 600; padding: 16px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: inline-block;">
+                    狀態載入中...
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- 動態彈出視窗 -->
@@ -690,6 +737,81 @@
         let currentOverviewCategory = 'all';
         let searchTimeout = null;
 
+        // --- 結單時間鎖定核心邏輯 ---
+        function saveTimeLockSettings() {
+            const isEnabled = document.getElementById('lockToggle').value;
+            const cutoffTime = document.getElementById('cutoffTime').value;
+
+            if (!cutoffTime) {
+                showCustomModal({ message: '請選擇有效的結單時間！' });
+                return;
+            }
+
+            localStorage.setItem('order_lock_enabled', isEnabled);
+            localStorage.setItem('order_cutoff_time', cutoffTime);
+
+            updateLockStatusDisplay();
+            showCustomModal({ 
+                message: `結單鎖定設定成功！<br><b>鎖定狀態：</b>${isEnabled === 'enabled' ? '已啟用' : '已停用'}<br><b>每日結單時間：</b>${cutoffTime}` 
+            });
+        }
+
+        function loadTimeLockSettings() {
+            const savedEnabled = localStorage.getItem('order_lock_enabled') || 'enabled';
+            const savedTime = localStorage.getItem('order_cutoff_time') || '10:30';
+
+            const toggleElem = document.getElementById('lockToggle');
+            const timeElem = document.getElementById('cutoffTime');
+
+            if (toggleElem) toggleElem.value = savedEnabled;
+            if (timeElem) timeElem.value = savedTime;
+
+            updateLockStatusDisplay();
+        }
+
+        function isOrderLocked() {
+            const isEnabled = localStorage.getItem('order_lock_enabled') || 'enabled';
+            if (isEnabled === 'disabled') return false;
+
+            const cutoffTimeStr = localStorage.getItem('order_cutoff_time') || '10:30';
+            const [targetHour, targetMinute] = cutoffTimeStr.split(':').map(Number);
+
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+
+            const currentTotalMinutes = currentHour * 60 + currentMinute;
+            const targetTotalMinutes = targetHour * 60 + targetMinute;
+
+            return currentTotalMinutes >= targetTotalMinutes;
+        }
+
+        function updateLockStatusDisplay() {
+            const isEnabled = localStorage.getItem('order_lock_enabled') || 'enabled';
+            const cutoffTime = localStorage.getItem('order_cutoff_time') || '10:30';
+            const locked = isOrderLocked();
+
+            const summaryElem = document.getElementById('summaryLockStatus');
+            const previewElem = document.getElementById('lockStatusPreview');
+
+            let statusHTML = '';
+            let summaryHTML = '';
+
+            if (isEnabled === 'disabled') {
+                statusHTML = `🟢 時間鎖定已關閉 (無限時，可自由下單)`;
+                summaryHTML = `<span class="badge badge-open">🟢 開放收單中</span>`;
+            } else if (locked) {
+                statusHTML = `🔴 已超過結單時間 (${cutoffTime})，目前前台已自動封鎖下單！`;
+                summaryHTML = `<span class="badge badge-locked">🔒 已截止收單 (${cutoffTime})</span>`;
+            } else {
+                statusHTML = `🟢 目前於收單時間內 (每日 ${cutoffTime} 截止收單)`;
+                summaryHTML = `<span class="badge badge-open">🟢 開放收單中 (至 ${cutoffTime})</span>`;
+            }
+
+            if (summaryElem) summaryElem.innerHTML = summaryHTML;
+            if (previewElem) previewElem.innerHTML = statusHTML;
+        }
+
         // 判斷訂單是否屬於飲料(喝涼涼)
         function isDrinkOrder(order) {
             if (order.category === 'drink' || order.type === 'drink') return true;
@@ -703,29 +825,6 @@
             // 2. 飲料專用關鍵字比對
             const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品'];
             return drinkKeywords.some(kw => mealStr.includes(kw));
-        }
-
-        // 解析時間字串輔助函式（將 "2026/8/3 上午9:32:45" 轉為微秒數）
-        function parseOrderTime(timestampStr) {
-            if (!timestampStr) return 0;
-            let str = timestampStr.trim().replace(/-/g, '/');
-            let isPM = str.includes('下午');
-            let isAM = str.includes('上午');
-            
-            // 移除 上午/下午 字樣以方便 JavaScript 解析 Date
-            str = str.replace('上午', '').replace('下午', '').trim();
-            let d = new Date(str);
-            let timeVal = d.getTime();
-
-            if (isNaN(timeVal)) return 0;
-
-            // 如果包含下午且小時數不大於12，進行12小時制轉換
-            if (isPM && d.getHours() < 12) {
-                timeVal += 12 * 60 * 60 * 1000;
-            } else if (isAM && d.getHours() === 12) {
-                timeVal -= 12 * 60 * 60 * 1000;
-            }
-            return timeVal;
         }
 
         function showCustomModal({ title = '提示', message = '', isConfirm = false, onConfirm = null }) {
@@ -769,6 +868,8 @@
                 loadOrders();
             } else if (tabId === 'employee-mgr') {
                 loadEmployees();
+            } else if (tabId === 'settings-mgr') {
+                loadTimeLockSettings();
             }
         }
 
@@ -777,6 +878,7 @@
             if (activeTab.id === 'overview') loadOrders();
             else if (activeTab.id === 'history-mgr' || activeTab.id === 'drink-mgr' || activeTab.id === 'food-mgr') loadHistoryOrders();
             else if (activeTab.id === 'employee-mgr') loadEmployees();
+            else if (activeTab.id === 'settings-mgr') loadTimeLockSettings();
         }
 
         function setOverviewCategory(cat, btn) {
@@ -821,14 +923,9 @@
             }
 
             const rows = employeeList.map(emp => {
-                const cardId = emp.cardId || emp.id || '';
+                const cardId = emp.cardId || emp.id;
                 const name = emp.name || '未知';
                 const department = emp.department || '未設定';
-
-                // 安全轉碼，防止引號導致 HTML/JS 爆開 BUG
-                const encCardId = encodeURIComponent(cardId);
-                const encName = encodeURIComponent(name);
-                const encDept = encodeURIComponent(department);
 
                 return `
                     <tr>
@@ -837,8 +934,8 @@
                         <td><span class="badge">已授權登入</span></td>
                         <td><span class="badge badge-dept">${department}</span></td>
                         <td>
-                            <button class="btn-edit" onclick="openEditEmployeeModal('${encCardId}', '${encName}', '${encDept}')">✏️ 編輯</button>
-                            <button class="btn-delete" onclick="deleteEmployee('${encCardId}')">❌ 刪除</button>
+                            <button class="btn-edit" onclick="openEditEmployeeModal('${cardId}', '${name}', '${department}')">✏️ 編輯</button>
+                            <button class="btn-delete" onclick="deleteEmployee('${cardId}')">❌ 刪除</button>
                         </td>
                     </tr>
                 `;
@@ -846,11 +943,7 @@
             tbody.innerHTML = rows.join('');
         }
 
-        function openEditEmployeeModal(encCardId, encName, encDept) {
-            const cardId = decodeURIComponent(encCardId);
-            const currentName = decodeURIComponent(encName);
-            const currentDept = decodeURIComponent(encDept);
-
+        function openEditEmployeeModal(cardId, currentName, currentDept) {
             const modalContent = `
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     <div>
@@ -907,10 +1000,9 @@
             }
         }
 
-        async function togglePaymentStatus(orderId, newStatus) {
+        async function togglePaymentStatus(cardId, newStatus) {
             try {
-                // 將切換目標改為特定的 orderId 確保精確度
-                const response = await fetch(`/api/orders/${orderId}/payment`, {
+                const response = await fetch(`/api/employees/${cardId}/payment`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ isPaid: newStatus })
@@ -919,7 +1011,7 @@
                 if (response.ok) {
                     await loadOrders(); 
                     await loadHistoryOrders();
-                    showCustomModal({ message: `訂單編號 ${orderId} 的繳費狀態已更新！` });
+                    showCustomModal({ message: `員工卡號 ${cardId} 的繳費狀態已更新！` });
                 } else {
                     const result = await response.json();
                     showCustomModal({ message: `狀態更新失敗：${result.message || '未知錯誤'}` });
@@ -935,9 +1027,9 @@
             const nameInput = document.getElementById('newEmpName');
             const deptInput = document.getElementById('newDepartment');
             
-            const cardId = cardIdInput ? cardIdInput.value.trim() : '';
-            const name = nameInput ? nameInput.value.trim() : '';
-            const department = (deptInput && deptInput.value.trim()) ? deptInput.value.trim() : '未劃分';
+            const cardId = cardIdInput.value.trim();
+            const name = nameInput.value.trim();
+            const department = deptInput.value.trim() || '未劃分';
 
             if (!cardId || !name) {
                 showCustomModal({ message: '請填寫完整的員工卡號與姓名！' });
@@ -955,9 +1047,9 @@
 
                 if (response.ok) {
                     await loadEmployees();
-                    if (cardIdInput) cardIdInput.value = '';
-                    if (nameInput) nameInput.value = '';
-                    if (deptInput) deptInput.value = '';
+                    cardIdInput.value = '';
+                    nameInput.value = '';
+                    deptInput.value = '';
                     showCustomModal({ message: `成功新增員工並同步至後端：${name} (${cardId}) - ${department}` });
                 } else {
                     showCustomModal({ message: `新增失敗：${result.message || '未知錯誤'}` });
@@ -968,8 +1060,7 @@
             }
         }
 
-        async function deleteEmployee(encCardId) {
-            const cardId = decodeURIComponent(encCardId);
+        async function deleteEmployee(cardId) {
             let empName = cardId;
             if (Array.isArray(USER_DB_PREVIEW)) {
                 const found = USER_DB_PREVIEW.find(e => (e.cardId || e.id) === cardId);
@@ -1005,6 +1096,8 @@
             const statusSpan = document.getElementById('syncStatus');
             if(statusSpan) statusSpan.innerText = "連線中...";
             
+            updateLockStatusDisplay();
+
             try {
                 const response = await fetch(`/orders.json?_=${new Date().getTime()}`); 
                 if (!response.ok) throw new Error('無法存取');
@@ -1076,7 +1169,7 @@
             }
         }
 
-        /* 渲染訂單表格（依時間/單號『由新到舊』排序） */
+        /* 渲染訂單表格 */
         function renderOrderTable(orders, tableBodyId, showFullTime = false, hideCategoryCol = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1088,18 +1181,7 @@
                 return;
             }
 
-            const sortedOrders = [...orders].sort((a, b) => {
-                const timeA = parseOrderTime(a.timestamp);
-                const timeB = parseOrderTime(b.timestamp);
-                if (timeA !== timeB) {
-                    return timeB - timeA; 
-                }
-                const idA = Number(a.orderId) || 0;
-                const idB = Number(b.orderId) || 0;
-                return idB - idA;
-            });
-
-            const htmlRows = sortedOrders.map(order => {
+            const htmlRows = [...orders].reverse().map(order => {
                 const orderIdStr = order.orderId ? String(order.orderId) : '';
                 const cardId = order.cardId || '';
                 
@@ -1166,7 +1248,7 @@
                         
                         <td class="col-payment">
                             ${paidBadge}
-                            <button class="btn-status" onclick="togglePaymentStatus('${orderIdStr}', ${!isPaid})">切換狀態</button>
+                            <button class="btn-status" onclick="togglePaymentStatus('${cardId}', ${!isPaid})">切換狀態</button>
                         </td>
 
                         ${hideCategoryCol ? '' : `<td class="col-status"><span class="badge">已同步寫入</span></td>`}
@@ -1348,6 +1430,7 @@
                 adminInfoElem.innerText = `☁️ 管理員: ${currentAdminName} [已上線]`;
             }
 
+            loadTimeLockSettings();
             await loadEmployees();
             await loadOrders();
             await loadHistoryOrders();
