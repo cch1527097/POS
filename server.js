@@ -37,21 +37,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：判斷餐點是否為飲料類別 (喝涼涼)
-function isDrinkOrder(mealName) {
-    if (!mealName) return false;
-    const mealStr = mealName.toLowerCase();
-    
-    // 正餐關鍵字排除
-    const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵'];
-    if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
-
-    // 飲料關鍵字
-    const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品'];
-    return drinkKeywords.some(kw => mealStr.includes(kw));
-}
-
-// 輔助函式：同步寫入 public/orders.json (非同步寫入避免阻塞)
+// 輔助函式：同步寫入 public/orders.json
 async function syncOrdersJsonFile() {
     try {
         const result = await pool.query(`
@@ -64,8 +50,7 @@ async function syncOrdersJsonFile() {
                 o.note, 
                 o.total, 
                 o.timestamp,
-                COALESCE(u.is_paid, false) AS "isPaid",
-                COALESCE(u.department, '未劃分') AS "department"
+                COALESCE(u.is_paid, false) AS "isPaid"
             FROM orders o
             LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id DESC;
@@ -105,7 +90,22 @@ async function initDatabase() {
             );
         `);
 
-        // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
+        // 新增：系統設定資料表 (儲存鎖定時間與開關)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS settings (
+                key VARCHAR(50) PRIMARY KEY,
+                value TEXT NOT NULL
+            );
+        `);
+
+        // 寫入預設設定 (若不存在)
+        await pool.query(`
+            INSERT INTO settings (key, value) VALUES 
+            ('order_lock_enabled', 'enabled'),
+            ('order_cutoff_time', '10:30')
+            ON CONFLICT (key) DO NOTHING;
+        `);
+
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
@@ -145,9 +145,68 @@ function isTodayInTaipei(orderTimestampMs) {
     return orderDateStr === todayDateStr;
 }
 
+// 輔助函式：檢查目前是否已過結單時間 (台北時間)
+async function checkIsOrderLocked() {
+    try {
+        const res = await pool.query("SELECT key, value FROM settings WHERE key IN ('order_lock_enabled', 'order_cutoff_time');");
+        const settings = {};
+        res.rows.forEach(r => settings[r.key] = r.value);
+
+        const isEnabled = settings['order_lock_enabled'] || 'enabled';
+        if (isEnabled === 'disabled') return false;
+
+        const cutoffTimeStr = settings['order_cutoff_time'] || '10:30';
+        const [targetHour, targetMinute] = cutoffTimeStr.split(':').map(Number);
+
+        // 取得當前台北時間
+        const now = new Date();
+        const taipeiTimeString = now.toLocaleString("en-US", { timeZone: "Asia/Taipei" });
+        const taipeiDate = new Date(taipeiTimeString);
+
+        const currentHour = taipeiDate.getHours();
+        const currentMinute = taipeiDate.getMinutes();
+
+        const currentTotalMinutes = currentHour * 60 + currentMinute;
+        const targetTotalMinutes = targetHour * 60 + targetMinute;
+
+        return currentTotalMinutes >= targetTotalMinutes;
+    } catch (err) {
+        console.error('檢查鎖定狀態失敗:', err);
+        return false;
+    }
+}
+
 // ==================== API 路由 ====================
 
-// 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid 與部門 department)
+// 新增：取得系統結單設定 API (供前台/後台載入)
+app.get('/api/settings', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT key, value FROM settings;');
+        const settingsMap = {};
+        result.rows.forEach(r => settingsMap[r.key] = r.value);
+        res.json({ success: true, settings: settingsMap });
+    } catch (err) {
+        res.status(500).json({ success: false, message: '無法讀取系統設定' });
+    }
+});
+
+// 新增：更新系統結單設定 API
+app.post('/api/settings', async (req, res) => {
+    const { order_lock_enabled, order_cutoff_time } = req.body;
+    try {
+        if (order_lock_enabled) {
+            await pool.query("INSERT INTO settings (key, value) VALUES ('order_lock_enabled', $1) ON CONFLICT (key) DO UPDATE SET value = $1;", [order_lock_enabled]);
+        }
+        if (order_cutoff_time) {
+            await pool.query("INSERT INTO settings (key, value) VALUES ('order_cutoff_time', $1) ON CONFLICT (key) DO UPDATE SET value = $1;", [order_cutoff_time]);
+        }
+        res.json({ success: true, message: '設定儲存成功！' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: '儲存設定失敗' });
+    }
+});
+
+// 1. 取得所有訂單
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -160,8 +219,7 @@ app.get('/api/orders', async (req, res) => {
                 o.note, 
                 o.total, 
                 o.timestamp,
-                COALESCE(u.is_paid, false) AS "isPaid",
-                COALESCE(u.department, '未劃分') AS "department"
+                COALESCE(u.is_paid, false) AS "isPaid"
             FROM orders o
             LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id DESC;
@@ -173,7 +231,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 2. 取得所有員工名單 (包含 department)
+// 2. 取得所有員工名單
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
@@ -240,7 +298,6 @@ app.put('/api/employees/:cardId', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
-        // 同步更新 orders 裡面該員工歷史訂單顯示的姓名
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
         
         await syncOrdersJsonFile();
@@ -251,7 +308,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 5. 新增員工 (包含 department)
+// 5. 新增員工
 app.post('/api/employees', async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -338,12 +395,21 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單
+// 9. 新增訂單 (加入時間鎖定攔截驗證)
 app.post('/api/order', async (req, res) => {
     const { cardId, meal, note, spicy, total } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
-    
+
     try {
+        // 🔥【關鍵修復】下單前先驗證是否已鎖定/截止點餐
+        const locked = await checkIsOrderLocked();
+        if (locked) {
+            return res.status(400).json({ 
+                success: false, 
+                message: '❌ 已超過今日點餐截止時間，系統已停止收單！' 
+            });
+        }
+
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
@@ -381,7 +447,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
+// 10. 取得個人歷史訂單紀錄
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -411,7 +477,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 11. 動態匯出 Excel 下載 (包含繳費狀態)
+// 11. 動態匯出 Excel 下載
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -510,66 +576,6 @@ app.get('/api/export-excel', async (req, res) => {
     } catch (err) {
         console.error('導出 Excel 失敗:', err.message);
         res.status(500).json({ success: false, message: '無法產生 Excel 報表' });
-    }
-});
-
-// 12. 動態匯出分類 CSV 報表 API (支援 type: drink/food, timeframe: today/history)
-app.get('/api/export-csv', async (req, res) => {
-    const { type, timeframe } = req.query; // type: drink | food, timeframe: today | history
-
-    try {
-        const result = await pool.query(`
-            SELECT 
-                o.order_id, o.timestamp, o.card_id, o.name, o.meal, o.spicy, o.note, o.total,
-                COALESCE(u.is_paid, false) AS is_paid,
-                COALESCE(u.department, '未劃分') AS department
-            FROM orders o
-            LEFT JOIN users u ON o.card_id = u.card_id
-            ORDER BY o.order_id DESC;
-        `);
-
-        let rows = result.rows;
-
-        // 1. 時間篩選
-        if (timeframe === 'today') {
-            rows = rows.filter(row => isTodayInTaipei(row.order_id));
-        }
-
-        // 2. 分類篩選
-        if (type === 'drink') {
-            rows = rows.filter(row => isDrinkOrder(row.meal));
-        } else if (type === 'food') {
-            rows = rows.filter(row => !isDrinkOrder(row.meal));
-        }
-
-        const csvHeaders = ["訂單編號", "類別", "部門", "點餐人", "員工卡號", "訂單完整時間", "餐點項目", "備註/甜度辣度", "備註", "總金額", "繳費狀態"];
-        
-        const csvRows = rows.map(order => {
-            const cat = isDrinkOrder(order.meal) ? '喝涼涼' : '美味餐點';
-            return [
-                `"${(order.order_id || '').toString().replace(/"/g, '""')}"`,
-                `"${cat}"`,
-                `"${(order.department || '未劃分').toString().replace(/"/g, '""')}"`,
-                `"${(order.name || '未知').toString().replace(/"/g, '""')}"`,
-                `"${(order.card_id || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.timestamp || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.spicy || '無').toString().replace(/"/g, '""')}"`,
-                `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
-                `"${order.total || 0}"`,
-                `"${order.is_paid ? '已繳費' : '未繳費'}"`
-            ];
-        });
-
-        const csvContent = "\uFEFF" + [csvHeaders.join(","), ...csvRows.map(r => r.join(","))].join("\n");
-        const fileName = `${timeframe === 'today' ? '今日' : '歷史'}_${type === 'drink' ? '喝涼涼' : '美味餐點'}_${Date.now()}.csv`;
-
-        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-        res.status(200).send(csvContent);
-    } catch (err) {
-        console.error('導出 CSV 失敗:', err.message);
-        res.status(500).json({ success: false, message: '無法產生 CSV 報表' });
     }
 });
 
