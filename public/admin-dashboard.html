@@ -446,31 +446,6 @@
             </div>
 
             <div class="summary-container">
-                <!-- 結單時間設定區塊 -->
-<div class="card">
-    <h3>⏳ 系統訂餐狀態與結單設定</h3>
-    <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
-        設定每日自動結單時間，超過此時間前台將無法送出訂單。若遇特殊情況，也可在此手動強制鎖定系統。
-    </p>
-    <div class="form-group">
-        <div>
-            <label for="cutoffTime">每日自動結單時間</label>
-            <!-- 預設早上 09:00 -->
-            <input type="time" id="cutoffTime" value="09:00">
-        </div>
-        <div>
-            <label for="systemStatus">手動覆寫系統狀態</label>
-            <select id="systemStatus">
-                <option value="auto">⏱️ 依結單時間自動判斷</option>
-                <option value="open">🟢 強制開放訂餐 (無視時間)</option>
-                <option value="closed">🔴 強制鎖定 (立刻暫停訂餐)</option>
-            </select>
-        </div>
-        <div style="flex: 1; min-width: 200px; justify-content: flex-end;">
-            <button class="btn" style="width: 100%; margin-top: 24px;" onclick="saveSystemSettings()">儲存系統設定</button>
-        </div>
-    </div>
-</div>
                 <div class="summary-box">
                     <span class="title">今日總訂單數</span>
                     <span class="value" id="summaryCount">0 筆</span>
@@ -1072,58 +1047,6 @@
                 if(statusSpan) statusSpan.innerText = "同步失敗";
             }
         }
-
-        // ================= 新增：儲存系統與結單設定 =================
-async function saveSystemSettings() {
-    const cutoffTime = document.getElementById('cutoffTime').value;
-    const systemStatus = document.getElementById('systemStatus').value;
-
-    if (!cutoffTime) {
-        showCustomModal({ message: '請設定有效的結單時間！' });
-        return;
-    }
-
-    try {
-        // 這裡需要後端配合開一支 API 來接收並儲存這個設定 (例如 /api/settings)
-        const response = await fetch('/api/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                cutoffTime: cutoffTime, 
-                systemStatus: systemStatus 
-            })
-        });
-
-        if (response.ok) {
-            let statusText = systemStatus === 'auto' ? `每日 ${cutoffTime} 自動結單` : 
-                             systemStatus === 'open' ? '強制開放中' : '強制鎖定中';
-            
-            showCustomModal({ 
-                title: '設定成功',
-                message: `系統訂餐設定已更新！<br><br><b>目前狀態：</b>${statusText}` 
-            });
-        } else {
-            showCustomModal({ message: `設定儲存失敗，請確認後端伺服器！` });
-        }
-    } catch (error) {
-        console.error('儲存設定失敗:', error);
-        showCustomModal({ message: '網路連線失敗，請確認後端 API 是否正常運作！' });
-    }
-}
-
-// 建議在 window.onload 裡面加入讀取現有設定的功能
-async function loadSystemSettings() {
-    try {
-        const response = await fetch('/api/settings');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.cutoffTime) document.getElementById('cutoffTime').value = data.cutoffTime;
-            if (data.systemStatus) document.getElementById('systemStatus').value = data.systemStatus;
-        }
-    } catch(e) {
-        console.log("尚無設定檔或後端未建立設定讀取路由");
-    }
-}
 
         async function loadHistoryOrders() {
             const hStatusSpan = document.getElementById('historySyncStatus');
