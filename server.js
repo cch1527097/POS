@@ -114,6 +114,28 @@ async function initDatabase() {
     }
 }
 
+// 全局記憶體鎖定設定 (預設狀態)
+let orderLockConfig = {
+    isManualLocked: false,
+    cutoffTime: '10:30'
+};
+
+// 輔助函式：判斷當前台北時間是否已過截止點或已被手動鎖定
+function isOrderLocked() {
+    if (orderLockConfig.isManualLocked) return true;
+    if (!orderLockConfig.cutoffTime) return false;
+
+    // 取得台北時間的時與分
+    const nowTaipei = new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' });
+    const taipeiDate = new Date(nowTaipei);
+    
+    const currentMin = taipeiDate.getHours() * 60 + taipeiDate.getMinutes();
+    const [cutoffHour, cutoffMin] = orderLockConfig.cutoffTime.split(':').map(Number);
+    const targetMin = cutoffHour * 60 + cutoffMin;
+
+    return currentMin >= targetMin;
+}
+
 initDatabase();
 
 // 輔助函式：判斷時間戳記是否為台北時間的今天
@@ -155,6 +177,30 @@ app.get('/api/orders', async (req, res) => {
         console.error('獲取訂單失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得訂單資料' });
     }
+});
+
+// 取得當前點餐鎖定狀態
+app.get('/api/order-lock', (req, res) => {
+    res.json({
+        isManualLocked: orderLockConfig.isManualLocked,
+        cutoffTime: orderLockConfig.cutoffTime,
+        isLocked: isOrderLocked()
+    });
+});
+
+// 更新點餐鎖定設定 (手動鎖定開關 / 修改截止時間)
+app.post('/api/order-lock', (req, res) => {
+    const { isManualLocked, cutoffTime } = req.body;
+    
+    if (typeof isManualLocked === 'boolean') {
+        orderLockConfig.isManualLocked = isManualLocked;
+    }
+    if (cutoffTime && typeof cutoffTime === 'string') {
+        orderLockConfig.cutoffTime = cutoffTime;
+    }
+
+    console.log(`[鎖定設定更新] 手動鎖定: ${orderLockConfig.isManualLocked}, 每日截止時間: ${orderLockConfig.cutoffTime}`);
+    res.json({ success: true, message: '鎖定設定更新成功', config: orderLockConfig });
 });
 
 // 2. 取得所有員工名單 (包含 department)
@@ -261,6 +307,57 @@ app.post('/api/employees', async (req, res) => {
     } catch (err) {
         console.error('新增員工失敗:', err.message);
         res.status(500).json({ success: false, message: '新增員工失敗' });
+    }
+});
+
+// 9. 新增訂單 (加入鎖定檢查)
+app.post('/api/order', async (req, res) => {
+    // 🛑 1. 鎖定驗證：若系統已鎖定，拒絕下單
+    if (isOrderLocked()) {
+        const reason = orderLockConfig.isManualLocked 
+            ? '管理員已手動關閉點餐系統！' 
+            : `已超過今日截止點餐時間 (${orderLockConfig.cutoffTime})！`;
+        return res.status(403).json({ success: false, message: `點餐失敗：${reason}` });
+    }
+
+    const { cardId, meal, note, spicy, total } = req.body;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    
+    try {
+        const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
+        if (!cleanCardId || userRes.rows.length === 0) {
+            return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
+        }
+
+        const empName = userRes.rows[0].name;
+        const numTotal = Number(total);
+        const orderIdVal = Date.now();
+        const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+
+        const insertQuery = `
+            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+        `;
+        const values = [
+            orderIdVal,
+            cleanCardId,
+            empName,
+            meal ? String(meal).trim() : "未知餐點",
+            spicy ? String(spicy).trim() : "無",
+            note ? String(note).trim() : "無",
+            !isNaN(numTotal) ? numTotal : 0,
+            timestampStr
+        ];
+
+        await pool.query(insertQuery, values);
+        console.log(`[新訂單提示] 收到來自 ${empName} (${cleanCardId}) 的訂單，已寫入 Neon PostgreSQL！`);
+
+        syncOrdersJsonFile().catch(err => console.error(err));
+
+        res.json({ success: true, message: `🎉 訂單送出成功！` });
+    } catch (error) {
+        console.error('後端處理訂單發生錯誤:', error);
+        res.status(500).json({ success: false, message: '伺服器寫入資料庫失敗。' });
     }
 });
 
