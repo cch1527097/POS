@@ -58,28 +58,20 @@
 
         /* ==================== 登入卡片區塊 ==================== */
         .login-card {
-    background-color: #ffffff; 
-    border-radius: 16px;       
-    width: 100%;             /* 改為百分比彈性寬度 */
-    max-width: 580px;        /* 限制最大寬度 */
-    min-height: auto;        /* 允許彈性縮放 */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.05);
-    padding: 40px 20px;       /* 適應手機 padding */
-    position: relative;
-    z-index: 5;
-    border: 1px solid rgba(220, 235, 218, 0.5);
-    box-sizing: border-box;
-}
-        .input-group input,
-.login-btn,
-.login-admin-link {
-    width: 100%;
-    max-width: 320px;
-}
+            background-color: #ffffff; 
+            border-radius: 16px;       
+            width: 580px;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.05);
+            padding: 50px 40px;
+            position: relative;
+            z-index: 5;
+            border: 1px solid rgba(220, 235, 218, 0.5);
+        }
 
         .login-logo {
             width: 80px;
@@ -152,14 +144,14 @@
         }
 
         .toggle-password {
-    position: absolute;
-    right: 15px;              /* 靠右固定距離 */
-    transform: none;          /* 移除固定的 translateX */
-    cursor: pointer;
-    font-size: 18px;
-    user-select: none;
-    z-index: 10;
-}
+            position: absolute;
+            right: auto;
+            transform: translateX(130px);
+            cursor: pointer;
+            font-size: 18px;
+            user-select: none;
+            z-index: 10;
+        }
 
         .login-btn {
             background-color: #4e803c; 
@@ -215,19 +207,15 @@
             z-index: 10;
         }
 
+        /* 📱 手機版 RWD 適應 */
         @media (max-width: 480px) {
-    body.login-mode {
-        padding: 15px;         /* 避免卡片緊貼手機螢幕邊框 */
-    }
-    .login-card { 
-        width: 100%; 
-        padding: 30px 16px; 
-        border-radius: 16px; 
-    }
-    .title { font-size: 24px; margin-bottom: 2px; }
-    .subtitle { font-size: 12px; margin-bottom: 25px; letter-spacing: 1.5px; }
-    .input-group input { font-size: 16px; }
-}
+            .login-card { width: 90%; min-height: auto; padding: 40px 20px; border-radius: 16px; }
+            .title { font-size: 26px; margin-bottom: 2px; }
+            .subtitle { font-size: 12px; margin-bottom: 25px; letter-spacing: 2px; }
+            .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
+            .toggle-password { transform: translateX(110px); }
+            .login-btn, .login-admin-link { width: 100%; max-width: 280px; }
+        }
     </style>
 </head>
 <body class="login-mode">
