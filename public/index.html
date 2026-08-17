@@ -1766,6 +1766,7 @@
         /* 🌟 切換至「喝涼涼」版面 */
         function showDrinkOnly() {
             currentCategoryView = 'drink';
+            localStorage.setItem('selectedCategory', 'drink'); // 💾 記住目前在喝涼涼
 
             // 隱藏美味餐點，顯示喝涼涼
             document.getElementById('food-section')?.classList.add('hidden');
@@ -1791,6 +1792,7 @@
         /* 🌟 切換至「美味餐點」版面 */
         function showFoodOnly() {
             currentCategoryView = 'food';
+            localStorage.setItem('selectedCategory', 'food'); // 💾 記住目前在美味餐點
 
             // 顯示美味餐點，隱藏喝涼涼
             document.getElementById('food-section')?.classList.remove('hidden');
@@ -1823,9 +1825,18 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        /* 版面切換控制：顯示全部（回首頁預設為美味餐點） */
+        /* 🌟 版面切換控制：還原上次觀看的分類 */
+        function restoreSelectedCategory() {
+            const savedCat = localStorage.getItem('selectedCategory');
+            if (savedCat === 'drink') {
+                showDrinkOnly();
+            } else {
+                showFoodOnly();
+            }
+        }
+
         function showAllCategories() {
-            showFoodOnly();
+            restoreSelectedCategory();
         }
 
         function goHome() {
@@ -1900,6 +1911,9 @@
                 return;
             }
             
+            // 💾 在前往店家點餐前，紀錄目前所在分類狀態
+            localStorage.setItem('selectedCategory', currentCategoryView);
+
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
             const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}`;
             window.location.href = targetUrl;
@@ -1941,7 +1955,8 @@
             document.body.classList.remove('login-mode');
             document.body.classList.add('order-mode');
             
-            showAllCategories();
+            // 🌟 登入後還原上次離開時選擇的分類（美食 / 飲料）
+            restoreSelectedCategory();
             fetchOrderHistory(cardId);
             fetchGlobalOrders(cardId);
         }
