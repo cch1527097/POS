@@ -37,7 +37,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：同步寫入 public/orders.json
+// 輔助函式：同步寫入 public/orders.json (非同步寫入避免阻塞)
 async function syncOrdersJsonFile() {
     try {
         const result = await pool.query(`
@@ -90,6 +90,7 @@ async function initDatabase() {
             );
         `);
 
+        // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
@@ -113,38 +114,6 @@ async function initDatabase() {
     }
 }
 
-// 全局記憶體鎖定設定
-let orderLockConfig = {
-    isManualLocked: false,
-    cutoffTime: '10:30'
-};
-
-// 輔助函式：判斷當前台北時間是否已被鎖定
-function isOrderLocked() {
-    if (orderLockConfig.isManualLocked) return true;
-    if (!orderLockConfig.cutoffTime) return false;
-
-    // 精確取得台北時間的小時與分鐘
-    const taipeiParts = new Intl.DateTimeFormat('zh-TW', {
-        timeZone: 'Asia/Taipei',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: false
-    }).formatToParts(new Date());
-
-    let hour = 0, minute = 0;
-    for (const part of taipeiParts) {
-        if (part.type === 'hour') hour = parseInt(part.value, 10);
-        if (part.type === 'minute') minute = parseInt(part.value, 10);
-    }
-
-    const currentMin = hour * 60 + minute;
-    const [cutoffHour, cutoffMin] = orderLockConfig.cutoffTime.split(':').map(Number);
-    const targetMin = cutoffHour * 60 + cutoffMin;
-
-    return currentMin >= targetMin;
-}
-
 initDatabase();
 
 // 輔助函式：判斷時間戳記是否為台北時間的今天
@@ -163,7 +132,7 @@ function isTodayInTaipei(orderTimestampMs) {
 
 // ==================== API 路由 ====================
 
-// 1. 取得所有訂單
+// 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -188,31 +157,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 2. 取得點餐鎖定狀態
-app.get('/api/order-lock', (req, res) => {
-    res.json({
-        isManualLocked: orderLockConfig.isManualLocked,
-        cutoffTime: orderLockConfig.cutoffTime,
-        isLocked: isOrderLocked()
-    });
-});
-
-// 3. 更新鎖定設定
-app.post('/api/order-lock', (req, res) => {
-    const { isManualLocked, cutoffTime } = req.body;
-    
-    if (typeof isManualLocked === 'boolean') {
-        orderLockConfig.isManualLocked = isManualLocked;
-    }
-    if (cutoffTime && typeof cutoffTime === 'string') {
-        orderLockConfig.cutoffTime = cutoffTime;
-    }
-
-    console.log(`[鎖定設定更新] 手動鎖定: ${orderLockConfig.isManualLocked}, 每日截止時間: ${orderLockConfig.cutoffTime}`);
-    res.json({ success: true, message: '鎖定設定更新成功', config: orderLockConfig });
-});
-
-// 4. 取得員工名單
+// 2. 取得所有員工名單 (包含 department)
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
@@ -231,7 +176,7 @@ app.get('/api/employees', async (req, res) => {
     }
 });
 
-// 5. 切換員工繳費狀態
+// 3. 切換員工繳費狀態
 app.patch('/api/employees/:cardId/payment', async (req, res) => {
     const { cardId } = req.params;
     const { isPaid } = req.body;
@@ -256,7 +201,7 @@ app.patch('/api/employees/:cardId/payment', async (req, res) => {
     }
 });
 
-// 6. 編輯員工姓名與部門
+// 4. 編輯員工姓名與部門 API
 app.put('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const { name, department } = req.body;
@@ -279,7 +224,9 @@ app.put('/api/employees/:cardId', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
+        // 同步更新 orders 裡面該員工歷史訂單顯示的姓名
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
+        
         await syncOrdersJsonFile();
         res.json({ success: true, message: '員工資料更新成功' });
     } catch (err) {
@@ -288,7 +235,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 7. 新增員工
+// 5. 新增員工 (包含 department)
 app.post('/api/employees', async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -317,7 +264,7 @@ app.post('/api/employees', async (req, res) => {
     }
 });
 
-// 8. 刪除員工
+// 6. 刪除員工
 app.delete('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -334,7 +281,7 @@ app.delete('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 9. 刪除訂單
+// 7. 刪除訂單
 app.delete('/api/orders/:orderId', async (req, res) => {
     const { orderId } = req.params;
     const targetOrderIdStr = orderId ? String(orderId).trim() : '';
@@ -357,7 +304,7 @@ app.delete('/api/orders/:orderId', async (req, res) => {
     }
 });
 
-// 10. 登入驗證
+// 8. 登入驗證
 app.post('/api/login', async (req, res) => {
     const { cardId } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -375,16 +322,8 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 11. 新增訂單 (已保留單一正確的 API，帶有鎖定檢查)
+// 9. 新增訂單
 app.post('/api/order', async (req, res) => {
-    // 🛑 鎖定驗證
-    if (isOrderLocked()) {
-        const reason = orderLockConfig.isManualLocked 
-            ? '管理員已手動關閉點餐系統！' 
-            : `已超過今日截止點餐時間 (${orderLockConfig.cutoffTime})！`;
-        return res.status(403).json({ success: false, message: `點餐失敗：${reason}` });
-    }
-
     const { cardId, meal, note, spicy, total } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
     
@@ -426,7 +365,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 12. 取得個人歷史訂單紀錄
+// 10. 取得個人歷史訂單紀錄 (已修復 SQL 注入)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -436,6 +375,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
+        // ✅ 安全修改：改為參數化查詢，防止 SQL 注入
         const result = await pool.query(
             'SELECT order_id, meal, spicy, note, total, timestamp FROM orders WHERE card_id = $1 ORDER BY order_id DESC;',
             [cleanCardId]
@@ -456,7 +396,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 13. 動態匯出 Excel 下載
+// 11. 動態匯出 Excel 下載 (包含繳費狀態)
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
