@@ -143,16 +143,24 @@ app.get('/api/lock-time', (req, res) => {
 app.post('/api/lock-time', (req, res) => {
     const { lockTime } = req.body;
     
-    // 如果傳入 null、undefined 或空字串，代表解除鎖定
+    // 若傳入空字串或 null，代表管理員選擇解除鎖定
     if (!lockTime) {
         orderLockTime = "";
         console.log(`[系統提示] 管理員已解除點餐時間限制`);
-        return res.json({ success: true, message: '已成功解除點餐限制！目前全天皆可點餐。', lockTime: "" });
+        return res.json({ 
+            success: true, 
+            message: '已成功解除點餐限制！目前系統無時間限制，隨時可進行下單。',
+            lockTime: "" 
+        });
     }
 
     orderLockTime = lockTime;
     console.log(`[系統提示] 管理員將點餐截止時間更新為：${orderLockTime}`);
-    return res.json({ success: true, message: `已成功將點餐截止時間設定為 ${orderLockTime}`, lockTime: orderLockTime });
+    return res.json({ 
+        success: true, 
+        message: `已成功將點餐截止時間設定為 ${orderLockTime}`,
+        lockTime: orderLockTime
+    });
 });
 
 // 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
