@@ -713,20 +713,6 @@
             try {
                 const response = await fetch('/api/lock-time');
                 const data = await response.json();
-                if (data.success && data.lockTime) {
-                    document.getElementById('lockTimeInput').value = data.lockTime;
-                    document.getElementById('lockTimeDisplay').innerText = `[目前截止設定：${data.lockTime}]`;
-                }
-            } catch (error) {
-                console.error('讀取鎖定時間失敗:', error);
-            }
-        }
-
-        // 讀取目前的點餐鎖定時間
-        async function loadLockTime() {
-            try {
-                const response = await fetch('/api/lock-time');
-                const data = await response.json();
                 if (data.success) {
                     if (data.lockTime) {
                         document.getElementById('lockTimeInput').value = data.lockTime;
@@ -769,7 +755,7 @@
             }
         }
 
-        // 新增：解除鎖定點餐時間函式
+        // 解除鎖定點餐時間函式
         async function unlockOrderTime() {
             showCustomModal({
                 title: '確認解除鎖定',
@@ -780,7 +766,7 @@
                         const response = await fetch('/api/lock-time', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ lockTime: "" }) // 傳送空字串給後端清空
+                            body: JSON.stringify({ lockTime: "" })
                         });
                         const result = await response.json();
 
@@ -814,22 +800,23 @@
             return drinkKeywords.some(kw => mealStr.includes(kw));
         }
 
-        // 解析日期時間格式
+        // 解析日期時間格式 (已修復中文「上午/下午」解析失敗導致回傳 0 的問題)
         function parseTimestamp(ts) {
             if (!ts) return 0;
             let str = String(ts).trim();
             
             const isPM = str.includes('下午');
             const isAM = str.includes('上午');
-            str = str.replace('上午', '').replace('下午', '').trim();
             
-            str = str.replace(/-/g, '/');
+            // 清理中文標籤與格式
+            str = str.replace(/上午|下午/g, '').trim().replace(/-/g, '/');
             
-            const parts = str.split(' ');
+            const parts = str.split(/\s+/);
             if (parts.length >= 2) {
                 const datePart = parts[0];
                 const timePart = parts[1];
                 const tParts = timePart.split(':');
+                
                 let hour = parseInt(tParts[0], 10) || 0;
                 const min = parseInt(tParts[1], 10) || 0;
                 const sec = parseInt(tParts[2], 10) || 0;
@@ -1187,7 +1174,7 @@
             }
         }
 
-        /* 渲染訂單表格 */
+        /* 渲染訂單表格 (已修復排序比較邏輯，確保由新至舊排列) */
         function renderOrderTable(orders, tableBodyId, showFullTime = false, hideCategoryCol = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1202,10 +1189,16 @@
             const sortedOrders = [...orders].sort((a, b) => {
                 const timeA = parseTimestamp(a.timestamp);
                 const timeB = parseTimestamp(b.timestamp);
+                
+                // 時間優先判斷 (時間新者排前面)
                 if (timeA !== timeB) {
                     return timeB - timeA;
                 }
-                return String(b.orderId || '').localeCompare(String(a.orderId || ''));
+                
+                // 若時間相同或解析出問題，改用 Order ID (數字大小) 排序
+                const idA = Number(a.orderId || 0);
+                const idB = Number(b.orderId || 0);
+                return idB - idA;
             });
 
             const htmlRows = sortedOrders.map(order => {
