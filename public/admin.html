@@ -196,16 +196,22 @@
             color: #0a5c41;
         }
 
-        /* 登入頁底部版權宣告 */
-        .login-footer-copy {
-            position: absolute;
-            bottom: 25px;
-            width: 100%;
-            text-align: center;
-            font-size: 13.5px;
-            color: #668062;
-            z-index: 10;
-        }
+        /* Display footer copy by default in login mode, hide when login-mode is removed */
+.login-footer-copy {
+    display: none; /* Hidden by default */
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 13.5px;
+    color: #668062;
+    z-index: 10;
+}
+
+/* Only show when body is in login mode */
+body.login-mode .login-footer-copy {
+    display: block;
+}
 
         /* 📱 手機版 RWD 適應 */
         @media (max-width: 480px) {
