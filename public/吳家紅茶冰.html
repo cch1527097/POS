@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吳家紅茶冰 - 智慧點餐系統</title>
+    <style>
+        html { 
+            scroll-behavior: smooth; 
+            scroll-padding-top: 90px;
+        }
+
+        :root { 
+            --primary: #8b1d1d;       /* 吳家經典紅 */
+            --primary-light: #fdf2f2; /* 淺紅底色 */
+            --secondary: #ffc700;      /* 鮮黃 */
+            --accent: #dc2626;        /* 亮紅點綴 */
+            --bg-main: #f4f6f9;       /* 輕灰底色 */
+            --text-dark: #1e293b;      /* 深色文字 */
+            --text-muted: #64748b;    /* 輔助灰色 */
+            --border-color: #e2e8f0;  /* 邊框線條 */
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Microsoft JhengHei", sans-serif; 
+            background: var(--bg-main); 
+            margin: 0; 
+            padding: 0; 
+            color: var(--text-dark); 
+            line-height: 1.5;
+        }
+
+        /* 頂部導航列 */
+        .navbar {
+            background: #fff;
+            padding: 12px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+        .navbar-brand { 
+            font-size: 24px; 
+            font-weight: 800; 
+            color: var(--primary); 
+            text-decoration: none; 
+            z-index: 2;
+        }
+        
+        .search-wrapper { 
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 400px; 
+            padding: 0 20px;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+        .top-search-box {
+            width: 100%;
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background: #f1f5f9;
+            font-size: 14px;
+            box-sizing: border-box;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .top-search-box:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(139, 29, 29, 0.15);
+        }
+
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 24px 16px 100px 16px; 
+        }
+
+        /* 店家 Banner 樣式 */
+        .store-banner {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+        }
+        .store-info-left { display: flex; gap: 16px; align-items: center; }
+        .store-logo {
+            width: 60px;
+            height: 60px;
+            background: var(--primary); 
+            color: #fff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .store-details h1 { 
+            margin: 0 0 6px 0; 
+            font-size: 20px; 
+            font-weight: 800; 
+            color: #1a202c; 
+        }
+        
+        .store-meta { 
+            display: flex; 
+            flex-wrap: wrap; 
+            align-items: center; 
+            gap: 16px; 
+            font-size: 13px; 
+            color: #718096; 
+        }
+        .store-meta span { display: flex; align-items: center; gap: 4px; }
+
+        .promo-banner {
+            background: #fff;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+        .promo-badge {
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .info-banner { 
+            background: #e0f2fe; 
+            color: #0369a1; 
+            padding: 12px 16px; 
+            border-radius: 8px; 
+            margin-bottom: 24px; 
+            font-size: 13px; 
+            border-left: 5px solid #0284c7; 
+        }
+
+        .main-layout { display: flex; gap: 20px; align-items: flex-start; }
+        
+        .category-sidebar { 
+            flex: 0 0 200px; 
+            background: #fff; 
+            border-radius: 12px; 
+            padding: 10px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); 
+            position: sticky; 
+            top: 90px; 
+        }
+        .side-cat-item { 
+            display: block; 
+            padding: 12px 16px; 
+            color: var(--text-dark); 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            transition: all 0.2s; 
+            margin-bottom: 4px; 
+        }
+        .side-cat-item:hover, .side-cat-item.active { background: var(--primary-light); color: var(--primary); }
+
+        .menu-content { flex: 1; }
+        .category-block { margin-bottom: 30px; scroll-margin-top: 90px; }
+        .category-title { font-size: 18px; font-weight: 700; color: var(--primary); margin: 0 0 14px 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 6px; }
+        
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        
+        .item-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.01);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
+        .item-info { flex: 1; padding-right: 12px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
+        .item-name { font-weight: 700; color: var(--text-dark); font-size: 15px; margin-bottom: 2px; word-break: break-all; }
+        .item-price-zone { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+        .item-price { color: var(--text-dark); font-weight: 700; font-size: 15px; }
+        
+        .item-img-placeholder {
+            width: 75px;
+            height: 75px;
+            background: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 1px solid #f1f5f9;
+            flex-shrink: 0;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+        .item-img-placeholder:active { transform: scale(0.95); }
+
+        .cart-sidebar { 
+            flex: 0 0 320px; 
+            background: #fff; 
+            border: 1px solid var(--border-color); 
+            padding: 20px; 
+            border-radius: 12px; 
+            position: sticky; 
+            top: 90px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg-main); padding-bottom: 10px; margin-bottom: 16px; }
+        .cart-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
+        .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        .btn-clear-all:hover { background: #fca5a5; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
+        .cart-item-spec { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .action-zone { display: flex; align-items: center; gap: 8px; }
+        .btn-qty { 
+            background: #f1f5f9; 
+            border: none; 
+            color: var(--text-dark); 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            user-select: none; 
+            transition: all 0.15s ease;
+        }
+        .btn-qty:hover { background: var(--primary); color: white; }
+        .btn-qty:active { transform: scale(0.85); }
+        .qty-num { min-width: 16px; text-align: center; font-weight: 700; font-size: 14px; }
+
+        .total-box { font-size: 20px; font-weight: 700; color: var(--accent); text-align: right; margin: 16px 0; }
+        .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(139, 29, 29, 0.2); transition: all 0.2s; }
+        .btn-submit:hover:not(:disabled) { background: #6b1515; }
+        .btn-submit:active:not(:disabled) { transform: scale(0.98); }
+        .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+
+        .btn-back { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            z-index: 999; 
+            background: #1e293b; 
+            color: white; 
+            padding: 10px 18px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            border: none; 
+            transition: transform 0.15s;
+        }
+        .btn-back:active { transform: scale(0.92); }
+
+        /* 自訂彈出視窗 (Modal) 樣式 */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        .custom-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-modal {
+            background: #fff;
+            width: 90%;
+            max-width: 440px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+        .custom-modal-overlay.active .custom-modal {
+            transform: scale(1);
+        }
+        .custom-modal-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        .custom-modal-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+        .custom-modal-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #a0aec0;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+        .custom-modal-close:hover {
+            color: #4a5568;
+        }
+        .custom-modal-body {
+            padding: 16px 20px;
+            font-size: 14px;
+            color: #4a5568;
+            border-top: 1px solid #edf2f7;
+            border-bottom: 1px solid #edf2f7;
+            line-height: 1.6;
+            word-break: break-all;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .custom-modal-footer {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fff;
+        }
+        .modal-btn {
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-btn-cancel {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+        }
+        .modal-btn-cancel:hover {
+            background: #f1f5f9;
+        }
+        .modal-btn-confirm {
+            background: var(--primary);
+            border: none;
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(139, 29, 29, 0.2);
+        }
+        .modal-btn-confirm:hover {
+            background: #6b1515;
+        }
+
+        /* 方塊選擇按鈕樣式 */
+        .option-group {
+            margin-bottom: 16px;
+        }
+        .option-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #334155;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .option-title::before {
+            content: "*";
+            color: #dc2626;
+            margin-right: 2px;
+        }
+        .chips-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .chip-btn {
+            background: #ffffff;
+            border: 1px solid var(--primary);
+            color: #1e293b;
+            padding: 8px 4px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .chip-btn:hover {
+            background: var(--primary-light);
+        }
+        .chip-btn.selected {
+            background: var(--primary-light);
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(139, 29, 29, 0.1);
+        }
+
+        /* 響應式優化 */
+        @media (max-width: 1024px) {
+            .main-layout { flex-direction: column; }
+            .category-sidebar { 
+                display: flex; flex: none; width: 100%; box-sizing: border-box; overflow-x: auto; white-space: nowrap; 
+                position: sticky; top: 70px; z-index: 100; background: #fff; padding: 10px 8px; margin-bottom: 16px; 
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; 
+            }
+            .category-sidebar::-webkit-scrollbar { display: none; }
+            .side-cat-item { flex: 0 0 auto; margin-right: 8px; margin-bottom: 0; padding: 8px 16px; font-size: 13px; background: #f1f5f9; border-radius: 20px; }
+            .side-cat-item.active { background: var(--primary); color: #fff; }
+            .category-block { scroll-margin-top: 130px; }
+            .cart-sidebar { width: 100%; box-sizing: border-box; position: static; }
+        }
+        
+        @media (max-width: 600px) {
+            html { scroll-padding-top: 140px; }
+            .navbar { flex-direction: column; gap: 10px; padding: 12px 16px; position: sticky; }
+            .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
+            .category-sidebar { top: 110px; }
+            .category-block { scroll-margin-top: 160px; }
+            .store-meta { gap: 8px 12px; }
+            .chips-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="#" class="navbar-brand">智慧點餐系統</a>
+    <div class="search-wrapper">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋飲料 (如：吳家紅茶、特濃冬瓜牛奶)..." oninput="debounceFilterMenu()">
+    </div>
+</div>
+
+<button class="btn-back" onclick="goBack()">⬅ 離開點餐</button>
+
+<div class="container">
+    <div class="store-banner">
+        <div class="store-info-left">
+            <div class="store-logo">吳家</div>
+            <div class="store-details">
+                <h1>吳家紅茶冰 鹿港店</h1>
+                <div class="store-meta">
+                    <span class="rating">⭐ 4.2 (19)</span>
+                    <span>🕒 09:00 ~ 19:00</span>
+                    <span>📍 50550彰化縣鹿港鎮東石里鹿工南一路5號</span>
+                    <span>📞 04-781-1370</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 低消訊息橫幅 -->
+    <div class="promo-banner">
+        <span class="promo-badge">低消</span>
+        <span class="promo-text">無低消金額</span>
+    </div>
+
+    <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
+
+    <div class="main-layout">
+        <div class="category-sidebar" id="side-cats"></div>
+
+        <div class="menu-content" id="menu-list"></div>
+
+        <div class="cart-sidebar">
+            <div class="cart-header">
+                <h3>🛒 已選點餐明細</h3>
+                <button class="btn-clear-all" onclick="clearCart()">🗑️ 清空</button>
+            </div>
+            
+            <div id="cart-list"><p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p></div>
+
+            <div class="total-box" id="total-amount">總計: $0</div>
+            <button class="btn-submit" id="submit-btn" onclick="submitOrderToServer()">確認送出訂單</button>
+        </div>
+    </div>
+</div>
+
+<div id="customModal" class="custom-modal-overlay">
+    <div class="custom-modal">
+        <div class="custom-modal-header">
+            <h3 id="modalTitle" class="custom-modal-title">提示</h3>
+            <button class="custom-modal-close" onclick="closeModal(false)">&times;</button>
+        </div>
+        <div id="modalBody" class="custom-modal-body">
+            </div>
+        <div id="modalFooter" class="custom-modal-footer">
+            </div>
+    </div>
+</div>
+
+<script>
+let modalCallback = null;
+
+function showModal(title, htmlContent, type = 'alert', callback = null) {
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalBody').innerHTML = htmlContent;
+    modalCallback = callback;
+
+    const footer = document.getElementById('modalFooter');
+    footer.innerHTML = '';
+
+    if (type === 'confirm') {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'modal-btn modal-btn-cancel';
+        cancelBtn.innerText = '取消';
+        cancelBtn.onclick = () => closeModal(false);
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'modal-btn modal-btn-confirm';
+        confirmBtn.innerText = '確定';
+        confirmBtn.onclick = () => closeModal(true);
+
+        footer.appendChild(cancelBtn);
+        footer.appendChild(confirmBtn);
+    } else {
+        const okBtn = document.createElement('button');
+        okBtn.className = 'modal-btn modal-btn-confirm';
+        okBtn.innerText = '確定';
+        okBtn.onclick = () => closeModal(true);
+
+        footer.appendChild(okBtn);
+    }
+
+    document.getElementById('customModal').classList.add('active');
+}
+
+function closeModal(result) {
+    document.getElementById('customModal').classList.remove('active');
+    if (modalCallback) {
+        modalCallback(result);
+        modalCallback = null;
+    }
+}
+
+function goBack() {
+    window.location.href = 'index.html'; 
+}
+
+const rawMenuItems = [
+    // === 綠茶類 ===
+    {name: "金萱綠茶", priceM: 25, priceL: 30, category: "綠茶類", icon:"🍵"},
+    {name: "冬瓜綠茶", priceM: 25, priceL: 30, category: "綠茶類", icon:"🍵"},
+    {name: "檸檬綠茶", priceM: 35, priceL: 40, category: "綠茶類", icon:"🍋"},
+    {name: "鳳梨綠茶", priceM: 45, priceL: 50, category: "綠茶類", icon:"🍍"},
+    {name: "梅子綠茶", priceM: 45, priceL: 50, category: "綠茶類", icon:"🍃"},
+    {name: "多多綠茶", priceM: 45, priceL: 50, category: "綠茶類", icon:"🥤"},
+    {name: "綠茶牛奶", priceM: 45, priceL: 50, category: "綠茶類", icon:"🥛"},
+    {name: "金萱水果茶", priceM: 55, priceL: 60, category: "綠茶類", icon:"🍹"},
+
+    // === 紅茶類 ===
+    {name: "吳家紅茶", priceM: 25, priceL: 30, category: "紅茶類", icon:"☕"},
+    {name: "檸檬紅茶", priceM: 35, priceL: 40, category: "紅茶類", icon:"🍋"},
+    {name: "豆漿紅茶", priceM: 35, priceL: 40, category: "紅茶類", icon:"🥤"},
+    {name: "鳳梨紅茶", priceM: 45, priceL: 50, category: "紅茶類", icon:"🍍"},
+    {name: "紅茶牛奶", priceM: 45, priceL: 50, category: "紅茶類", icon:"🥛"},
+    {name: "冰淇淋紅茶", priceM: 45, priceL: 50, category: "紅茶類", icon:"🍨"},
+    {name: "仙草凍紅茶", priceM: 55, priceL: 60, category: "紅茶類", icon:"🧋"},
+    {name: "紅糖珍珠奶茶", priceM: 55, priceL: 60, category: "紅茶類", icon:"🧋"},
+    {name: "寒天晶球奶茶", priceM: 55, priceL: 60, category: "紅茶類", icon:"🧋"},
+    {name: "特濃紅茶牛奶", priceM: 60, priceL: 65, category: "紅茶類", icon:"🥛"},
+
+    // === 冬瓜類 ===
+    {name: "吳家冬瓜茶", priceM: 25, priceL: 30, category: "冬瓜類", icon:"🧊"},
+    {name: "紅茶冬瓜", priceM: 25, priceL: 30, category: "冬瓜類", icon:"🧊"},
+    {name: "檸檬冬瓜", priceM: 35, priceL: 40, category: "冬瓜類", icon:"🍋"},
+    {name: "豆漿冬瓜", priceM: 35, priceL: 40, category: "冬瓜類", icon:"🥤"},
+    {name: "冬瓜牛奶", priceM: 45, priceL: 50, category: "冬瓜類", icon:"🥛"},
+    {name: "檸檬愛玉冬瓜", priceM: 45, priceL: 50, category: "冬瓜類", icon:"🍋"},
+    {name: "檸檬寒天冬瓜", priceM: 45, priceL: 50, category: "冬瓜類", icon:"🍋"},
+    {name: "特濃冬瓜牛奶", priceM: 60, priceL: 65, category: "冬瓜類", icon:"🥛"},
+
+    // === 酸梅類 ===
+    {name: "酸梅綠茶", priceM: 50, priceL: 55, category: "酸梅類", icon:"🍃"},
+    {name: "酸梅甘酸甜", priceM: 50, priceL: 55, category: "酸梅類", icon:"🍒"},
+    {name: "冬檸酸梅", priceM: 50, priceL: 55, category: "酸梅類", icon:"🍋"},
+    {name: "酸梅烏龍", priceM: 55, priceL: 60, category: "酸梅類", icon:"🍵"},
+    {name: "酸梅冰", priceM: 55, priceL: 60, category: "酸梅類", icon:"🧊"},
+    {name: "鳳梨酸梅冰茶", priceM: 60, priceL: 65, category: "酸梅類", icon:"🍍"},
+
+    // === 烏龍類 ===
+    {name: "翠玉烏龍茶", priceM: 30, priceL: 35, category: "烏龍類", icon:"🍵"},
+    {name: "烏龍紅茶", priceM: 30, priceL: 35, category: "烏龍類", icon:"🍵"},
+    {name: "冬瓜烏龍茶", priceM: 30, priceL: 35, category: "烏龍類", icon:"🍵"},
+    {name: "檸檬烏龍茶", priceM: 40, priceL: 45, category: "烏龍類", icon:"🍋"},
+    {name: "鳳梨烏龍茶", priceM: 50, priceL: 55, category: "烏龍類", icon:"🍍"},
+    {name: "翠玉奶茶", priceM: 50, priceL: 55, category: "烏龍類", icon:"🧋"},
+    {name: "果香烏龍茶", priceM: 60, priceL: 65, category: "烏龍類", icon:"🍑"},
+
+    // === 仙草類 ===
+    {name: "吳堂仙草", priceM: 30, priceL: 35, category: "仙草類", icon:"🧋"},
+    {name: "仙草冬瓜", priceM: 30, priceL: 35, category: "仙草類", icon:"🧋"},
+    {name: "仙草紅茶", priceM: 30, priceL: 35, category: "仙草類", icon:"🧋"},
+    {name: "紅糖珍珠仙草", priceM: 40, priceL: 45, category: "仙草類", icon:"🧋"},
+    {name: "吳家仙草蜜", priceM: 40, priceL: 45, category: "仙草類", icon:"🍯"},
+
+    // === 咖啡大咖 ===
+    {name: "黑咖啡", priceM: 45, priceL: 55, category: "咖啡大咖", icon:"☕"},
+    {name: "咖啡紅茶", priceM: 45, priceL: 55, category: "咖啡大咖", icon:"☕"},
+    {name: "冬瓜咖啡", priceM: 45, priceL: 55, category: "咖啡大咖", icon:"☕"},
+    {name: "特調咖啡", priceM: 50, priceL: 60, category: "咖啡大咖", icon:"☕"},
+    {name: "豆奶咖啡", priceM: 55, priceL: 65, category: "咖啡大咖", icon:"☕"},
+    {name: "咖啡牛奶", priceM: 65, priceL: 75, category: "咖啡大咖", icon:"☕"},
+    {name: "冰淇淋咖啡", priceM: 65, priceL: 75, category: "咖啡大咖", icon:"🍨"},
+
+    // === 麥茶類 ===
+    {name: "決明子麥茶", priceM: 25, priceL: 30, category: "麥茶類", icon:"🌾"},
+    {name: "麥香紅茶", priceM: 25, priceL: 30, category: "麥茶類", icon:"🌾"},
+    {name: "麥香冬瓜", priceM: 25, priceL: 30, category: "麥茶類", icon:"🌾"},
+    {name: "麥香綠茶", priceM: 25, priceL: 30, category: "麥茶類", icon:"🌾"},
+
+    // === 隱藏版手調新茶 (固定 L 杯) ===
+    {name: "冬紅奶茶", priceM: 0, priceL: 45, category: "隱藏版手調新茶", icon:"🧋", onlyL: true},
+    {name: "吳家甘露茶", priceM: 0, priceL: 60, category: "隱藏版手調新茶", icon:"🍹", onlyL: true},
+    {name: "私房奶茶", priceM: 0, priceL: 60, category: "隱藏版手調新茶", icon:"🧋", onlyL: true},
+    {name: "黑糖粉粿奶茶", priceM: 0, priceL: 60, category: "隱藏版手調新茶", icon:"🧋", onlyL: true},
+    {name: "鴛鴦奶茶", priceM: 0, priceL: 60, category: "隱藏版手調新茶", icon:"☕", onlyL: true},
+    {name: "東方美人奶茶", priceM: 0, priceL: 60, category: "隱藏版手調新茶", icon:"🍵", onlyL: true},
+    {name: "草仔粿翠玉奶茶", priceM: 0, priceL: 60, category: "隱藏版手調新茶", icon:"🧋", onlyL: true},
+
+    // === 怕你睡不著無茶區 (固定 L 杯) ===
+    {name: "豆漿牛奶", priceM: 0, priceL: 45, category: "無茶區", icon:"🥛", onlyL: true},
+    {name: "酸梅杏仁凍", priceM: 0, priceL: 65, category: "無茶區", icon:"🍧", onlyL: true},
+    {name: "紅糖珍珠牛奶", priceM: 0, priceL: 65, category: "無茶區", icon:"🥛", onlyL: true},
+    {name: "草仔粿牛奶", priceM: 0, priceL: 65, category: "無茶區", icon:"🥛", onlyL: true},
+    {name: "黑糖粉粿牛奶", priceM: 0, priceL: 70, category: "無茶區", icon:"🥛", onlyL: true},
+
+    // === 私房大罐茶 ===
+    {name: "私房紅茶", priceM: 50, priceL: 55, category: "私房大罐茶", icon:"🍾"},
+    {name: "東方美人", priceM: 55, priceL: 60, category: "私房大罐茶", icon:"🍾"},
+    {name: "吳家酸梅湯", priceM: 65, priceL: 70, category: "私房大罐茶", icon:"🍾"}
+];
+
+const menuItems = rawMenuItems.map((item, index) => ({ ...item, id: index + 1 }));
+
+let cart = {}; 
+let finalTotal = 0;
+let finalSummary = "";
+let currentCardId = "TEST";
+let searchTimer = null;
+let currentFilteredItems = menuItems;
+
+window.onload = function() {
+    initCardId();
+    renderMenu(menuItems);
+};
+
+function initCardId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardParam = urlParams.get('cardId');
+    const savedCardId = localStorage.getItem('currentCardId');
+    const statusDiv = document.getElementById("card-status");
+    
+    if (cardParam) {
+        currentCardId = cardParam;
+        localStorage.setItem('currentCardId', cardParam);
+        statusDiv.innerHTML = `✅ <b>已從網址帶入卡號：${escapeHtml(currentCardId)}</b>`;
+        statusDiv.style.backgroundColor = "#d1fae5"; statusDiv.style.color = "#065f46"; statusDiv.style.borderLeftColor = "#10b981";
+    } else if (savedCardId) {
+        currentCardId = savedCardId;
+        statusDiv.innerHTML = `✅ <b>已自動帶入卡號：${escapeHtml(currentCardId)}</b>`;
+        statusDiv.style.backgroundColor = "#d1fae5"; statusDiv.style.color = "#065f46"; statusDiv.style.borderLeftColor = "#10b981";
+    } else {
+        statusDiv.innerHTML = `⚠️ <b>提示：未偵測到登入卡號</b>，使用臨時卡號：${escapeHtml(currentCardId)}`;
+        statusDiv.style.backgroundColor = "#fef3c7"; statusDiv.style.color = "#92400e"; statusDiv.style.borderLeftColor = "#f59e0b";
+    }
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function getItemTotalQty(itemId) {
+    let total = 0;
+    Object.values(cart).forEach(c => {
+        if (c.itemId === itemId) {
+            total += c.qty;
+        }
+    });
+    return total;
+}
+
+function renderMenu(items) {
+    currentFilteredItems = items;
+    const listDiv = document.getElementById("menu-list");
+    const sideCatsDiv = document.getElementById("side-cats");
+    listDiv.innerHTML = "";
+    sideCatsDiv.innerHTML = "";
+    
+    if (items.length === 0) {
+        const noItem = document.createElement("p");
+        noItem.style.cssText = "color:#aaa; text-align:center; padding: 20px;";
+        noItem.textContent = "找不到相符的飲品";
+        listDiv.appendChild(noItem);
+        return;
+    }
+
+    const categories = [...new Set(items.map(i => i.category))];
+    
+    categories.forEach((cat, index) => {
+        const sideLink = document.createElement("a");
+        sideLink.className = `side-cat-item ${index === 0 ? 'active' : ''}`;
+        sideLink.href = `#cat-${index}`;
+        sideLink.textContent = cat;
+        
+        sideLink.onclick = (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.side-cat-item').forEach(el => el.classList.remove('active'));
+            sideLink.classList.add('active');
+            const target = document.getElementById(`cat-${index}`);
+            if(target) target.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        sideCatsDiv.appendChild(sideLink);
+    });
+
+    categories.forEach((cat, index) => {
+        const catBlock = document.createElement("div");
+        catBlock.className = "category-block";
+        catBlock.id = `cat-${index}`;
+        
+        const title = document.createElement("h3");
+        title.className = "category-title";
+        title.textContent = cat;
+        catBlock.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "menu-grid";
+
+        const catItems = items.filter(i => i.category === cat);
+        catItems.forEach(item => {
+            const totalQty = getItemTotalQty(item.id);
+
+            const card = document.createElement("div");
+            card.className = "item-card";
+            
+            const priceTxt = item.onlyL ? `L $${item.priceL}` : `L $${item.priceM} / XL $${item.priceL}`;
+
+            card.innerHTML = `
+                <div class="item-info">
+                    <div class="item-name">${escapeHtml(item.name)}</div>
+                    <div class="item-price-zone">
+                        <span class="item-price">${priceTxt}</span>
+                        <div class="action-zone">
+                            <button class="btn-qty" onclick="handleQtyBtnClick(${item.id}, -1)">-</button>
+                            <span class="qty-num" id="q-id-${item.id}">${totalQty}</span>
+                            <button class="btn-qty" onclick="handleQtyBtnClick(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-img-placeholder" onclick="handleQtyBtnClick(${item.id}, 1)">
+                    ${escapeHtml(item.icon || '🥤')}
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        catBlock.appendChild(grid);
+        listDiv.appendChild(catBlock);
+    });
+}
+
+function debounceFilterMenu() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        const kw = document.getElementById("search").value.trim().toLowerCase();
+        const filtered = menuItems.filter(i => i.name.toLowerCase().includes(kw));
+        renderMenu(filtered);
+    }, 250);
+}
+
+function handleQtyBtnClick(itemId, delta) {
+    const item = menuItems.find(m => m.id === itemId);
+    if (!item) return;
+
+    if (delta > 0) {
+        promptOptionsAndAdd(item);
+    } else {
+        const cartKeys = Object.keys(cart).filter(k => cart[k].itemId === itemId);
+        if (cartKeys.length === 0) return;
+
+        const lastKey = cartKeys[cartKeys.length - 1];
+        cart[lastKey].qty -= 1;
+        if (cart[lastKey].qty <= 0) delete cart[lastKey];
+        updateCartAndUI(itemId);
+    }
+}
+
+function selectChip(groupClass, clickedBtn) {
+    document.querySelectorAll('.' + groupClass).forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    clickedBtn.classList.add('selected');
+}
+
+function promptOptionsAndAdd(item) {
+    let modalHtml = `<div style="text-align:left;">`;
+
+    // 容量選擇 (配合吳家紅茶冰標示 L / XL)
+    const sizes = item.onlyL ? ["L"] : ["L", "XL"];
+    modalHtml += `
+        <div class="option-group">
+            <div class="option-title">容量</div>
+            <div class="chips-grid">
+                ${sizes.map((sz, idx) => `
+                    <div class="chip-btn size-chip ${idx === 0 ? 'selected' : ''}" 
+                         onclick="selectChip('size-chip', this)" 
+                         data-value="${sz}">${sz} ($${sz === 'L' && !item.onlyL ? item.priceM : item.priceL})</div>
+                `).join('')}
+            </div>
+        </div>`;
+
+    // 甜度選擇
+    const sugars = ["全糖", "少糖", "半糖", "微糖", "無糖"];
+    modalHtml += `
+        <div class="option-group">
+            <div class="option-title">甜度</div>
+            <div class="chips-grid">
+                ${sugars.map((s, idx) => `
+                    <div class="chip-btn sugar-chip ${idx === 3 ? 'selected' : ''}" 
+                         onclick="selectChip('sugar-chip', this)" 
+                         data-value="${s}">${s}</div>
+                `).join('')}
+            </div>
+        </div>`;
+
+    // 冰塊選擇
+    const ices = ["正常冰", "少冰", "微冰", "去冰", "多冰"];
+    modalHtml += `
+        <div class="option-group">
+            <div class="option-title">溫度/冰塊</div>
+            <div class="chips-grid">
+                ${ices.map((i, idx) => `
+                    <div class="chip-btn ice-chip ${idx === 1 ? 'selected' : ''}" 
+                         onclick="selectChip('ice-chip', this)" 
+                         data-value="${i}">${i}</div>
+                `).join('')}
+            </div>
+        </div>`;
+
+    modalHtml += `</div>`;
+
+    showModal(`請選擇「${escapeHtml(item.name)}」的規格`, modalHtml, "confirm", (confirmed) => {
+        if (confirmed) {
+            const selectedSize = document.querySelector('.size-chip.selected')?.getAttribute('data-value') || "L";
+            const selectedSugar = document.querySelector('.sugar-chip.selected')?.getAttribute('data-value') || "無糖";
+            const selectedIce = document.querySelector('.ice-chip.selected')?.getAttribute('data-value') || "正常冰";
+
+            const price = (selectedSize === 'L' && !item.onlyL) ? item.priceM : item.priceL;
+            addCartItem(item, selectedSize, selectedSugar, selectedIce, price);
+        }
+    });
+}
+
+function addCartItem(item, size, sugar, ice, price) {
+    const key = `${item.id}_${size}_${sugar}_${ice}`;
+
+    if (!cart[key]) {
+        cart[key] = {
+            itemId: item.id,
+            name: item.name,
+            price: price,
+            size: size,
+            sugar: sugar,
+            ice: ice,
+            qty: 0
+        };
+    }
+
+    cart[key].qty += 1;
+    updateCartAndUI(item.id);
+}
+
+function changeCartItemQtyByKey(key, delta) {
+    if (!cart[key]) return;
+    
+    const itemId = cart[key].itemId;
+    cart[key].qty += delta;
+
+    if (cart[key].qty <= 0) {
+        delete cart[key];
+    }
+
+    updateCartAndUI(itemId);
+}
+
+function updateCartAndUI(itemId) {
+    const qtySpan = document.getElementById(`q-id-${itemId}`);
+    if (qtySpan) {
+        qtySpan.innerText = getItemTotalQty(itemId);
+    }
+    renderCart();
+}
+
+function clearCart() {
+    if (Object.keys(cart).length === 0) return;
+    showModal("提示", "確定要清空購物車內的所有飲料嗎？", "confirm", (confirmed) => {
+        if (confirmed) {
+            cart = {};
+            renderCart();
+            renderMenu(currentFilteredItems);
+        }
+    });
+}
+
+function renderCart() {
+    const cartDiv = document.getElementById("cart-list");
+    cartDiv.innerHTML = "";
+    finalTotal = 0;
+    finalSummary = "";
+    
+    const keys = Object.keys(cart);
+    if (keys.length === 0) {
+        cartDiv.innerHTML = '<p style="color:#aaa; text-align:center; margin: 30px 0; font-size:13px;">尚未加點商品</p>';
+        document.getElementById("total-amount").innerText = "總計: $0";
+        return;
+    }
+
+    keys.forEach(key => {
+        const item = cart[key];
+        const sub = item.qty * item.price;
+        finalTotal += sub;
+        
+        const specTxt = ` (${item.size} / ${item.sugar} / ${item.ice})`;
+        finalSummary += `${item.name}${specTxt}*${item.qty} `;
+        
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        
+        const infoDiv = document.createElement("div");
+        infoDiv.style.cssText = "flex: 1; min-width: 0; padding-right: 8px;";
+        
+        const nameDiv = document.createElement("div");
+        nameDiv.style.cssText = "font-weight: 600; word-break: break-all; font-size:13px;";
+        nameDiv.textContent = item.name;
+
+        const specDiv = document.createElement("div");
+        specDiv.className = "cart-item-spec";
+        specDiv.textContent = specTxt;
+        nameDiv.appendChild(specDiv);
+        
+        const subDiv = document.createElement("div");
+        subDiv.style.cssText = "color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 2px;";
+        subDiv.textContent = `$${sub}`;
+        
+        infoDiv.appendChild(nameDiv);
+        infoDiv.appendChild(subDiv);
+
+        const actionDiv = document.createElement("div");
+        actionDiv.style.cssText = "display: flex; align-items: center; gap: 4px;";
+        actionDiv.innerHTML = `
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeCartItemQtyByKey('${key}', -1)">-</button>
+            <span style="width: 16px; text-align: center; font-weight: 700; font-size: 13px;">${item.qty}</span>
+            <button class="btn-qty" style="width: 24px; height: 24px;" onclick="changeCartItemQtyByKey('${key}', 1)">+</button>
+        `;
+
+        div.appendChild(infoDiv);
+        div.appendChild(actionDiv);
+        cartDiv.appendChild(div);
+    });
+
+    document.getElementById("total-amount").innerText = `總計: $${Math.round(finalTotal)}`;
+}
+
+function submitOrderToServer() {
+    if (finalTotal === 0) { 
+        showModal("提示", "🛒 購物車是空的喔！", "alert");
+        return; 
+    }
+
+    const orderMealSummary = `吳家紅茶冰：${finalSummary.trim()}`;
+
+    let confirmHtml = 
+        `請確認您的訂單內容：<br><br>` +
+        `餐點明細：<br><b>${escapeHtml(finalSummary.trim())}</b><br><br>` +
+        `總金額：<b style="color:var(--accent); font-size:16px;">$${finalTotal}</b> 元<br><br>確定要送出訂單嗎？`;
+
+    showModal("請確認您的訂單內容", confirmHtml, "confirm", async (confirmed) => {
+        if (!confirmed) return;
+
+        const btn = document.getElementById("submit-btn");
+        btn.disabled = true;
+        btn.innerText = "訂單傳送中...";
+
+        const payload = {
+            cardId: currentCardId,
+            category: "drink",
+            type: "drink",
+            meal: orderMealSummary,
+            total: finalTotal,
+            diningType: "",
+            spiceLevel: "",
+            note: orderMealSummary
+        };
+
+        try {
+            const response = await fetch('/api/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const resData = await response.json();
+
+            if (resData.success) {
+                showModal("提示", "🎉 點餐成功！訂單已傳送到後端。", "alert");
+                const localKey = `orders_${currentCardId}`;
+                const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
+                existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
+                localStorage.setItem(localKey, JSON.stringify(existingOrders));
+                
+                cart = {};
+                renderCart();
+                renderMenu(currentFilteredItems);
+            } else {
+                showModal("提示", `⚠️ 送出失敗：${escapeHtml(resData.message || '請稍後再試')}`, "alert");
+            }
+        } catch (err) {
+            console.error("發送失敗:", err);
+            showModal("提示", "❌ 網路發送失敗，請確認網路連線或改用人工點餐！", "alert");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "確認送出訂單";
+        }
+    });
+}
+</script>
+</body>
+</html>
