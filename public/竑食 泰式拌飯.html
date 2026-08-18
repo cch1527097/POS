@@ -988,7 +988,8 @@ function submitOrderToServer() {
             };
 
             try {
-                const response = await fetch("http://localhost:3000/api/orders", {
+                // 使用相對路徑，讓前端根據當前造訪的網域/IP與 Port 自動對接 API
+                const response = await fetch("/api/orders", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
