@@ -23,11 +23,14 @@
         /* ==================== 全螢幕背景與裝飾 (與 index 一致) ==================== */
         body.login-mode {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             background: #f8fcf7;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding: 20px 0;
         }
 
         /* 左上角與右下角的流線波浪背景裝飾 */
@@ -60,17 +63,19 @@
         .login-card {
             background-color: #ffffff; 
             border-radius: 16px;       
-            width: 580px;
-            min-height: 480px;
+            width: 90%;
+            max-width: 480px;
+            min-height: 460px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             box-shadow: 0 10px 35px rgba(0, 0, 0, 0.05);
-            padding: 50px 40px;
+            padding: 40px 25px;
             position: relative;
             z-index: 5;
             border: 1px solid rgba(220, 235, 218, 0.5);
+            margin: auto;
         }
 
         .login-logo {
@@ -80,7 +85,7 @@
         }
 
         .title {
-            font-size: 30px;
+            font-size: 28px;
             color: #2b4c23; 
             font-weight: 700;
             letter-spacing: 1.5px;
@@ -89,10 +94,10 @@
         }
 
         .subtitle {
-            font-size: 14px;
+            font-size: 13px;
             color: #7ba370;
             font-weight: 600;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             margin-bottom: 30px;
             text-transform: uppercase;
             text-align: center;
@@ -111,7 +116,8 @@
             display: flex;
             align-items: center;
             width: 100%;
-            justify-content: center;
+            max-width: 320px;
+            margin: 0 auto;
         }
 
         .input-group input {
@@ -119,10 +125,10 @@
             border: 1px solid #d0e3ce; 
             border-radius: 10px;
             font-size: 16px;
-            width: 320px;
+            width: 100%;
             text-align: center;
             outline: none;
-            padding: 14px 20px;
+            padding: 14px 45px 14px 20px; /* 右側保留圖示空間 */
             color: #2b4c23;
             transition: all 0.25s ease;
         }
@@ -145,8 +151,9 @@
 
         .toggle-password {
             position: absolute;
-            right: auto;
-            transform: translateX(130px);
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
             font-size: 18px;
             user-select: none;
@@ -158,14 +165,15 @@
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 18px;
-            width: 320px;
+            font-size: 17px;
+            width: 100%;
+            max-width: 320px;
             padding: 13px 0;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(78, 128, 60, 0.2);
             transition: all 0.2s ease;
             font-weight: 600;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         .login-btn:hover:not(:disabled) { 
@@ -180,15 +188,17 @@
             color: #0f805a;             
             font-size: 15px;
             font-weight: 600;
-            margin-top: 15px;
+            margin-top: 10px;
             padding: 12px 20px;         
             border: none;
-            border-radius: 12px;        
-            width: 320px;               
+            border-radius: 10px;        
+            width: 100%;
+            max-width: 320px;               
             cursor: pointer;
             transition: all 0.2s ease;
             text-decoration: none;
             text-align: center;
+            box-sizing: border-box;
         }
 
         .login-admin-link:hover {
@@ -198,29 +208,41 @@
 
         /* 登入頁底部版權宣告 */
         .login-footer-copy {
-            position: absolute;
-            bottom: 25px;
+            margin-top: 25px;
             width: 100%;
             text-align: center;
-            font-size: 13.5px;
+            font-size: 12.5px;
             color: #668062;
             z-index: 10;
         }
 
         /* 📱 手機版 RWD 適應 */
         @media (max-width: 480px) {
-            .login-card { width: 90%; min-height: auto; padding: 40px 20px; border-radius: 16px; }
-            .title { font-size: 26px; margin-bottom: 2px; }
-            .subtitle { font-size: 12px; margin-bottom: 25px; letter-spacing: 2px; }
-            .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
-            .toggle-password { transform: translateX(110px); }
-            .login-btn, .login-admin-link { width: 100%; max-width: 280px; }
+            .login-card { 
+                padding: 35px 20px; 
+                min-height: auto;
+            }
+            .title { 
+                font-size: 24px; 
+            }
+            .subtitle { 
+                font-size: 11px; 
+                margin-bottom: 25px; 
+                letter-spacing: 1.5px; 
+            }
+            .input-group input { 
+                font-size: 15px; 
+                padding: 12px 40px 12px 15px;
+            }
+            .login-btn, .login-admin-link { 
+                font-size: 16px; 
+                padding: 12px 0;
+            }
         }
     </style>
 </head>
 <body class="login-mode">
 
-    <!-- 後台登入卡片 -->
     <div id="login-section" class="login-card">
         <img src="logo.gif" alt="系統Logo" class="login-logo">
         
@@ -240,7 +262,6 @@
         </form>
     </div>
 
-    <!-- 頁尾宣告 -->
     <div class="login-footer-copy">
         © 秀傳醫療財團法人彰濱秀傳紀念醫院 版權所有
     </div>
