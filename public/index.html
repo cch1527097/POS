@@ -839,164 +839,73 @@ body.login-mode .login-footer-copy {
             background-color: #e2e8f0 !important;
         }
 
-        /* ==================== 📱 手機版 RWD 適應優化 ==================== */
+        /* 📱 手機版 RWD 適應 */
         @media (max-width: 768px) {
-            /* 防止頁面產生橫向滾動條 */
-            html, body {
-                max-width: 100vw;
-                overflow-x: hidden;
-            }
-
             .nidin-top-bar {
                 flex-direction: column;
-                align-items: stretch;
-                padding: 10px 12px;
-                gap: 8px;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 15px;
+                gap: 12px;
             }
 
             .nidin-top-left {
-                display: flex;
+                flex-direction: column;
                 align-items: center;
-                justify-content: space-between;
+                justify-content: center;
                 width: 100%;
-                gap: 8px;
-            }
-
-            .nidin-logo {
-                font-size: 20px;
-            }
-
-            .nidin-divider, 
-            .nidin-location-btn {
-                display: none; /* 手機版隱藏頂部院區按鈕，使用下方導覽選單代替 */
-            }
-
-            .nidin-search-box {
-                width: 100%;
-                max-width: 100%;
-                margin-top: 4px;
-                box-sizing: border-box;
-            }
-
-            .nidin-search-box input {
-                text-align: left;
+                gap: 10px;
             }
 
             .nidin-top-right {
                 width: 100%;
-                justify-content: flex-end;
+                justify-content: center;
                 margin-left: 0;
-                padding-top: 6px;
-                border-top: 1px dashed #eee;
             }
 
             .nidin-user-info {
-                justify-content: flex-end;
+                justify-content: center;
                 width: 100%;
-                font-size: 13px;
             }
 
-            /* 第二層導覽列：改為橫向滑動選單，避免佔用大量垂直空間 */
-            .nidin-nav-bar {
-                display: flex;
-                justify-content: flex-start;
-                align-items: center;
-                gap: 16px;
-                padding: 8px 12px;
-                overflow-x: auto;
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            /* 隱藏導覽列橫向滾動條 */
-            .nidin-nav-bar::-webkit-scrollbar {
+            .nidin-divider, .nidin-location-btn {
                 display: none;
             }
 
-            .nidin-nav-item {
-                font-size: 12px;
+            .nidin-search-box {
+                order: 3;
+                width: 100%;
+                max-width: 100%;
+                margin-top: 2px;
+                box-sizing: border-box;
+                justify-content: center;
             }
 
-            .nidin-nav-icon svg {
-                width: 20px;
-                height: 20px;
+            .nidin-search-box input {
+                text-align: center;
             }
 
-            /* 餐點卡片網格自適應 */
-            .grid-container {
-                padding: 12px;
+            .nidin-nav-bar {
+                justify-content: center;
+                flex-wrap: wrap;
                 gap: 15px;
-                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            }
-
-            .shop-img-wrapper {
-                height: 150px;
+                padding: 10px 15px 15px 15px;
             }
 
             .footer-info-row {
                 flex-direction: column;
                 gap: 6px;
             }
-
-            .logout-btn {
-                bottom: 15px;
-                right: 15px;
-                padding: 10px 18px;
-                font-size: 14px;
-            }
         }
 
         @media (max-width: 480px) {
-            body.login-mode {
-                padding: 15px;
-            }
-
-            .login-card { 
-                width: 100%; 
-                max-width: 360px;
-                height: auto; 
-                min-height: auto;
-                padding: 30px 20px; 
-                border-radius: 16px; 
-            }
-
-            .title { 
-                font-size: 22px; 
-                margin-bottom: 2px; 
-            }
-
-            .subtitle { 
-                font-size: 11px; 
-                margin-bottom: 24px; 
-                letter-spacing: 1.5px; 
-            }
-
-            .input-group input,
-            .login-btn,
-            .login-admin-link { 
-                width: 100%; 
-                max-width: 100%; 
-                font-size: 15px; 
-            }
-
-            .grid-container {
-                grid-template-columns: 1fr;
-            }
-
-            .clear-local-btn { 
-                width: 100%; 
-                justify-content: center; 
-            }
-
-            .history-modal-content, 
-            .cart-modal-content { 
-                width: 95vw !important; 
-                max-height: 90vh !important;
-            }
-
-            .history-modal-body {
-                padding: 12px !important;
-            }
+            .login-card { width: 90%; height: auto; padding: 40px 20px; border-radius: 16px; }
+            .title { font-size: 26px; margin-bottom: 2px; }
+            .subtitle { font-size: 12px; margin-bottom: 30px; letter-spacing: 2px; }
+            .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
+            .login-btn { width: 100%; max-width: 280px; }
+            .clear-local-btn { width: 100%; justify-content: center; }
+            .history-modal-content, .cart-modal-content { width: 95vw !important; }
         }
     </style>
 </head>
