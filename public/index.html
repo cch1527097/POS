@@ -21,15 +21,14 @@
         }
 
         /* ==================== 登入版面全螢幕背景與裝飾 ==================== */
-body.login-mode {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #f8fcf7;
-    position: relative;
-    overflow: hidden;
-    height: 100vh; /* 確保限定為全螢幕高度 */
-}
+        body.login-mode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8fcf7;
+            position: relative;
+            overflow: hidden;
+        }
 
         /* 左上角與右下角的流線波浪背景裝飾 */
         body.login-mode::before,
@@ -58,16 +57,10 @@ body.login-mode {
         }
 
         body.order-mode {
-    display: block !important;
-    background-color: #eef7ed;
-    min-height: 100vh;
-    height: auto;
-    overflow: auto;
-}
-        body:not(.login-mode)::before,
-body:not(.login-mode)::after {
-    display: none !important;
-}
+            display: block;
+            background-color: #eef7ed;
+        }
+
         .hidden { display: none !important; }
 
         /* ==================== 頂部 Header 樣式 ==================== */
@@ -381,14 +374,14 @@ body:not(.login-mode)::after {
 
         /* 登入頁底部版權宣告 */
         .login-footer-copy {
-    position: absolute;
-    bottom: 15px;
-    width: 100%;
-    text-align: center;
-    font-size: 13.5px;
-    color: #668062;
-    z-index: 10;
-}
+            position: absolute;
+            bottom: 25px;
+            width: 100%;
+            text-align: center;
+            font-size: 13.5px;
+            color: #668062;
+            z-index: 10;
+        }
 
         /* ==================== 2. 點餐畫面區塊 ==================== */
         .order-container {
@@ -909,23 +902,23 @@ body:not(.login-mode)::after {
 <body class="login-mode">
 
     <!-- 1. 登入畫面區塊 -->
-<div id="login-section" class="login-card hidden">
-    <img src="logo.gif" alt="Logo" class="login-logo">
-    <div class="title">美食訂餐系統</div>
-    <div class="subtitle">ORDERING SYSTEM LOGIN</div>
-     
-    <div class="input-group">
-        <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required inputmode="text" onclick="this.select()">
+    <div id="login-section" class="login-card hidden">
+        <img src="logo.gif" alt="Logo" class="login-logo">
+        <div class="title">美食訂餐系統</div>
+        <div class="subtitle">ORDERING SYSTEM LOGIN</div>
+         
+        <div class="input-group">
+            <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required inputmode="text" onclick="this.select()">
+        </div>
+
+        <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入系統</button>
+        <button class="login-admin-link" onclick="navigateToAdmin()">後台管理系統</button>
     </div>
 
-    <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入系統</button>
-    <button class="login-admin-link" onclick="navigateToAdmin()">後台管理系統</button>
-
-    <!-- 🌟 將頁尾宣告移動至此處 -->
+    <!-- 頁尾宣告 -->
     <div class="login-footer-copy">
         © 秀傳醫療財團法人彰濱秀傳紀念醫院 版權所有
     </div>
-</div>
 
     <!-- 2. 點餐畫面區塊 -->
     <div id="order-section" class="order-container hidden">
