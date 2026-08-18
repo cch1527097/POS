@@ -22,13 +22,18 @@
 
         /* ==================== 登入版面全螢幕背景與裝飾 ==================== */
         body.login-mode {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f8fcf7;
-            position: relative;
-            overflow: hidden;
-        }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8fcf7;
+    position: fixed; /* 將 relative 改為 fixed，讓登入畫面固定在螢幕視窗中間 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+}
 
         /* 左上角與右下角的流線波浪背景裝飾 */
         body.login-mode::before,
@@ -2209,6 +2214,7 @@ body.login-mode .login-footer-copy {
         }
 
         function showLoginSection() {
+            window.scrollTo(0, 0);
             loggedInCardId = '';
             isSubmitting = false;
             
