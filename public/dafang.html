@@ -970,7 +970,8 @@ function closeModal() {
     document.getElementById("custom-modal").classList.remove("active");
 }
 
-function submitOrderToServer() {
+// 修改第二個系統中的 submitOrderToServer 函式
+async function submitOrderToServer() {
     if (!currentCardId) {
         return showCustomModal({
             title: "提示",
@@ -1004,15 +1005,20 @@ function submitOrderToServer() {
             btn.disabled = true;
             btn.innerText = "正在送出...";
 
+            // 調整為與第一個系統一致的資料結構
             const payload = {
-                card_id: currentCardId,
-                summary: finalSummary,
-                total_amount: finalTotal,
-                items: cart
+                cardId: currentCardId,
+                category: "food",
+                type: "food",
+                meal: `榮郁香廣式燒臘：${finalSummary.trim()}`,
+                spicy: "依餐點選擇",
+                total: finalTotal,
+                note: `總計：$${finalTotal}`
             };
 
             try {
-                const response = await fetch("http://localhost:3000/api/orders", {
+                // 網址改為與第一個系統相同的 /api/order
+                const response = await fetch("/api/order", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
