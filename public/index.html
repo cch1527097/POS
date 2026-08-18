@@ -22,14 +22,14 @@
 
         /* ==================== 登入版面全螢幕背景與裝飾 ==================== */
         body.login-mode {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f8fcf7;
-            position: relative;
-            overflow: hidden;
-            height: 100vh;
-        }
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    background: #f8fcf7;
+    position: relative;
+    overflow: hidden;
+    height: 100vh !important; /* 🌟 關鍵：避免被隱藏的點餐頁面撐開高度 */
+}
 
         /* 左上角與右下角的流線波浪背景裝飾 */
         body.login-mode::before,
@@ -374,9 +374,10 @@
 }
 
         .login-footer-copy {
-    display: none; /* Hidden by default */
+    display: none;
     position: absolute;
     bottom: 20px;
+    left: 0;
     width: 100%;
     text-align: center;
     font-size: 13.5px;
@@ -384,7 +385,6 @@
     z-index: 10;
 }
 
-/* Only show when body is in login mode */
 body.login-mode .login-footer-copy {
     display: block;
 }
@@ -907,24 +907,24 @@ body.login-mode .login-footer-copy {
 </head>
 <body class="login-mode">
 
-    <!-- 1. 登入畫面區塊 -->
-    <div id="login-section" class="login-card hidden">
-        <img src="logo.gif" alt="Logo" class="login-logo">
-        <div class="title">美食訂餐系統</div>
-        <div class="subtitle">ORDERING SYSTEM LOGIN</div>
-         
-        <div class="input-group">
-            <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required inputmode="text" onclick="this.select()">
-        </div>
-
-        <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入系統</button>
-        <button class="login-admin-link" onclick="navigateToAdmin()">後台管理系統</button>
+    <!-- 1. 登入畫面區塊 (已修正結構) -->
+<div id="login-section" class="login-card hidden">
+    <img src="logo.gif" alt="Logo" class="login-logo">
+    <div class="title">美食訂餐系統</div>
+    <div class="subtitle">ORDERING SYSTEM LOGIN</div>
+     
+    <div class="input-group">
+        <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required inputmode="text" onclick="this.select()">
     </div>
 
-    <!-- 頁尾宣告 -->
+    <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入系統</button>
+    <button class="login-admin-link" onclick="navigateToAdmin()">後台管理系統</button>
+
+    <!-- 🌟 將頁尾文字放到卡片內部最下方，或獨立於外部改靠底 -->
     <div class="login-footer-copy">
         © 秀傳醫療財團法人彰濱秀傳紀念醫院 版權所有
     </div>
+</div>
 
     <!-- 2. 點餐畫面區塊 -->
     <div id="order-section" class="order-container hidden">
