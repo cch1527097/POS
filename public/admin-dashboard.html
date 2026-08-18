@@ -806,7 +806,7 @@
             const mealStr = (order.meal || '').toLowerCase();
             
             // 1. 正餐關鍵字排除
-            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵'];
+            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯'];
             if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
 
             // 2. 飲料專用關鍵字比對
