@@ -685,7 +685,7 @@ let finalSummary = "";
 
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
-    currentCardId = urlParams.get('card_id');
+    currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
 
     const statusDiv = document.getElementById("card-status");
     if (currentCardId) {
