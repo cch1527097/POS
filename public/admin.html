@@ -20,13 +20,18 @@
             transition: background-color 0.3s ease;
         }
 
-        /* ==================== 全螢幕背景與裝飾 (與 index 一致) ==================== */
+        /* ==================== 登入版面全螢幕背景與裝飾 (與 index 一致) ==================== */
         body.login-mode {
             display: flex;
             justify-content: center;
             align-items: center;
             background: #f8fcf7;
-            position: relative;
+            position: fixed; /* 固定在視窗中間，防止手機螢幕滾動變形 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            min-height: 100vh;
             overflow: hidden;
         }
 
@@ -56,7 +61,153 @@
             right: -250px;
         }
 
-        /* ==================== 登入卡片區塊 ==================== */
+        body.order-mode {
+            display: block;
+            background-color: #eef7ed;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ==================== 頂部 Header 樣式 (與 index 完全一致) ==================== */
+        .nidin-header {
+            width: 100%;
+            background-color: #ffffff;
+            border-bottom: 1px solid #eaeaea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            color: #333;
+            position: sticky;      
+            top: 0;                
+            z-index: 1000;         
+        }
+
+        /* 第一層：頂部工具列 */
+        .nidin-top-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .nidin-top-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Logo 樣式 */
+        .nidin-logo {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0091ff;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            user-select: none;
+            cursor: pointer;
+        }
+        .nidin-logo .dot {
+            color: #ff4d4f;
+            font-size: 22px;
+        }
+
+        .nidin-divider {
+            width: 1px;
+            height: 20px;
+            background-color: #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        /* 定位下拉按鈕 */
+        .nidin-location-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            color: #4a4a4a;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .nidin-location-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 右側員工與管理員資訊區塊 */
+        .nidin-top-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+
+        .nidin-user-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        #user-name {
+            color: #0091ff;
+        }
+
+        .dept-badge {
+            background-color: #e8f4fd;
+            color: #1e88e5;
+            border: 1px solid #bbdefb;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        /* 第二層：導覽選單 */
+        .nidin-nav-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px 20px 14px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .nidin-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: #222;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s, transform 0.1s;
+            cursor: pointer;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        .nidin-nav-item:hover {
+            color: #0091ff;
+            transform: translateY(-1px);
+        }
+
+        /* ==================== 登入卡片區塊 (與 index 結構一致) ==================== */
         .login-card {
             background-color: #ffffff; 
             border-radius: 16px;       
@@ -189,6 +340,7 @@
             transition: all 0.2s ease;
             text-decoration: none;
             text-align: center;
+            box-sizing: border-box;
         }
 
         .login-admin-link:hover {
@@ -196,26 +348,70 @@
             color: #0a5c41;
         }
 
-        /* Display footer copy by default in login mode, hide when login-mode is removed */
-.login-footer-copy {
-    display: none; /* Hidden by default */
-    position: absolute;
-    bottom: 20px;
-    width: 100%;
-    text-align: center;
-    font-size: 13.5px;
-    color: #668062;
-    z-index: 10;
-}
+        /* 頁尾宣靠 (預設隱藏，僅在 login-mode 顯示) */
+        .login-footer-copy {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 13.5px;
+            color: #668062;
+            z-index: 10;
+        }
 
-/* Only show when body is in login mode */
-body.login-mode .login-footer-copy {
-    display: block;
-}
+        body.login-mode .login-footer-copy {
+            display: block;
+        }
 
-        /* 📱 手機版 RWD 適應 */
+        /* ==================== 📱 手機版 RWD 適應 (與 index 完全一致) ==================== */
+        @media (max-width: 768px) {
+            .nidin-top-bar {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 15px;
+                gap: 12px;
+            }
+
+            .nidin-top-left {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .nidin-top-right {
+                width: 100%;
+                justify-content: center;
+                margin-left: 0;
+            }
+
+            .nidin-user-info {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .nidin-divider, .nidin-location-btn {
+                display: none;
+            }
+
+            .nidin-nav-bar {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 15px;
+                padding: 10px 15px 15px 15px;
+            }
+        }
+
         @media (max-width: 480px) {
-            .login-card { width: 90%; min-height: auto; padding: 40px 20px; border-radius: 16px; }
+            .login-card { 
+                width: 90%; 
+                min-height: auto; 
+                padding: 40px 20px; 
+                border-radius: 16px; 
+            }
             .title { font-size: 26px; margin-bottom: 2px; }
             .subtitle { font-size: 12px; margin-bottom: 25px; letter-spacing: 2px; }
             .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
