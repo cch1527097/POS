@@ -1477,7 +1477,7 @@
                         
                         <td class="col-payment">
                             ${paidBadge}
-                            <button class="btn-status" onclick="togglePaymentStatus('${cardId}', ${!isPaid})">切換狀態</button>
+                            <button class="btn-status" onclick="togglePaymentStatus('${order.orderId}', ${!isPaid})">切換狀態</button>
                         </td>
 
                         ${hideCategoryCol ? '' : `<td class="col-status"><span class="badge">已同步寫入</span></td>`}
