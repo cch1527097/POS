@@ -1094,9 +1094,23 @@
 
         function refreshCurrentTab() {
             const activeTab = document.querySelector('.tab-content.active');
-            if (activeTab.id === 'overview') loadOrders();
-            else if (activeTab.id === 'history-mgr' || activeTab.id === 'drink-mgr' || activeTab.id === 'food-mgr') loadHistoryOrders();
-            else if (activeTab.id === 'employee-mgr') loadEmployees();
+            if (activeTab.id === 'overview') {
+                const searchInput = document.getElementById('orderSearchInput');
+                executeFilter(searchInput ? searchInput.value.trim().toLowerCase() : '', 'today');
+            }
+            else if (activeTab.id === 'history-mgr') {
+                const hSearchInput = document.getElementById('historySearchInput');
+                executeFilter(hSearchInput ? hSearchInput.value.trim().toLowerCase() : '', 'history');
+            }
+            else if (activeTab.id === 'drink-mgr') {
+                renderOrderTable(allHistoryOrders.filter(o => isDrinkOrder(o)), 'drinkTableBody', true, true);
+            }
+            else if (activeTab.id === 'food-mgr') {
+                renderOrderTable(allHistoryOrders.filter(o => !isDrinkOrder(o)), 'foodTableBody', true, true);
+            }
+            else if (activeTab.id === 'employee-mgr') {
+                loadEmployees();
+            }
         }
 
         function setOverviewCategory(cat, btn) {
@@ -1218,7 +1232,7 @@
             }
         }
 
-        // 新增：切換單筆訂單的繳費狀態
+        // 修改：精準切換單筆訂單的繳費狀態（避免污染同姓名/同卡號的其他訂單）
         async function toggleOrderPaymentStatus(orderId, newStatus) {
             try {
                 const response = await fetch(`/api/orders/${orderId}/payment`, {
@@ -1228,8 +1242,16 @@
                 });
 
                 if (response.ok) {
-                    await loadOrders(); 
-                    await loadHistoryOrders();
+                    // 1. 只更新內部資料庫陣列中對應 orderId 的該筆訂單
+                    const targetToday = currentTodayOrders.find(o => String(o.orderId) === String(orderId));
+                    if (targetToday) targetToday.isPaid = newStatus;
+
+                    const targetHistory = allHistoryOrders.find(o => String(o.orderId) === String(orderId));
+                    if (targetHistory) targetHistory.isPaid = newStatus;
+
+                    // 2. 重新整理當前視圖，保持精準獨立更新
+                    refreshCurrentTab();
+
                     showCustomModal({ message: `訂單編號 ${orderId} 的繳費狀態已更新！` });
                 } else {
                     const result = await response.json();
@@ -1478,7 +1500,7 @@
                         
                         <td class="col-payment">
                             ${paidBadge}
-                            <button class="btn-status" onclick="toggleOrderPaymentStatus('${order.orderId}', ${!isPaid})">切換狀態</button>
+                            <button class="btn-status" onclick="toggleOrderPaymentStatus('${orderIdStr}', ${!isPaid})">切換狀態</button>
                         </td>
 
                         ${hideCategoryCol ? '' : `<td class="col-status"><span class="badge">已同步寫入</span></td>`}
