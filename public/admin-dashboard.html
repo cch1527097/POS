@@ -1218,9 +1218,10 @@
             }
         }
 
-        async function togglePaymentStatus(cardId, newStatus) {
+        // 新增：切換單筆訂單的繳費狀態
+        async function toggleOrderPaymentStatus(orderId, newStatus) {
             try {
-                const response = await fetch(`/api/employees/${cardId}/payment`, {
+                const response = await fetch(`/api/orders/${orderId}/payment`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ isPaid: newStatus })
@@ -1229,13 +1230,13 @@
                 if (response.ok) {
                     await loadOrders(); 
                     await loadHistoryOrders();
-                    showCustomModal({ message: `員工卡號 ${cardId} 的繳費狀態已更新！` });
+                    showCustomModal({ message: `訂單編號 ${orderId} 的繳費狀態已更新！` });
                 } else {
                     const result = await response.json();
                     showCustomModal({ message: `狀態更新失敗：${result.message || '未知錯誤'}` });
                 }
             } catch (error) {
-                console.error('更新繳費狀態失敗:', error);
+                console.error('更新訂單繳費狀態失敗:', error);
                 showCustomModal({ message: '網路連線失敗，請確認後端伺服器！' });
             }
         }
@@ -1477,7 +1478,7 @@
                         
                         <td class="col-payment">
                             ${paidBadge}
-                            <button class="btn-status" onclick="togglePaymentStatus('${order.orderId}', ${!isPaid})">切換狀態</button>
+                            <button class="btn-status" onclick="toggleOrderPaymentStatus('${order.orderId}', ${!isPaid})">切換狀態</button>
                         </td>
 
                         ${hideCategoryCol ? '' : `<td class="col-status"><span class="badge">已同步寫入</span></td>`}
