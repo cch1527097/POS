@@ -704,7 +704,7 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 非「套餐」類別（單點肉類、小菜）：直接加入購物車（使用預設調味），完全不彈窗！
+    // 非「套餐」類別（單點肉類、小菜）：直接加入購物車（不顯示口味標籤）
     if (item.category !== "套餐") {
         const customKey = `${item.name}||筍片正常|蔥蒜正常|不辣|胡椒檸檬正常`;
 
@@ -729,7 +729,7 @@ function clickAddItem(name) {
         return;
     }
 
-    // 只有「套餐」類別才會跳出彈窗選擇
+    // 只有「套餐」類別才會跳出彈窗選擇配菜與調味
     let sideDishCount = 0;
     if (item.name.includes("2份小菜") || item.name.includes("2小菜")) {
         sideDishCount = 2;
@@ -880,8 +880,13 @@ function renderCart() {
         const sub = item.qty * item.price;
         finalTotal += sub;
         
+        const menuItem = menuItems.find(m => m.name === item.baseName);
+        const isSingleItem = menuItem && (menuItem.category === "單點肉類" || menuItem.category === "小菜");
+
         const sideText = item.sides ? `[配菜:${item.sides}]` : '';
-        finalSummary += `${item.baseName}${sideText}(${item.bamboo}/${item.flavor}/${item.spicy}/${item.seasoning})*${item.qty} `;
+        const flavorDetail = isSingleItem ? '' : `(${item.bamboo}/${item.flavor}/${item.spicy}/${item.seasoning})`;
+        
+        finalSummary += `${item.baseName}${sideText}${flavorDetail}*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -946,11 +951,18 @@ function renderModalCartList() {
         
         const sideTextHtml = item.sides ? `<div style="font-size:12px; color:var(--secondary); font-weight:bold;">🥗 配菜: ${item.sides}</div>` : '';
 
+        // 判斷是否為「單點肉類」或「小菜」
+        const menuItem = menuItems.find(m => m.name === item.baseName);
+        const isSingleItem = menuItem && (menuItem.category === "單點肉類" || menuItem.category === "小菜");
+        
+        // 若為單點項目則不印出調味標籤
+        const customTagHtml = isSingleItem ? '' : `<div class="custom-item-tag">🧂 ${item.bamboo} | 🌿 ${item.flavor} | 🌶️ ${item.spicy} | 🍋 ${item.seasoning}</div>`;
+
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
                 ${sideTextHtml}
-                <div class="custom-item-tag">🧂 ${item.bamboo} | 🌿 ${item.flavor} | 🌶️ ${item.spicy} | 🍋 ${item.seasoning}</div>
+                ${customTagHtml}
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
