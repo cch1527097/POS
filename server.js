@@ -15,9 +15,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 全域變數：預設點餐鎖定/截止時間 (HH:mm 格式)
-let orderLockTime = "10:30";
-
 // PostgreSQL (Neon) 連線設定
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -93,6 +90,21 @@ async function initDatabase() {
             );
         `);
 
+        // 新建系統設定資料表 (用於存放點餐截止時間等設定)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS settings (
+                key VARCHAR(50) PRIMARY KEY,
+                value TEXT NOT NULL
+            );
+        `);
+
+        // 初始化預設鎖定時間為 10:30 (若已有資料則忽略)
+        await pool.query(`
+            INSERT INTO settings (key, value)
+            VALUES ('order_lock_time', '10:30')
+            ON CONFLICT (key) DO NOTHING;
+        `);
+
         // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
@@ -135,32 +147,49 @@ function isTodayInTaipei(orderTimestampMs) {
 
 // ==================== API 路由 ====================
 
-// 0. 鎖定時間控制 API
-app.get('/api/lock-time', (req, res) => {
-    res.json({ success: true, lockTime: orderLockTime });
+// 0. 鎖定時間控制 API (改為操作 PostgreSQL 資料庫)
+app.get('/api/lock-time', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
+        const lockTime = result.rows.length > 0 ? result.rows[0].value : "";
+        res.json({ success: true, lockTime });
+    } catch (err) {
+        console.error('讀取鎖定時間失敗:', err.message);
+        res.status(500).json({ success: false, message: '無法取得鎖定時間' });
+    }
 });
 
-app.post('/api/lock-time', (req, res) => {
+app.post('/api/lock-time', async (req, res) => {
     const { lockTime } = req.body;
-    
-    // 若傳入空字串或 null，代表管理員選擇解除鎖定
-    if (!lockTime) {
-        orderLockTime = "";
-        console.log(`[系統提示] 管理員已解除點餐時間限制`);
+    const newLockTime = lockTime ? String(lockTime).trim() : "";
+
+    try {
+        // 使用 ON CONFLICT 更新或寫入資料庫
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('order_lock_time', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [newLockTime]);
+
+        if (!newLockTime) {
+            console.log(`[系統提示] 管理員已解除點餐時間限制`);
+            return res.json({ 
+                success: true, 
+                message: '已成功解除點餐限制！目前系統無時間限制，隨時可進行下單。',
+                lockTime: "" 
+            });
+        }
+
+        console.log(`[系統提示] 管理員將點餐截止時間更新為：${newLockTime}`);
         return res.json({ 
             success: true, 
-            message: '已成功解除點餐限制！目前系統無時間限制，隨時可進行下單。',
-            lockTime: "" 
+            message: `已成功將點餐截止時間設定為 ${newLockTime}`,
+            lockTime: newLockTime
         });
+    } catch (err) {
+        console.error('更新鎖定時間失敗:', err.message);
+        res.status(500).json({ success: false, message: '設定鎖定時間失敗' });
     }
-
-    orderLockTime = lockTime;
-    console.log(`[系統提示] 管理員將點餐截止時間更新為：${orderLockTime}`);
-    return res.json({ 
-        success: true, 
-        message: `已成功將點餐截止時間設定為 ${orderLockTime}`,
-        lockTime: orderLockTime
-    });
 });
 
 // 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
@@ -353,31 +382,33 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (加入鎖定時間檢查)
+// 9. 新增訂單 (從 PostgreSQL 讀取鎖定時間並檢查)
 app.post('/api/order', async (req, res) => {
-    // ---- 點餐鎖定時間比對邏輯 ----
-    if (orderLockTime) {
-        const now = new Date();
-        const taipeiTimeStr = now.toLocaleTimeString("zh-TW", { timeZone: "Asia/Taipei", hour12: false });
-        const [curH, curM] = taipeiTimeStr.split(':').map(Number);
-        const [lockH, lockM] = orderLockTime.split(':').map(Number);
-
-        const currentTotalMinutes = curH * 60 + curM;
-        const lockTotalMinutes = lockH * 60 + lockM;
-
-        if (currentTotalMinutes >= lockTotalMinutes) {
-            return res.status(403).json({
-                success: false,
-                message: `⏰ 點餐已截止！今日點餐時間限制至 ${orderLockTime}，系統目前已鎖定無法再下單。`
-            });
-        }
-    }
-    // ---- 點餐鎖定檢查結束 ----
-
-    const { cardId, meal, note, spicy, total } = req.body;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
-    
     try {
+        // ---- 點餐鎖定時間比對邏輯 (從 DB 讀取) ----
+        const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
+        const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
+
+        if (orderLockTime) {
+            const now = new Date();
+            const utc8Hour = (now.getUTCHours() + 8) % 24;
+            const currentTotalMinutes = utc8Hour * 60 + now.getUTCMinutes();
+
+            const [lockH, lockM] = orderLockTime.split(':').map(Number);
+            const lockTotalMinutes = lockH * 60 + lockM;
+
+            if (currentTotalMinutes >= lockTotalMinutes) {
+                return res.status(403).json({
+                    success: false,
+                    message: `⏰ 點餐已截止！今日點餐時間限制至 ${orderLockTime}，系統目前已鎖定無法再下單。`
+                });
+            }
+        }
+        // ---- 點餐鎖定檢查結束 ----
+
+        const { cardId, meal, note, spicy, total } = req.body;
+        const cleanCardId = cardId ? String(cardId).trim() : '';
+
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
