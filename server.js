@@ -217,6 +217,43 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
+// 【新增修復】修改單筆訂單的繳費狀態 API
+app.patch('/api/orders/:orderId/payment', async (req, res) => {
+    const { orderId } = req.params;
+    const { isPaid } = req.body;
+    const targetOrderIdStr = orderId ? String(orderId).trim() : '';
+    const paidBool = isPaid === true || isPaid === 'true';
+
+    if (!targetOrderIdStr) {
+        return res.status(400).json({ success: false, message: '無效的訂單編號！' });
+    }
+
+    try {
+        // 先找出該訂單對應的員工卡號 (card_id)
+        const orderRes = await pool.query('SELECT card_id FROM orders WHERE order_id = $1;', [targetOrderIdStr]);
+        
+        if (orderRes.rows.length === 0) {
+            return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
+        }
+
+        const cardId = orderRes.rows[0].card_id;
+
+        // 更新 users 資料表中對應員工的繳費狀態
+        await pool.query(
+            'UPDATE users SET is_paid = $1 WHERE card_id = $2;',
+            [paidBool, cardId]
+        );
+
+        // 同步寫入 public/orders.json 檔案
+        await syncOrdersJsonFile();
+
+        res.json({ success: true, message: '訂單繳費狀態更新成功！' });
+    } catch (err) {
+        console.error('更新訂單繳費狀態失敗:', err.message);
+        res.status(500).json({ success: false, message: '伺服器更新繳費狀態失敗。' });
+    }
+});
+
 // 2. 取得所有員工名單 (包含 department)
 app.get('/api/employees', async (req, res) => {
     try {
