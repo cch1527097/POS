@@ -553,11 +553,16 @@
             #cardTableBody td:nth-of-type(4)::before { content: "部門"; }
             #cardTableBody td:nth-of-type(5)::before { content: "操作"; }
 
-            #storeTableBody td:nth-of-type(1)::before { content: "店家名稱"; }
-            #storeTableBody td:nth-of-type(2)::before { content: "餐點類別"; }
-            #storeTableBody td:nth-of-type(3)::before { content: "開放狀態"; }
-            #storeTableBody td:nth-of-type(4)::before { content: "前台權限"; }
-            #storeTableBody td:nth-of-type(5)::before { content: "控制操作"; }
+            #foodStoreTableBody td:nth-of-type(1)::before,
+            #drinkStoreTableBody td:nth-of-type(1)::before { content: "店家名稱"; }
+            #foodStoreTableBody td:nth-of-type(2)::before,
+            #drinkStoreTableBody td:nth-of-type(2)::before { content: "餐點類別"; }
+            #foodStoreTableBody td:nth-of-type(3)::before,
+            #drinkStoreTableBody td:nth-of-type(3)::before { content: "開放狀態"; }
+            #foodStoreTableBody td:nth-of-type(4)::before,
+            #drinkStoreTableBody td:nth-of-type(4)::before { content: "前台權限"; }
+            #foodStoreTableBody td:nth-of-type(5)::before,
+            #drinkStoreTableBody td:nth-of-type(5)::before { content: "控制操作"; }
 
             .modal-window { max-width: 92%; border-radius: 12px; }
             .modal-body { padding: 20px 16px; }
@@ -670,15 +675,17 @@
             </div>
         </div>
 
-        <!-- 分頁二：🏪 店家管理 -->
+        <!-- 分頁二：🏪 店家管理 (美味餐點與喝涼涼分開顯示) -->
         <div id="store-mgr" class="tab-content">
             <div class="header">
                 <h1>🏪 店家開放權限管理</h1>
             </div>
+            
+            <!-- 美味餐點店家表格 -->
             <div class="card">
-                <h3>前台開放店家設定</h3>
+                <h3>🍱 美味餐點 - 開放店家設定</h3>
                 <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
-                    管理員可自由開啟或關閉各個店家。前台員工僅能訂購<b>目前處於「🟢 開放點餐中」狀態</b>的店家餐點，可以同時開放多家店家。
+                    管理正餐/餐盒類店家開放狀態。前台員工僅能訂購<b>目前處於「🟢 開放點餐中」狀態</b>的店家餐點。
                 </p>
                 
                 <div class="table-responsive">
@@ -692,7 +699,32 @@
                                 <th>控制操作</th>
                             </tr>
                         </thead>
-                        <tbody id="storeTableBody">
+                        <tbody id="foodStoreTableBody">
+                            <tr><td colspan="5" style="text-align:center; color:#999;">載入中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 喝涼涼店家表格 -->
+            <div class="card">
+                <h3>🥤 喝涼涼 - 開放店家設定</h3>
+                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
+                    管理飲料/冰品類店家開放狀態。前台員工僅能訂購<b>目前處於「🟢 開放點餐中」狀態</b>的店家餐點。
+                </p>
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>店家名稱</th>
+                                <th>餐點類別</th>
+                                <th>目前開放狀態</th>
+                                <th>前台員工權限</th>
+                                <th>控制操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drinkStoreTableBody">
                             <tr><td colspan="5" style="text-align:center; color:#999;">載入中...</td></tr>
                         </tbody>
                     </table>
@@ -895,34 +927,45 @@
         ];
 
         function renderStoreTable() {
-            const tbody = document.getElementById('storeTableBody');
-            if (!tbody) return;
+            const foodTbody = document.getElementById('foodStoreTableBody');
+            const drinkTbody = document.getElementById('drinkStoreTableBody');
 
-            const rows = storeList.map(store => {
-                const statusBadge = store.isOpen 
-                    ? `<span class="badge badge-paid">🟢 開放點餐中</span>` 
-                    : `<span class="badge badge-unpaid">🔴 尚未開放</span>`;
-                
-                const permissionText = store.isOpen 
-                    ? `<span style="color:var(--primary); font-weight:700;">員工可自由點餐</span>` 
-                    : `<span style="color:var(--text-sub);">員工無法點選 (鎖定)</span>`;
+            const foodStores = storeList.filter(s => s.category === '美味餐點');
+            const drinkStores = storeList.filter(s => s.category === '喝涼涼');
 
-                const actionBtn = store.isOpen
-                    ? `<button class="btn-delete" onclick="closeStore('${store.id}')">🔒 關閉此店家</button>`
-                    : `<button class="btn" style="padding:6px 14px; font-size:12px;" onclick="openStore('${store.id}')">🔓 開放此店家</button>`;
+            const buildRows = (list) => {
+                if (list.length === 0) {
+                    return `<tr><td colspan="5" style="text-align:center; color:#999;">尚無店家資料</td></tr>`;
+                }
+                return list.map(store => {
+                    const statusBadge = store.isOpen 
+                        ? `<span class="badge badge-paid">🟢 開放點餐中</span>` 
+                        : `<span class="badge badge-unpaid">🔴 尚未開放</span>`;
+                    
+                    const permissionText = store.isOpen 
+                        ? `<span style="color:var(--primary); font-weight:700;">員工可自由點餐</span>` 
+                        : `<span style="color:var(--text-sub);">員工無法點選 (鎖定)</span>`;
 
-                return `
-                    <tr>
-                        <td><strong>${store.name}</strong></td>
-                        <td><span class="badge badge-dept">${store.category}</span></td>
-                        <td>${statusBadge}</td>
-                        <td>${permissionText}</td>
-                        <td>${actionBtn}</td>
-                    </tr>
-                `;
-            });
+                    const actionBtn = store.isOpen
+                        ? `<button class="btn-delete" onclick="closeStore('${store.id}')">🔒 關閉此店家</button>`
+                        : `<button class="btn" style="padding:6px 14px; font-size:12px;" onclick="openStore('${store.id}')">🔓 開放此店家</button>`;
 
-            tbody.innerHTML = rows.join('');
+                    const categoryBadgeClass = store.category === '喝涼涼' ? 'badge-drink' : 'badge-food';
+
+                    return `
+                        <tr>
+                            <td><strong>${store.name}</strong></td>
+                            <td><span class="badge ${categoryBadgeClass}">${store.category}</span></td>
+                            <td>${statusBadge}</td>
+                            <td>${permissionText}</td>
+                            <td>${actionBtn}</td>
+                        </tr>
+                    `;
+                }).join('');
+            };
+
+            if (foodTbody) foodTbody.innerHTML = buildRows(foodStores);
+            if (drinkTbody) drinkTbody.innerHTML = buildRows(drinkStores);
         }
 
         async function openStore(storeId) {
