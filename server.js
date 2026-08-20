@@ -110,9 +110,10 @@ async function initDatabase() {
         `);
 
         await pool.query(`
-            INSERT INTO settings (key, value)
-            VALUES ('active_store', '老聃飲食')
-            ON CONFLICT (key) DO NOTHING;
+    INSERT INTO settings (key, value)
+    VALUES ('store_list', $1)
+    ON CONFLICT (key) DO NOTHING;
+`, [DEFAULT_STORES]);
         `);
 
         const DEFAULT_STORES = JSON.stringify([
