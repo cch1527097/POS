@@ -526,25 +526,32 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (加入開放店家與時間阻擋邏輯)
+// 9. 新增訂單 (已修復：直接解析 store_list 檢核店家開放狀態)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, note, spicy, total } = req.body;
         const cleanMeal = meal ? String(meal).trim() : "";
 
-        // ---- 1. 開放店家檢查邏輯 (包含備註括號過濾) ----
-        const storeRes = await pool.query("SELECT value FROM settings WHERE key = 'active_store';");
-        let activeStore = storeRes.rows.length > 0 ? storeRes.rows[0].value.trim() : "";
+        // ---- 1. 開放店家檢查邏輯 (讀取 store_list 進行動態比對) ----
+        const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
+        
+        if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
+            const stores = JSON.parse(storeListRes.rows[0].value);
 
-        // 去除名稱內的備註括號 (例如 "老聃飲食 (預設店家)" 轉為 "老聃飲食")
-        const cleanStoreKeyword = activeStore.replace(/\s*\([^)]*\)/g, '').trim();
-
-        // 如果管理者有設定開放特定店家，但點購品項不包含該店家關鍵字，則阻擋下單
-        if (cleanStoreKeyword && !cleanMeal.includes(cleanStoreKeyword)) {
-            return res.status(403).json({
-                success: false,
-                message: `⚠️ 今日僅開放訂購「${cleanStoreKeyword}」，其他店家暫未開放！`
+            // 尋找餐點名稱中包含的店家
+            const matchedStore = stores.find(s => {
+                const cleanStoreName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
+                return cleanStoreName && cleanMeal.includes(cleanStoreName);
             });
+
+            // 若匹配到店家，且該店家狀態為未開放 (isOpen === false)
+            if (matchedStore && !matchedStore.isOpen) {
+                const displayStoreName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
+                return res.status(403).json({
+                    success: false,
+                    message: `⚠️ 店家「${displayStoreName}」目前尚未開放點餐！`
+                });
+            }
         }
 
         // ---- 2. 點餐鎖定時間比對邏輯 ----
@@ -574,6 +581,7 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
+        // ---- 3. 驗證員工卡號與寫入訂單 ----
         const cleanCardId = cardId ? String(cardId).trim() : '';
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
