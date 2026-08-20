@@ -136,6 +136,35 @@
             border-radius: 4px;
         }
 
+        /* 店家管理頁面 - 頂部切換頁籤 */
+        .store-tab-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0px;
+        }
+        .store-subtab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-sub);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            outline: none;
+            margin-bottom: -2px;
+        }
+        .store-subtab-btn:hover {
+            color: var(--primary);
+        }
+        .store-subtab-btn.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+        }
+
         /* 數據摘要排版 */
         .summary-container { display: flex; gap: 24px; margin-bottom: 35px; flex-wrap: wrap; }
         .summary-box {
@@ -675,59 +704,69 @@
             </div>
         </div>
 
-        <!-- 分頁二：🏪 店家管理 (美味餐點與喝涼涼分開顯示) -->
+        <!-- 分頁二：🏪 店家管理 (頂部左右頁籤切換) -->
         <div id="store-mgr" class="tab-content">
             <div class="header">
                 <h1>🏪 店家開放權限管理</h1>
             </div>
+
+            <!-- 頂部頁籤列 -->
+            <div class="store-tab-bar">
+                <button type="button" class="store-subtab-btn active" onclick="switchStoreTab('food', this)">🍱 美味餐點店家</button>
+                <button type="button" class="store-subtab-btn" onclick="switchStoreTab('drink', this)">🥤 喝涼涼店家</button>
+            </div>
             
-            <!-- 美味餐點店家表格 -->
-            <div class="card">
-                <h3>🍱 美味餐點 - 開放店家設定</h3>
-                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
-                    管理正餐/餐盒類店家開放狀態。前台員工僅能訂購<b>目前處於「🟢 開放點餐中」狀態</b>的店家餐點。
-                </p>
-                
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>店家名稱</th>
-                                <th>餐點類別</th>
-                                <th>目前開放狀態</th>
-                                <th>前台員工權限</th>
-                                <th>控制操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="foodStoreTableBody">
-                            <tr><td colspan="5" style="text-align:center; color:#999;">載入中...</td></tr>
-                        </tbody>
-                    </table>
+            <!-- 美味餐點店家表格區塊 -->
+            <div id="subtab-food" class="store-subtab-content" style="display: block;">
+                <div class="card">
+                    <h3>🍱 美味餐點 - 開放店家設定</h3>
+                    <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
+                        管理正餐/餐盒類店家開放狀態。前台員工僅能訂購<b>目前處於「🟢 開放點餐中」狀態</b>的店家餐點。
+                    </p>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>店家名稱</th>
+                                    <th>餐點類別</th>
+                                    <th>目前開放狀態</th>
+                                    <th>前台員工權限</th>
+                                    <th>控制操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="foodStoreTableBody">
+                                <tr><td colspan="5" style="text-align:center; color:#999;">載入中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- 喝涼涼店家表格 -->
-            <div class="card">
-                <h3>🥤 喝涼涼 - 開放店家設定</h3>
-                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
-                    管理飲料/冰品類店家開放狀態。前台員工僅能訂購<b>目前處於「🟢 開放點餐中」狀態</b>的店家餐點。
-                </p>
-                
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>店家名稱</th>
-                                <th>餐點類別</th>
-                                <th>目前開放狀態</th>
-                                <th>前台員工權限</th>
-                                <th>控制操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="drinkStoreTableBody">
-                            <tr><td colspan="5" style="text-align:center; color:#999;">載入中...</td></tr>
-                        </tbody>
-                    </table>
+            <!-- 喝涼涼店家表格區塊 -->
+            <div id="subtab-drink" class="store-subtab-content" style="display: none;">
+                <div class="card">
+                    <h3>🥤 喝涼涼 - 開放店家設定</h3>
+                    <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
+                        管理飲料/冰品類店家開放狀態。前台員工僅能訂購<b>目前處於「🟢 開放點餐中」狀態</b>的店家餐點。
+                    </p>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>店家名稱</th>
+                                    <th>餐點類別</th>
+                                    <th>目前開放狀態</th>
+                                    <th>前台員工權限</th>
+                                    <th>控制操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="drinkStoreTableBody">
+                                <tr><td colspan="5" style="text-align:center; color:#999;">載入中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -925,6 +964,15 @@
             { id: 'store_47', name: '李記紅茶冰', category: '喝涼涼', isOpen: false },
             { id: 'store_48', name: '旅人阿宏', category: '喝涼涼', isOpen: false }
         ];
+
+        /* 切換店家管理頂部子頁籤 */
+        function switchStoreTab(type, btn) {
+            document.querySelectorAll('.store-subtab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.store-subtab-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(`subtab-${type}`).style.display = 'block';
+            btn.classList.add('active');
+        }
 
         function renderStoreTable() {
             const foodTbody = document.getElementById('foodStoreTableBody');
