@@ -144,7 +144,7 @@ async function initDatabase() {
             { id: 'store_26', name: '凡凡滷味', category: '美味餐點', isOpen: false },
             { id: 'store_27', name: '員湘園', category: '美味餐點', isOpen: false },
             { id: 'store_28', name: '志氣雞飯', category: '美味餐點', isOpen: false },
-            { id: 'store_29', name: '竑食 泰式拌飯', category: '美味餐點', isOpen: true },
+            { id: 'store_29', name: '竑食泰式拌飯', category: '美味餐點', isOpen: true },
             { id: 'store_30', name: '50嵐', category: '喝涼涼', isOpen: false },
             { id: 'store_31', name: 'TEA TOP', category: '喝涼涼', isOpen: false },
             { id: 'store_32', name: '得正', category: '喝涼涼', isOpen: false },
