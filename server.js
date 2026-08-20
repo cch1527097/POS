@@ -64,7 +64,6 @@ async function syncOrdersJsonFile() {
         await fs.promises.writeFile(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
         console.log('[系統提示] 已同步更新 public/orders.json 檔案');
     } catch (err) {
-        // 唯讀檔案系統或權限不足時僅印出警告，不中斷服務
         console.warn('⚠️ 警告：同步 orders.json 失敗 (雲端環境可能為唯讀檔案系統):', err.message);
     }
 }
@@ -110,68 +109,55 @@ async function initDatabase() {
         `);
 
         await pool.query(`
-    INSERT INTO settings (key, value)
-    VALUES ('store_list', $1)
-    ON CONFLICT (key) DO NOTHING;
-`, [DEFAULT_STORES]);
+            INSERT INTO settings (key, value)
+            VALUES ('active_store', '老聃飲食')
+            ON CONFLICT (key) DO NOTHING;
         `);
 
-        const DEFAULT_STORES = JSON.stringify([
-            { id: 'store_1', name: '八方雲集', category: '美味餐點', isOpen: true },
-            { id: 'store_2', name: '飯大廚', category: '美味餐點', isOpen: false },
-            { id: 'store_3', name: '鼎森泰式料理', category: '美味餐點', isOpen: false },
-            { id: 'store_4', name: '榮郁香廣式燒臘', category: '美味餐點', isOpen: false },
-            { id: 'store_5', name: '顏舍關東煮', category: '美味餐點', isOpen: true },
-            { id: 'store_6', name: '羹香鴨肉羹', category: '美味餐點', isOpen: false },
-            { id: 'store_7', name: '徊香麵線糊', category: '美味餐點', isOpen: false },
-            { id: 'store_8', name: '四海遊龍', category: '美味餐點', isOpen: false },
-            { id: 'store_9', name: '北斗賓肉圓', category: '美味餐點', isOpen: true },
-            { id: 'store_10', name: '百華味滷味', category: '美味餐點', isOpen: false },
-            { id: 'store_11', name: '老聃飲食', category: '美味餐點', isOpen: false },
-            { id: 'store_12', name: '八廚職人弁当', category: '美味餐點', isOpen: false },
-            { id: 'store_13', name: '嵐 爌肉・豬腳飯', category: '美味餐點', isOpen: true },
-            { id: 'store_14', name: '旺春豐傳統小吃', category: '美味餐點', isOpen: false },
-            { id: 'store_15', name: '咕雞 鹽水雞', category: '美味餐點', isOpen: false },
-            { id: 'store_16', name: '家灶 傳統爌肉 豬腳專賣', category: '美味餐點', isOpen: false },
-            { id: 'store_17', name: '菓蔬輕蒔坊', category: '美味餐點', isOpen: true },
-            { id: 'store_18', name: '老蕭土魠魚羹麵館', category: '美味餐點', isOpen: false },
-            { id: 'store_19', name: '小松丼丼食事處', category: '美味餐點', isOpen: false },
-            { id: 'store_20', name: '滿座燒肉丼飯屋', category: '美味餐點', isOpen: false },
-            { id: 'store_21', name: '地6攤排餐', category: '美味餐點', isOpen: true },
-            { id: 'store_22', name: '八鮮雲吞', category: '美味餐點', isOpen: false },
-            { id: 'store_23', name: '明美快餐', category: '美味餐點', isOpen: false },
-            { id: 'store_24', name: '森晴餐盒製所', category: '美味餐點', isOpen: false },
-            { id: 'store_25', name: '廈門沙茶麵', category: '美味餐點', isOpen: true },
-            { id: 'store_26', name: '凡凡滷味', category: '美味餐點', isOpen: false },
-            { id: 'store_27', name: '員湘園', category: '美味餐點', isOpen: false },
-            { id: 'store_28', name: '志氣雞飯', category: '美味餐點', isOpen: false },
-            { id: 'store_29', name: '竑食 泰式拌飯', category: '美味餐點', isOpen: true },
-            { id: 'store_30', name: '50嵐', category: '喝涼涼', isOpen: false },
-            { id: 'store_31', name: 'TEA TOP', category: '喝涼涼', isOpen: false },
-            { id: 'store_32', name: '得正', category: '喝涼涼', isOpen: false },
-            { id: 'store_33', name: '尚淳草本茶', category: '喝涼涼', isOpen: false },
-            { id: 'store_34', name: '烏弄', category: '喝涼涼', isOpen: false },
-            { id: 'store_35', name: '可不可熟成紅茶', category: '喝涼涼', isOpen: false },
-            { id: 'store_36', name: '鹿兒角', category: '喝涼涼', isOpen: false },
-            { id: 'store_37', name: '八曜和茶', category: '喝涼涼', isOpen: false },
-            { id: 'store_38', name: '一沐日', category: '喝涼涼', isOpen: false },
-            { id: 'store_39', name: '粉圓伯', category: '喝涼涼', isOpen: false },
-            { id: 'store_40', name: '先喝道', category: '喝涼涼', isOpen: false },
-            { id: 'store_41', name: '李珍心綠豆沙專門店', category: '喝涼涼', isOpen: false },
-            { id: 'store_42', name: '吳家紅茶冰', category: '喝涼涼', isOpen: false },
-            { id: 'store_43', name: '有茶', category: '喝涼涼', isOpen: false },
-            { id: 'store_44', name: '青山', category: '喝涼涼', isOpen: false },
-            { id: 'store_45', name: '迷客夏', category: '喝涼涼', isOpen: false },
-            { id: 'store_46', name: '茗沏', category: '喝涼涼', isOpen: false },
-            { id: 'store_47', name: '李記紅茶冰', category: '喝涼涼', isOpen: false },
-            { id: 'store_48', name: '旅人阿宏', category: '喝涼涼', isOpen: false }
-        ]);
+        // 目前預設最新店家名單
+        const DEFAULT_STORES = [
+            { id: 'store_1', name: '老聃飲食 (預設店家)', category: '美味餐點', isOpen: false },
+            { id: 'store_2', name: '50嵐', category: '喝涼涼', isOpen: false },
+            { id: 'store_3', name: '得正', category: '喝涼涼', isOpen: false },
+            { id: 'store_4', name: '竑食泰式拌飯', category: '美味餐點', isOpen: false },
+            { id: 'store_4', name: '竑食', category: '美味餐點', isOpen: false }
+        ];
 
-        await pool.query(`
-            INSERT INTO settings (key, value)
-            VALUES ('store_list', $1)
-            ON CONFLICT (key) DO NOTHING;
-        `, [DEFAULT_STORES]);
+        // 讀取現有店家列表，若缺少新店家則自動補齊
+        const currentStoreRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
+        if (currentStoreRes.rows.length === 0) {
+            await pool.query(`
+                INSERT INTO settings (key, value)
+                VALUES ('store_list', $1);
+            `, [JSON.stringify(DEFAULT_STORES)]);
+        } else {
+            try {
+                let existingStores = JSON.parse(currentStoreRes.rows[0].value);
+                let updated = false;
+
+                DEFAULT_STORES.forEach(defStore => {
+                    const cleanDefName = defStore.name.replace(/\s*\([^)]*\)/g, '').trim();
+                    const exists = existingStores.some(s => {
+                        const cleanExName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
+                        return cleanExName === cleanDefName;
+                    });
+
+                    if (!exists) {
+                        existingStores.push(defStore);
+                        updated = true;
+                    }
+                });
+
+                if (updated) {
+                    await pool.query(`
+                        UPDATE settings SET value = $1 WHERE key = 'store_list';
+                    `, [JSON.stringify(existingStores)]);
+                    console.log('[系統提示] 已自動將新店家同步補齊至資料庫中！');
+                }
+            } catch (e) {
+                console.error('解析現有店家清單失敗，重新寫入預設店家:', e);
+            }
+        }
 
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
@@ -195,20 +181,6 @@ async function initDatabase() {
         console.error(`❌ 初始化 Neon 資料庫失敗：`, err.message);
         throw err;
     }
-}
-
-// 輔助函式：判斷時間戳記是否為台北時間的今天
-function isTodayInTaipei(orderTimestampMs) {
-    const orderDate = new Date(Number(orderTimestampMs));
-    if (isNaN(orderDate.getTime())) return false;
-
-    const now = new Date();
-    const options = { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' };
-    
-    const orderDateStr = new Intl.DateTimeFormat('zh-TW', options).format(orderDate);
-    const todayDateStr = new Intl.DateTimeFormat('zh-TW', options).format(now);
-
-    return orderDateStr === todayDateStr;
 }
 
 // ==================== API 路由 ====================
@@ -286,22 +258,22 @@ app.post('/api/stores', async (req, res) => {
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [JSON.stringify(stores)]);
 
-        const activeStoreObj = stores.find(s => s.isOpen);
-        const activeStoreName = activeStoreObj 
-            ? activeStoreObj.name.replace(/\s*\([^)]*\)/g, '').trim() 
-            : "";
+        const activeStores = stores.filter(s => s.isOpen);
+        const activeStoreNames = activeStores
+            .map(s => s.name.replace(/\s*\([^)]*\)/g, '').trim())
+            .join('、');
 
         await pool.query(`
             INSERT INTO settings (key, value) 
             VALUES ('active_store', $1)
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [activeStoreName]);
+        `, [activeStoreNames]);
 
-        console.log(`[系統提示] 管理員更新店家開放狀態，目前開放：${activeStoreName || '無限制 (全開放)'}`);
+        console.log(`[系統提示] 管理員更新店家開放狀態，目前開放：${activeStoreNames || '無限制 (全開放)'}`);
         return res.json({ 
             success: true, 
-            message: activeStoreName ? `已成功將開放店家設定為：${activeStoreName}` : '已解除店家限制，目前開放所有店家訂購！',
-            activeStore: activeStoreName,
+            message: activeStoreNames ? `已成功將開放店家設定為：${activeStoreNames}` : '已解除店家限制，目前開放所有店家訂購！',
+            activeStore: activeStoreNames,
             stores: stores
         });
     } catch (err) {
@@ -569,7 +541,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (修正：支援直接傳入 storeName 或動態比對 meal)
+// 9. 新增訂單 (更強健的店家與餐點匹配邏輯)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeName, note, spicy, total } = req.body;
@@ -585,7 +557,7 @@ app.post('/api/order', async (req, res) => {
             const matchedStore = stores.find(s => {
                 const cleanName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
                 if (!cleanName) return false;
-                if (reqStoreName && reqStoreName.includes(cleanName)) return true;
+                if (reqStoreName && (reqStoreName.includes(cleanName) || cleanName.includes(reqStoreName))) return true;
                 return cleanMeal.includes(cleanName);
             });
 
@@ -664,7 +636,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄 (優化 SQL 範圍過濾)
+// 10. 取得個人歷史訂單紀錄 (以 PostgreSQL 時區過濾台北時間今日訂單)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -674,22 +646,20 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // 只查詢過去 48 小時內訂單，避免全表傳輸
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
-             WHERE card_id = $1 AND created_at >= NOW() - INTERVAL '2 days'
+             WHERE card_id = $1 
+               AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Taipei')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date
              ORDER BY order_id DESC;`,
             [cleanCardId]
         );
 
-        const userOrders = result.rows
-            .filter(order => isTodayInTaipei(order.order_id))
-            .map(order => ({
-                time: order.timestamp ? String(order.timestamp) : '-',
-                meal: order.meal,
-                note: `醬料辣度: ${order.spicy} | 備註: ${order.note} | 金額: $${order.total}`
-            }));
+        const userOrders = result.rows.map(order => ({
+            time: order.timestamp ? String(order.timestamp) : '-',
+            meal: order.meal,
+            note: `醬料辣度: ${order.spicy} | 備註: ${order.note} | 金額: $${order.total}`
+        }));
 
         res.json({ success: true, orders: userOrders });
     } catch (error) {
