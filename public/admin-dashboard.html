@@ -613,6 +613,13 @@
             #cardTableBody td:nth-of-type(4)::before { content: "部門"; }
             #cardTableBody td:nth-of-type(5)::before { content: "操作"; }
 
+            /* 店家管理的行動版標題 */
+            #storeTableBody td:nth-of-type(1)::before { content: "店家名稱"; }
+            #storeTableBody td:nth-of-type(2)::before { content: "餐點類別"; }
+            #storeTableBody td:nth-of-type(3)::before { content: "開放狀態"; }
+            #storeTableBody td:nth-of-type(4)::before { content: "前台權限"; }
+            #storeTableBody td:nth-of-type(5)::before { content: "控制操作"; }
+
             /* 彈出視窗尺寸調整 */
             .modal-window { max-width: 92%; border-radius: 12px; }
             .modal-body { padding: 20px 16px; }
@@ -638,6 +645,7 @@
         <hr>
         <div class="menu-container">
             <button type="button" class="menu-item active" onclick="switchTab('overview', this)">📊 全部訂單總覽</button>
+            <button type="button" class="menu-item" onclick="switchTab('store-mgr', this)">🏪 店家開放管理</button>
             <button type="button" class="menu-item" onclick="switchTab('drink-mgr', this)">🥤 喝涼涼訂單</button>
             <button type="button" class="menu-item" onclick="switchTab('food-mgr', this)">🍱 美味餐點訂單</button>
             <button type="button" class="menu-item" onclick="switchTab('history-mgr', this)">📜 歷史紀錄</button>
@@ -732,7 +740,37 @@
             </div>
         </div>
 
-        <!-- 分頁二：喝涼涼專區 (歷史紀錄) -->
+        <!-- 分頁二：🏪 店家管理 -->
+        <div id="store-mgr" class="tab-content">
+            <div class="header">
+                <h1>🏪 店家開放權限管理</h1>
+            </div>
+            <div class="card">
+                <h3>前台開放店家設定</h3>
+                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
+                    點擊「<b>設為唯一開放店家</b>」後，系統會開啟該店家，並<b>自動將其他所有店家設為「尚未開放」</b>，限制員工一次只能訂購該特定店家的餐點。
+                </p>
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>店家名稱</th>
+                                <th>餐點類別</th>
+                                <th>目前開放狀態</th>
+                                <th>前台員工權限</th>
+                                <th>控制操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="storeTableBody">
+                            <tr><td colspan="5" style="text-align:center; color:#999;">載入中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分頁三：喝涼涼專區 (歷史紀錄) -->
         <div id="drink-mgr" class="tab-content">
             <div class="header">
                 <h1>🥤 喝涼涼 - 飲料歷史紀錄</h1>
@@ -740,7 +778,6 @@
             </div>
             <div class="card">
                 <h3>完整歷史飲料訂單紀錄</h3>
-                <!-- 新增：上下滾輪外層容器 -->
                 <div class="scrollable-table-container">
                     <div class="table-responsive" style="margin-top: 0;">
                         <table>
@@ -765,7 +802,7 @@
             </div>
         </div>
 
-        <!-- 分頁三：美味餐點專區 (歷史紀錄) -->
+        <!-- 分頁四：美味餐點專區 (歷史紀錄) -->
         <div id="food-mgr" class="tab-content">
             <div class="header">
                 <h1>🍱 美味餐點 - 正餐歷史紀錄</h1>
@@ -773,7 +810,6 @@
             </div>
             <div class="card">
                 <h3>完整歷史餐點訂單紀錄</h3>
-                <!-- 新增：上下滾輪外層容器 -->
                 <div class="scrollable-table-container">
                     <div class="table-responsive" style="margin-top: 0;">
                         <table>
@@ -798,7 +834,7 @@
             </div>
         </div>
 
-        <!-- 分頁四：歷史訂餐紀錄 -->
+        <!-- 分頁五：歷史訂餐紀錄 -->
         <div id="history-mgr" class="tab-content">
             <div class="header">
                 <h1>歷史訂餐紀錄</h1>
@@ -846,7 +882,7 @@
             </div>
         </div>
 
-        <!-- 分頁五：員工卡號管理 -->
+        <!-- 分頁六：員工卡號管理 -->
         <div id="employee-mgr" class="tab-content">
             <div class="header">
                 <h1>員工卡號管理</h1>
@@ -924,6 +960,78 @@
         let currentFilteredHistoryOrders = []; 
         let currentOverviewCategory = 'all';
         let searchTimeout = null;
+
+        // 預設店家清單 (預設第一家開放，其他尚未開放)
+        let storeList = [
+            { id: 'store_1', name: '老聃飲食 (預設店家)', category: '美味餐點', isOpen: true },
+            { id: 'store_2', name: '50嵐', category: '喝涼涼', isOpen: false },
+            { id: 'store_3', name: '得正', category: '喝涼涼', isOpen: false },
+            { id: 'store_4', name: '竑食泰式拌飯', category: '美味餐點', isOpen: false }
+        ];
+
+        // 渲染店家列表表格
+        function renderStoreTable() {
+            const tbody = document.getElementById('storeTableBody');
+            if (!tbody) return;
+
+            const rows = storeList.map(store => {
+                const statusBadge = store.isOpen 
+                    ? `<span class="badge badge-paid">🟢 開放點餐中</span>` 
+                    : `<span class="badge badge-unpaid">🔴 尚未開放</span>`;
+                
+                const permissionText = store.isOpen 
+                    ? `<span style="color:var(--primary); font-weight:700;">員工可自由點餐</span>` 
+                    : `<span style="color:var(--text-sub);">員工無法點選 (鎖定)</span>`;
+
+                const actionBtn = store.isOpen
+                    ? `<button class="btn-delete" onclick="closeStore('${store.id}')">🔒 關閉此店家</button>`
+                    : `<button class="btn" style="padding:6px 14px; font-size:12px;" onclick="setActiveStoreOnly('${store.id}')">⭐ 設為唯一開放店家</button>`;
+
+                return `
+                    <tr>
+                        <td><strong>${store.name}</strong></td>
+                        <td><span class="badge badge-dept">${store.category}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>${permissionText}</td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = rows.join('');
+        }
+
+        // 開放單一家，同時鎖定關閉其他所有店家
+        function setActiveStoreOnly(selectedStoreId) {
+            const targetStore = storeList.find(s => s.id === selectedStoreId);
+            
+            showCustomModal({
+                title: '確認開放店家權限',
+                message: `確定要開放「<b>${targetStore ? targetStore.name : ''}</b>」給員工點餐嗎？<br><br><span style="color:var(--danger); font-size:13px;">⚠️ 注意：點擊確定後，系統將自動關閉其他所有店家，員工僅能訂購此店家！</span>`,
+                isConfirm: true,
+                onConfirm: async () => {
+                    storeList.forEach(store => {
+                        store.isOpen = (store.id === selectedStoreId);
+                    });
+
+                    renderStoreTable();
+                    localStorage.setItem('active_store_config', JSON.stringify(storeList));
+                    
+                    showCustomModal({ message: `設定成功！目前僅開放「<b>${targetStore.name}</b>」，其他店家已全部設為尚未開放。` });
+                }
+            });
+        }
+
+        // 單獨關閉店家
+        function closeStore(storeId) {
+            const store = storeList.find(s => s.id === storeId);
+            if (store) {
+                store.isOpen = false;
+                renderStoreTable();
+                localStorage.setItem('active_store_config', JSON.stringify(storeList));
+                showCustomModal({ message: `已關閉「${store.name}」，目前員工無法訂購此店家。` });
+            }
+        }
 
         // 讀取目前的點餐鎖定時間
         async function loadLockTime() {
@@ -1095,6 +1203,8 @@
                 loadOrders();
             } else if (tabId === 'employee-mgr') {
                 loadEmployees();
+            } else if (tabId === 'store-mgr') {
+                renderStoreTable();
             }
         }
 
@@ -1116,6 +1226,9 @@
             }
             else if (activeTab.id === 'employee-mgr') {
                 loadEmployees();
+            }
+            else if (activeTab.id === 'store-mgr') {
+                renderStoreTable();
             }
         }
 
@@ -1238,7 +1351,6 @@
             }
         }
 
-        // 修改：精準切換單筆訂單的繳費狀態（避免污染同姓名/同卡號的其他訂單）
         async function toggleOrderPaymentStatus(orderId, newStatus) {
             try {
                 const response = await fetch(`/api/orders/${orderId}/payment`, {
@@ -1248,16 +1360,13 @@
                 });
 
                 if (response.ok) {
-                    // 1. 只更新內部資料庫陣列中對應 orderId 的該筆訂單
                     const targetToday = currentTodayOrders.find(o => String(o.orderId) === String(orderId));
                     if (targetToday) targetToday.isPaid = newStatus;
 
                     const targetHistory = allHistoryOrders.find(o => String(o.orderId) === String(orderId));
                     if (targetHistory) targetHistory.isPaid = newStatus;
 
-                    // 2. 重新整理當前視圖，保持精準獨立更新
                     refreshCurrentTab();
-
                     showCustomModal({ message: `訂單編號 ${orderId} 的繳費狀態已更新！` });
                 } else {
                     const result = await response.json();
@@ -1365,7 +1474,6 @@
 
                 updateSummary(currentTodayOrders);
 
-                // 渲染主總覽
                 const searchInput = document.getElementById('orderSearchInput');
                 if (searchInput && searchInput.value.trim() !== '') {
                     executeFilter(searchInput.value.trim().toLowerCase(), 'today');
@@ -1400,7 +1508,6 @@
                     renderOrderTable(allHistoryOrders, 'historyTableBody', true, false);
                 }
 
-                // 同時更新「喝涼涼」與「美味餐點」的歷史紀錄
                 const drinkHistoryOrders = allHistoryOrders.filter(o => isDrinkOrder(o));
                 const foodHistoryOrders = allHistoryOrders.filter(o => !isDrinkOrder(o));
                 
@@ -1686,7 +1793,13 @@
                 adminInfoElem.innerText = `☁️ 管理員: ${currentAdminName} [已上線]`;
             }
 
-            await loadLockTime(); // 載入目前設定的點餐截止時間
+            // 讀取紀錄中的店家設定
+            const savedStores = localStorage.getItem('active_store_config');
+            if (savedStores) {
+                try { storeList = JSON.parse(savedStores); } catch(e){}
+            }
+
+            await loadLockTime(); 
             await loadEmployees();
             await loadOrders();
             await loadHistoryOrders();
