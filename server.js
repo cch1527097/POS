@@ -165,6 +165,62 @@ app.get('/api/lock-time', async (req, res) => {
     }
 });
 
+// 0-2. 開放店家控制 API (存取與更新店家清單)
+app.get('/api/stores', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
+        if (result.rows.length > 0) {
+            res.json({ success: true, stores: JSON.parse(result.rows[0].value) });
+        } else {
+            res.json({ success: true, stores: [] });
+        }
+    } catch (err) {
+        console.error('讀取店家設定失敗:', err.message);
+        res.status(500).json({ success: false, message: '無法取得店家設定' });
+    }
+});
+
+app.post('/api/stores', async (req, res) => {
+    const { stores } = req.body;
+    
+    if (!Array.isArray(stores)) {
+        return res.status(400).json({ success: false, message: '店家資料格式不正確！' });
+    }
+
+    try {
+        // 1. 寫入完整店家 JSON 設定
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('store_list', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [JSON.stringify(stores)]);
+
+        // 2. 找出目前唯一開放的店家名稱，並過濾掉括號標籤 (例如: "老聃飲食 (預設店家)" -> "老聃飲食")
+        const activeStoreObj = stores.find(s => s.isOpen);
+        const activeStoreName = activeStoreObj 
+            ? activeStoreObj.name.replace(/\s*\([^)]*\)/g, '').trim() 
+            : "";
+
+        // 3. 更新 active_store 供下單時比對
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('active_store', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [activeStoreName]);
+
+        console.log(`[系統提示] 管理員更新店家開放狀態，目前開放：${activeStoreName || '無限制/全關閉'}`);
+        return res.json({ 
+            success: true, 
+            message: activeStoreName ? `已成功將開放店家設定為：${activeStoreName}` : '目前無開放任何店家！',
+            activeStore: activeStoreName,
+            stores: stores
+        });
+    } catch (err) {
+        console.error('更新開放店家失敗:', err.message);
+        res.status(500).json({ success: false, message: '設定開放店家失敗' });
+    }
+});
+
 app.post('/api/lock-time', async (req, res) => {
     const { lockTime } = req.body;
     const newLockTime = lockTime ? String(lockTime).trim() : "";
@@ -461,15 +517,18 @@ app.post('/api/order', async (req, res) => {
         const { cardId, meal, note, spicy, total } = req.body;
         const cleanMeal = meal ? String(meal).trim() : "";
 
-        // ---- 1. 開放店家檢查邏輯 (新增) ----
+        // ---- 1. 開放店家檢查邏輯 (已優化名稱比對) ----
         const storeRes = await pool.query("SELECT value FROM settings WHERE key = 'active_store';");
-        const activeStore = storeRes.rows.length > 0 ? storeRes.rows[0].value.trim() : "";
+        let activeStore = storeRes.rows.length > 0 ? storeRes.rows[0].value.trim() : "";
 
-        // 如果管理者有設定開放特定店家，但點購品項不包含該店家名稱，則阻擋下單
-        if (activeStore && !cleanMeal.includes(activeStore)) {
+        // 去除名稱內的備註括號 (例如 "老聃飲食 (預設店家)" 轉為 "老聃飲食")
+        const cleanStoreKeyword = activeStore.replace(/\s*\([^)]*\)/g, '').trim();
+
+        // 如果管理者有設定開放特定店家，但點購品項不包含該店家關鍵字，則阻擋下單
+        if (cleanStoreKeyword && !cleanMeal.includes(cleanStoreKeyword)) {
             return res.status(403).json({
                 success: false,
-                message: `⚠️ 今日僅開放訂購「${activeStore}」，其他店家暫未開放！`
+                message: `⚠️ 今日僅開放訂購「${cleanStoreKeyword}」，其他店家暫未開放！`
             });
         }
 
