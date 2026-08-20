@@ -107,9 +107,23 @@ async function initDatabase() {
 
         await pool.query(`
             INSERT INTO settings (key, value)
-            VALUES ('active_store', '')
+            VALUES ('active_store', '老聃飲食')
             ON CONFLICT (key) DO NOTHING;
         `);
+
+        // BUG FIX 1: 初始化預設店家清單 JSON (若不存在)
+        const DEFAULT_STORES = JSON.stringify([
+            { id: 'store_1', name: '老聃飲食 (預設店家)', category: '美味餐點', isOpen: true },
+            { id: 'store_2', name: '50嵐', category: '喝涼涼', isOpen: false },
+            { id: 'store_3', name: '得正', category: '喝涼涼', isOpen: false },
+            { id: 'store_4', name: '竑食泰式拌飯', category: '美味餐點', isOpen: false }
+        ]);
+
+        await pool.query(`
+            INSERT INTO settings (key, value)
+            VALUES ('store_list', $1)
+            ON CONFLICT (key) DO NOTHING;
+        `, [DEFAULT_STORES]);
 
         // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
         await pool.query(`
@@ -165,62 +179,6 @@ app.get('/api/lock-time', async (req, res) => {
     }
 });
 
-// 0-2. 開放店家控制 API (存取與更新店家清單)
-app.get('/api/stores', async (req, res) => {
-    try {
-        const result = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
-        if (result.rows.length > 0) {
-            res.json({ success: true, stores: JSON.parse(result.rows[0].value) });
-        } else {
-            res.json({ success: true, stores: [] });
-        }
-    } catch (err) {
-        console.error('讀取店家設定失敗:', err.message);
-        res.status(500).json({ success: false, message: '無法取得店家設定' });
-    }
-});
-
-app.post('/api/stores', async (req, res) => {
-    const { stores } = req.body;
-    
-    if (!Array.isArray(stores)) {
-        return res.status(400).json({ success: false, message: '店家資料格式不正確！' });
-    }
-
-    try {
-        // 1. 寫入完整店家 JSON 設定
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('store_list', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [JSON.stringify(stores)]);
-
-        // 2. 找出目前唯一開放的店家名稱，並過濾掉括號標籤 (例如: "老聃飲食 (預設店家)" -> "老聃飲食")
-        const activeStoreObj = stores.find(s => s.isOpen);
-        const activeStoreName = activeStoreObj 
-            ? activeStoreObj.name.replace(/\s*\([^)]*\)/g, '').trim() 
-            : "";
-
-        // 3. 更新 active_store 供下單時比對
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('active_store', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [activeStoreName]);
-
-        console.log(`[系統提示] 管理員更新店家開放狀態，目前開放：${activeStoreName || '無限制/全關閉'}`);
-        return res.json({ 
-            success: true, 
-            message: activeStoreName ? `已成功將開放店家設定為：${activeStoreName}` : '目前無開放任何店家！',
-            activeStore: activeStoreName,
-            stores: stores
-        });
-    } catch (err) {
-        console.error('更新開放店家失敗:', err.message);
-        res.status(500).json({ success: false, message: '設定開放店家失敗' });
-    }
-});
-
 app.post('/api/lock-time', async (req, res) => {
     const { lockTime } = req.body;
     const newLockTime = lockTime ? String(lockTime).trim() : "";
@@ -253,7 +211,63 @@ app.post('/api/lock-time', async (req, res) => {
     }
 });
 
-// 0-2. 開放店家控制 API (新增)
+// 0-2. 開放店家控制 API (存取與更新店家清單)
+app.get('/api/stores', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
+        if (result.rows.length > 0) {
+            res.json({ success: true, stores: JSON.parse(result.rows[0].value) });
+        } else {
+            res.json({ success: true, stores: [] });
+        }
+    } catch (err) {
+        console.error('讀取店家設定失敗:', err.message);
+        res.status(500).json({ success: false, message: '無法取得店家設定' });
+    }
+});
+
+app.post('/api/stores', async (req, res) => {
+    const { stores } = req.body;
+    
+    if (!Array.isArray(stores)) {
+        return res.status(400).json({ success: false, message: '店家資料格式不正確！' });
+    }
+
+    try {
+        // 1. 寫入完整店家 JSON 設定
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('store_list', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [JSON.stringify(stores)]);
+
+        // BUG FIX 2: 找出目前唯一開放的店家名稱，並自動過濾括號標籤 (例如: "老聃飲食 (預設店家)" -> "老聃飲食")
+        const activeStoreObj = stores.find(s => s.isOpen);
+        const activeStoreName = activeStoreObj 
+            ? activeStoreObj.name.replace(/\s*\([^)]*\)/g, '').trim() 
+            : "";
+
+        // 3. 更新 active_store 供下單時比對
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('active_store', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [activeStoreName]);
+
+        console.log(`[系統提示] 管理員更新店家開放狀態，目前開放：${activeStoreName || '無限制 (全開放)'}`);
+        return res.json({ 
+            success: true, 
+            message: activeStoreName ? `已成功將開放店家設定為：${activeStoreName}` : '已解除店家限制，目前開放所有店家訂購！',
+            activeStore: activeStoreName,
+            stores: stores
+        });
+    } catch (err) {
+        console.error('更新開放店家失敗:', err.message);
+        res.status(500).json({ success: false, message: '設定開放店家失敗' });
+    }
+});
+
+// 0-3. 單獨開放店家設定 API
 app.get('/api/active-store', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'active_store';");
@@ -268,19 +282,20 @@ app.get('/api/active-store', async (req, res) => {
 app.post('/api/active-store', async (req, res) => {
     const { activeStore } = req.body;
     const storeName = activeStore ? String(activeStore).trim() : "";
+    const cleanStoreName = storeName.replace(/\s*\([^)]*\)/g, '').trim();
 
     try {
         await pool.query(`
             INSERT INTO settings (key, value) 
             VALUES ('active_store', $1)
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [storeName]);
+        `, [cleanStoreName]);
 
-        console.log(`[系統提示] 管理員將開放訂餐店家更新為：${storeName || '全不限制'}`);
+        console.log(`[系統提示] 管理員將開放訂餐店家更新為：${cleanStoreName || '全不限制'}`);
         return res.json({ 
             success: true, 
-            message: storeName ? `已成功將開放店家設定為：${storeName}` : '已解除店家限制！',
-            activeStore: storeName
+            message: cleanStoreName ? `已成功將開放店家設定為：${cleanStoreName}` : '已解除店家限制！',
+            activeStore: cleanStoreName
         });
     } catch (err) {
         console.error('更新開放店家失敗:', err.message);
@@ -517,7 +532,7 @@ app.post('/api/order', async (req, res) => {
         const { cardId, meal, note, spicy, total } = req.body;
         const cleanMeal = meal ? String(meal).trim() : "";
 
-        // ---- 1. 開放店家檢查邏輯 (已優化名稱比對) ----
+        // ---- 1. 開放店家檢查邏輯 (包含備註括號過濾) ----
         const storeRes = await pool.query("SELECT value FROM settings WHERE key = 'active_store';");
         let activeStore = storeRes.rows.length > 0 ? storeRes.rows[0].value.trim() : "";
 
