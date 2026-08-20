@@ -131,7 +131,7 @@ async function initDatabase() {
             { id: 'store_13', name: '嵐 爌肉・豬腳飯', category: '美味餐點', isOpen: true },
             { id: 'store_14', name: '旺春豐傳統小吃', category: '美味餐點', isOpen: false },
             { id: 'store_15', name: '咕雞鹽水雞', category: '美味餐點', isOpen: false },
-            { id: 'store_16', name: '家灶 傳統爌肉 豬腳專賣', category: '美味餐點', isOpen: false },
+            { id: 'store_16', name: '家灶傳統爌肉豬腳專賣', category: '美味餐點', isOpen: false },
             { id: 'store_17', name: '菓蔬輕蒔坊', category: '美味餐點', isOpen: true },
             { id: 'store_18', name: '老蕭土魠魚羹麵館', category: '美味餐點', isOpen: false },
             { id: 'store_19', name: '小松丼丼食事處', category: '美味餐點', isOpen: false },
