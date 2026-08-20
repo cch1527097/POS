@@ -90,7 +90,7 @@ async function initDatabase() {
             );
         `);
 
-        // 新建系統設定資料表 (用於存放點餐截止時間等設定)
+        // 新建系統設定資料表 (用於存放點餐截止時間、開放店家等設定)
         await pool.query(`
             CREATE TABLE IF NOT EXISTS settings (
                 key VARCHAR(50) PRIMARY KEY,
@@ -98,10 +98,16 @@ async function initDatabase() {
             );
         `);
 
-        // 初始化預設鎖定時間為 10:30 (若已有資料則忽略)
+        // 初始化預設鎖定時間與開放店家
         await pool.query(`
             INSERT INTO settings (key, value)
             VALUES ('order_lock_time', '10:30')
+            ON CONFLICT (key) DO NOTHING;
+        `);
+
+        await pool.query(`
+            INSERT INTO settings (key, value)
+            VALUES ('active_store', '')
             ON CONFLICT (key) DO NOTHING;
         `);
 
@@ -147,7 +153,7 @@ function isTodayInTaipei(orderTimestampMs) {
 
 // ==================== API 路由 ====================
 
-// 0. 鎖定時間控制 API (改為操作 PostgreSQL 資料庫)
+// 0-1. 鎖定時間控制 API
 app.get('/api/lock-time', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
@@ -164,7 +170,6 @@ app.post('/api/lock-time', async (req, res) => {
     const newLockTime = lockTime ? String(lockTime).trim() : "";
 
     try {
-        // 使用 ON CONFLICT 更新或寫入資料庫
         await pool.query(`
             INSERT INTO settings (key, value) 
             VALUES ('order_lock_time', $1)
@@ -189,6 +194,41 @@ app.post('/api/lock-time', async (req, res) => {
     } catch (err) {
         console.error('更新鎖定時間失敗:', err.message);
         res.status(500).json({ success: false, message: '設定鎖定時間失敗' });
+    }
+});
+
+// 0-2. 開放店家控制 API (新增)
+app.get('/api/active-store', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT value FROM settings WHERE key = 'active_store';");
+        const activeStore = result.rows.length > 0 ? result.rows[0].value : "";
+        res.json({ success: true, activeStore });
+    } catch (err) {
+        console.error('讀取開放店家失敗:', err.message);
+        res.status(500).json({ success: false, message: '無法取得開放店家設定' });
+    }
+});
+
+app.post('/api/active-store', async (req, res) => {
+    const { activeStore } = req.body;
+    const storeName = activeStore ? String(activeStore).trim() : "";
+
+    try {
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('active_store', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [storeName]);
+
+        console.log(`[系統提示] 管理員將開放訂餐店家更新為：${storeName || '全不限制'}`);
+        return res.json({ 
+            success: true, 
+            message: storeName ? `已成功將開放店家設定為：${storeName}` : '已解除店家限制！',
+            activeStore: storeName
+        });
+    } catch (err) {
+        console.error('更新開放店家失敗:', err.message);
+        res.status(500).json({ success: false, message: '設定開放店家失敗' });
     }
 });
 
@@ -217,7 +257,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 【新增修復】修改單筆訂單的繳費狀態 API
+// 修改單筆訂單的繳費狀態 API
 app.patch('/api/orders/:orderId/payment', async (req, res) => {
     const { orderId } = req.params;
     const { isPaid } = req.body;
@@ -229,7 +269,6 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
     }
 
     try {
-        // 先找出該訂單對應的員工卡號 (card_id)
         const orderRes = await pool.query('SELECT card_id FROM orders WHERE order_id = $1;', [targetOrderIdStr]);
         
         if (orderRes.rows.length === 0) {
@@ -238,13 +277,11 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
 
         const cardId = orderRes.rows[0].card_id;
 
-        // 更新 users 資料表中對應員工的繳費狀態
         await pool.query(
             'UPDATE users SET is_paid = $1 WHERE card_id = $2;',
             [paidBool, cardId]
         );
 
-        // 同步寫入 public/orders.json 檔案
         await syncOrdersJsonFile();
 
         res.json({ success: true, message: '訂單繳費狀態更新成功！' });
@@ -321,7 +358,6 @@ app.put('/api/employees/:cardId', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
-        // 同步更新 orders 裡面該員工歷史訂單顯示的姓名
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
         
         await syncOrdersJsonFile();
@@ -419,17 +455,39 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (從 PostgreSQL 讀取鎖定時間並檢查)
+// 9. 新增訂單 (加入開放店家與時間阻擋邏輯)
 app.post('/api/order', async (req, res) => {
     try {
-        // ---- 點餐鎖定時間比對邏輯 (從 DB 讀取) ----
+        const { cardId, meal, note, spicy, total } = req.body;
+        const cleanMeal = meal ? String(meal).trim() : "";
+
+        // ---- 1. 開放店家檢查邏輯 (新增) ----
+        const storeRes = await pool.query("SELECT value FROM settings WHERE key = 'active_store';");
+        const activeStore = storeRes.rows.length > 0 ? storeRes.rows[0].value.trim() : "";
+
+        // 如果管理者有設定開放特定店家，但點購品項不包含該店家名稱，則阻擋下單
+        if (activeStore && !cleanMeal.includes(activeStore)) {
+            return res.status(403).json({
+                success: false,
+                message: `⚠️ 今日僅開放訂購「${activeStore}」，其他店家暫未開放！`
+            });
+        }
+
+        // ---- 2. 點餐鎖定時間比對邏輯 ----
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
         if (orderLockTime) {
             const now = new Date();
-            const utc8Hour = (now.getUTCHours() + 8) % 24;
-            const currentTotalMinutes = utc8Hour * 60 + now.getUTCMinutes();
+            const taipeiTimeStr = new Intl.DateTimeFormat('zh-TW', {
+                timeZone: 'Asia/Taipei',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).format(now);
+
+            const [currentH, currentM] = taipeiTimeStr.split(':').map(Number);
+            const currentTotalMinutes = currentH * 60 + currentM;
 
             const [lockH, lockM] = orderLockTime.split(':').map(Number);
             const lockTotalMinutes = lockH * 60 + lockM;
@@ -441,11 +499,8 @@ app.post('/api/order', async (req, res) => {
                 });
             }
         }
-        // ---- 點餐鎖定檢查結束 ----
 
-        const { cardId, meal, note, spicy, total } = req.body;
         const cleanCardId = cardId ? String(cardId).trim() : '';
-
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
@@ -464,7 +519,7 @@ app.post('/api/order', async (req, res) => {
             orderIdVal,
             cleanCardId,
             empName,
-            meal ? String(meal).trim() : "未知餐點",
+            cleanMeal || "未知餐點",
             spicy ? String(spicy).trim() : "無",
             note ? String(note).trim() : "無",
             !isNaN(numTotal) ? numTotal : 0,
