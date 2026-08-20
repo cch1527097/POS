@@ -179,11 +179,7 @@ async function initDatabase() {
                 let updated = false;
 
                 DEFAULT_STORES.forEach(defStore => {
-                    const cleanDefName = defStore.name.replace(/\s*\([^)]*\)/g, '').trim();
-                    const exists = existingStores.some(s => {
-                        const cleanExName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
-                        return cleanExName === cleanDefName;
-                    });
+                    const exists = existingStores.some(s => s.id === defStore.id || s.name === defStore.name);
 
                     if (!exists) {
                         existingStores.push(defStore);
@@ -312,10 +308,10 @@ app.post('/api/stores', async (req, res) => {
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [activeStoreNames]);
 
-        console.log(`[系統提示] 管理員更新店家開放狀態，目前開放：${activeStoreNames || '無限制 (全開放)'}`);
+        console.log(`[系統提示] 管理員更新店家開放狀態，目前開放：${activeStoreNames || '無 (全部關閉)'}`);
         return res.json({ 
             success: true, 
-            message: activeStoreNames ? `已成功將開放店家設定為：${activeStoreNames}` : '已解除店家限制，目前開放所有店家訂購！',
+            message: activeStoreNames ? `已成功將開放店家設定為：${activeStoreNames}` : '已變更店家設定，目前無開放店家！',
             activeStore: activeStoreNames,
             stores: stores
         });
@@ -584,25 +580,35 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (更強健的店家與餐點匹配邏輯)
+// 9. 新增訂單 (改用 storeId 精準匹配店家)
 app.post('/api/order', async (req, res) => {
     try {
-        const { cardId, meal, storeName, note, spicy, total } = req.body;
+        const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
         const cleanMeal = meal ? String(meal).trim() : "";
+        const reqStoreId = storeId ? String(storeId).trim() : "";
         const reqStoreName = storeName ? String(storeName).trim() : "";
 
-        // ---- 1. 開放店家檢查邏輯 ----
+        // ---- 1. 開放店家檢查邏輯 (使用 Store ID 精準比對) ----
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
             const stores = JSON.parse(storeListRes.rows[0].value);
+            let matchedStore = null;
 
-            const matchedStore = stores.find(s => {
-                const cleanName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
-                if (!cleanName) return false;
-                if (reqStoreName && (reqStoreName.includes(cleanName) || cleanName.includes(reqStoreName))) return true;
-                return cleanMeal.includes(cleanName);
-            });
+            // 優先：利用 storeId 進行 100% 精準匹配
+            if (reqStoreId) {
+                matchedStore = stores.find(s => s.id === reqStoreId);
+            }
+
+            // 備援：若前端未傳送 storeId，向下相容舊版名稱比對
+            if (!matchedStore) {
+                matchedStore = stores.find(s => {
+                    const cleanName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
+                    if (!cleanName) return false;
+                    if (reqStoreName && (reqStoreName.includes(cleanName) || cleanName.includes(reqStoreName))) return true;
+                    return cleanMeal.includes(cleanName);
+                });
+            }
 
             if (matchedStore && !matchedStore.isOpen) {
                 const displayStoreName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
