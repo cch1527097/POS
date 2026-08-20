@@ -512,48 +512,38 @@
             }
 
             #orderTableBody td:nth-of-type(1)::before,
-            #historyTableBody td:nth-of-type(1)::before,
             #drinkTableBody td:nth-of-type(1)::before,
             #foodTableBody td:nth-of-type(1)::before { content: "訂單編號"; }
 
-            #orderTableBody td:nth-of-type(2)::before,
-            #historyTableBody td:nth-of-type(2)::before { content: "類別"; }
+            #orderTableBody td:nth-of-type(2)::before { content: "類別"; }
 
             #orderTableBody td:nth-of-type(3)::before,
-            #historyTableBody td:nth-of-type(3)::before,
             #drinkTableBody td:nth-of-type(2)::before,
             #foodTableBody td:nth-of-type(2)::before { content: "部門"; }
 
             #orderTableBody td:nth-of-type(4)::before,
-            #historyTableBody td:nth-of-type(4)::before,
             #drinkTableBody td:nth-of-type(3)::before,
             #foodTableBody td:nth-of-type(3)::before { content: "點餐人"; }
 
             #orderTableBody td:nth-of-type(5)::before,
-            #historyTableBody td:nth-of-type(5)::before,
             #drinkTableBody td:nth-of-type(4)::before,
             #foodTableBody td:nth-of-type(4)::before { content: "點餐時間"; }
 
             #orderTableBody td:nth-of-type(6)::before,
-            #historyTableBody td:nth-of-type(6)::before,
             #drinkTableBody td:nth-of-type(5)::before,
             #foodTableBody td:nth-of-type(5)::before { content: "餐點明細"; }
 
             #orderTableBody td:nth-of-type(7)::before,
-            #historyTableBody td:nth-of-type(7)::before,
             #drinkTableBody td:nth-of-type(6)::before,
             #foodTableBody td:nth-of-type(6)::before { content: "總金額"; }
 
             #orderTableBody td:nth-of-type(8)::before,
-            #historyTableBody td:nth-of-type(8)::before,
             #drinkTableBody td:nth-of-type(7)::before,
             #foodTableBody td:nth-of-type(7)::before { content: "繳費狀態"; }
 
-            #orderTableBody td:nth-of-type(9)::before,
-            #historyTableBody td:nth-of-type(9)::before { content: "狀態"; }
+            #orderTableBody td:nth-of-type(9)::before { content: "狀態"; }
 
             #orderTableBody td:nth-of-type(10)::before,
-            #historyTableBody td:nth-of-type(10)::before,
             #drinkTableBody td:nth-of-type(8)::before,
             #foodTableBody td:nth-of-type(8)::before { content: "操作"; }
 
@@ -592,7 +582,6 @@
             <button type="button" class="menu-item" onclick="switchTab('store-mgr', this)">🏪 店家開放管理</button>
             <button type="button" class="menu-item" onclick="switchTab('drink-mgr', this)">🥤 喝涼涼訂單</button>
             <button type="button" class="menu-item" onclick="switchTab('food-mgr', this)">🍱 美味餐點訂單</button>
-            <button type="button" class="menu-item" onclick="switchTab('history-mgr', this)">📜 歷史紀錄</button>
             <button type="button" class="menu-item" onclick="switchTab('employee-mgr', this)">🪪 員工管理</button>
             <button type="button" class="menu-item" onclick="refreshCurrentTab()">🔄 重新整理</button>
             <a href="admin.html" class="menu-item logout">⇦ 登出後台</a>
@@ -775,55 +764,7 @@
             </div>
         </div>
 
-        <!-- 分頁五：歷史訂餐紀錄 -->
-        <div id="history-mgr" class="tab-content">
-            <div class="header">
-                <h1>歷史訂餐紀錄</h1>
-            </div>
-
-            <div class="card">
-                <h3>歷年全系統不限當日訂單</h3>
-                <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">此處顯示 `orders.json` 資料庫檔案中的完整歷史點餐軌跡。</p>
-                
-                <div class="order-action-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap;">
-                    <div class="search-group">
-                        <input type="text" id="historySearchInput" placeholder="關鍵字搜尋歷史紀錄..." oninput="filterOrders('history')">
-                    </div>
-                    <div style="text-align: right;">
-                        <span id="historySyncStatus" style="color: var(--text-sub); margin-right: 15px; font-size: 13px;"></span>
-                        <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('history', 'drink')">🥤 匯出歷史喝涼涼</button>
-                        <button class="btn btn-excel-food" onclick="exportCategoryToCSV('history', 'food')">🍱 匯出歷史美味餐點</button>
-                        <button class="btn btn-secondary" onclick="loadHistoryOrders()">🔄 重新整理歷史紀錄</button>
-                    </div>
-                </div>
-
-                <div class="scrollable-table-container">
-                    <div class="table-responsive" style="margin-top: 0;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th class="col-order-id">訂單編號</th>
-                                    <th class="col-category">類別</th>
-                                    <th class="col-dept">部門</th>
-                                    <th class="col-user">點餐人</th>
-                                    <th class="col-time">訂單完整時間</th>
-                                    <th class="col-meal-detail">餐點與備註明細</th>
-                                    <th class="col-amount">總金額</th>
-                                    <th class="col-payment">繳費狀態</th>
-                                    <th class="col-status">狀態</th>
-                                    <th class="col-action">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody">
-                                <tr><td colspan="10" style="text-align:center; color:#999;">資料載入中...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 分頁六：員工卡號管理 -->
+        <!-- 分頁五：員工卡號管理 -->
         <div id="employee-mgr" class="tab-content">
             <div class="header">
                 <h1>員工卡號管理</h1>
@@ -1194,7 +1135,7 @@
             document.getElementById(tabId).classList.add('active');
             menuItem.classList.add('active');
 
-            if(tabId === 'history-mgr' || tabId === 'drink-mgr' || tabId === 'food-mgr') {
+            if(tabId === 'drink-mgr' || tabId === 'food-mgr') {
                 loadHistoryOrders();
             } else if (tabId === 'overview') {
                 loadOrders();
@@ -1212,7 +1153,7 @@
             if (activeTab.id === 'overview') {
                 await loadOrders();
             }
-            else if (activeTab.id === 'history-mgr' || activeTab.id === 'drink-mgr' || activeTab.id === 'food-mgr') {
+            else if (activeTab.id === 'drink-mgr' || activeTab.id === 'food-mgr') {
                 await loadHistoryOrders();
             }
             else if (activeTab.id === 'employee-mgr') {
@@ -1502,33 +1443,20 @@
         }
 
         async function loadHistoryOrders() {
-            const hStatusSpan = document.getElementById('historySyncStatus');
-            if(hStatusSpan) hStatusSpan.innerText = "歷程載入中...";
-
             try {
                 const response = await fetch(`/orders.json?_=${new Date().getTime()}`);
                 if (!response.ok) throw new Error('無法存取');
                 
                 allHistoryOrders = await response.json();
                 currentFilteredHistoryOrders = [...allHistoryOrders];
-                
-                const hSearchInput = document.getElementById('historySearchInput');
-                if (hSearchInput && hSearchInput.value.trim() !== '') {
-                    executeFilter(hSearchInput.value.trim().toLowerCase(), 'history');
-                } else {
-                    renderOrderTable(allHistoryOrders, 'historyTableBody', true, false);
-                }
 
                 const drinkHistoryOrders = allHistoryOrders.filter(o => isDrinkOrder(o));
                 const foodHistoryOrders = allHistoryOrders.filter(o => !isDrinkOrder(o));
                 
                 renderOrderTable(drinkHistoryOrders, 'drinkTableBody', true, true);
                 renderOrderTable(foodHistoryOrders, 'foodTableBody', true, true);
-
-                if(hStatusSpan) hStatusSpan.innerText = `歷史最後更新：${new Date().toLocaleTimeString('zh-TW', {hour12:false})}`;
             } catch (error) {
                 console.error('歷史資料讀取失敗:', error);
-                document.getElementById('historyTableBody').innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--danger);">無法讀取完整歷史檔案</td></tr>`;
             }
         }
 
@@ -1684,12 +1612,7 @@
         function filterOrders(type) {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
-                let keyword = "";
-                if(type === 'today') {
-                    keyword = document.getElementById('orderSearchInput').value.trim().toLowerCase();
-                } else {
-                    keyword = document.getElementById('historySearchInput').value.trim().toLowerCase();
-                }
+                let keyword = document.getElementById('orderSearchInput').value.trim().toLowerCase();
                 executeFilter(keyword, type);
             }, 150);
         }
@@ -1697,7 +1620,7 @@
         function executeFilter(keyword, type) {
             const isToday = (type === 'today');
             let targetSource = isToday ? currentTodayOrders : allHistoryOrders;
-            const targetTbody = isToday ? 'orderTableBody' : 'historyTableBody';
+            const targetTbody = isToday ? 'orderTableBody' : '';
 
             if (isToday) {
                 if (currentOverviewCategory === 'drink') {
@@ -1708,9 +1631,10 @@
             }
 
             if (!keyword) {
-                if(isToday) currentFilteredTodayOrders = [...targetSource];
-                else currentFilteredHistoryOrders = [...targetSource];
-                renderOrderTable(targetSource, targetTbody, !isToday, false);
+                if(isToday) {
+                    currentFilteredTodayOrders = [...targetSource];
+                    renderOrderTable(targetSource, targetTbody, !isToday, false);
+                }
                 return;
             }
 
@@ -1727,10 +1651,10 @@
                        String(order.orderId || '').toLowerCase().includes(keyword);
             });
 
-            if(isToday) currentFilteredTodayOrders = filtered;
-            else currentFilteredHistoryOrders = filtered;
-            
-            renderOrderTable(filtered, targetTbody, !isToday, false);
+            if(isToday) {
+                currentFilteredTodayOrders = filtered;
+                renderOrderTable(filtered, targetTbody, !isToday, false);
+            }
         }
 
         function generateCSV(data, fileName) {
