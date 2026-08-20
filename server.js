@@ -37,9 +37,14 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：同步寫入 public/orders.json (非同步寫入避免阻塞)
+// 輔助函式：同步寫入 public/orders.json (增加雲端環境容錯保護)
 async function syncOrdersJsonFile() {
     try {
+        const publicDir = path.join(__dirname, 'public');
+        if (!fs.existsSync(publicDir)) {
+            await fs.promises.mkdir(publicDir, { recursive: true });
+        }
+
         const result = await pool.query(`
             SELECT 
                 o.order_id AS "orderId", 
@@ -55,11 +60,12 @@ async function syncOrdersJsonFile() {
             LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id DESC;
         `);
-        const jsonPath = path.join(__dirname, 'public', 'orders.json');
+        const jsonPath = path.join(publicDir, 'orders.json');
         await fs.promises.writeFile(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
         console.log('[系統提示] 已同步更新 public/orders.json 檔案');
     } catch (err) {
-        console.error('❌ 同步 orders.json 失敗:', err.message);
+        // 唯讀檔案系統或權限不足時僅印出警告，不中斷服務
+        console.warn('⚠️ 警告：同步 orders.json 失敗 (雲端環境可能為唯讀檔案系統):', err.message);
     }
 }
 
@@ -90,7 +96,6 @@ async function initDatabase() {
             );
         `);
 
-        // 新建系統設定資料表 (用於存放點餐截止時間、開放店家等設定)
         await pool.query(`
             CREATE TABLE IF NOT EXISTS settings (
                 key VARCHAR(50) PRIMARY KEY,
@@ -98,7 +103,6 @@ async function initDatabase() {
             );
         `);
 
-        // 初始化預設鎖定時間與開放店家
         await pool.query(`
             INSERT INTO settings (key, value)
             VALUES ('order_lock_time', '10:30')
@@ -111,7 +115,6 @@ async function initDatabase() {
             ON CONFLICT (key) DO NOTHING;
         `);
 
-        // BUG FIX 1: 初始化預設店家清單 JSON (若不存在)
         const DEFAULT_STORES = JSON.stringify([
             { id: 'store_1', name: '老聃飲食 (預設店家)', category: '美味餐點', isOpen: true },
             { id: 'store_2', name: '50嵐', category: '喝涼涼', isOpen: false },
@@ -125,7 +128,6 @@ async function initDatabase() {
             ON CONFLICT (key) DO NOTHING;
         `, [DEFAULT_STORES]);
 
-        // 自動檢查並為已建立的 users 表格擴充 is_paid 與 department 欄位
         await pool.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
@@ -146,10 +148,9 @@ async function initDatabase() {
         await syncOrdersJsonFile();
     } catch (err) {
         console.error(`❌ 初始化 Neon 資料庫失敗：`, err.message);
+        throw err;
     }
 }
-
-initDatabase();
 
 // 輔助函式：判斷時間戳記是否為台北時間的今天
 function isTodayInTaipei(orderTimestampMs) {
@@ -211,7 +212,7 @@ app.post('/api/lock-time', async (req, res) => {
     }
 });
 
-// 0-2. 開放店家控制 API (存取與更新店家清單)
+// 0-2. 開放店家控制 API
 app.get('/api/stores', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
@@ -234,20 +235,17 @@ app.post('/api/stores', async (req, res) => {
     }
 
     try {
-        // 1. 寫入完整店家 JSON 設定
         await pool.query(`
             INSERT INTO settings (key, value) 
             VALUES ('store_list', $1)
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [JSON.stringify(stores)]);
 
-        // BUG FIX 2: 找出目前唯一開放的店家名稱，並自動過濾括號標籤 (例如: "老聃飲食 (預設店家)" -> "老聃飲食")
         const activeStoreObj = stores.find(s => s.isOpen);
         const activeStoreName = activeStoreObj 
             ? activeStoreObj.name.replace(/\s*\([^)]*\)/g, '').trim() 
             : "";
 
-        // 3. 更新 active_store 供下單時比對
         await pool.query(`
             INSERT INTO settings (key, value) 
             VALUES ('active_store', $1)
@@ -303,7 +301,7 @@ app.post('/api/active-store', async (req, res) => {
     }
 });
 
-// 1. 取得所有訂單 (含關聯員工的繳費狀態 isPaid)
+// 1. 取得所有訂單
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -362,7 +360,7 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
     }
 });
 
-// 2. 取得所有員工名單 (包含 department)
+// 2. 取得所有員工名單
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
@@ -439,7 +437,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
     }
 });
 
-// 5. 新增員工 (包含 department)
+// 5. 新增員工
 app.post('/api/employees', async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -526,25 +524,26 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 9. 新增訂單 (已修復：直接解析 store_list 檢核店家開放狀態)
+// 9. 新增訂單 (修正：支援直接傳入 storeName 或動態比對 meal)
 app.post('/api/order', async (req, res) => {
     try {
-        const { cardId, meal, note, spicy, total } = req.body;
+        const { cardId, meal, storeName, note, spicy, total } = req.body;
         const cleanMeal = meal ? String(meal).trim() : "";
+        const reqStoreName = storeName ? String(storeName).trim() : "";
 
-        // ---- 1. 開放店家檢查邏輯 (讀取 store_list 進行動態比對) ----
+        // ---- 1. 開放店家檢查邏輯 ----
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
             const stores = JSON.parse(storeListRes.rows[0].value);
 
-            // 尋找餐點名稱中包含的店家
             const matchedStore = stores.find(s => {
-                const cleanStoreName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
-                return cleanStoreName && cleanMeal.includes(cleanStoreName);
+                const cleanName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
+                if (!cleanName) return false;
+                if (reqStoreName && reqStoreName.includes(cleanName)) return true;
+                return cleanMeal.includes(cleanName);
             });
 
-            // 若匹配到店家，且該店家狀態為未開放 (isOpen === false)
             if (matchedStore && !matchedStore.isOpen) {
                 const displayStoreName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
                 return res.status(403).json({
@@ -620,7 +619,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 10. 取得個人歷史訂單紀錄
+// 10. 取得個人歷史訂單紀錄 (優化 SQL 範圍過濾)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -630,8 +629,12 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
+        // 只查詢過去 48 小時內訂單，避免全表傳輸
         const result = await pool.query(
-            'SELECT order_id, meal, spicy, note, total, timestamp FROM orders WHERE card_id = $1 ORDER BY order_id DESC;',
+            `SELECT order_id, meal, spicy, note, total, timestamp 
+             FROM orders 
+             WHERE card_id = $1 AND created_at >= NOW() - INTERVAL '2 days'
+             ORDER BY order_id DESC;`,
             [cleanCardId]
         );
 
@@ -650,7 +653,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// 11. 動態匯出 Excel 下載 (包含繳費狀態)
+// 11. 動態匯出 Excel 下載
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -752,8 +755,19 @@ app.get('/api/export-excel', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`================================================================`);
-    console.log(` 🚀 訂餐系統後端已啟動！Port: ${PORT}`);
-    console.log(`================================================================`);
-});
+// 啟動伺服器 (確保資料庫完全初始化後再監聽 Port)
+async function startServer() {
+    try {
+        await initDatabase();
+        app.listen(PORT, () => {
+            console.log(`================================================================`);
+            console.log(` 🚀 訂餐系統後端已啟動！Port: ${PORT}`);
+            console.log(`================================================================`);
+        });
+    } catch (err) {
+        console.error('❌ 伺服器啟動失敗，無法連線至 Neon PostgreSQL:', err);
+        process.exit(1);
+    }
+}
+
+startServer();
