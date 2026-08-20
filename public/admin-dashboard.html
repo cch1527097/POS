@@ -396,13 +396,10 @@
         .btn-modal-cancel { background-color: #ffffff; color: #667c68; border: 1px solid #d0ded3; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
         .btn-modal-cancel:hover { background-color: #f0f5f1; }
 
-        /* ================= 行動裝置與平板響應式優化 (RWD) ================= */
+        /* 行動裝置與平板響應式優化 (RWD) */
         @media (max-width: 768px) {
-            body { 
-                flex-direction: column; 
-            } 
+            body { flex-direction: column; } 
 
-            /* 側邊欄改為頂部橫向導覽列 */
             .sidebar { 
                 width: 100%; 
                 padding: 16px; 
@@ -411,20 +408,10 @@
                 top: 0;
                 z-index: 100;
             }
-            .sidebar h2 { 
-                font-size: 18px; 
-                text-align: center; 
-                margin-bottom: 4px; 
-            }
-            .sidebar .user-info { 
-                text-align: center; 
-                display: block; 
-                margin: 0 auto 12px auto; 
-                width: fit-content;
-            }
+            .sidebar h2 { font-size: 18px; text-align: center; margin-bottom: 4px; }
+            .sidebar .user-info { text-align: center; display: block; margin: 0 auto 12px auto; width: fit-content; }
             .sidebar hr { display: none; } 
             
-            /* 選單轉為可左右滑動的橫向滾動列 */
             .sidebar .menu-container { 
                 display: flex; 
                 flex-direction: row; 
@@ -443,47 +430,25 @@
                 flex-shrink: 0;
             }
             .sidebar .menu-item:hover { transform: none; }
-            .sidebar .logout { 
-                margin-top: 0; 
-                color: var(--danger);
-                border-color: #fdeaea;
-            }
+            .sidebar .logout { margin-top: 0; color: var(--danger); border-color: #fdeaea; }
 
-            /* 主內容區邊距縮小 */
             .main-content { padding: 16px; } 
             .header { margin-bottom: 20px; }
             .header h1 { font-size: 20px; width: 100%; }
             .header .btn { width: 100%; text-align: center; margin-top: 8px; } 
 
-            /* 卡片與數據框優化 */
             .card { padding: 20px; margin-bottom: 20px; }
             .summary-container { gap: 12px; margin-bottom: 20px; }
             .summary-box { min-width: 100%; padding: 16px 20px; }
             .summary-box .value { font-size: 24px; }
 
-            /* 鎖定時間控制區直立化 */
-            .lock-time-row {
-                flex-direction: column;
-                align-items: stretch !important;
-            }
-            .lock-time-row .btn, .lock-time-row .btn-secondary {
-                width: 100%;
-            }
+            .lock-time-row { flex-direction: column; align-items: stretch !important; }
+            .lock-time-row .btn, .lock-time-row .btn-secondary { width: 100%; }
 
-            /* 分類篩選按鈕轉為頁籤滑動 */
-            .category-filter-bar { 
-                overflow-x: auto; 
-                white-space: nowrap; 
-                padding-bottom: 6px; 
-            }
+            .category-filter-bar { overflow-x: auto; white-space: nowrap; padding-bottom: 6px; }
             .category-filter-btn { padding: 8px 12px; font-size: 13px; }
 
-            /* 搜尋與操作按鈕直立堆疊 */
-            .order-action-row { 
-                flex-direction: column; 
-                align-items: stretch !important; 
-                gap: 12px; 
-            }
+            .order-action-row { flex-direction: column; align-items: stretch !important; gap: 12px; }
             .order-action-row .search-group { margin-bottom: 0; width: 100%; }
             .order-action-row .search-group input { max-width: 100%; }
             .order-action-row div[style*="text-align: right"] { 
@@ -502,11 +467,9 @@
                 text-align: center;
             }
 
-            /* 表單元件縮放 */
             .form-group { flex-direction: column; gap: 12px; }
             .form-group div { min-width: 100%; }
 
-            /* 📱 行動版表格轉卡片式（Card Layout）核心設定 */
             .table-responsive table, 
             .table-responsive thead, 
             .table-responsive tbody, 
@@ -517,14 +480,8 @@
                 min-width: 100% !important;
             }
 
-            /* 隱藏傳統表頭 */
-            .table-responsive thead tr { 
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-            }
+            .table-responsive thead tr { position: absolute; top: -9999px; left: -9999px; }
 
-            /* 每一列轉為獨立卡片 */
             .table-responsive tr { 
                 border: 1px solid var(--border-color);
                 border-radius: 12px;
@@ -534,7 +491,6 @@
                 box-shadow: 0 4px 12px rgba(0,0,0,0.02);
             }
 
-            /* 儲存格欄位排版 */
             .table-responsive td { 
                 border: none;
                 border-bottom: 1px dashed var(--border-color);
@@ -546,12 +502,8 @@
                 white-space: normal !important;
                 font-size: 13px;
             }
-            .table-responsive td:last-child {
-                border-bottom: none;
-                padding-bottom: 0;
-            }
+            .table-responsive td:last-child { border-bottom: none; padding-bottom: 0; }
 
-            /* 左側自動補上標題 */
             .table-responsive td::before {
                 font-weight: 700;
                 color: var(--text-sub);
@@ -559,7 +511,6 @@
                 flex-shrink: 0;
             }
 
-            /* 動態為不同欄位加上行動版標題名稱 */
             #orderTableBody td:nth-of-type(1)::before,
             #historyTableBody td:nth-of-type(1)::before,
             #drinkTableBody td:nth-of-type(1)::before,
@@ -606,33 +557,26 @@
             #drinkTableBody td:nth-of-type(8)::before,
             #foodTableBody td:nth-of-type(8)::before { content: "操作"; }
 
-            /* 員工卡號表格的行動版標題 */
             #cardTableBody td:nth-of-type(1)::before { content: "員工卡號"; }
             #cardTableBody td:nth-of-type(2)::before { content: "員工姓名"; }
             #cardTableBody td:nth-of-type(3)::before { content: "權限狀態"; }
             #cardTableBody td:nth-of-type(4)::before { content: "部門"; }
             #cardTableBody td:nth-of-type(5)::before { content: "操作"; }
 
-            /* 店家管理的行動版標題 */
             #storeTableBody td:nth-of-type(1)::before { content: "店家名稱"; }
             #storeTableBody td:nth-of-type(2)::before { content: "餐點類別"; }
             #storeTableBody td:nth-of-type(3)::before { content: "開放狀態"; }
             #storeTableBody td:nth-of-type(4)::before { content: "前台權限"; }
             #storeTableBody td:nth-of-type(5)::before { content: "控制操作"; }
 
-            /* 彈出視窗尺寸調整 */
             .modal-window { max-width: 92%; border-radius: 12px; }
             .modal-body { padding: 20px 16px; }
             .modal-footer { padding: 12px 16px; }
         }
 
-        /* 📱 小螢幕手機特別優化 (螢幕極小狀況) */
         @media (max-width: 480px) {
             .time-stacked { align-items: flex-end; }
-            .btn-status, .btn-edit, .btn-delete {
-                padding: 6px 10px;
-                font-size: 11px;
-            }
+            .btn-status, .btn-edit, .btn-delete { padding: 6px 10px; font-size: 11px; }
         }
     </style>
 </head>
@@ -664,7 +608,6 @@
                 <button class="btn" onclick="window.open('index.html', '_blank')">開啟前台點餐 ➔</button>
             </div>
 
-            <!-- 點餐鎖定時間設定卡片 -->
             <div class="card" style="border-left: 4px solid var(--accent);">
                 <h3>⏰ 每日點餐截止 / 鎖定時間設定</h3>
                 <p style="color:var(--text-sub); font-size:14px; margin-bottom: 16px;">
@@ -676,7 +619,6 @@
                         <input type="time" id="lockTimeInput" value="10:30" style="width: auto; padding: 8px 12px;">
                     </div>
                     <button class="btn" onclick="saveLockTime()">💾 儲存鎖定時間</button>
-                    <!-- 新增：解除鎖定按鈕 -->
                     <button class="btn btn-secondary" style="background-color: #ffebee; color: #c62828;" onclick="unlockOrderTime()">🔓 解除鎖定</button>
                     <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
                 </div>
@@ -697,7 +639,6 @@
                 <h3>當天訂單紀錄 (接收前台即時訂單)</h3>
                 <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">本表格會即時顯示所有員工送出的餐點明細，系統同時會於後端自動同步至 <b>訂單統計表.xlsx</b>。</p>
                 
-                <!-- 快捷篩選區 -->
                 <div class="category-filter-bar">
                     <button class="category-filter-btn active" onclick="setOverviewCategory('all', this)">全部品項</button>
                     <button class="category-filter-btn" onclick="setOverviewCategory('drink', this)">🥤 喝涼涼專用</button>
@@ -748,7 +689,7 @@
             <div class="card">
                 <h3>前台開放店家設定</h3>
                 <p style="color:var(--text-sub); font-size:14px; margin-bottom: 20px;">
-                    點擊「<b>設為唯一開放店家</b>」後，系統會開啟該店家，並<b>自動將其他所有店家設為「尚未開放」</b>，限制員工一次只能訂購該特定店家的餐點。
+                    管理員可自由開啟或關閉各個店家。前台員工僅能訂購<b>目前處於「🟢 開放點餐中」狀態</b>的店家餐點，可以同時開放多家店家。
                 </p>
                 
                 <div class="table-responsive">
@@ -770,7 +711,7 @@
             </div>
         </div>
 
-        <!-- 分頁三：喝涼涼專區 (歷史紀錄) -->
+        <!-- 分頁三：喝涼涼專區 -->
         <div id="drink-mgr" class="tab-content">
             <div class="header">
                 <h1>🥤 喝涼涼 - 飲料歷史紀錄</h1>
@@ -802,7 +743,7 @@
             </div>
         </div>
 
-        <!-- 分頁四：美味餐點專區 (歷史紀錄) -->
+        <!-- 分頁四：美味餐點專區 -->
         <div id="food-mgr" class="tab-content">
             <div class="header">
                 <h1>🍱 美味餐點 - 正餐歷史紀錄</h1>
@@ -961,7 +902,6 @@
         let currentOverviewCategory = 'all';
         let searchTimeout = null;
 
-        // 全域店家清單 (修正變數未宣告的 BUG)
         let storeList = [
             { id: 'store_1', name: '老聃飲食 (預設店家)', category: '美味餐點', isOpen: true },
             { id: 'store_2', name: '50嵐', category: '喝涼涼', isOpen: false },
@@ -969,7 +909,6 @@
             { id: 'store_4', name: '竑食泰式拌飯', category: '美味餐點', isOpen: false }
         ];
 
-        // 渲染店家列表表格
         function renderStoreTable() {
             const tbody = document.getElementById('storeTableBody');
             if (!tbody) return;
@@ -985,7 +924,7 @@
 
                 const actionBtn = store.isOpen
                     ? `<button class="btn-delete" onclick="closeStore('${store.id}')">🔒 關閉此店家</button>`
-                    : `<button class="btn" style="padding:6px 14px; font-size:12px;" onclick="setActiveStoreOnly('${store.id}')">⭐ 設為唯一開放店家</button>`;
+                    : `<button class="btn" style="padding:6px 14px; font-size:12px;" onclick="openStore('${store.id}')">🔓 開放此店家</button>`;
 
                 return `
                     <tr>
@@ -1001,60 +940,60 @@
             tbody.innerHTML = rows.join('');
         }
 
-        // 開放單一家，同時鎖定關閉其他所有店家
-        function setActiveStoreOnly(selectedStoreId) {
-            const targetStore = storeList.find(s => s.id === selectedStoreId);
-            
-            showCustomModal({
-                title: '確認開放店家權限',
-                message: `確定要開放「<b>${targetStore ? targetStore.name : ''}</b>」給員工點餐嗎？<br><br><span style="color:var(--danger); font-size:13px;">⚠️ 注意：點擊確定後，系統將自動關閉其他所有店家，員工僅能訂購此店家！</span>`,
-                isConfirm: true,
-                onConfirm: async () => {
-                    // 1. 更新前端陣列
-                    storeList.forEach(store => {
-                        store.isOpen = (store.id === selectedStoreId);
-                    });
+        async function openStore(storeId) {
+            const targetStore = storeList.find(s => s.id === storeId);
+            if (!targetStore) return;
 
-                    // 2. 發送 API 同步至後端資料庫
-                    try {
-                        const response = await fetch('/api/stores', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ stores: storeList })
-                        });
-                        const result = await response.json();
+            targetStore.isOpen = true;
+            renderStoreTable();
+            localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
-                        if (response.ok && result.success) {
-                            localStorage.setItem('active_store_config', JSON.stringify(storeList));
-                            renderStoreTable();
-                            showCustomModal({ message: result.message || '店家開放權限已成功更新！' });
-                        } else {
-                            localStorage.setItem('active_store_config', JSON.stringify(storeList));
-                            renderStoreTable();
-                            showCustomModal({ message: `設定已儲存至本地，但後端同步提示：${result.message || '無法連線後端'}` });
-                        }
-                    } catch (error) {
-                        console.error('同步開放店家失敗:', error);
-                        localStorage.setItem('active_store_config', JSON.stringify(storeList));
-                        renderStoreTable();
-                        showCustomModal({ message: '後端 API 未回應，已先暫存設定於本地！' });
-                    }
+            try {
+                const response = await fetch('/api/stores', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stores: storeList })
+                });
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showCustomModal({ message: `已成功開放「<b>${targetStore.name}</b>」供員工點餐！` });
+                } else {
+                    showCustomModal({ message: `店家開放設定已儲存於本地，但後端提示：${result.message || '無法連線後端'}` });
                 }
-            });
-        }
-
-        // 單獨關閉店家
-        function closeStore(storeId) {
-            const store = storeList.find(s => s.id === storeId);
-            if (store) {
-                store.isOpen = false;
-                renderStoreTable();
-                localStorage.setItem('active_store_config', JSON.stringify(storeList));
-                showCustomModal({ message: `已關閉「${store.name}」，目前員工無法訂購此店家。` });
+            } catch (error) {
+                console.error('開放店家後端同步失敗:', error);
+                showCustomModal({ message: `已開放「<b>${targetStore.name}</b>」（本地暫存），但後端 API 未回應。` });
             }
         }
 
-        // 讀取目前的點餐鎖定時間
+        async function closeStore(storeId) {
+            const store = storeList.find(s => s.id === storeId);
+            if (!store) return;
+
+            store.isOpen = false;
+            renderStoreTable();
+            localStorage.setItem('active_store_config', JSON.stringify(storeList));
+
+            try {
+                const response = await fetch('/api/stores', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stores: storeList })
+                });
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showCustomModal({ message: `已關閉「<b>${store.name}</b>」，目前員工無法訂購此店家。` });
+                } else {
+                    showCustomModal({ message: `設定已暫存於本地，但後端提示：${result.message || '無法連線後端'}` });
+                }
+            } catch (e) {
+                console.error('關閉店家後端同步失敗:', e);
+                showCustomModal({ message: `已關閉「<b>${store.name}</b>」（本地暫存），但後端 API 未回應。` });
+            }
+        }
+
         async function loadLockTime() {
             try {
                 const response = await fetch('/api/lock-time');
@@ -1073,7 +1012,6 @@
             }
         }
 
-        // 儲存新的鎖定時間
         async function saveLockTime() {
             const lockTime = document.getElementById('lockTimeInput').value;
             if (!lockTime) {
@@ -1101,7 +1039,6 @@
             }
         }
 
-        // 解除鎖定點餐時間函式
         async function unlockOrderTime() {
             showCustomModal({
                 title: '確認解除鎖定',
@@ -1131,22 +1068,18 @@
             });
         }
 
-        // 判斷訂單是否屬於飲料(喝涼涼)
         function isDrinkOrder(order) {
             if (order.category === 'drink' || order.type === 'drink') return true;
             
             const mealStr = (order.meal || '').toLowerCase();
             
-            // 1. 正餐關鍵字排除
             const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯'];
             if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
 
-            // 2. 飲料專用關鍵字比對
             const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品', '李記', '可不可熟成紅茶', '鹿兒角', '八曜和茶', '一沐日', '粉圓伯', '旅人阿宏', '茗沏', '迷客夏', '青山', '有茶', '吳家紅茶冰', '先喝道'];
             return drinkKeywords.some(kw => mealStr.includes(kw));
         }
 
-        // 解析日期時間格式
         function parseTimestamp(ts) {
             if (!ts) return 0;
             let str = String(ts).trim();
@@ -1154,7 +1087,6 @@
             const isPM = str.includes('下午');
             const isAM = str.includes('上午');
             
-            // 清理中文標籤與格式
             str = str.replace(/上午|下午/g, '').trim().replace(/-/g, '/');
             
             const parts = str.split(/\s+/);
@@ -1229,24 +1161,18 @@
             }
         }
 
-        function refreshCurrentTab() {
+        async function refreshCurrentTab() {
             const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+
             if (activeTab.id === 'overview') {
-                const searchInput = document.getElementById('orderSearchInput');
-                executeFilter(searchInput ? searchInput.value.trim().toLowerCase() : '', 'today');
+                await loadOrders();
             }
-            else if (activeTab.id === 'history-mgr') {
-                const hSearchInput = document.getElementById('historySearchInput');
-                executeFilter(hSearchInput ? hSearchInput.value.trim().toLowerCase() : '', 'history');
-            }
-            else if (activeTab.id === 'drink-mgr') {
-                renderOrderTable(allHistoryOrders.filter(o => isDrinkOrder(o)), 'drinkTableBody', true, true);
-            }
-            else if (activeTab.id === 'food-mgr') {
-                renderOrderTable(allHistoryOrders.filter(o => !isDrinkOrder(o)), 'foodTableBody', true, true);
+            else if (activeTab.id === 'history-mgr' || activeTab.id === 'drink-mgr' || activeTab.id === 'food-mgr') {
+                await loadHistoryOrders();
             }
             else if (activeTab.id === 'employee-mgr') {
-                loadEmployees();
+                await loadEmployees();
             }
             else if (activeTab.id === 'store-mgr') {
                 renderStoreTable();
@@ -1306,7 +1232,7 @@
                         <td><span class="badge">已授權登入</span></td>
                         <td><span class="badge badge-dept">${department}</span></td>
                         <td>
-                            <button class="btn-edit" onclick="openEditEmployeeModal('${cardId}', '${name}', '${department}')">✏️ 編輯</button>
+                            <button class="btn-edit" onclick="openEditEmployeeModal('${cardId}')">✏️ 編輯</button>
                             <button class="btn-delete" onclick="deleteEmployee('${cardId}')">❌ 刪除</button>
                         </td>
                     </tr>
@@ -1315,7 +1241,25 @@
             tbody.innerHTML = rows.join('');
         }
 
-        function openEditEmployeeModal(cardId, currentName, currentDept) {
+        function openEditEmployeeModal(cardId) {
+            let currentName = '';
+            let currentDept = '';
+
+            if (Array.isArray(USER_DB_PREVIEW)) {
+                const found = USER_DB_PREVIEW.find(e => (e.cardId || e.id) === cardId);
+                if (found) {
+                    currentName = found.name || '';
+                    currentDept = found.department || '';
+                }
+            } else if (USER_DB_PREVIEW[cardId]) {
+                if (typeof USER_DB_PREVIEW[cardId] === 'object') {
+                    currentName = USER_DB_PREVIEW[cardId].name || '';
+                    currentDept = USER_DB_PREVIEW[cardId].department || '';
+                } else {
+                    currentName = USER_DB_PREVIEW[cardId];
+                }
+            }
+
             const modalContent = `
                 <div style="display: flex; flex-direction: column; gap: 16px;">
                     <div>
@@ -1481,16 +1425,18 @@
                 
                 const taipeiTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Taipei"});
                 const today = new Date(taipeiTime);
-                const yyyy = today.getFullYear();
-                const mm = String(today.getMonth() + 1).padStart(2, '0');
-                const dd = String(today.getDate()).padStart(2, '0');
-                const todayTargetStr = `${yyyy}/${mm}/${dd}`;
+                const targetYear = today.getFullYear();
+                const targetMonth = today.getMonth();
+                const targetDate = today.getDate();
 
                 currentTodayOrders = allOrders.filter(order => {
                     if (!order.timestamp) return false;
-                    const normalizedTimestamp = order.timestamp.replace(/-/g, '/');
-                    return normalizedTimestamp.includes(`${yyyy}/${parseInt(mm)}/${parseInt(dd)}`) || 
-                           normalizedTimestamp.includes(todayTargetStr);
+                    const orderTime = parseTimestamp(order.timestamp);
+                    if (!orderTime) return false;
+                    const orderDate = new Date(orderTime);
+                    return orderDate.getFullYear() === targetYear &&
+                           orderDate.getMonth() === targetMonth &&
+                           orderDate.getDate() === targetDate;
                 });
 
                 updateSummary(currentTodayOrders);
@@ -1542,7 +1488,6 @@
             }
         }
 
-        /* 渲染訂單表格 */
         function renderOrderTable(orders, tableBodyId, showFullTime = false, hideCategoryCol = false) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
@@ -1744,7 +1689,6 @@
             renderOrderTable(filtered, targetTbody, !isToday, false);
         }
 
-        // 通用 CSV 匯出基礎邏輯
         function generateCSV(data, fileName) {
             if (!data || data.length === 0) {
                 showCustomModal({ message: '目前此類別沒有可匯出的訂餐資料！' });
@@ -1814,7 +1758,6 @@
                 adminInfoElem.innerText = `☁️ 管理員: ${currentAdminName} [已上線]`;
             }
 
-            // 優先嘗試從 API 載入店家設定，若無則讀取 localStorage
             try {
                 const res = await fetch('/api/stores');
                 if (res.ok) {
