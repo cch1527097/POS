@@ -961,13 +961,32 @@
         let currentOverviewCategory = 'all';
         let searchTimeout = null;
 
-        // 預設店家清單 (預設第一家開放，其他尚未開放)
-        let storeList = [
-            { id: 'store_1', name: '老聃飲食 (預設店家)', category: '美味餐點', isOpen: true },
-            { id: 'store_2', name: '50嵐', category: '喝涼涼', isOpen: false },
-            { id: 'store_3', name: '得正', category: '喝涼涼', isOpen: false },
-            { id: 'store_4', name: '竑食泰式拌飯', category: '美味餐點', isOpen: false }
-        ];
+        // 初始化預設鎖定時間與開放店家
+await pool.query(`
+    INSERT INTO settings (key, value)
+    VALUES ('order_lock_time', '10:30')
+    ON CONFLICT (key) DO NOTHING;
+`);
+
+// 新增：初始化預設店家清單
+const DEFAULT_STORES = JSON.stringify([
+    { id: 'store_1', name: '老聃飲食 (預設店家)', category: '美味餐點', isOpen: true },
+    { id: 'store_2', name: '50嵐', category: '喝涼涼', isOpen: false },
+    { id: 'store_3', name: '得正', category: '喝涼涼', isOpen: false },
+    { id: 'store_4', name: '竑食泰式拌飯', category: '美味餐點', isOpen: false }
+]);
+
+await pool.query(`
+    INSERT INTO settings (key, value)
+    VALUES ('store_list', $1)
+    ON CONFLICT (key) DO NOTHING;
+`, [DEFAULT_STORES]);
+
+await pool.query(`
+    INSERT INTO settings (key, value)
+    VALUES ('active_store', '老聃飲食')
+    ON CONFLICT (key) DO NOTHING;
+`);
 
         // 渲染店家列表表格
         function renderStoreTable() {
@@ -1003,24 +1022,40 @@
 
         // 開放單一家，同時鎖定關閉其他所有店家
         function setActiveStoreOnly(selectedStoreId) {
-            const targetStore = storeList.find(s => s.id === selectedStoreId);
-            
-            showCustomModal({
-                title: '確認開放店家權限',
-                message: `確定要開放「<b>${targetStore ? targetStore.name : ''}</b>」給員工點餐嗎？<br><br><span style="color:var(--danger); font-size:13px;">⚠️ 注意：點擊確定後，系統將自動關閉其他所有店家，員工僅能訂購此店家！</span>`,
-                isConfirm: true,
-                onConfirm: async () => {
-                    storeList.forEach(store => {
-                        store.isOpen = (store.id === selectedStoreId);
-                    });
-
-                    renderStoreTable();
-                    localStorage.setItem('active_store_config', JSON.stringify(storeList));
-                    
-                    showCustomModal({ message: `設定成功！目前僅開放「<b>${targetStore.name}</b>」，其他店家已全部設為尚未開放。` });
-                }
+    const targetStore = storeList.find(s => s.id === selectedStoreId);
+    
+    showCustomModal({
+        title: '確認開放店家權限',
+        message: `確定要開放「<b>${targetStore ? targetStore.name : ''}</b>」給員工點餐嗎？<br><br><span style="color:var(--danger); font-size:13px;">⚠️ 注意：點擊確定後，系統將自動關閉其他所有店家，員工僅能訂購此店家！</span>`,
+        isConfirm: true,
+        onConfirm: async () => {
+            // 1. 更新前端陣列
+            storeList.forEach(store => {
+                store.isOpen = (store.id === selectedStoreId);
             });
+
+            // 2. 發送 API 同步至後端資料庫 (Neon PostgreSQL)
+            try {
+                const response = await fetch('/api/stores', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stores: storeList })
+                });
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    renderStoreTable();
+                    showCustomModal({ message: result.message });
+                } else {
+                    showCustomModal({ message: `設定失敗：${result.message || '未知錯誤'}` });
+                }
+            } catch (error) {
+                console.error('同步開放店家失敗:', error);
+                showCustomModal({ message: '網路連線失敗，無法更新後端店家設定！' });
+            }
         }
+    });
+}
 
         // 單獨關閉店家
         function closeStore(storeId) {
