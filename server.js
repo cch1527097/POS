@@ -166,7 +166,7 @@ async function initDatabase() {
             { id: 'store_48', name: '旅人阿宏', category: '喝涼涼', isOpen: false }
         ];
 
-        // 讀取現有店家列表，若缺少新店家則自動補齊
+        // 讀取現有店家列表，若與預設清單不一致則自動更正同步
         const currentStoreRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         if (currentStoreRes.rows.length === 0) {
             await pool.query(`
@@ -176,23 +176,23 @@ async function initDatabase() {
         } else {
             try {
                 let existingStores = JSON.parse(currentStoreRes.rows[0].value);
-                let updated = false;
-
-                DEFAULT_STORES.forEach(defStore => {
-                    const exists = existingStores.some(s => s.id === defStore.id || s.name === defStore.name);
-
-                    if (!exists) {
-                        existingStores.push(defStore);
-                        updated = true;
-                    }
+                
+                // 以 DEFAULT_STORES 為主範本，保留舊店家的 isOpen 狀態，其餘過期店家一律刪除
+                const syncedStores = DEFAULT_STORES.map(defStore => {
+                    const match = existingStores.find(s => s.id === defStore.id);
+                    return {
+                        ...defStore,
+                        isOpen: match ? match.isOpen : defStore.isOpen
+                    };
                 });
 
-                if (updated) {
-                    await pool.query(`
-                        UPDATE settings SET value = $1 WHERE key = 'store_list';
-                    `, [JSON.stringify(existingStores)]);
-                    console.log('[系統提示] 已自動將新店家同步補齊至資料庫中！');
-                }
+                await pool.query(`
+                    INSERT INTO settings (key, value)
+                    VALUES ('store_list', $1)
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+                `, [JSON.stringify(syncedStores)]);
+
+                console.log('[系統提示] 已成功同步並重置為最新的 48 家店家名單！');
             } catch (e) {
                 console.error('解析現有店家清單失敗，重新寫入預設店家:', e);
             }
