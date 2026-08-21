@@ -163,7 +163,8 @@ async function initDatabase() {
             { id: 'store_45', name: '迷客夏', category: '喝涼涼', isOpen: false },
             { id: 'store_46', name: '茗沏', category: '喝涼涼', isOpen: false },
             { id: 'store_47', name: '李記紅茶冰', category: '喝涼涼', isOpen: false },
-            { id: 'store_48', name: '旅人阿宏', category: '喝涼涼', isOpen: false }
+            { id: 'store_48', name: '旅人阿宏', category: '喝涼涼', isOpen: false },
+            { id: 'store_49', name: '麻古茶坊', category: '麻古茶坊', isOpen: false }
         ];
 
         // 讀取現有店家列表，若與預設清單不一致則自動更正同步
