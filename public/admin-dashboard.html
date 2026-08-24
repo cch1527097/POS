@@ -1279,15 +1279,15 @@
         }
 
         function setOverviewCategory(cat, btn) {
-    currentOverviewCategory = cat;
-    document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    
-    // 執行篩選並會一併更新上方統計數字
-    filterOrders('today');
-}
+            currentOverviewCategory = cat;
+            document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // 執行篩選並會一併更新上方統計數字
+            filterOrders('today');
+        }
 
-        /* 🆕 新增：同一店家餐點統計表彈出視窗 */
+        /* 同一店家餐點統計表彈出視窗 */
         function showStoreSummaryModal() {
             if (!currentTodayOrders || currentTodayOrders.length === 0) {
                 showCustomModal({ title: '同一店家餐點統計', message: '今日目前尚無任何點餐資料！' });
@@ -1734,6 +1734,7 @@
                     }
                 }
 
+                // 💡 修改處：只有當 order.isPaid 明確為 true 或 'true' 時，才算作已繳費；預設一律為未繳費
                 const isPaid = order.isPaid === true || order.isPaid === 'true';
                 const paidBadge = isPaid 
                     ? `<span class="badge badge-paid">已繳費</span>` 
@@ -1836,49 +1837,47 @@
         }
 
         function executeFilter(keyword, type) {
-    const isToday = (type === 'today');
-    let targetSource = isToday ? currentTodayOrders : allHistoryOrders;
-    const targetTbody = isToday ? 'orderTableBody' : '';
+            const isToday = (type === 'today');
+            let targetSource = isToday ? currentTodayOrders : allHistoryOrders;
+            const targetTbody = isToday ? 'orderTableBody' : '';
 
-    // 根據目前的頁籤類別過濾資料[cite: 1]
-    if (isToday) {
-        if (currentOverviewCategory === 'drink') {
-            targetSource = targetSource.filter(o => isDrinkOrder(o));
-        } else if (currentOverviewCategory === 'food') {
-            targetSource = targetSource.filter(o => !isDrinkOrder(o));
+            // 根據目前的頁籤類別過濾資料
+            if (isToday) {
+                if (currentOverviewCategory === 'drink') {
+                    targetSource = targetSource.filter(o => isDrinkOrder(o));
+                } else if (currentOverviewCategory === 'food') {
+                    targetSource = targetSource.filter(o => !isDrinkOrder(o));
+                }
+            }
+
+            if (!keyword) {
+                if (isToday) {
+                    currentFilteredTodayOrders = [...targetSource];
+                    renderOrderTable(targetSource, targetTbody, !isToday, false);
+                    updateSummary(targetSource);
+                }
+                return;
+            }
+
+            const filtered = targetSource.filter(order => {
+                const isPaidText = (order.isPaid === true || order.isPaid === 'true') ? '已繳費' : '未繳費';
+                const catText = isDrinkOrder(order) ? '喝涼涼 飲料' : '美味餐點 正餐';
+                return (order.name || '').toLowerCase().includes(keyword) || 
+                       (order.department || '').toLowerCase().includes(keyword) ||
+                       (order.cardId || '').toLowerCase().includes(keyword) || 
+                       (order.meal || '').toLowerCase().includes(keyword) || 
+                       (order.note || '').toLowerCase().includes(keyword) ||
+                       catText.toLowerCase().includes(keyword) ||
+                       isPaidText.includes(keyword) ||
+                       String(order.orderId || '').toLowerCase().includes(keyword);
+            });
+
+            if (isToday) {
+                currentFilteredTodayOrders = filtered;
+                renderOrderTable(filtered, targetTbody, !isToday, false);
+                updateSummary(filtered);
+            }
         }
-    }
-
-    if (!keyword) {
-        if (isToday) {
-            currentFilteredTodayOrders = [...targetSource];
-            renderOrderTable(targetSource, targetTbody, !isToday, false);
-            // 💡 新增這行：未輸入搜尋關鍵字時，依照目前選取的分類更新上方統計數字[cite: 1]
-            updateSummary(targetSource);
-        }
-        return;
-    }
-
-    const filtered = targetSource.filter(order => {
-        const isPaidText = order.isPaid ? '已繳費' : '未繳費';
-        const catText = isDrinkOrder(order) ? '喝涼涼 飲料' : '美味餐點 正餐';
-        return (order.name || '').toLowerCase().includes(keyword) || 
-               (order.department || '').toLowerCase().includes(keyword) ||
-               (order.cardId || '').toLowerCase().includes(keyword) || 
-               (order.meal || '').toLowerCase().includes(keyword) || 
-               (order.note || '').toLowerCase().includes(keyword) ||
-               catText.toLowerCase().includes(keyword) ||
-               isPaidText.includes(keyword) ||
-               String(order.orderId || '').toLowerCase().includes(keyword);
-    });
-
-    if (isToday) {
-        currentFilteredTodayOrders = filtered;
-        renderOrderTable(filtered, targetTbody, !isToday, false);
-        // 💡 新增這行：有搜尋關鍵字時，依照搜尋後呈現的資料更新上方統計數字[cite: 1]
-        updateSummary(filtered);
-    }
-}
 
         function generateCSV(data, fileName) {
             if (!data || data.length === 0) {
@@ -1898,6 +1897,7 @@
                 if (!dept) dept = '未劃分';
 
                 const cat = isDrinkOrder(order) ? '喝涼涼' : '美味餐點';
+                const paidText = (order.isPaid === true || order.isPaid === 'true') ? '已繳費' : '未繳費';
 
                 return [
                     `"${(order.orderId || '').toString().replace(/"/g, '""')}"`,
@@ -1910,7 +1910,7 @@
                     `"${(order.spicy || '無').toString().replace(/"/g, '""')}"`,
                     `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
                     `"${order.total || 0}"`,
-                    `"${order.isPaid ? '已繳費' : '未繳費'}"`
+                    `"${paidText}"`
                 ];
             });
 
