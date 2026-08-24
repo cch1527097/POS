@@ -11,16 +11,21 @@ types.setTypeParser(20, val => parseInt(val, 10));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 【優化 1】調整 JSON 與 URL-encoded 解析容量上限，防止大檔案上傳崩潰
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // PostgreSQL (Neon) 連線設定
+// 【優化 2】加入連線池上限與逾時設定，防止雲端 Serverless 環境高併發過載
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
         rejectUnauthorized: false // Neon 強制使用 SSL
-    }
+    },
+    max: 10,                   // 限制連線池最大連線數
+    idleTimeoutMillis: 30000,  // 閒置連線釋放時間 (30秒)
+    connectionTimeoutMillis: 2000 // 連線建立逾時時間 (2秒)
 });
 
 // 預設員工資料
@@ -684,13 +689,13 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // 修復：改用語法更精確的時區當日條件比對
+        // 【優化 3】改善亞洲/台北時區的當日時間判定，更加防禦並避免跨日誤判
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND created_at >= (CURRENT_DATE AT TIME ZONE 'Asia/Taipei')
-               AND created_at < ((CURRENT_DATE + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
+               AND created_at >= ((CURRENT_DATE AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
+               AND created_at < (((CURRENT_DATE + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
              ORDER BY order_id DESC;`,
             [cleanCardId]
         );
