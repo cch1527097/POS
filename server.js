@@ -11,21 +11,19 @@ types.setTypeParser(20, val => parseInt(val, 10));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 【優化 1】調整 JSON 與 URL-encoded 解析容量上限，防止大檔案上傳崩潰
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // PostgreSQL (Neon) 連線設定
-// 【優化 2】加入連線池上限與逾時設定，防止雲端 Serverless 環境高併發過載
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
         rejectUnauthorized: false // Neon 強制使用 SSL
     },
-    max: 10,                   // 限制連線池最大連線數
-    idleTimeoutMillis: 30000,  // 閒置連線釋放時間 (30秒)
-    connectionTimeoutMillis: 2000 // 連線建立逾時時間 (2秒)
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000
 });
 
 // 預設員工資料
@@ -42,7 +40,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：同步寫入 public/orders.json (增強容錯)
+// 輔助函式：同步寫入 public/orders.json (改為讀取 orders 表的 is_paid)
 async function syncOrdersJsonFile() {
     try {
         const publicDir = path.join(__dirname, 'public');
@@ -52,23 +50,21 @@ async function syncOrdersJsonFile() {
 
         const result = await pool.query(`
             SELECT 
-                o.order_id AS "orderId", 
-                o.card_id AS "cardId", 
-                o.name, 
-                o.meal, 
-                o.spicy, 
-                o.note, 
-                o.total, 
-                o.timestamp,
-                COALESCE(u.is_paid, false) AS "isPaid"
-            FROM orders o
-            LEFT JOIN users u ON o.card_id = u.card_id
-            ORDER BY o.order_id DESC;
+                order_id AS "orderId", 
+                card_id AS "cardId", 
+                name, 
+                meal, 
+                spicy, 
+                note, 
+                total, 
+                timestamp,
+                COALESCE(is_paid, false) AS "isPaid"
+            FROM orders
+            ORDER BY order_id DESC;
         `);
         const jsonPath = path.join(publicDir, 'orders.json');
         await fs.promises.writeFile(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
     } catch (err) {
-        // 唯讀環境降級處理，僅發出警告不中斷服務
         console.warn('⚠️ 警告：同步 orders.json 失敗 (雲端環境可能為唯讀檔案系統):', err.message);
     }
 }
@@ -76,6 +72,7 @@ async function syncOrdersJsonFile() {
 // 初始化資料庫
 async function initDatabase() {
     try {
+        // 在 orders 資料表建立時直接包含 is_paid
         await pool.query(`
             CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
@@ -87,8 +84,14 @@ async function initDatabase() {
                 note TEXT,
                 total NUMERIC(10, 2),
                 timestamp VARCHAR(100),
+                is_paid BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+
+        // 自動補建舊 orders 資料表可能缺少的 is_paid 欄位
+        await pool.query(`
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
         `);
 
         await pool.query(`
@@ -362,22 +365,22 @@ app.post('/api/active-store', async (req, res) => {
     }
 });
 
+// 獲取所有訂單（改為直接讀取 orders.is_paid）
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT 
-                o.order_id AS "orderId", 
-                o.card_id AS "cardId", 
-                o.name, 
-                o.meal, 
-                o.spicy, 
-                o.note, 
-                o.total, 
-                o.timestamp,
-                COALESCE(u.is_paid, false) AS "isPaid"
-            FROM orders o
-            LEFT JOIN users u ON o.card_id = u.card_id
-            ORDER BY o.order_id DESC;
+                order_id AS "orderId", 
+                card_id AS "cardId", 
+                name, 
+                meal, 
+                spicy, 
+                note, 
+                total, 
+                timestamp,
+                COALESCE(is_paid, false) AS "isPaid"
+            FROM orders
+            ORDER BY order_id DESC;
         `);
         res.json(result.rows);
     } catch (err) {
@@ -386,6 +389,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
+// 切換特定「訂單」的繳費狀態（直接修改 orders 表）
 app.patch('/api/orders/:orderId/payment', async (req, res) => {
     const { orderId } = req.params;
     const { isPaid } = req.body;
@@ -397,18 +401,14 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
     }
 
     try {
-        const orderRes = await pool.query('SELECT card_id FROM orders WHERE order_id = $1;', [targetOrderIdStr]);
+        const result = await pool.query(
+            'UPDATE orders SET is_paid = $1 WHERE order_id = $2 RETURNING *;',
+            [paidBool, targetOrderIdStr]
+        );
         
-        if (orderRes.rows.length === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
-
-        const cardId = orderRes.rows[0].card_id;
-
-        await pool.query(
-            'UPDATE users SET is_paid = $1 WHERE card_id = $2;',
-            [paidBool, cardId]
-        );
 
         syncOrdersJsonFile().catch(() => {});
 
@@ -576,6 +576,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// 下訂單 API：預設 is_paid 為 false (未繳費)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
@@ -655,9 +656,10 @@ app.post('/api/order', async (req, res) => {
         const orderIdVal = parseInt(`${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`, 10);
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
+        // 新增訂單預設將 is_paid 設為 false
         const insertQuery = `
-            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp, is_paid)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, false);
         `;
         const values = [
             orderIdVal,
@@ -689,7 +691,6 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // 【優化 3】改善亞洲/台北時區的當日時間判定，更加防禦並避免跨日誤判
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
@@ -713,15 +714,15 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
+// Excel 匯出（直接讀取 orders.is_paid）
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT 
-                o.order_id, o.timestamp, o.card_id, o.name, o.meal, o.spicy, o.note, o.total,
-                COALESCE(u.is_paid, false) AS is_paid
-            FROM orders o
-            LEFT JOIN users u ON o.card_id = u.card_id
-            ORDER BY o.order_id ASC;
+                order_id, timestamp, card_id, name, meal, spicy, note, total,
+                COALESCE(is_paid, false) AS is_paid
+            FROM orders
+            ORDER BY order_id ASC;
         `);
         
         const orders = result.rows.map(row => ({
