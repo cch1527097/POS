@@ -1,6 +1,6 @@
 require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
-const path = require('path');
+const path = path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
@@ -55,9 +55,8 @@ async function syncOrdersJsonFile() {
                 o.note, 
                 o.total, 
                 o.timestamp,
-                COALESCE(u.is_paid, false) AS "isPaid"
+                COALESCE(o.is_paid, false) AS "isPaid"
             FROM orders o
-            LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id DESC;
         `);
         const jsonPath = path.join(publicDir, 'orders.json');
@@ -82,8 +81,13 @@ async function initDatabase() {
                 note TEXT,
                 total NUMERIC(10, 2),
                 timestamp VARCHAR(100),
+                is_paid BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+
+        await pool.query(`
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
         `);
 
         await pool.query(`
@@ -373,9 +377,8 @@ app.get('/api/orders', async (req, res) => {
                 o.note, 
                 o.total, 
                 o.timestamp,
-                COALESCE(u.is_paid, false) AS "isPaid"
+                COALESCE(o.is_paid, false) AS "isPaid"
             FROM orders o
-            LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id DESC;
         `);
         res.json(result.rows);
@@ -397,18 +400,14 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
     }
 
     try {
-        const orderRes = await pool.query('SELECT card_id FROM orders WHERE order_id = $1;', [targetOrderIdStr]);
+        const result = await pool.query(
+            'UPDATE orders SET is_paid = $1 WHERE order_id = $2 RETURNING *;',
+            [paidBool, targetOrderIdStr]
+        );
         
-        if (orderRes.rows.length === 0) {
+        if (result.rows.length === 0) {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
-
-        const cardId = orderRes.rows[0].card_id;
-
-        await pool.query(
-            'UPDATE users SET is_paid = $1 WHERE card_id = $2;',
-            [paidBool, cardId]
-        );
 
         await syncOrdersJsonFile();
 
@@ -662,8 +661,8 @@ app.post('/api/order', async (req, res) => {
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
         const insertQuery = `
-            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp, is_paid)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, false);
         `;
         const values = [
             orderIdVal,
@@ -726,9 +725,8 @@ app.get('/api/export-excel', async (req, res) => {
         const result = await pool.query(`
             SELECT 
                 o.order_id, o.timestamp, o.card_id, o.name, o.meal, o.spicy, o.note, o.total,
-                COALESCE(u.is_paid, false) AS is_paid
+                COALESCE(o.is_paid, false) AS is_paid
             FROM orders o
-            LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id ASC;
         `);
         
