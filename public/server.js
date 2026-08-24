@@ -236,6 +236,43 @@ app.delete('/api/orders/:orderId', async (req, res) => {
     }
 });
 
+// ⚙️ 新增 API 5：後台更新訂單繳費狀態 (支持切換 isPaid)
+app.patch('/api/orders/:orderId/payment', (req, res) => {
+    const { orderId } = req.params;
+    const { isPaid } = req.body;
+    const targetOrderId = orderId ? Number(orderId) : null;
+
+    if (!targetOrderId) {
+        return res.status(400).json({ success: false, message: '無效的訂單編號！' });
+    }
+
+    try {
+        ensureDirectoryExistence();
+        if (!fs.existsSync(JSON_FILE)) {
+            return res.status(404).json({ success: false, message: '目前尚無任何訂單紀錄。' });
+        }
+
+        let orders = JSON.parse(fs.readFileSync(JSON_FILE, 'utf-8'));
+        const targetOrder = orders.find(order => Number(order.orderId) === targetOrderId);
+
+        if (!targetOrder) {
+            return res.status(404).json({ success: false, message: '找不到該筆訂單！' });
+        }
+
+        // 修改繳費狀態
+        targetOrder.isPaid = Boolean(isPaid);
+
+        // 存回 JSON
+        fs.writeFileSync(JSON_FILE, JSON.stringify(orders, null, 2), 'utf-8');
+        console.log(`[後台管理] 訂單編號 ${targetOrderId} 繳費狀態更新為: ${targetOrder.isPaid}`);
+
+        res.json({ success: true, message: '繳費狀態更新成功！' });
+    } catch (error) {
+        console.error('更新繳費狀態失敗:', error);
+        res.status(500).json({ success: false, message: '伺服器更新失敗。' });
+    }
+});
+
 // 1. 驗證卡號 API（已改為讀取實體檔案）
 app.post('/api/login', (req, res) => {
     const { cardId } = req.body;
@@ -253,7 +290,7 @@ app.post('/api/login', (req, res) => {
     }
 });
 
-// 2. 接收訂餐資料 API（已改為讀取實體檔案）
+// 2. 接收訂餐資料 API（已修正：新增 isPaid: false 預設未繳費）
 app.post('/api/order', async (req, res) => {
     const { cardId, meal, note, spicy, total } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -269,6 +306,7 @@ app.post('/api/order', async (req, res) => {
         spicy: spicy || "無",
         note: note || "無",
         total: total !== undefined ? Number(total) : 0,
+        isPaid: false, // 🎯 修正重點：所有新增訂單預設皆為未繳費
         timestamp: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })
     };
 
