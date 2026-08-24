@@ -406,7 +406,7 @@
         .modal-window {
             background-color: #ffffff;
             width: 100%;
-            max-width: 480px;
+            max-width: 650px;
             border-radius: 16px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.12);
             overflow: hidden;
@@ -418,12 +418,31 @@
         .modal-title { font-size: 18px; font-weight: 700; color: #2c3e2e; margin: 0; }
         .modal-close-btn { background: none; border: none; font-size: 20px; color: #9cb19f; cursor: pointer; transition: color 0.2s; outline: none; }
         .modal-close-btn:hover { color: #d32f2f; }
-        .modal-body { padding: 28px 24px; font-size: 15px; line-height: 1.6; color: #3e5440; }
+        .modal-body { padding: 28px 24px; font-size: 15px; line-height: 1.6; color: #3e5440; max-height: 70vh; overflow-y: auto; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; background-color: #fafdfb; border-top: 1px solid #edf2f0; }
         .btn-modal-confirm { background-color: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-modal-confirm:hover { background-color: #143016; }
         .btn-modal-cancel { background-color: #ffffff; color: #667c68; border: 1px solid #d0ded3; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
         .btn-modal-cancel:hover { background-color: #f0f5f1; }
+
+        /* 店家餐點統計樣式 */
+        .store-summary-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            background-color: #fafdfb;
+        }
+        .store-summary-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 8px;
+        }
 
         /* 行動裝置與平板響應式優化 (RWD) */
         @media (max-width: 768px) {
@@ -674,6 +693,7 @@
                     </div>
                     <div style="text-align: right;">
                         <span id="syncStatus" style="color: var(--text-sub); margin-right: 15px; font-size: 13px;"></span>
+                        <button class="btn btn-secondary" style="margin-right:6px;" onclick="showStoreSummaryModal()">📊 查看店家餐點統計</button>
                         <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('today', 'drink')">🥤 匯出喝涼涼 CSV</button>
                         <button class="btn btn-excel-food" onclick="exportCategoryToCSV('today', 'food')">🍱 匯出美味餐點 CSV</button>
                         <button class="btn btn-secondary" onclick="loadOrders()">🔄 重新整理訂單</button>
@@ -1263,6 +1283,108 @@
             document.querySelectorAll('.category-filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             filterOrders('today');
+        }
+
+        /* 🆕 新增：同一店家餐點統計表彈出視窗 */
+        function showStoreSummaryModal() {
+            if (!currentTodayOrders || currentTodayOrders.length === 0) {
+                showCustomModal({ title: '同一店家餐點統計', message: '今日目前尚無任何點餐資料！' });
+                return;
+            }
+
+            const storeMap = {};
+
+            currentTodayOrders.forEach(order => {
+                let storeName = order.storeName || order.store || '';
+                let mealName = order.meal || '未指定餐點';
+
+                if (!storeName) {
+                    const matchedStore = storeList.find(s => mealName.includes(s.name));
+                    if (matchedStore) {
+                        storeName = matchedStore.name;
+                    } else if (mealName.includes('[') && mealName.includes(']')) {
+                        storeName = mealName.substring(mealName.indexOf('[') + 1, mealName.indexOf(']'));
+                        mealName = mealName.substring(mealName.indexOf(']') + 1).trim();
+                    } else {
+                        storeName = '其他/未分類店家';
+                    }
+                }
+
+                let qty = Number(order.qty || order.count || 1);
+                if (mealName.includes('x')) {
+                    const parts = mealName.split('x');
+                    const possibleQty = parseInt(parts[parts.length - 1].trim());
+                    if (!isNaN(possibleQty)) {
+                        qty = possibleQty;
+                        mealName = parts.slice(0, -1).join('x').trim();
+                    }
+                }
+
+                const price = Number(order.total || 0);
+
+                if (!storeMap[storeName]) {
+                    storeMap[storeName] = {
+                        totalAmount: 0,
+                        totalCount: 0,
+                        items: {}
+                    };
+                }
+
+                storeMap[storeName].totalAmount += price;
+                storeMap[storeName].totalCount += qty;
+
+                if (!storeMap[storeName].items[mealName]) {
+                    storeMap[storeName].items[mealName] = { count: 0, amount: 0 };
+                }
+                storeMap[storeName].items[mealName].count += qty;
+                storeMap[storeName].items[mealName].amount += price;
+            });
+
+            let htmlContent = `<div style="display:flex; flex-direction:column; gap:16px;">`;
+
+            Object.keys(storeMap).forEach(store => {
+                const storeData = storeMap[store];
+                htmlContent += `
+                    <div class="store-summary-card">
+                        <div class="store-summary-title">
+                            <span>🏪 ${store}</span>
+                            <span style="font-size:14px; color:var(--text-sub);">共 ${storeData.totalCount} 份 | 小計 $${storeData.totalAmount}</span>
+                        </div>
+                        <table style="min-width:100%; border-collapse:collapse; font-size:13px;">
+                            <thead>
+                                <tr style="background:#f0f7f4; color:var(--text-sub);">
+                                    <th style="padding:8px 12px; text-align:left;">餐點項目</th>
+                                    <th style="padding:8px 12px; text-align:center;">數量</th>
+                                    <th style="padding:8px 12px; text-align:right;">小計金額</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                Object.keys(storeData.items).forEach(item => {
+                    const itemData = storeData.items[item];
+                    htmlContent += `
+                        <tr style="border-bottom:1px dashed var(--border-color);">
+                            <td style="padding:8px 12px; font-weight:600;">${item}</td>
+                            <td style="padding:8px 12px; text-align:center; color:var(--primary); font-weight:700;">x${itemData.count}</td>
+                            <td style="padding:8px 12px; text-align:right; font-weight:600;">$${itemData.amount}</td>
+                        </tr>
+                    `;
+                });
+
+                htmlContent += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+
+            htmlContent += `</div>`;
+
+            showCustomModal({
+                title: '📊 今日同一店家餐點統計表',
+                message: htmlContent
+            });
         }
 
         async function loadEmployees() {
