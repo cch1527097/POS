@@ -1,11 +1,11 @@
 require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
-const path = path = require('path');
+const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
 
-// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
+// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number (或可保留字串)
 types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
@@ -55,8 +55,9 @@ async function syncOrdersJsonFile() {
                 o.note, 
                 o.total, 
                 o.timestamp,
-                COALESCE(o.is_paid, false) AS "isPaid"
+                COALESCE(u.is_paid, false) AS "isPaid"
             FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id DESC;
         `);
         const jsonPath = path.join(publicDir, 'orders.json');
@@ -81,13 +82,8 @@ async function initDatabase() {
                 note TEXT,
                 total NUMERIC(10, 2),
                 timestamp VARCHAR(100),
-                is_paid BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
-        `);
-
-        await pool.query(`
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
         `);
 
         await pool.query(`
@@ -199,9 +195,15 @@ async function initDatabase() {
                     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
                 `, [JSON.stringify(syncedStores)]);
 
-                console.log('[系統提示] 已成功同步並重置為最新的 48 家店家名單！');
+                console.log('[系統提示] 已成功同步並重置為最新的 51 家店家名單！');
             } catch (e) {
                 console.error('解析現有店家清單失敗，重新寫入預設店家:', e);
+                // 【修復點】若 JSON 解析失敗，重新寫入預設店家
+                await pool.query(`
+                    INSERT INTO settings (key, value)
+                    VALUES ('store_list', $1)
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+                `, [JSON.stringify(DEFAULT_STORES)]);
             }
         }
 
@@ -377,8 +379,9 @@ app.get('/api/orders', async (req, res) => {
                 o.note, 
                 o.total, 
                 o.timestamp,
-                COALESCE(o.is_paid, false) AS "isPaid"
+                COALESCE(u.is_paid, false) AS "isPaid"
             FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id DESC;
         `);
         res.json(result.rows);
@@ -400,14 +403,18 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            'UPDATE orders SET is_paid = $1 WHERE order_id = $2 RETURNING *;',
-            [paidBool, targetOrderIdStr]
-        );
+        const orderRes = await pool.query('SELECT card_id FROM orders WHERE order_id = $1;', [targetOrderIdStr]);
         
-        if (result.rows.length === 0) {
+        if (orderRes.rows.length === 0) {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
+
+        const cardId = orderRes.rows[0].card_id;
+
+        await pool.query(
+            'UPDATE users SET is_paid = $1 WHERE card_id = $2;',
+            [paidBool, cardId]
+        );
 
         await syncOrdersJsonFile();
 
@@ -661,8 +668,8 @@ app.post('/api/order', async (req, res) => {
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
         const insertQuery = `
-            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp, is_paid)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, false);
+            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
         `;
         const values = [
             orderIdVal,
@@ -697,11 +704,12 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
+        // 【修復點】簡化時區過濾邏輯，避免重複轉換時區產生的偏差
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Taipei')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date
+               AND (created_at AT TIME ZONE 'Asia/Taipei')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date
              ORDER BY order_id DESC;`,
             [cleanCardId]
         );
@@ -725,27 +733,28 @@ app.get('/api/export-excel', async (req, res) => {
         const result = await pool.query(`
             SELECT 
                 o.order_id, o.timestamp, o.card_id, o.name, o.meal, o.spicy, o.note, o.total,
-                COALESCE(o.is_paid, false) AS is_paid
+                COALESCE(u.is_paid, false) AS is_paid
             FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
             ORDER BY o.order_id ASC;
         `);
         
         const orders = result.rows.map(row => ({
-            orderId: Number(row.order_id),
+            orderId: String(row.order_id), // 轉換為字串避免大數精度遺失
             timestamp: row.timestamp,
             cardId: row.card_id,
             name: row.name,
             meal: row.meal,
             spicy: row.spicy,
             note: row.note,
-            total: Number(row.total),
+            total: parseFloat(row.total) || 0, // 確保 NUMERIC 欄位轉為數字
             isPaid: row.is_paid ? '已繳費' : '未繳費'
         }));
 
         const workbook = new ExcelJS.Workbook();
         const sheet1 = workbook.addWorksheet('訂單明細');
         sheet1.columns = [
-            { header: '訂單ID', key: 'orderId', width: 18 },
+            { header: '訂單ID', key: 'orderId', width: 22 },
             { header: '時間', key: 'timestamp', width: 25 },
             { header: '員工卡號', key: 'cardId', width: 15 },
             { header: '員工姓名', key: 'name', width: 15 }, 
@@ -771,7 +780,7 @@ app.get('/api/export-excel', async (req, res) => {
                 meal: order.meal,
                 spicy: order.spicy || '無',
                 note: order.note || '無',
-                total: !isNaN(order.total) ? order.total : 0,
+                total: order.total,
                 isPaid: order.isPaid
             });
         });
