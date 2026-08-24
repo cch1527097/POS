@@ -5,7 +5,7 @@ const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
 
-// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number (或可保留字串)
+// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
 types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
@@ -82,7 +82,7 @@ async function initDatabase() {
                 note TEXT,
                 total NUMERIC(10, 2),
                 timestamp VARCHAR(100),
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
@@ -178,14 +178,15 @@ async function initDatabase() {
             `, [JSON.stringify(DEFAULT_STORES)]);
         } else {
             try {
-                let existingStores = JSON.parse(currentStoreRes.rows[0].value);
+                let existingStores = JSON.parse(currentStoreRes.rows[0].value) || [];
+                if (!Array.isArray(existingStores)) existingStores = [];
                 
-                // 以 DEFAULT_STORES 為主範本，保留舊店家的 isOpen 狀態，其餘過期店家一律刪除
+                // 以 DEFAULT_STORES 為主範本，保留舊店家的 isOpen 狀態
                 const syncedStores = DEFAULT_STORES.map(defStore => {
-                    const match = existingStores.find(s => s.id === defStore.id);
+                    const match = existingStores.find(s => s && s.id === defStore.id);
                     return {
                         ...defStore,
-                        isOpen: match ? match.isOpen : defStore.isOpen
+                        isOpen: match ? Boolean(match.isOpen) : defStore.isOpen
                     };
                 });
 
@@ -195,10 +196,9 @@ async function initDatabase() {
                     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
                 `, [JSON.stringify(syncedStores)]);
 
-                console.log('[系統提示] 已成功同步並重置為最新的 51 家店家名單！');
+                console.log('[系統提示] 已成功同步並重置店家名單！');
             } catch (e) {
                 console.error('解析現有店家清單失敗，重新寫入預設店家:', e);
-                // 【修復點】若 JSON 解析失敗，重新寫入預設店家
                 await pool.query(`
                     INSERT INTO settings (key, value)
                     VALUES ('store_list', $1)
@@ -306,7 +306,7 @@ app.post('/api/stores', async (req, res) => {
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [JSON.stringify(stores)]);
 
-        const activeStores = stores.filter(s => s.isOpen);
+        const activeStores = stores.filter(s => s && s.isOpen);
         const activeStoreNames = activeStores
             .map(s => s.name.replace(/\s*\([^)]*\)/g, '').trim())
             .join('、');
@@ -601,17 +601,18 @@ app.post('/api/order', async (req, res) => {
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
-            const stores = JSON.parse(storeListRes.rows[0].value);
+            const stores = JSON.parse(storeListRes.rows[0].value) || [];
             let matchedStore = null;
 
             // 優先：利用 storeId 進行 100% 精準匹配
             if (reqStoreId) {
-                matchedStore = stores.find(s => s.id === reqStoreId);
+                matchedStore = stores.find(s => s && s.id === reqStoreId);
             }
 
             // 備援：若前端未傳送 storeId，向下相容舊版名稱比對
             if (!matchedStore) {
                 matchedStore = stores.find(s => {
+                    if (!s || !s.name) return false;
                     const cleanName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
                     if (!cleanName) return false;
                     if (reqStoreName && (reqStoreName.includes(cleanName) || cleanName.includes(reqStoreName))) return true;
@@ -632,16 +633,17 @@ app.post('/api/order', async (req, res) => {
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
-        if (orderLockTime) {
+        if (orderLockTime && orderLockTime.includes(':')) {
             const now = new Date();
-            const taipeiTimeStr = new Intl.DateTimeFormat('zh-TW', {
+            const taipeiFormatter = new Intl.DateTimeFormat('zh-TW', {
                 timeZone: 'Asia/Taipei',
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: false
-            }).format(now);
-
-            const [currentH, currentM] = taipeiTimeStr.split(':').map(Number);
+            });
+            const parts = taipeiFormatter.formatToParts(now);
+            const currentH = Number(parts.find(p => p.type === 'hour').value);
+            const currentM = Number(parts.find(p => p.type === 'minute').value);
             const currentTotalMinutes = currentH * 60 + currentM;
 
             const [lockH, lockM] = orderLockTime.split(':').map(Number);
@@ -704,12 +706,11 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // 【修復點】簡化時區過濾邏輯，避免重複轉換時區產生的偏差
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND (created_at AT TIME ZONE 'Asia/Taipei')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date
+               AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Taipei')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Taipei')::date
              ORDER BY order_id DESC;`,
             [cleanCardId]
         );
@@ -740,21 +741,21 @@ app.get('/api/export-excel', async (req, res) => {
         `);
         
         const orders = result.rows.map(row => ({
-            orderId: String(row.order_id), // 轉換為字串避免大數精度遺失
+            orderId: Number(row.order_id),
             timestamp: row.timestamp,
             cardId: row.card_id,
             name: row.name,
             meal: row.meal,
             spicy: row.spicy,
             note: row.note,
-            total: parseFloat(row.total) || 0, // 確保 NUMERIC 欄位轉為數字
+            total: Number(row.total),
             isPaid: row.is_paid ? '已繳費' : '未繳費'
         }));
 
         const workbook = new ExcelJS.Workbook();
         const sheet1 = workbook.addWorksheet('訂單明細');
         sheet1.columns = [
-            { header: '訂單ID', key: 'orderId', width: 22 },
+            { header: '訂單ID', key: 'orderId', width: 18 },
             { header: '時間', key: 'timestamp', width: 25 },
             { header: '員工卡號', key: 'cardId', width: 15 },
             { header: '員工姓名', key: 'name', width: 15 }, 
@@ -780,7 +781,7 @@ app.get('/api/export-excel', async (req, res) => {
                 meal: order.meal,
                 spicy: order.spicy || '無',
                 note: order.note || '無',
-                total: order.total,
+                total: !isNaN(order.total) ? order.total : 0,
                 isPaid: order.isPaid
             });
         });
