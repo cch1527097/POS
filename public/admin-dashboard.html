@@ -1004,7 +1004,7 @@ ${openStores}
                 message: `確定要發送以下內容至 LINE 群組嗎？<br><br><pre style="background:#f4f4f4; padding:12px; border-radius:8px; font-size:12px; text-align:left; white-space:pre-wrap;">${announcementMsg}</pre>`,
                 isConfirm: true,
                 onConfirm: () => {
-                    const lineShareUrl = `https://line.me/R/share?text=${encodeURIComponent(announcementMsg)}`;
+                    const lineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(frontendUrl)}&text=${encodeURIComponent(announcementMsg)}`;
                     window.open(lineShareUrl, '_blank');
                 }
             });
