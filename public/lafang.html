@@ -220,9 +220,43 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* ==================== 圖形化選項 (Option Cards) CSS ==================== */
+        .opt-group { margin-top: 16px; }
+        .opt-group label { font-weight: 700; display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        
+        .opt-grid {
+            display: grid;
+            grid-template-columns: repeat( auto-fit, minmax(80px, 1fr) );
+            gap: 8px;
+        }
+
+        .opt-card {
+            border: 1.5px solid var(--border-color);
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .opt-card .opt-icon { font-size: 18px; }
+        .opt-card .opt-text { font-size: 13px; font-weight: 600; color: #475569; }
+
+        .opt-card:hover { border-color: var(--secondary); background: #fff; }
+
+        .opt-card.selected {
+            border-color: var(--secondary);
+            background: #fef8f0;
+            box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.2);
+        }
+        .opt-card.selected .opt-text { color: var(--secondary); font-weight: 700; }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -574,6 +608,10 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 選擇項目的暫存變數
+let selectedSpicy = "不辣";
+let selectedNote = "無特殊需求";
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -680,9 +718,24 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectOpt(group, val, el) {
+    if (group === 'spicy') {
+        selectedSpicy = val;
+    } else if (group === 'note') {
+        selectedNote = val;
+    }
+
+    const parent = el.closest('.opt-grid');
+    parent.querySelectorAll('.opt-card').forEach(card => card.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
+
+    selectedSpicy = "不辣";
+    selectedNote = "無特殊需求";
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -690,35 +743,53 @@ function clickAddItem(name) {
         </div>
         
         <div class="opt-group">
-            <label>🌶️ 辣度調整</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微辣">微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="大辣">大辣</option>
-            </select>
+            <label>辣度調整</label>
+            <div class="opt-grid">
+                <div class="opt-card selected" onclick="selectOpt('spicy', '不辣', this)">
+                    <div class="opt-icon">🥬</div>
+                    <div class="opt-text">不辣</div>
+                </div>
+                <div class="opt-card" onclick="selectOpt('spicy', '微辣', this)">
+                    <div class="opt-icon">🌶️</div>
+                    <div class="opt-text">微辣</div>
+                </div>
+                <div class="opt-card" onclick="selectOpt('spicy', '小辣', this)">
+                    <div class="opt-icon">🔥</div>
+                    <div class="opt-text">小辣</div>
+                </div>
+                <div class="opt-card" onclick="selectOpt('spicy', '大辣', this)">
+                    <div class="opt-icon">💥</div>
+                    <div class="opt-text">大辣</div>
+                </div>
+            </div>
 
-            <label>備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="飯少">飯少</option>
-                <option value="醬少">醬少</option>
-            </select>
+            <label style="margin-top: 14px;">備註需求</label>
+            <div class="opt-grid">
+                <div class="opt-card selected" onclick="selectOpt('note', '無特殊需求', this)">
+                    <div class="opt-icon">👌</div>
+                    <div class="opt-text">正常</div>
+                </div>
+                <div class="opt-card" onclick="selectOpt('note', '飯少', this)">
+                    <div class="opt-icon">🍚</div>
+                    <div class="opt-text">飯少</div>
+                </div>
+                <div class="opt-card" onclick="selectOpt('note', '醬少', this)">
+                    <div class="opt-icon">🥣</div>
+                    <div class="opt-text">醬少</div>
+                </div>
+            </div>
         </div>
     `;
 
     showCustomModal({
-        title: "請選擇餐點客製化選項",
+        title: "客製化選項",
         bodyHtml: bodyHtml,
         confirmText: "加入購物車",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const spicy = document.getElementById("pop-spicy").value;
-            const note = document.getElementById("pop-note").value;
-
             const unitPrice = item.price;
-            const customKey = `${item.name}|${spicy}|${note}`;
+            const customKey = `${item.name}|${selectedSpicy}|${selectedNote}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -728,8 +799,8 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    spicy: spicy,
-                    note: note
+                    spicy: selectedSpicy,
+                    note: selectedNote
                 };
             }
 
