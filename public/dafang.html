@@ -537,7 +537,7 @@ const menuItems = [
     {name: "招牌三寶飯", subName: "燒鴨、油雞、叉燒經典搭配", price: 120, category: "燒臘便當類", icon: "🍱", isMeal: true},
     {name: "脆皮燒肉飯", subName: "限量美味 酥脆口感", price: 120, category: "燒臘便當類", icon: "🍱", isMeal: true},
     {name: "燒鴨腿飯", subName: "鮮嫩多汁限量鴨腿", price: 120, category: "燒臘便當類", icon: "🍗", isMeal: true},
-    {name: "雙拼燒臘飯", subName: "自由挑選兩種主菜", price: 110, category: "燒臘便當類", icon: "🍱", isMeal: true},
+    {name: "雙拼燒臘飯", subName: "老闆自配兩種主菜", price: 110, category: "燒臘便當類", icon: "🍱", isMeal: true},
     {name: "燒雞腿飯", subName: "香烤雞腿", price: 100, category: "燒臘便當類", icon: "🍗", isMeal: true},
     {name: "油雞腿飯", subName: "鮮嫩油雞腿", price: 100, category: "燒臘便當類", icon: "🍗", isMeal: true},
     {name: "燒鴨飯", subName: "港式招牌燒鴨", price: 100, category: "燒臘便當類", icon: "🍱", isMeal: true},
@@ -703,19 +703,10 @@ function clickAddItem(name) {
                     <option value="加香腸 (+40元)">加香腸 (+40元)</option>
                 </select>
 
-                <label>🍚 飯量調整</label>
+                <label>🌶️ 辣度調整</label>
                 <select id="pop-rice" class="select-box">
-                    <option value="飯正常">飯正常</option>
-                    <option value="飯少">飯少</option>
-                    <option value="飯多">飯多</option>
-                </select>
-
-                <label>🧂 醬汁 / 醬菜需求</label>
-                <select id="pop-sauce" class="select-box">
-                    <option value="正常">醬汁正常</option>
-                    <option value="多淋醬">多淋醬</option>
-                    <option value="不加醬">不加醬</option>
-                    <option value="不要蔥油">不要蔥油</option>
+                    <option value="不辣">不辣</option>
+                    <option value="加辣">加辣</option>
                 </select>
             </div>
         `;
