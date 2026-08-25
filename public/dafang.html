@@ -704,7 +704,7 @@ function clickAddItem(name) {
                 </select>
 
                 <label>🌶️ 辣度調整</label>
-                <select id="pop-rice" class="select-box">
+                <select id="pop-spicy" class="select-box">
                     <option value="不辣">不辣</option>
                     <option value="加辣">加辣</option>
                 </select>
@@ -717,7 +717,6 @@ function clickAddItem(name) {
                 <select id="pop-note" class="select-box">
                     <option value="無">無特別需求</option>
                     <option value="切盤包裝">切盤包裝</option>
-                    <option value="醬汁另外放">醬汁另外放</option>
                 </select>
             </div>
         `;
@@ -732,14 +731,12 @@ function clickAddItem(name) {
         onConfirm: () => {
             let extraPrice = 0;
             let addMeatVal = "不加肉";
-            let riceVal = "飯正常";
-            let sauceVal = "正常";
+            let spicyVal = "不辣";
             let noteVal = "無";
 
             if (item.isMeal) {
                 addMeatVal = document.getElementById("pop-addmeat").value;
-                riceVal = document.getElementById("pop-rice").value;
-                sauceVal = document.getElementById("pop-sauce").value;
+                spicyVal = document.getElementById("pop-spicy").value;
                 if (addMeatVal !== "不加肉") {
                     extraPrice = 40;
                 }
@@ -748,7 +745,7 @@ function clickAddItem(name) {
             }
 
             const unitPrice = item.price + extraPrice;
-            const customKey = `${item.name}|${addMeatVal}|${riceVal}|${sauceVal}|${noteVal}`;
+            const customKey = `${item.name}|${addMeatVal}|${spicyVal}|${noteVal}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -759,8 +756,7 @@ function clickAddItem(name) {
                     price: unitPrice,
                     qty: 1,
                     addMeat: addMeatVal,
-                    rice: riceVal,
-                    sauce: sauceVal,
+                    spicy: spicyVal,
                     note: noteVal,
                     isMeal: !!item.isMeal
                 };
@@ -804,8 +800,7 @@ function renderCart() {
         if (item.isMeal) {
             let opts = [];
             if (item.addMeat !== "不加肉") opts.push(item.addMeat);
-            if (item.rice !== "飯正常") opts.push(item.rice);
-            if (item.sauce !== "正常") opts.push(item.sauce);
+            if (item.spicy !== "不辣") opts.push(item.spicy);
             optText = opts.length > 0 ? opts.join(",") : "標準";
         } else {
             optText = item.note !== "無" ? item.note : "標準";
@@ -876,7 +871,7 @@ function renderModalCartList() {
 
         let optTag = "";
         if (item.isMeal) {
-            optTag = `🍱 ${item.addMeat} | ${item.rice} | ${item.sauce}`;
+            optTag = `🍱 ${item.addMeat} | ${item.spicy}`;
         } else {
             optTag = `📌 備註: ${item.note}`;
         }
@@ -961,7 +956,6 @@ function closeModal() {
     document.getElementById("custom-modal").classList.remove("active");
 }
 
-// 修改第二個系統中的 submitOrderToServer 函式
 async function submitOrderToServer() {
     if (!currentCardId) {
         return showCustomModal({
@@ -996,7 +990,6 @@ async function submitOrderToServer() {
             btn.disabled = true;
             btn.innerText = "正在送出...";
 
-            // 調整為與第一個系統一致的資料結構
             const payload = {
                 cardId: currentCardId,
                 category: "food",
@@ -1008,7 +1001,6 @@ async function submitOrderToServer() {
             };
 
             try {
-                // 網址改為與第一個系統相同的 /api/order
                 const response = await fetch("/api/order", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
