@@ -221,10 +221,6 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
-
         /* ==================== 懸浮圓形按鈕群 (Floating Action Buttons) ==================== */
         .fab-container {
             position: fixed;
@@ -275,7 +271,6 @@
             background-color: #a40e11;
         }
 
-        /* 購物車數量紅點標籤 */
         .cart-badge {
             position: absolute;
             top: -4px;
@@ -303,14 +298,14 @@
             100% { transform: scale(1); }
         }
 
-        /* ==================== Modal 彈窗樣式 ==================== */
+        /* ==================== 圖形化 Modal 彈窗樣式 ==================== */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -328,11 +323,11 @@
         .modal-container {
             background: #fff;
             width: 90%;
-            max-width: 440px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            max-width: 460px;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
             overflow: hidden;
-            transform: scale(0.95);
+            transform: scale(0.9);
             transition: transform 0.2s ease;
             max-height: 90vh;
             display: flex;
@@ -347,22 +342,28 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #f1f5f9;
+            background: #fafafa;
         }
 
         .modal-title { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; }
 
         .modal-close {
-            background: none;
+            background: #f1f5f9;
             border: none;
-            font-size: 20px;
-            color: #94a3b8;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            color: #64748b;
             cursor: pointer;
-            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .modal-close:hover { color: #475569; }
+        .modal-close:hover { background: #e2e8f0; color: #0f172a; }
 
         .modal-body {
-            padding: 16px 20px;
+            padding: 20px;
             font-size: 15px;
             color: #334155;
             line-height: 1.6;
@@ -371,36 +372,89 @@
         }
 
         .modal-footer {
-            padding: 14px 20px;
+            padding: 16px 20px;
             display: flex;
             justify-content: flex-end;
             gap: 12px;
             border-top: 1px solid #f8fafc;
+            background: #fafafa;
         }
 
         .btn-modal-cancel {
             background: #fff;
             border: 1px solid #cbd5e1;
             color: #334155;
-            padding: 8px 16px;
+            padding: 10px 18px;
             font-size: 14px;
             font-weight: 600;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
         }
         .btn-modal-cancel:hover { background: #f8fafc; }
 
         .btn-modal-confirm {
-            background: #9e1c11;
+            background: var(--primary);
             border: none;
             color: white;
-            padding: 8px 16px;
+            padding: 10px 18px;
             font-size: 14px;
             font-weight: 600;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(158, 28, 17, 0.2);
         }
         .btn-modal-confirm:hover { background: #82170e; }
+
+        /* 圖形化客製化選項專用 CSS */
+        .modal-hero-icon {
+            font-size: 60px;
+            background: var(--primary-light);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px auto;
+            box-shadow: inset 0 0 10px rgba(158, 28, 17, 0.1);
+        }
+
+        .graphic-section-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #475569;
+            margin: 16px 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .graphic-options-grid {
+            display: grid;
+            grid-template-columns: repeat( auto-fit, minmax(80px, 1fr) );
+            gap: 8px;
+        }
+
+        .graphic-opt-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fff;
+            user-select: none;
+        }
+
+        .graphic-opt-card .opt-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+        .graphic-opt-card .opt-text { font-size: 13px; font-weight: 600; color: #334155; }
+
+        .graphic-opt-card:hover { border-color: #cbd5e1; background: #f8fafc; }
+        .graphic-opt-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .graphic-opt-card.selected .opt-text { color: var(--primary); font-weight: 700; }
 
         .custom-item-tag {
             font-size: 12px;
@@ -656,6 +710,10 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 暫存選擇的客製化選項
+let selectedSauce = "正常";
+let selectedSpicy = "不辣";
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -712,7 +770,6 @@ function renderMenu(items) {
             const card = document.createElement("div");
             card.className = "item-card";
             
-            // 計算該品項在購物車中的總數量
             let currentQty = 0;
             Object.keys(cart).forEach(key => {
                 if (cart[key].baseName === item.name) {
@@ -763,50 +820,80 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 點擊新增按鈕：彈出選擇視窗詢問客製化選項
+// 點擊新增按鈕：彈出【圖形化】選擇視窗詢問客製化選項
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
+    // 重置預設選擇
+    selectedSauce = "正常";
+    selectedSpicy = "不辣";
+
     let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
-            ${item.icon || '🥟'} ${item.name} ($${item.price})
+        <div class="modal-hero-icon">${item.icon || '🥟'}</div>
+        <div style="text-align:center; font-size:18px; font-weight:bold; color:var(--text-dark);">
+            ${item.name}
+        </div>
+        <div style="text-align:center; font-size:16px; font-weight:bold; color:var(--accent); margin-bottom:16px;">
+            $${item.price}
         </div>
         
-        <div class="opt-group">
-            <label>🧂 配料 / 醬料設定</label>
-            <select id="pop-sauce" class="select-box">
-                <option value="正常">正常</option>
-                <option value="加蔥">加蔥</option>
-                <option value="加酸菜">加酸菜</option>
-                <option value="都不加">都不加</option>
-            </select>
+        <!-- 配料圖形化選擇 -->
+        <div class="graphic-section-title">🧂 配料 / 醬料設定</div>
+        <div class="graphic-options-grid">
+            <div class="graphic-opt-card selected" onclick="selectGraphicOption('sauce', '正常', this)">
+                <span class="opt-icon">✨</span>
+                <span class="opt-text">正常</span>
+            </div>
+            <div class="graphic-opt-card" onclick="selectGraphicOption('sauce', '加蔥', this)">
+                <span class="opt-icon">🧅</span>
+                <span class="opt-text">加蔥</span>
+            </div>
+            <div class="graphic-opt-card" onclick="selectGraphicOption('sauce', '加酸菜', this)">
+                <span class="opt-icon">🥬</span>
+                <span class="opt-text">加酸菜</span>
+            </div>
+            <div class="graphic-opt-card" onclick="selectGraphicOption('sauce', '都不加', this)">
+                <span class="opt-icon">🚫</span>
+                <span class="opt-text">都不加</span>
+            </div>
+        </div>
 
-            <label>🌶️ 辣度選擇</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微辣">微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="中辣">中辣</option>
-                <option value="大辣">大辣</option>
-            </select>
+        <!-- 辣度圖形化選擇 -->
+        <div class="graphic-section-title">🌶️ 辣度選擇</div>
+        <div class="graphic-options-grid">
+            <div class="graphic-opt-card selected" onclick="selectGraphicOption('spicy', '不辣', this)">
+                <span class="opt-icon">🟢</span>
+                <span class="opt-text">不辣</span>
+            </div>
+            <div class="graphic-opt-card" onclick="selectGraphicOption('spicy', '微辣', this)">
+                <span class="opt-icon">🟡</span>
+                <span class="opt-text">微辣</span>
+            </div>
+            <div class="graphic-opt-card" onclick="selectGraphicOption('spicy', '小辣', this)">
+                <span class="opt-icon">🟠</span>
+                <span class="opt-text">小辣</span>
+            </div>
+            <div class="graphic-opt-card" onclick="selectGraphicOption('spicy', '中辣', this)">
+                <span class="opt-icon">🔴</span>
+                <span class="opt-text">中辣</span>
+            </div>
+            <div class="graphic-opt-card" onclick="selectGraphicOption('spicy', '大辣', this)">
+                <span class="opt-icon">🔥</span>
+                <span class="opt-text">大辣</span>
+            </div>
         </div>
     `;
 
     showCustomModal({
-        title: "請選擇餐點客製化選項",
+        title: "客製化餐點選項",
         bodyHtml: bodyHtml,
-        confirmText: "加入購物車",
+        confirmText: "加入購物車 🛒",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const sauce = document.getElementById("pop-sauce").value;
-            const spicy = document.getElementById("pop-spicy").value;
-
             const unitPrice = item.price;
-
-            // 建立客製化識別 Key
-            const customKey = `${item.name}|${sauce}|${spicy}`;
+            const customKey = `${item.name}|${selectedSauce}|${selectedSpicy}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -816,8 +903,8 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    sauce: sauce,
-                    spicy: spicy
+                    sauce: selectedSauce,
+                    spicy: selectedSpicy
                 };
             }
 
@@ -828,7 +915,19 @@ function clickAddItem(name) {
     });
 }
 
-// 主頁面上點擊減號：移除最後加入該品項的客製化項目
+// 切換圖形卡片選取狀態
+function selectGraphicOption(type, value, element) {
+    const parentContainer = element.parentElement;
+    parentContainer.querySelectorAll('.graphic-opt-card').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+
+    if (type === 'sauce') {
+        selectedSauce = value;
+    } else if (type === 'spicy') {
+        selectedSpicy = value;
+    }
+}
+
 function removeOneBaseItem(baseName) {
     const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
     if (keys.length === 0) return;
@@ -857,7 +956,6 @@ function renderCart() {
         finalSummary += `${item.baseName}(${item.sauce}/${item.spicy})*${item.qty} `;
     });
 
-    // 即時更新懸浮購物車按鈕上的 Badge 數字
     const badgeEl = document.getElementById("cart-badge");
     if (badgeEl) {
         if (totalCount > 0) {
@@ -876,7 +974,7 @@ function openCartModal() {
     if (keys.length === 0) {
         return showCustomModal({
             title: "購物車提示",
-            bodyHtml: "<p style='text-align:center; color:#666;'>🛒 購物車目前是空的喔！</p>",
+            bodyHtml: "<p style='text-align:center; color:#666; font-size:16px; padding:20px 0;'>🛒 購物車目前是空的喔！</p>",
             confirmText: "我知道了",
             showCancel: false
         });
@@ -884,7 +982,7 @@ function openCartModal() {
 
     let cartContentHtml = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #f1f5f9;">
-            <span style="font-weight:bold; font-size:15px;">已點餐點明細</span>
+            <span style="font-weight:bold; font-size:15px; color:#1e293b;">已點餐點明細</span>
             <button class="btn-clear-all" onclick="clearCartModal()">🗑️ 清空購物車</button>
         </div>
         <div id="modal-cart-list" style="max-height: 280px; overflow-y: auto; margin-bottom: 12px; padding-right: 4px;"></div>
@@ -897,7 +995,7 @@ function openCartModal() {
     showCustomModal({
         title: "🛒 您的購物車",
         bodyHtml: cartContentHtml,
-        confirmText: "確認送出訂單",
+        confirmText: "確認送出訂單 🚀",
         cancelText: "繼續點餐",
         showCancel: true,
         onConfirm: () => {
@@ -920,7 +1018,7 @@ function renderModalCartList() {
         div.className = "cart-item";
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
-                <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
+                <div style="font-weight:600; font-size:14px; color:#1e293b;">${item.baseName}</div>
                 <div class="custom-item-tag">🧂 ${item.sauce} | 🌶️ ${item.spicy}</div>
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
@@ -998,12 +1096,11 @@ function closeModal() {
     document.getElementById("custom-modal").classList.remove("active");
 }
 
-// 修改第二個系統中的 submitOrderToServer 函式
 async function submitOrderToServer() {
     if (!currentCardId) {
         return showCustomModal({
             title: "提示",
-            bodyHtml: "⚠️ 無法送出：未感應到卡號，請重新卡片開單！",
+            bodyHtml: "<div style='text-align:center; padding:10px 0;'>⚠️ 無法送出：未感應到卡號，請重新卡片開單！</div>",
             confirmText: "確定",
             showCancel: false
         });
@@ -1012,20 +1109,24 @@ async function submitOrderToServer() {
     if (Object.keys(cart).length === 0) {
         return showCustomModal({
             title: "提示",
-            bodyHtml: "⚠️ 購物車是空的，請先挑選餐點！",
+            bodyHtml: "<div style='text-align:center; padding:10px 0;'>⚠️ 購物車是空的，請先挑選餐點！</div>",
             confirmText: "確定",
             showCancel: false
         });
     }
 
-    let summaryDetailHtml = `<div style="margin-bottom:6px;">💳 卡號：<b>${currentCardId}</b></div>`;
-    summaryDetailHtml += `<div style="margin-bottom:6px;">📝 餐點明細：<br><span style="color:#475569; font-size:14px;">${finalSummary}</span></div>`;
-    summaryDetailHtml += `<div style="font-size:18px; font-weight:bold; margin-top:10px; color:var(--accent);">💰 總金額：$${finalTotal}</div>`;
+    let summaryDetailHtml = `
+        <div style="background:#f8fafc; padding:12px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:12px;">
+            <div style="margin-bottom:6px;">💳 卡號：<b>${currentCardId}</b></div>
+            <div style="margin-bottom:6px;">📝 餐點明細：<br><span style="color:#475569; font-size:14px; display:inline-block; margin-top:4px;">${finalSummary}</span></div>
+        </div>
+        <div style="font-size:18px; font-weight:bold; text-align:right; color:var(--accent);">💰 總金額：$${finalTotal}</div>
+    `;
 
     showCustomModal({
         title: "最後訂單確認",
         bodyHtml: summaryDetailHtml,
-        confirmText: "確認無誤送出",
+        confirmText: "確認無誤送出 📩",
         cancelText: "返回修改",
         showCancel: true,
         onConfirm: async () => {
@@ -1033,7 +1134,6 @@ async function submitOrderToServer() {
             btn.disabled = true;
             btn.innerText = "正在送出...";
 
-            // 調整為與第一個系統一致的資料結構
             const payload = {
                 cardId: currentCardId,
                 category: "food",
@@ -1045,7 +1145,6 @@ async function submitOrderToServer() {
             };
 
             try {
-                // 網址改為與第一個系統相同的 /api/order
                 const response = await fetch("/api/order", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -1056,8 +1155,8 @@ async function submitOrderToServer() {
 
                 if (response.ok && resData.success) {
                     showCustomModal({
-                        title: "提示",
-                        bodyHtml: "🎉 點餐成功！訂單已送到後端。",
+                        title: "訂單結果",
+                        bodyHtml: "<div style='text-align:center; font-size:16px; padding:10px 0;'>🎉 點餐成功！訂單已送到後端。</div>",
                         confirmText: "確定",
                         showCancel: false
                     });
@@ -1072,8 +1171,8 @@ async function submitOrderToServer() {
                     renderMenu(currentFilteredItems);
                 } else {
                     showCustomModal({
-                        title: "提示",
-                        bodyHtml: `⚠️ 送出失敗：${resData.message || '請稍後再試'}`,
+                        title: "訂單結果",
+                        bodyHtml: `<div style='text-align:center; padding:10px 0;'>⚠️ 送出失敗：${resData.message || '請稍後再試'}</div>`,
                         confirmText: "確定",
                         showCancel: false
                     });
@@ -1081,14 +1180,14 @@ async function submitOrderToServer() {
             } catch (err) {
                 console.error("發送失敗:", err);
                 showCustomModal({
-                    title: "提示",
-                    bodyHtml: "❌ 網路發送失敗，請確認網路連線或改用人工點餐！",
+                    title: "訂單結果",
+                    bodyHtml: "<div style='text-align:center; padding:10px 0;'>❌ 網路發送失敗，請確認網路連線或改用人工點餐！</div>",
                     confirmText: "確定",
                     showCancel: false
                 });
             } finally {
                 btn.disabled = false;
-                btn.innerText = "確認送出訂單";
+                btn.innerText = "確認送出訂單 🚀";
             }
         }
     });
