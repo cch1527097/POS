@@ -253,10 +253,11 @@ async function initDatabase() {
             const cardIds = Object.keys(INITIAL_USER_DB);
             const names = Object.values(INITIAL_USER_DB);
 
+            // 修正：修正 UNNEST 語法，明確指定常數資料型態
             await pool.query(`
                 INSERT INTO users (card_id, name, is_paid, department)
-                SELECT * FROM UNNEST($1::text[], $2::text[]) AS t(card_id, name)
-                CROSS JOIN (SELECT false AS is_paid, '未劃分' AS department) d
+                SELECT t.card_id, t.name, false, '未劃分'
+                FROM UNNEST($1::text[], $2::text[]) AS t(card_id, name)
                 ON CONFLICT (card_id) DO NOTHING;
             `, [cardIds, names]);
         }
@@ -647,7 +648,7 @@ app.post('/api/order', async (req, res) => {
                     const cleanName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
                     if (!cleanName) return false;
                     if (reqStoreName && (reqStoreName.includes(cleanName) || cleanName.includes(reqStoreName))) return true;
-                    return cleanMeal.includes(cleanName);
+                    return cleanMeal.startsWith(cleanName);
                 });
             }
 
@@ -742,11 +743,12 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
+        // 修正：使用 NOW() - INTERVAL '24 hours' 來精準計算過去 24 小時的紀錄，避開 AT TIME ZONE 的轉型偏差
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND created_at >= NOW() AT TIME ZONE 'Asia/Taipei' - INTERVAL '1 day'
+               AND created_at >= NOW() - INTERVAL '24 hours'
              ORDER BY id DESC;`,
             [cleanCardId]
         );
