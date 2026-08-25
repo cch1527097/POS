@@ -218,46 +218,46 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 8px; }
-
-        /* 圖形化客製化選項樣式 */
-        .opt-title {
-            font-weight: 700;
-            margin-top: 14px;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: var(--text-dark);
-        }
-
-        .opt-grid {
-            display: flex;
-            flex-wrap: wrap;
+        /* ==================== 圖形化選項卡片樣式 ==================== */
+        .opt-group { margin-top: 14px; }
+        .opt-group label { font-weight: 700; display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        
+        .chip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
             gap: 8px;
-            margin-bottom: 8px;
         }
-
-        .opt-chip {
-            padding: 8px 14px;
-            background: #f1f5f9;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
+        
+        .chip-btn {
+            border: 2px solid var(--border-color);
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 8px 4px;
             font-size: 13px;
             font-weight: 600;
             color: var(--text-dark);
             cursor: pointer;
+            text-align: center;
             transition: all 0.2s ease;
-            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
         }
 
-        .opt-chip:hover {
-            background: #e2e8f0;
+        .chip-btn .chip-icon { font-size: 16px; }
+        .chip-btn .chip-sub { font-size: 11px; color: var(--text-muted); font-weight: normal; }
+
+        .chip-btn:hover {
+            border-color: #cbd5e1;
+            background: #fff;
         }
 
-        .opt-chip.active {
-            background: var(--primary);
-            color: #ffffff;
+        .chip-btn.selected {
             border-color: var(--primary);
-            box-shadow: 0 2px 6px rgba(139, 0, 0, 0.3);
+            background: var(--primary-light);
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(139, 0, 0, 0.15);
         }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
@@ -580,6 +580,13 @@ let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
 
+// 客製化選擇的狀態暫存
+let selectedSize = "小";
+let selectedUnitPrice = 0;
+let selectedCilantro = "加香菜";
+let selectedSpicy = "不辣";
+let selectedNote = "無";
+
 let finalTotal = 0;
 let finalSummary = "";
 
@@ -698,50 +705,73 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 晶片選項單選切換輔助函式
-function selectOption(element) {
-    const parent = element.parentElement;
-    parent.querySelectorAll('.opt-chip').forEach(chip => chip.classList.remove('active'));
-    element.classList.add('active');
-}
-
-// 點擊新增按鈕：彈出圖形化客製化選項視窗
+// 點擊新增按鈕：彈出客製化選單
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
+    // 重置選單狀態
+    selectedCilantro = "加香菜";
+    selectedSpicy = "不辣";
+    selectedNote = "無";
+
     let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
+        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:16px; color:var(--primary);">
             ${item.icon || '🍲'} ${item.name}
         </div>
     `;
 
     if (item.hasSize) {
+        selectedSize = "小";
+        selectedUnitPrice = item.smallPrice;
+
         bodyHtml += `
             <div class="opt-group">
-                <div class="opt-title">📏 選擇份量</div>
-                <div class="opt-grid" id="pop-size-group">
-                    <div class="opt-chip active" onclick="selectOption(this)" data-val="小" data-price="${item.smallPrice}">小份 ($${item.smallPrice})</div>
-                    <div class="opt-chip" onclick="selectOption(this)" data-val="大" data-price="${item.largePrice}">大份 ($${item.largePrice})</div>
+                <label>📏 選擇份量</label>
+                <div class="chip-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="chip-btn selected" onclick="selectChip('size', '小|${item.smallPrice}', this)">
+                        <span class="chip-icon">🥣</span>
+                        <span>小份</span>
+                        <span class="chip-sub">$${item.smallPrice}</span>
+                    </div>
+                    <div class="chip-btn" onclick="selectChip('size', '大|${item.largePrice}', this)">
+                        <span class="chip-icon">🍲</span>
+                        <span>大份</span>
+                        <span class="chip-sub">$${item.largePrice}</span>
+                    </div>
                 </div>
+            </div>
 
-                <div class="opt-title">🌶️ 辣度需求</div>
-                <div class="opt-grid" id="pop-spicy-group">
-                    <div class="opt-chip active" onclick="selectOption(this)" data-val="不辣">不辣</div>
-                    <div class="opt-chip" onclick="selectOption(this)" data-val="微辣">微辣</div>
-                    <div class="opt-chip" onclick="selectOption(this)" data-val="小辣">小辣</div>
-                    <div class="opt-chip" onclick="selectOption(this)" data-val="中辣">中辣</div>
-                    <div class="opt-chip" onclick="selectOption(this)" data-val="大辣">大辣</div>
+            <div class="opt-group">
+                <label>🌿 香菜需求</label>
+                <div class="chip-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="chip-btn selected" onclick="selectChip('cilantro', '加香菜', this)">加香菜</div>
+                    <div class="chip-btn" onclick="selectChip('cilantro', '不要香菜', this)">不要香菜</div>
+                </div>
+            </div>
+
+            <div class="opt-group">
+                <label>🌶️ 辣度需求</label>
+                <div class="chip-grid">
+                    <div class="chip-btn selected" onclick="selectChip('spicy', '不辣', this)">不辣</div>
+                    <div class="chip-btn" onclick="selectChip('spicy', '微辣', this)">微辣</div>
+                    <div class="chip-btn" onclick="selectChip('spicy', '小辣', this)">小辣</div>
+                    <div class="chip-btn" onclick="selectChip('spicy', '中辣', this)">中辣</div>
+                    <div class="chip-btn" onclick="selectChip('spicy', '大辣', this)">大辣</div>
                 </div>
             </div>
         `;
     } else {
+        selectedSize = "標準";
+        selectedUnitPrice = item.price;
+
         bodyHtml += `
             <div class="opt-group">
-                <div class="opt-title">📝 特別需求</div>
-                <div class="opt-grid" id="pop-note-group">
-                    <div class="opt-chip active" onclick="selectOption(this)" data-val="正常">正常</div>
-                    <div class="opt-chip" onclick="selectOption(this)" data-val="不要香菜">不要香菜</div>
+                <label>📝 備註需求</label>
+                <div class="chip-grid">
+                    <div class="chip-btn selected" onclick="selectChip('note', '無', this)">無特殊需求</div>
+                    <div class="chip-btn" onclick="selectChip('note', '加辣', this)">加辣</div>
+                    <div class="chip-btn" onclick="selectChip('note', '外帶分開裝', this)">外帶分開裝</div>
                 </div>
             </div>
         `;
@@ -754,24 +784,7 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            let unitPrice = item.price || 0;
-            let sizeVal = "標準";
-            let spicyVal = "不辣";
-            let noteVal = "無";
-
-            if (item.hasSize) {
-                const activeSize = document.querySelector("#pop-size-group .opt-chip.active");
-                const activeSpicy = document.querySelector("#pop-spicy-group .opt-chip.active");
-                
-                sizeVal = activeSize ? activeSize.getAttribute("data-val") : "小";
-                unitPrice = activeSize ? parseInt(activeSize.getAttribute("data-price"), 10) : item.smallPrice;
-                spicyVal = activeSpicy ? activeSpicy.getAttribute("data-val") : "不辣";
-            } else {
-                const activeNote = document.querySelector("#pop-note-group .opt-chip.active");
-                noteVal = activeNote ? activeNote.getAttribute("data-val") : "無";
-            }
-
-            const customKey = `${item.name}|${sizeVal}|${spicyVal}|${noteVal}`;
+            const customKey = `${item.name}|${selectedSize}|${selectedCilantro}|${selectedSpicy}|${selectedNote}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -779,11 +792,12 @@ function clickAddItem(name) {
                 cart[customKey] = {
                     key: customKey,
                     baseName: item.name,
-                    price: unitPrice,
+                    price: selectedUnitPrice,
                     qty: 1,
-                    size: sizeVal,
-                    spicy: spicyVal,
-                    note: noteVal,
+                    size: selectedSize,
+                    cilantro: selectedCilantro,
+                    spicy: selectedSpicy,
+                    note: selectedNote,
                     hasSize: !!item.hasSize
                 };
             }
@@ -793,6 +807,24 @@ function clickAddItem(name) {
             closeModal();
         }
     });
+}
+
+function selectChip(type, value, element) {
+    const parent = element.parentElement;
+    parent.querySelectorAll('.chip-btn').forEach(btn => btn.classList.remove('selected'));
+    element.classList.add('selected');
+
+    if (type === 'size') {
+        const parts = value.split('|');
+        selectedSize = parts[0];
+        selectedUnitPrice = parseInt(parts[1], 10);
+    } else if (type === 'cilantro') {
+        selectedCilantro = value;
+    } else if (type === 'spicy') {
+        selectedSpicy = value;
+    } else if (type === 'note') {
+        selectedNote = value;
+    }
 }
 
 function removeOneBaseItem(baseName) {
@@ -824,6 +856,7 @@ function renderCart() {
         let optText = "";
         if (item.hasSize) {
             let opts = [item.size];
+            if (item.cilantro) opts.push(item.cilantro);
             if (item.spicy !== "不辣") opts.push(item.spicy);
             optText = opts.join(",");
         } else {
@@ -850,7 +883,7 @@ function openCartModal() {
     if (keys.length === 0) {
         return showCustomModal({
             title: "購物車提示",
-            bodyHtml: "<p style='text-align:center; color:#666;'>🛒 購物車目前是空的喔！</p>",
+            bodyHtml: "<p style='text-align:center; color:#666; padding: 20px 0;'>🛒 購物車目前是空的喔！</p>",
             confirmText: "我知道了",
             showCancel: false
         });
@@ -895,7 +928,7 @@ function renderModalCartList() {
 
         let optTag = "";
         if (item.hasSize) {
-            optTag = `🍲 ${item.size} | 辣度: ${item.spicy}`;
+            optTag = `🍲 ${item.size} | ${item.cilantro} | 辣度: ${item.spicy}`;
         } else {
             optTag = `📌 備註: ${item.note}`;
         }
