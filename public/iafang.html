@@ -220,9 +220,47 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* ==================== 圖形化選項卡片樣式 ==================== */
+        .opt-group { margin-top: 14px; }
+        .opt-group label { font-weight: 700; display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        
+        .chip-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .chip-btn {
+            border: 2px solid var(--border-color);
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 8px 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chip-btn .chip-icon { font-size: 18px; }
+        .chip-btn .chip-sub { font-size: 10px; color: var(--text-muted); font-weight: normal; }
+
+        .chip-btn:hover {
+            border-color: #cbd5e1;
+            background: #fff;
+        }
+
+        .chip-btn.selected {
+            border-color: var(--secondary);
+            background: #fef8f0;
+            color: var(--accent);
+            box-shadow: 0 2px 6px rgba(230, 126, 34, 0.15);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -553,6 +591,9 @@ let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
 
+let selectedRice = "正常飯";
+let selectedNote = "無特殊需求";
+
 let finalTotal = 0;
 let finalSummary = "";
 
@@ -666,24 +707,47 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
+    selectedRice = "正常飯";
+    selectedNote = "無特殊需求";
+
     let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
+        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:16px; color:var(--primary);">
             ${item.icon || '🍱'} ${item.name} ($${item.price})
         </div>
         
         <div class="opt-group">
             <label>🍚 飯量調整</label>
-            <select id="pop-rice" class="select-box">
-                <option value="正常飯">正常飯 (紫米飯)</option>
-                <option value="少飯">少飯</option>
-                <option value="不飯(換菜)">不飯</option>
-            </select>
+            <div class="chip-grid">
+                <div class="chip-btn selected" onclick="selectChip('rice', '正常飯', this)">
+                    <span class="chip-icon">🍚</span>
+                    <span>正常飯</span>
+                    <span class="chip-sub">紫米飯</span>
+                </div>
+                <div class="chip-btn" onclick="selectChip('rice', '少飯', this)">
+                    <span class="chip-icon">🍚</span>
+                    <span>少飯</span>
+                    <span class="chip-sub">減半量</span>
+                </div>
+                <div class="chip-btn" onclick="selectChip('rice', '不飯(換菜)', this)">
+                    <span class="chip-icon">🥗</span>
+                    <span>不飯</span>
+                    <span class="chip-sub">換高麗菜</span>
+                </div>
+            </div>
+        </div>
 
-            <label>備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="不加醬汁">不加醬汁</option>
-            </select>
+        <div class="opt-group">
+            <label>📝 備註需求</label>
+            <div class="chip-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <div class="chip-btn selected" onclick="selectChip('note', '無特殊需求', this)">
+                    <span class="chip-icon">👌</span>
+                    <span>正常風味</span>
+                </div>
+                <div class="chip-btn" onclick="selectChip('note', '不加醬汁', this)">
+                    <span class="chip-icon">🚫</span>
+                    <span>不加醬汁</span>
+                </div>
+            </div>
         </div>
     `;
 
@@ -694,11 +758,8 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const rice = document.getElementById("pop-rice").value;
-            const note = document.getElementById("pop-note").value;
-
             const unitPrice = item.price;
-            const customKey = `${item.name}|${rice}|${note}`;
+            const customKey = `${item.name}|${selectedRice}|${selectedNote}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -708,8 +769,8 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    rice: rice,
-                    note: note
+                    rice: selectedRice,
+                    note: selectedNote
                 };
             }
 
@@ -718,6 +779,18 @@ function clickAddItem(name) {
             closeModal();
         }
     });
+}
+
+function selectChip(type, value, element) {
+    const parent = element.parentElement;
+    parent.querySelectorAll('.chip-btn').forEach(btn => btn.classList.remove('selected'));
+    element.classList.add('selected');
+
+    if (type === 'rice') {
+        selectedRice = value;
+    } else if (type === 'note') {
+        selectedNote = value;
+    }
 }
 
 function removeOneBaseItem(baseName) {
@@ -765,7 +838,7 @@ function openCartModal() {
     if (keys.length === 0) {
         return showCustomModal({
             title: "購物車提示",
-            bodyHtml: "<p style='text-align:center; color:#666;'>🛒 購物車目前是空的喔！</p>",
+            bodyHtml: "<p style='text-align:center; color:#666; padding: 20px 0;'>🛒 購物車目前是空的喔！</p>",
             confirmText: "我知道了",
             showCancel: false
         });
