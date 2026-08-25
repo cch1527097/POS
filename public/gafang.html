@@ -218,9 +218,47 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        .opt-group { margin-top: 8px; }
+
+        /* 圖形化客製化選項樣式 */
+        .opt-title {
+            font-weight: 700;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .opt-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .opt-chip {
+            padding: 8px 14px;
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .opt-chip:hover {
+            background: #e2e8f0;
+        }
+
+        .opt-chip.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(139, 0, 0, 0.3);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -530,7 +568,7 @@ function goBack() {
 }
 
 const menuItems = [
-    // === 木牌招牌項目（依據現場圖片更新） ===
+    // === 木牌招牌項目 ===
     {name: "麵線糊", subName: "古早味麵線糊", smallPrice: 40, largePrice: 50, category: "招牌特色", icon: "🍜", hasSize: true},
     {name: "炒麵", subName: "古早味炒麵", smallPrice: 40, largePrice: 50, category: "招牌特色", icon: "🍜", hasSize: true},
     {name: "筒仔米糕", subName: "傳統經典米糕", price: 45, category: "招牌特色", icon: "🍚"},
@@ -601,7 +639,6 @@ function renderMenu(items) {
             const card = document.createElement("div");
             card.className = "item-card";
             
-            // 計算該品項在購物車中的總數量
             let currentQty = 0;
             Object.keys(cart).forEach(key => {
                 if (cart[key].baseName === item.name) {
@@ -661,7 +698,14 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 點擊新增按鈕：彈出選擇視窗詢問客製化選項
+// 晶片選項單選切換輔助函式
+function selectOption(element) {
+    const parent = element.parentElement;
+    parent.querySelectorAll('.opt-chip').forEach(chip => chip.classList.remove('active'));
+    element.classList.add('active');
+}
+
+// 點擊新增按鈕：彈出圖形化客製化選項視窗
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
@@ -675,31 +719,30 @@ function clickAddItem(name) {
     if (item.hasSize) {
         bodyHtml += `
             <div class="opt-group">
-                <label>📏 選擇份量</label>
-                <select id="pop-size" class="select-box">
-                    <option value="小|${item.smallPrice}">小份 ($${item.smallPrice})</option>
-                    <option value="大|${item.largePrice}">大份 ($${item.largePrice})</option>
-                </select>
+                <div class="opt-title">📏 選擇份量</div>
+                <div class="opt-grid" id="pop-size-group">
+                    <div class="opt-chip active" onclick="selectOption(this)" data-val="小" data-price="${item.smallPrice}">小份 ($${item.smallPrice})</div>
+                    <div class="opt-chip" onclick="selectOption(this)" data-val="大" data-price="${item.largePrice}">大份 ($${item.largePrice})</div>
+                </div>
 
-                <label>🌶️ 辣度需求</label>
-                <select id="pop-spicy" class="select-box">
-                    <option value="不辣">不辣</option>
-                    <option value="微辣">微辣</option>
-                    <option value="小辣">小辣</option>
-                    <option value="中辣">中辣</option>
-                    <option value="大辣">大辣</option>
-                </select>
+                <div class="opt-title">🌶️ 辣度需求</div>
+                <div class="opt-grid" id="pop-spicy-group">
+                    <div class="opt-chip active" onclick="selectOption(this)" data-val="不辣">不辣</div>
+                    <div class="opt-chip" onclick="selectOption(this)" data-val="微辣">微辣</div>
+                    <div class="opt-chip" onclick="selectOption(this)" data-val="小辣">小辣</div>
+                    <div class="opt-chip" onclick="selectOption(this)" data-val="中辣">中辣</div>
+                    <div class="opt-chip" onclick="selectOption(this)" data-val="大辣">大辣</div>
+                </div>
             </div>
         `;
     } else {
         bodyHtml += `
             <div class="opt-group">
-                <label>📝 備註需求</label>
-                <select id="pop-note" class="select-box">
-                    <option value="無">無特別需求</option>
-                    <option value="加辣">加辣</option>
-                    <option value="外帶分開裝">外帶分開裝</option>
-                </select>
+                <div class="opt-title">📝 特別需求</div>
+                <div class="opt-grid" id="pop-note-group">
+                    <div class="opt-chip active" onclick="selectOption(this)" data-val="正常">正常</div>
+                    <div class="opt-chip" onclick="selectOption(this)" data-val="不要香菜">不要香菜</div>
+                </div>
             </div>
         `;
     }
@@ -717,12 +760,15 @@ function clickAddItem(name) {
             let noteVal = "無";
 
             if (item.hasSize) {
-                const sizeRaw = document.getElementById("pop-size").value.split("|");
-                sizeVal = sizeRaw[0];
-                unitPrice = parseInt(sizeRaw[1]);
-                spicyVal = document.getElementById("pop-spicy").value;
+                const activeSize = document.querySelector("#pop-size-group .opt-chip.active");
+                const activeSpicy = document.querySelector("#pop-spicy-group .opt-chip.active");
+                
+                sizeVal = activeSize ? activeSize.getAttribute("data-val") : "小";
+                unitPrice = activeSize ? parseInt(activeSize.getAttribute("data-price"), 10) : item.smallPrice;
+                spicyVal = activeSpicy ? activeSpicy.getAttribute("data-val") : "不辣";
             } else {
-                noteVal = document.getElementById("pop-note").value;
+                const activeNote = document.querySelector("#pop-note-group .opt-chip.active");
+                noteVal = activeNote ? activeNote.getAttribute("data-val") : "無";
             }
 
             const customKey = `${item.name}|${sizeVal}|${spicyVal}|${noteVal}`;
@@ -749,7 +795,6 @@ function clickAddItem(name) {
     });
 }
 
-// 主頁面上點擊減號：移除最後加入該品項的客製化項目
 function removeOneBaseItem(baseName) {
     const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
     if (keys.length === 0) return;
