@@ -220,10 +220,6 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
-
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
             position: fixed;
@@ -408,6 +404,62 @@
             border-radius: 4px;
             display: inline-block;
             margin-top: 2px;
+        }
+
+        /* ==================== 圖形化客製化選項樣式 ==================== */
+        .option-section {
+            margin-top: 16px;
+            text-align: left;
+        }
+
+        .option-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        .opt-btn {
+            background: #f8fafc;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            user-select: none;
+        }
+
+        .opt-btn .opt-icon {
+            font-size: 18px;
+        }
+
+        .opt-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .opt-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 3px 8px rgba(44, 62, 80, 0.25);
         }
 
         /* RWD 調整 */
@@ -623,6 +675,10 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 彈窗選擇狀態暫存
+let selectedSauerkraut = "要酸菜";
+let selectedSpicy = "不辣";
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -729,30 +785,68 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectOption(type, value, btnEl) {
+    if (type === 'sauerkraut') {
+        selectedSauerkraut = value;
+    } else if (type === 'spicy') {
+        selectedSpicy = value;
+    }
+    
+    const parent = btnEl.parentElement;
+    parent.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('active'));
+    btnEl.classList.add('active');
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
+    selectedSauerkraut = "要酸菜";
+    selectedSpicy = "不辣";
+
     let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
+        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:16px; color:var(--primary);">
             ${item.icon || '🍱'} ${item.name} ($${item.price})
         </div>
         
-        <div class="opt-group">
-            <label>🥬 酸菜選擇</label>
-            <select id="pop-sauerkraut" class="select-box">
-                <option value="要酸菜">要酸菜</option>
-                <option value="不要酸菜">不要酸菜</option>
-            </select>
+        <div class="option-section">
+            <div class="option-title">🥬 酸菜選擇</div>
+            <div class="option-grid">
+                <button type="button" class="opt-btn active" onclick="selectOption('sauerkraut', '要酸菜', this)">
+                    <span class="opt-icon">🥬</span>
+                    <span>要酸菜</span>
+                </button>
+                <button type="button" class="opt-btn" onclick="selectOption('sauerkraut', '不要酸菜', this)">
+                    <span class="opt-icon">🚫</span>
+                    <span>不要酸菜</span>
+                </button>
+            </div>
+        </div>
 
-            <label>🌶️ 辣味選擇</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微辣">微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="中辣">中辣</option>
-                <option value="大辣">大辣</option>
-            </select>
+        <div class="option-section">
+            <div class="option-title">🌶️ 辣味選擇</div>
+            <div class="option-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <button type="button" class="opt-btn active" onclick="selectOption('spicy', '不辣', this)">
+                    <span class="opt-icon">🫑</span>
+                    <span>不辣</span>
+                </button>
+                <button type="button" class="opt-btn" onclick="selectOption('spicy', '微辣', this)">
+                    <span class="opt-icon">🌶️</span>
+                    <span>微辣</span>
+                </button>
+                <button type="button" class="opt-btn" onclick="selectOption('spicy', '小辣', this)">
+                    <span class="opt-icon">🌶️</span>
+                    <span>小辣</span>
+                </button>
+                <button type="button" class="opt-btn" onclick="selectOption('spicy', '中辣', this)">
+                    <span class="opt-icon">🔥</span>
+                    <span>中辣</span>
+                </button>
+                <button type="button" class="opt-btn" onclick="selectOption('spicy', '大辣', this)">
+                    <span class="opt-icon">💥</span>
+                    <span>大辣</span>
+                </button>
+            </div>
         </div>
     `;
 
@@ -763,8 +857,8 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const sauerkraut = document.getElementById("pop-sauerkraut").value;
-            const spicy = document.getElementById("pop-spicy").value;
+            const sauerkraut = selectedSauerkraut;
+            const spicy = selectedSpicy;
 
             const unitPrice = item.price;
             const customKey = `${item.name}|${sauerkraut}|${spicy}`;
