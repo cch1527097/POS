@@ -112,7 +112,6 @@
         .store-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--text-muted); }
         .store-meta span { display: flex; align-items: center; gap: 4px; }
 
-        /* ==================== 低消/優惠橫幅條 樣式 (補上) ==================== */
         .promo-banner {
             background-color: #fffbe3;
             border: 1px solid #ffe58f;
@@ -225,9 +224,38 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* ==================== 圖形化選項卡片 (新增) ==================== */
+        .opt-group { margin-top: 14px; }
+        .opt-group label { font-weight: 700; display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        .opt-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 8px;
+        }
+        .opt-chip {
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            color: #2c3e50;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .opt-chip:hover { border-color: #cbd5e1; background: #fff; }
+        .opt-chip.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 800;
+            box-shadow: 0 2px 6px rgba(139, 0, 0, 0.12);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -555,7 +583,7 @@ const menuItems = [
     {id: 14, name: "蛋花湯", price: 40, category: "精選小菜與飲品", icon:"🥚"},
     {id: 15, name: "烏龍茶", price: 35, category: "精選小菜與飲品", icon:"🍵"},
 
-    // 暖心關東煮 (預設全數可選湯/乾)
+    // 暖心關東煮 (全數預設可選湯/乾)
     {id: 16, name: "豬肉片", price: 35, category: "暖心關東煮", icon:"🍢", hasSoupOption: true},
     {id: 17, name: "時蔬", price: 30, category: "暖心關東煮", icon:"🍢", hasSoupOption: true},
     {id: 18, name: "蟹肉棒 (3個)", price: 25, category: "暖心關東煮", icon:"🍢", hasSoupOption: true},
@@ -597,6 +625,10 @@ let searchDebounceTimer = null;
 
 let finalTotal = 0;
 let finalSummary = "";
+
+// 暫存當前彈窗的選項
+let currentTypeVal = "湯";
+let currentNoteVal = "無";
 
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -654,7 +686,6 @@ function renderMenu(items) {
             const card = document.createElement("div");
             card.className = "item-card";
             
-            // 計算該品項在購物車中的總數量
             let currentQty = 0;
             Object.keys(cart).forEach(key => {
                 if (cart[key].baseName === item.name) {
@@ -709,7 +740,17 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 點擊新增按鈕：彈出選擇視窗詢問客製化選項
+// 圖形化卡片選擇點擊處理函數
+function selectOpt(group, val, el) {
+    if (group === 'type') currentTypeVal = val;
+    if (group === 'note') currentNoteVal = val;
+
+    const parent = el.parentElement;
+    parent.querySelectorAll('.opt-chip').forEach(chip => chip.classList.remove('active'));
+    el.classList.add('active');
+}
+
+// 點擊新增按鈕：彈出選擇視窗詢問客製化選項 (圖形化改寫)
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
@@ -720,35 +761,27 @@ function clickAddItem(name) {
         </div>
     `;
 
-    if (item.hasTypeOption) {
+    // 判斷是否要問湯/乾 (包含暖心關東煮與豬舌、粉腸、骨仔肉等)
+    if (item.hasSoupOption || item.category === "暖心關東煮") {
+        currentTypeVal = "湯"; // 預設值
         bodyHtml += `
             <div class="opt-group">
-                <label>🍲 料理方式</label>
-                <select id="pop-type" class="select-box">
-                    <option value="乾">乾</option>
-                    <option value="湯">湯</option>
-                </select>
-            </div>
-        `;
-    } else if (item.category === "關東煮") {
-        bodyHtml += `
-            <div class="opt-group">
-                <label>📝 備註需求</label>
-                <select id="pop-note" class="select-box">
-                    <option value="無">無特別需求</option>
-                    <option value="多湯">多湯</option>
-                    <option value="醬另外放">醬另外放</option>
-                </select>
+                <label>🥣 料理方式</label>
+                <div class="opt-grid">
+                    <div class="opt-chip active" onclick="selectOpt('type', '湯', this)">🥣 湯的</div>
+                    <div class="opt-chip" onclick="selectOpt('type', '乾', this)">🥢 乾的</div>
+                </div>
             </div>
         `;
     } else {
+        currentNoteVal = "無"; // 預設值
         bodyHtml += `
             <div class="opt-group">
                 <label>📝 備註需求</label>
-                <select id="pop-note" class="select-box">
-                    <option value="無">無特別需求</option>
-                    <option value="外帶">外帶</option>
-                </select>
+                <div class="opt-grid">
+                    <div class="opt-chip active" onclick="selectOpt('note', '無', this)">無特別需求</div>
+                    <div class="opt-chip" onclick="selectOpt('note', '外帶', this)">🥡 外帶</div>
+                </div>
             </div>
         `;
     }
@@ -763,10 +796,10 @@ function clickAddItem(name) {
             let typeVal = "無";
             let noteVal = "無";
 
-            if (item.hasTypeOption) {
-                typeVal = document.getElementById("pop-type").value;
+            if (item.hasSoupOption || item.category === "暖心關東煮") {
+                typeVal = currentTypeVal;
             } else {
-                noteVal = document.getElementById("pop-note") ? document.getElementById("pop-note").value : "無";
+                noteVal = currentNoteVal;
             }
 
             const unitPrice = item.price;
@@ -782,7 +815,7 @@ function clickAddItem(name) {
                     qty: 1,
                     typeOpt: typeVal,
                     note: noteVal,
-                    hasTypeOption: !!item.hasTypeOption
+                    hasTypeOption: (item.hasSoupOption || item.category === "暖心關東煮")
                 };
             }
 
@@ -793,7 +826,6 @@ function clickAddItem(name) {
     });
 }
 
-// 主頁面上點擊減號：移除最後加入該品項的客製化項目
 function removeOneBaseItem(baseName) {
     const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
     if (keys.length === 0) return;
@@ -892,7 +924,7 @@ function renderModalCartList() {
 
         let optTag = "";
         if (item.hasTypeOption) {
-            optTag = `🍲 做法: ${item.typeOpt}`;
+            optTag = `🥣 做法: ${item.typeOpt}`;
         } else {
             optTag = `📌 備註: ${item.note}`;
         }
