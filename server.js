@@ -18,8 +18,8 @@ app.use(express.static(path.join(__dirname, 'public')));[cite: 2]
 
 // LINE Messaging API 設定與初始化[cite: 2]
 const lineConfig = {
-    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-    channelSecret: process.env.LINE_CHANNEL_SECRET
+    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || '',
+    channelSecret: process.env.LINE_CHANNEL_SECRET || ''
 };
 const lineClient = new line.Client(lineConfig);[cite: 2]
 
@@ -231,12 +231,13 @@ async function initDatabase() {
             const cardIds = Object.keys(INITIAL_USER_DB);[cite: 2]
             const names = Object.values(INITIAL_USER_DB);[cite: 2]
 
+            // 修正：標準語法替代原始的 CROSS JOIN 寫法
             await pool.query(`
                 INSERT INTO users (card_id, name, is_paid, department)
-                SELECT * FROM UNNEST($1::text[], $2::text[]) AS t(card_id, name)
-                CROSS JOIN (SELECT false AS is_paid, '未劃分' AS department) d
+                SELECT u.card_id, u.name, false, '未劃分'
+                FROM UNNEST($1::text[], $2::text[]) AS u(card_id, name)
                 ON CONFLICT (card_id) DO NOTHING;
-            `, [cardIds, names]);[cite: 2]
+            `, [cardIds, names]);
         }
 
         console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);[cite: 2]
