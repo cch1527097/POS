@@ -992,7 +992,7 @@
             { id: 'store_53', name: '五路鍋聖', category: '美味餐點', isOpen: false }
         ];
 
-        /* 🟢 新增發送 LINE 點餐公告函式 */
+        /* 🟢 修改後的發送 LINE 點餐公告函式：直接調用 LINE Share URL 喚起 LINE */
         async function sendLineAnnouncement() {
             const openStores = storeList
                 .filter(s => s.isOpen)
@@ -1022,24 +1022,10 @@ ${openStores}
                 title: '確認發送 LINE 公告',
                 message: `確定要發送以下內容至 LINE 群組嗎？<br><br><pre style="background:#f4f4f4; padding:12px; border-radius:8px; font-size:12px; text-align:left; white-space:pre-wrap;">${announcementMsg}</pre>`,
                 isConfirm: true,
-                onConfirm: async () => {
-                    try {
-                        const response = await fetch('/api/send-line-message', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ message: announcementMsg })
-                        });
-
-                        const result = await response.json();
-                        if (response.ok && result.success) {
-                            showCustomModal({ message: '✅ LINE 點餐公告已成功發送！' });
-                        } else {
-                            showCustomModal({ message: `❌ 發送失敗：${result.message || '未知錯誤'}` });
-                        }
-                    } catch (error) {
-                        console.error('發送 LINE 公告失敗:', error);
-                        showCustomModal({ message: '連線失敗，請確認後端 Node.js API 伺服器狀態！' });
-                    }
+                onConfirm: () => {
+                    // 自動生成 LINE 分享連結並在新分頁開啟，自動開啟 LINE APP 選擇傳送群組
+                    const lineShareUrl = `https://line.me/R/share?text=${encodeURIComponent(announcementMsg)}`;
+                    window.open(lineShareUrl, '_blank');
                 }
             });
         }
