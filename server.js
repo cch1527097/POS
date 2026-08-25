@@ -1,4 +1,4 @@
-require('dotenv').config(); // 載入 .env 環境變數
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -13,22 +13,26 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // LINE Messaging API 設定
-const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || 'YOUR_LINE_CHANNEL_ACCESS_TOKEN';
-const TARGET_GROUP_ID = process.env.LINE_TARGET_ID || 'YOUR_TARGET_GROUP_OR_USER_ID';
+const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || '';
+const TARGET_GROUP_ID = process.env.LINE_TARGET_ID || '';
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 1. 檢查 DATABASE_URL 變數
+if (!process.env.DATABASE_URL) {
+    console.error('❌ 致命錯誤：環境變數未設定 DATABASE_URL！請在 .env 或部署平台設定。');
+}
+
 // PostgreSQL (Neon) 連線設定
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false // Neon 強制使用 SSL
-    },
+    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
     max: 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000
+    connectionTimeoutMillis: 10000, // 提高至 10 秒以應對 Neon 冷啟動
+    keepAlive: true
 });
 
 // 預設員工資料
@@ -250,16 +254,16 @@ async function initDatabase() {
         const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
         if (parseInt(userCheck.rows[0].count, 10) === 0) {
             console.log('[系統提示] 正在初始化預設員工名單至 Neon PostgreSQL...');
-            const cardIds = Object.keys(INITIAL_USER_DB);
-            const names = Object.values(INITIAL_USER_DB);
-
-            // 修正：修正 UNNEST 語法，明確指定常數資料型態
-            await pool.query(`
-                INSERT INTO users (card_id, name, is_paid, department)
-                SELECT t.card_id, t.name, false, '未劃分'
-                FROM UNNEST($1::text[], $2::text[]) AS t(card_id, name)
-                ON CONFLICT (card_id) DO NOTHING;
-            `, [cardIds, names]);
+            const userEntries = Object.entries(INITIAL_USER_DB);
+            
+            // 替換原本易錯的 UNNEST，改用安全的批次寫入
+            for (const [cardId, name] of userEntries) {
+                await pool.query(`
+                    INSERT INTO users (card_id, name, is_paid, department)
+                    VALUES ($1, $2, false, '未劃分')
+                    ON CONFLICT (card_id) DO NOTHING;
+                `, [cardId, name]);
+            }
         }
 
         console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);
@@ -272,7 +276,6 @@ async function initDatabase() {
 
 // ==================== API 路由 ====================
 
-// 手動發送 LINE 訊息 API
 app.post('/api/send-line-message', async (req, res) => {
     const { message } = req.body;
 
@@ -648,7 +651,7 @@ app.post('/api/order', async (req, res) => {
                     const cleanName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
                     if (!cleanName) return false;
                     if (reqStoreName && (reqStoreName.includes(cleanName) || cleanName.includes(reqStoreName))) return true;
-                    return cleanMeal.startsWith(cleanName);
+                    return cleanMeal.includes(cleanName);
                 });
             }
 
@@ -743,12 +746,11 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // 修正：使用 NOW() - INTERVAL '24 hours' 來精準計算過去 24 小時的紀錄，避開 AT TIME ZONE 的轉型偏差
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND created_at >= NOW() - INTERVAL '24 hours'
+               AND created_at >= NOW() AT TIME ZONE 'Asia/Taipei' - INTERVAL '1 day'
              ORDER BY id DESC;`,
             [cleanCardId]
         );
