@@ -1,38 +1,29 @@
-require('dotenv').config();
+require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
-const axios = require('axios');
 const { Pool, types } = require('pg');
 
-// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript String (避免精度遺失)
-types.setTypeParser(20, val => val);
+// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
+types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// LINE Messaging API 設定
-const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || '';
-const TARGET_GROUP_ID = process.env.LINE_TARGET_ID || '';
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 1. 檢查 DATABASE_URL 變數
-if (!process.env.DATABASE_URL) {
-    console.error('❌ 致命錯誤：環境變數未設定 DATABASE_URL！請在 .env 或部署平台設定。');
-}
-
 // PostgreSQL (Neon) 連線設定
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+    ssl: {
+        rejectUnauthorized: false // Neon 強制使用 SSL
+    },
     max: 10,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000, // 提高至 10 秒以應對 Neon 冷啟動
-    keepAlive: true
+    connectionTimeoutMillis: 2000
 });
 
 // 預設員工資料
@@ -49,34 +40,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：發送 LINE 訊息
-async function sendLinePushMessage(textMessage) {
-    if (!LINE_CHANNEL_ACCESS_TOKEN || LINE_CHANNEL_ACCESS_TOKEN === 'YOUR_LINE_CHANNEL_ACCESS_TOKEN') {
-        console.warn('⚠️ 未設定有效的 LINE_CHANNEL_ACCESS_TOKEN，跳過 LINE 通知發送。');
-        return false;
-    }
-    try {
-        await axios.post(
-            'https://api.line.me/v2/bot/message/push',
-            {
-                to: TARGET_GROUP_ID,
-                messages: [{ type: 'text', text: textMessage }]
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
-                }
-            }
-        );
-        return true;
-    } catch (error) {
-        console.error('LINE Messaging API 呼叫失敗:', error.response?.data || error.message);
-        return false;
-    }
-}
-
-// 輔助函式：同步寫入 public/orders.json
+// 輔助函式：同步寫入 public/orders.json (改為讀取 orders 表的 is_paid)
 async function syncOrdersJsonFile() {
     try {
         const publicDir = path.join(__dirname, 'public');
@@ -96,7 +60,7 @@ async function syncOrdersJsonFile() {
                 timestamp,
                 COALESCE(is_paid, false) AS "isPaid"
             FROM orders
-            ORDER BY id DESC;
+            ORDER BY order_id DESC;
         `);
         const jsonPath = path.join(publicDir, 'orders.json');
         await fs.promises.writeFile(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
@@ -108,6 +72,7 @@ async function syncOrdersJsonFile() {
 // 初始化資料庫
 async function initDatabase() {
     try {
+        // 在 orders 資料表建立時直接包含 is_paid
         await pool.query(`
             CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
@@ -124,6 +89,7 @@ async function initDatabase() {
             );
         `);
 
+        // 自動補建舊 orders 資料表可能缺少的 is_paid 欄位
         await pool.query(`
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
         `);
@@ -254,16 +220,15 @@ async function initDatabase() {
         const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
         if (parseInt(userCheck.rows[0].count, 10) === 0) {
             console.log('[系統提示] 正在初始化預設員工名單至 Neon PostgreSQL...');
-            const userEntries = Object.entries(INITIAL_USER_DB);
-            
-            // 替換原本易錯的 UNNEST，改用安全的批次寫入
-            for (const [cardId, name] of userEntries) {
-                await pool.query(`
-                    INSERT INTO users (card_id, name, is_paid, department)
-                    VALUES ($1, $2, false, '未劃分')
-                    ON CONFLICT (card_id) DO NOTHING;
-                `, [cardId, name]);
-            }
+            const cardIds = Object.keys(INITIAL_USER_DB);
+            const names = Object.values(INITIAL_USER_DB);
+
+            await pool.query(`
+                INSERT INTO users (card_id, name, is_paid, department)
+                SELECT * FROM UNNEST($1::text[], $2::text[]) AS t(card_id, name)
+                CROSS JOIN (SELECT false AS is_paid, '未劃分' AS department) d
+                ON CONFLICT (card_id) DO NOTHING;
+            `, [cardIds, names]);
         }
 
         console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);
@@ -275,21 +240,6 @@ async function initDatabase() {
 }
 
 // ==================== API 路由 ====================
-
-app.post('/api/send-line-message', async (req, res) => {
-    const { message } = req.body;
-
-    if (!message) {
-        return res.status(400).json({ success: false, message: '訊息內容不可為空' });
-    }
-
-    const success = await sendLinePushMessage(message);
-    if (success) {
-        return res.json({ success: true, message: '訊息已推送至 LINE 群組' });
-    } else {
-        return res.status(500).json({ success: false, message: 'LINE API 發送失敗' });
-    }
-});
 
 app.get('/api/lock-time', async (req, res) => {
     try {
@@ -417,6 +367,7 @@ app.post('/api/active-store', async (req, res) => {
     }
 });
 
+// 獲取所有訂單（改為直接讀取 orders.is_paid）
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -431,7 +382,7 @@ app.get('/api/orders', async (req, res) => {
                 timestamp,
                 COALESCE(is_paid, false) AS "isPaid"
             FROM orders
-            ORDER BY id DESC;
+            ORDER BY order_id DESC;
         `);
         res.json(result.rows);
     } catch (err) {
@@ -440,6 +391,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
+// 切換特定「訂單」的繳費狀態（直接修改 orders 表）
 app.patch('/api/orders/:orderId/payment', async (req, res) => {
     const { orderId } = req.params;
     const { isPaid } = req.body;
@@ -626,7 +578,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API
+// 下訂單 API：預設 is_paid 為 false (未繳費)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
@@ -702,12 +654,11 @@ app.post('/api/order', async (req, res) => {
         const empName = userRes.rows[0].name;
         const numTotal = Number(total);
         
-        const safeTimestamp = String(Date.now()).slice(-9);
-        const randomNum = String(Math.floor(100 + Math.random() * 900));
-        const orderIdVal = `${safeTimestamp}${randomNum}`;
-
+        // 解決高併發碰撞：時間戳毫秒 + 4位隨機數
+        const orderIdVal = parseInt(`${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`, 10);
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
+        // 新增訂單預設將 is_paid 設為 false
         const insertQuery = `
             INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp, is_paid)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, false);
@@ -725,10 +676,6 @@ app.post('/api/order', async (req, res) => {
 
         await pool.query(insertQuery, values);
         syncOrdersJsonFile().catch(() => {});
-
-        // 下單成功後自動發送 LINE 群組通知
-        const lineMsg = `🍱 【新訂單通知】\n姓名：${empName} (${cleanCardId})\n餐點：${cleanMeal}\n辣度：${spicy || '無'}\n備註：${note || '無'}\n金額：$${numTotal || 0}`;
-        sendLinePushMessage(lineMsg).catch(() => {});
 
         res.json({ success: true, message: `🎉 訂單送出成功！` });
     } catch (error) {
@@ -750,8 +697,9 @@ app.get('/api/order-history', async (req, res) => {
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND created_at >= NOW() AT TIME ZONE 'Asia/Taipei' - INTERVAL '1 day'
-             ORDER BY id DESC;`,
+               AND created_at >= ((CURRENT_DATE AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
+               AND created_at < (((CURRENT_DATE + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
+             ORDER BY order_id DESC;`,
             [cleanCardId]
         );
 
@@ -768,7 +716,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// Excel 匯出
+// Excel 匯出（直接讀取 orders.is_paid）
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -776,11 +724,11 @@ app.get('/api/export-excel', async (req, res) => {
                 order_id, timestamp, card_id, name, meal, spicy, note, total,
                 COALESCE(is_paid, false) AS is_paid
             FROM orders
-            ORDER BY id ASC;
+            ORDER BY order_id ASC;
         `);
         
         const orders = result.rows.map(row => ({
-            orderId: String(row.order_id),
+            orderId: Number(row.order_id),
             timestamp: row.timestamp,
             cardId: row.card_id,
             name: row.name,
