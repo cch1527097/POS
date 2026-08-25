@@ -221,9 +221,55 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* ==================== 圖形化選項 (Option Grid) 樣式 ==================== */
+        .opt-group { margin-top: 14px; }
+        .opt-group label { font-weight: 700; display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        
+        .opt-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 8px;
+        }
+
+        .opt-chip {
+            border: 1.5px solid var(--border-color);
+            background: #f8fafc;
+            color: var(--text-dark);
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .opt-chip:hover {
+            border-color: #cbd5e1;
+            background: #fff;
+        }
+
+        .opt-chip.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 800;
+            box-shadow: 0 2px 6px rgba(158, 28, 17, 0.12);
+        }
+
+        .opt-chip .sub-text {
+            font-size: 11px;
+            color: #64748b;
+        }
+        .opt-chip.active .sub-text {
+            color: var(--primary);
+        }
 
         /* ==================== 懸浮圓形按鈕群 (Floating Action Buttons) ==================== */
         .fab-container {
@@ -790,10 +836,23 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 點擊新增按鈕：彈出選擇視窗詢問辣度、加飯與加蛋
+// 暫存彈窗選擇狀態
+let currentOptions = { spicy: '不辣', rice: '不加飯', egg: '不加蛋' };
+
+function selectOpt(group, val, el) {
+    currentOptions[group] = val;
+    const parent = el.parentElement;
+    parent.querySelectorAll('.opt-chip').forEach(chip => chip.classList.remove('active'));
+    el.classList.add('active');
+}
+
+// 點擊新增按鈕：彈出【圖形卡片化】客製化選擇視窗
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
+
+    // 重置預設選擇
+    currentOptions = { spicy: '不辣', rice: '不加飯', egg: '不加蛋' };
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -802,25 +861,29 @@ function clickAddItem(name) {
         
         <div class="opt-group">
             <label>🌶️ 辣度選擇</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微辣">微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="中辣">中辣</option>
-                <option value="大辣">大辣</option>
-            </select>
+            <div class="opt-grid">
+                <div class="opt-chip active" onclick="selectOpt('spicy', '不辣', this)">不辣</div>
+                <div class="opt-chip" onclick="selectOpt('spicy', '微辣', this)">微辣</div>
+                <div class="opt-chip" onclick="selectOpt('spicy', '小辣', this)">小辣</div>
+                <div class="opt-chip" onclick="selectOpt('spicy', '中辣', this)">中辣</div>
+                <div class="opt-chip" onclick="selectOpt('spicy', '大辣', this)">大辣</div>
+            </div>
+        </div>
 
-            <label>🍙 飯量選擇 (免費)</label>
-            <select id="pop-rice" class="select-box">
-                <option value="不加飯">不加飯</option>
-                <option value="免費加飯">免費加飯</option>
-            </select>
+        <div class="opt-group">
+            <label>🍙 飯量選擇</label>
+            <div class="opt-grid">
+                <div class="opt-chip active" onclick="selectOpt('rice', '不加飯', this)">不加飯</div>
+                <div class="opt-chip" onclick="selectOpt('rice', '免費加飯', this)">免費加飯<span class="sub-text">+$0</span></div>
+            </div>
+        </div>
 
+        <div class="opt-group">
             <label>🥚 加蛋選擇</label>
-            <select id="pop-egg" class="select-box">
-                <option value="不加蛋">不加蛋</option>
-                <option value="加蛋(+15元)">加蛋 (+15元)</option>
-            </select>
+            <div class="opt-grid">
+                <div class="opt-chip active" onclick="selectOpt('egg', '不加蛋', this)">不加蛋</div>
+                <div class="opt-chip" onclick="selectOpt('egg', '加蛋(+15元)', this)">加蛋<span class="sub-text">+$15</span></div>
+            </div>
         </div>
     `;
 
@@ -831,11 +894,11 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const spicy = document.getElementById("pop-spicy").value;
-            const rice = document.getElementById("pop-rice").value;
-            const egg = document.getElementById("pop-egg").value;
+            const spicy = currentOptions.spicy;
+            const rice = currentOptions.rice;
+            const egg = currentOptions.egg;
 
-            const isEggAdded = egg.includes("加蛋(+15元)");
+            const isEggAdded = egg.includes("加蛋");
             const extraEggFee = isEggAdded ? 15 : 0;
             const unitPrice = item.price + extraEggFee;
 
@@ -904,7 +967,7 @@ function renderCart() {
     }
 }
 
-// 開啟購物車 Modal 視窗（不再包含辣度、加飯、加蛋下拉選單）
+// 開啟購物車 Modal 視窗
 function openCartModal() {
     const keys = Object.keys(cart);
     
@@ -1033,7 +1096,6 @@ function closeModal() {
     document.getElementById("custom-modal").classList.remove("active");
 }
 
-// 修改第二個系統中的 submitOrderToServer 函式
 async function submitOrderToServer() {
     if (!currentCardId) {
         return showCustomModal({
@@ -1068,7 +1130,6 @@ async function submitOrderToServer() {
             btn.disabled = true;
             btn.innerText = "正在送出...";
 
-            // 調整為與第一個系統一致的資料結構
             const payload = {
                 cardId: currentCardId,
                 category: "food",
@@ -1080,7 +1141,6 @@ async function submitOrderToServer() {
             };
 
             try {
-                // 網址改為與第一個系統相同的 /api/order
                 const response = await fetch("/api/order", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
