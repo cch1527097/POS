@@ -218,9 +218,30 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
+        /* ==================== 圖形化客製化選項樣式 ==================== */
         .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        .opt-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+        .opt-pill {
+            padding: 8px 14px;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            color: var(--text-dark);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        .opt-pill:hover { background: #e2e8f0; }
+        .opt-pill.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(139, 0, 0, 0.15);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -689,7 +710,13 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 點擊新增按鈕：彈出選擇視窗詢問客製化選項
+// 選擇圖形化按鈕切換 active 狀態
+function selectPill(groupClass, element) {
+    document.querySelectorAll('.' + groupClass).forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
+}
+
+// 點擊新增按鈕：彈出選擇視窗詢問客製化選項（圖形化按鈕式）
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
@@ -704,30 +731,30 @@ function clickAddItem(name) {
         bodyHtml += `
             <div class="opt-group">
                 <label>📏 選擇份量</label>
-                <select id="pop-size" class="select-box">
-                    <option value="小|${item.smallPrice}">小份 ($${item.smallPrice})</option>
-                    <option value="大|${item.largePrice}">大份 ($${item.largePrice})</option>
-                </select>
+                <div class="opt-pills" id="pop-size-group">
+                    <div class="opt-pill pill-size active" data-value="小" data-price="${item.smallPrice}" onclick="selectPill('pill-size', this)">小份 ($${item.smallPrice})</div>
+                    <div class="opt-pill pill-size" data-value="大" data-price="${item.largePrice}" onclick="selectPill('pill-size', this)">大份 ($${item.largePrice})</div>
+                </div>
 
                 <label>🌶️ 辣度需求</label>
-                <select id="pop-spicy" class="select-box">
-                    <option value="不辣">不辣</option>
-                    <option value="微辣">微辣</option>
-                    <option value="小辣">小辣</option>
-                    <option value="中辣">中辣</option>
-                    <option value="大辣">大辣</option>
-                </select>
+                <div class="opt-pills" id="pop-spicy-group">
+                    <div class="opt-pill pill-spicy active" data-value="不辣" onclick="selectPill('pill-spicy', this)">不辣</div>
+                    <div class="opt-pill pill-spicy" data-value="微辣" onclick="selectPill('pill-spicy', this)">微辣</div>
+                    <div class="opt-pill pill-spicy" data-value="小辣" onclick="selectPill('pill-spicy', this)">小辣</div>
+                    <div class="opt-pill pill-spicy" data-value="中辣" onclick="selectPill('pill-spicy', this)">中辣</div>
+                    <div class="opt-pill pill-spicy" data-value="大辣" onclick="selectPill('pill-spicy', this)">大辣</div>
+                </div>
             </div>
         `;
     } else {
         bodyHtml += `
             <div class="opt-group">
                 <label>📝 備註需求</label>
-                <select id="pop-note" class="select-box">
-                    <option value="無">無特別需求</option>
-                    <option value="加辣">加辣</option>
-                    <option value="外帶分開裝">外帶分開裝</option>
-                </select>
+                <div class="opt-pills" id="pop-note-group">
+                    <div class="opt-pill pill-note active" data-value="無" onclick="selectPill('pill-note', this)">無特別需求</div>
+                    <div class="opt-pill pill-note" data-value="加辣" onclick="selectPill('pill-note', this)">加辣</div>
+                    <div class="opt-pill pill-note" data-value="外帶分開裝" onclick="selectPill('pill-note', this)">外帶分開裝</div>
+                </div>
             </div>
         `;
     }
@@ -745,12 +772,20 @@ function clickAddItem(name) {
             let noteVal = "無";
 
             if (item.hasSize) {
-                const sizeRaw = document.getElementById("pop-size").value.split("|");
-                sizeVal = sizeRaw[0];
-                unitPrice = parseInt(sizeRaw[1]);
-                spicyVal = document.getElementById("pop-spicy").value;
+                const activeSize = document.querySelector("#pop-size-group .pill-size.active");
+                if (activeSize) {
+                    sizeVal = activeSize.getAttribute("data-value");
+                    unitPrice = parseInt(activeSize.getAttribute("data-price"));
+                }
+                const activeSpicy = document.querySelector("#pop-spicy-group .pill-spicy.active");
+                if (activeSpicy) {
+                    spicyVal = activeSpicy.getAttribute("data-value");
+                }
             } else {
-                noteVal = document.getElementById("pop-note").value;
+                const activeNote = document.querySelector("#pop-note-group .pill-note.active");
+                if (activeNote) {
+                    noteVal = activeNote.getAttribute("data-value");
+                }
             }
 
             const customKey = `${item.name}|${sizeVal}|${spicyVal}|${noteVal}`;
