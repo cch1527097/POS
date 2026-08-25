@@ -221,9 +221,62 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* ==================== 圖形化選項 UI 樣式 ==================== */
+        .option-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+            margin: 14px 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chip-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip-item {
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            color: #475569;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .chip-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .chip-item.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(139, 0, 0, 0.25);
+        }
+
+        .chip-item .badge-price {
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        .chip-item.active .badge-price {
+            background: rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -568,6 +621,13 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 記錄當前彈窗選擇狀態
+let tempSelectedOptions = {
+    addMeat: "不加肉",
+    spicy: "不辣",
+    note: "無"
+};
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -624,7 +684,6 @@ function renderMenu(items) {
             const card = document.createElement("div");
             card.className = "item-card";
             
-            // 計算該品項在購物車中的總數量
             let currentQty = 0;
             Object.keys(cart).forEach(key => {
                 if (cart[key].baseName === item.name) {
@@ -679,10 +738,17 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 點擊新增按鈕：彈出選擇視窗詢問客製化選項
+// 點擊新增按鈕：彈出圖形化客製化選擇視窗
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
+
+    // 重置暫存選擇
+    tempSelectedOptions = {
+        addMeat: "不加肉",
+        spicy: "不辣",
+        note: "無"
+    };
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -692,32 +758,28 @@ function clickAddItem(name) {
 
     if (item.isMeal) {
         bodyHtml += `
-            <div class="opt-group">
-                <label>🥩 加肉服務 (每份 +$40)</label>
-                <select id="pop-addmeat" class="select-box">
-                    <option value="不加肉">不加肉</option>
-                    <option value="加燒鴨 (+40元)">加燒鴨 (+40元)</option>
-                    <option value="加燒雞 (+40元)">加燒雞 (+40元)</option>
-                    <option value="加油雞 (+40元)">加油雞 (+40元)</option>
-                    <option value="加叉燒 (+40元)">加叉燒 (+40元)</option>
-                    <option value="加香腸 (+40元)">加香腸 (+40元)</option>
-                </select>
+            <div class="option-section-title">🥩 加肉服務 (加購項)</div>
+            <div class="chip-group" id="group-addmeat">
+                <div class="chip-item active" onclick="selectChip('addmeat', '不加肉', this)">原味 (不加肉)</div>
+                <div class="chip-item" onclick="selectChip('addmeat', '加燒鴨 (+40元)', this)">加燒鴨 <span class="badge-price">+$40</span></div>
+                <div class="chip-item" onclick="selectChip('addmeat', '加燒雞 (+40元)', this)">加燒雞 <span class="badge-price">+$40</span></div>
+                <div class="chip-item" onclick="selectChip('addmeat', '加油雞 (+40元)', this)">加油雞 <span class="badge-price">+$40</span></div>
+                <div class="chip-item" onclick="selectChip('addmeat', '加叉燒 (+40元)', this)">加叉燒 <span class="badge-price">+$40</span></div>
+                <div class="chip-item" onclick="selectChip('addmeat', '加香腸 (+40元)', this)">加香腸 <span class="badge-price">+$40</span></div>
+            </div>
 
-                <label>🌶️ 辣度調整</label>
-                <select id="pop-spicy" class="select-box">
-                    <option value="不辣">不辣</option>
-                    <option value="加辣">加辣</option>
-                </select>
+            <div class="option-section-title">🌶️ 辣度調整</div>
+            <div class="chip-group" id="group-spicy">
+                <div class="chip-item active" onclick="selectChip('spicy', '不辣', this)">🍃 不辣</div>
+                <div class="chip-item" onclick="selectChip('spicy', '加辣', this)">🔥 加辣</div>
             </div>
         `;
     } else {
         bodyHtml += `
-            <div class="opt-group">
-                <label>📝 備註需求</label>
-                <select id="pop-note" class="select-box">
-                    <option value="無">無特別需求</option>
-                    <option value="切盤包裝">切盤包裝</option>
-                </select>
+            <div class="option-section-title">📝 備註需求</div>
+            <div class="chip-group" id="group-note">
+                <div class="chip-item active" onclick="selectChip('note', '無', this)">無特別需求</div>
+                <div class="chip-item" onclick="selectChip('note', '切盤包裝', this)">🍱 切盤包裝</div>
             </div>
         `;
     }
@@ -730,22 +792,14 @@ function clickAddItem(name) {
         showCancel: true,
         onConfirm: () => {
             let extraPrice = 0;
-            let addMeatVal = "不加肉";
-            let spicyVal = "不辣";
-            let noteVal = "無";
+            const { addMeat, spicy, note } = tempSelectedOptions;
 
-            if (item.isMeal) {
-                addMeatVal = document.getElementById("pop-addmeat").value;
-                spicyVal = document.getElementById("pop-spicy").value;
-                if (addMeatVal !== "不加肉") {
-                    extraPrice = 40;
-                }
-            } else {
-                noteVal = document.getElementById("pop-note").value;
+            if (item.isMeal && addMeat !== "不加肉") {
+                extraPrice = 40;
             }
 
             const unitPrice = item.price + extraPrice;
-            const customKey = `${item.name}|${addMeatVal}|${spicyVal}|${noteVal}`;
+            const customKey = `${item.name}|${addMeat}|${spicy}|${note}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -755,9 +809,9 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    addMeat: addMeatVal,
-                    spicy: spicyVal,
-                    note: noteVal,
+                    addMeat: addMeat,
+                    spicy: spicy,
+                    note: note,
                     isMeal: !!item.isMeal
                 };
             }
@@ -769,7 +823,18 @@ function clickAddItem(name) {
     });
 }
 
-// 主頁面上點擊減號：移除最後加入該品項的客製化項目
+// 圖形 Chip 點擊切換邏輯
+function selectChip(groupType, value, element) {
+    const parent = element.parentElement;
+    const chips = parent.querySelectorAll('.chip-item');
+    chips.forEach(c => c.classList.remove('active'));
+    element.classList.add('active');
+
+    if (groupType === 'addmeat') tempSelectedOptions.addMeat = value;
+    if (groupType === 'spicy') tempSelectedOptions.spicy = value;
+    if (groupType === 'note') tempSelectedOptions.note = value;
+}
+
 function removeOneBaseItem(baseName) {
     const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
     if (keys.length === 0) return;
