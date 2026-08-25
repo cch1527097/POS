@@ -456,6 +456,62 @@
         }
         .graphic-opt-card.selected .opt-text { color: var(--primary); font-weight: 700; }
 
+        /* 數量選擇器專用樣式 */
+        .qty-picker-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 12px;
+        }
+        .btn-picker-qty {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        .btn-picker-qty:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .picker-qty-val { font-size: 20px; font-weight: 800; color: var(--primary); min-width: 45px; text-align: center; }
+
+        .preset-qty-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .btn-preset-qty {
+            padding: 6px 0;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .btn-preset-qty:hover, .btn-preset-qty.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+            font-weight: 700;
+        }
+
         .custom-item-tag {
             font-size: 12px;
             color: #64748b;
@@ -608,21 +664,21 @@ const menuItems = [
     {name: "麻辣口味牛肉麵調理包", price: 178, category: "牛肉麵調理包", icon: "📦", isMainCourse: false},
 
     // === 鍋貼 ===
-    {name: "招牌鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true},
-    {name: "韭菜鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true},
-    {name: "韓式辣味鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true},
-    {name: "咖哩雞肉鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true},
-    {name: "玉米鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true},
-    {name: "新蔬食鍋貼(植物肉)", price: 7.5, category: "鍋貼", icon: "🥟", isMainCourse: true},
+    {name: "招牌鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "韭菜鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "韓式辣味鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "咖哩雞肉鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "玉米鍋貼", price: 7.0, category: "鍋貼", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "新蔬食鍋貼(植物肉)", price: 7.5, category: "鍋貼", icon: "🥟", isMainCourse: true, unit: "顆"},
 
     // === 水餃 ===
-    {name: "招牌水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true},
-    {name: "韭菜水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true},
-    {name: "韓式辣味水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true},
-    {name: "咖哩雞肉水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true},
-    {name: "玉米水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true},
-    {name: "新蔬食水餃(植物肉)", price: 7.5, category: "水餃", icon: "🥟", isMainCourse: true},
-    {name: "鮮蝦水餃", price: 10.5, category: "水餃", icon: "🥟", isMainCourse: true},
+    {name: "招牌水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "韭菜水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "韓式辣味水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "咖哩雞肉水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "玉米水餃", price: 7.0, category: "水餃", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "新蔬食水餃(植物肉)", price: 7.5, category: "水餃", icon: "🥟", isMainCourse: true, unit: "顆"},
+    {name: "鮮蝦水餃", price: 10.5, category: "水餃", icon: "🥟", isMainCourse: true, unit: "顆"},
 
     // === 湯餃 ===
     {name: "酸辣湯餃 (8顆水餃)", price: 90, category: "湯餃", icon: "🥟", isMainCourse: true},
@@ -710,9 +766,10 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
-// 暫存選擇的客製化選項
+// 暫存選擇的客製化選項與數量
 let selectedSauce = "正常";
 let selectedSpicy = "不辣";
+let selectedQty = 5; // 鍋貼水餃預設 5 顆
 
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -777,11 +834,13 @@ function renderMenu(items) {
                 }
             });
 
+            const unitText = item.unit ? ` / ${item.unit}` : '';
+
             card.innerHTML = `
                 <div class="item-info">
                     <div class="item-name">${item.name}</div>
                     <div class="item-price-zone">
-                        <div class="item-price">$${item.price}</div>
+                        <div class="item-price">$${item.price}${unitText}</div>
                     </div>
                 </div>
                 <div class="item-img-placeholder">
@@ -820,7 +879,7 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 點擊新增按鈕：彈出【圖形化】選擇視窗詢問客製化選項
+// 點擊新增按鈕：彈出【圖形化】選擇視窗（含鍋貼/水餃數量選擇）
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
@@ -828,16 +887,43 @@ function clickAddItem(name) {
     // 重置預設選擇
     selectedSauce = "正常";
     selectedSpicy = "不辣";
+    
+    // 判斷是否為「鍋貼」或「水餃」類別，若是則顯示數量選取區
+    const isDumpling = (item.category === "鍋貼" || item.category === "水餃");
+    selectedQty = isDumpling ? 5 : 1; // 鍋貼水餃預設為 5 顆，一般餐點為 1 份
+
+    let qtySectionHtml = "";
+    if (isDumpling) {
+        qtySectionHtml = `
+            <div class="graphic-section-title">🥟 請選擇購買數量 (顆)</div>
+            
+            <div class="preset-qty-grid">
+                <button class="btn-preset-qty active" onclick="setPresetQty(5, this)">5顆</button>
+                <button class="btn-preset-qty" onclick="setPresetQty(10, this)">10顆</button>
+                <button class="btn-preset-qty" onclick="setPresetQty(12, this)">12顆</button>
+                <button class="btn-preset-qty" onclick="setPresetQty(15, this)">15顆</button>
+                <button class="btn-preset-qty" onclick="setPresetQty(20, this)">20顆</button>
+            </div>
+
+            <div class="qty-picker-wrapper">
+                <button class="btn-picker-qty" onclick="adjustModalQty(-1)">-</button>
+                <span id="modal-qty-val" class="picker-qty-val">${selectedQty} 顆</span>
+                <button class="btn-picker-qty" onclick="adjustModalQty(1)">+</button>
+            </div>
+        `;
+    }
 
     let bodyHtml = `
         <div class="modal-hero-icon">${item.icon || '🥟'}</div>
         <div style="text-align:center; font-size:18px; font-weight:bold; color:var(--text-dark);">
             ${item.name}
         </div>
-        <div style="text-align:center; font-size:16px; font-weight:bold; color:var(--accent); margin-bottom:16px;">
-            $${item.price}
+        <div style="text-align:center; font-size:16px; font-weight:bold; color:var(--accent); margin-bottom:12px;">
+            $${item.price} ${item.unit ? '/ ' + item.unit : ''}
         </div>
         
+        ${qtySectionHtml}
+
         <!-- 配料圖形化選擇 -->
         <div class="graphic-section-title">🧂 配料 / 醬料設定</div>
         <div class="graphic-options-grid">
@@ -896,21 +982,57 @@ function clickAddItem(name) {
             const customKey = `${item.name}|${selectedSauce}|${selectedSpicy}`;
 
             if (cart[customKey]) {
-                cart[customKey].qty += 1;
+                cart[customKey].qty += selectedQty;
             } else {
                 cart[customKey] = {
                     key: customKey,
                     baseName: item.name,
                     price: unitPrice,
-                    qty: 1,
+                    qty: selectedQty,
                     sauce: selectedSauce,
-                    spicy: selectedSpicy
+                    spicy: selectedSpicy,
+                    unit: item.unit || "份"
                 };
             }
 
             renderCart();
             renderMenu(currentFilteredItems);
             closeModal();
+        }
+    });
+}
+
+// 快速選擇預設數量 (5/10/12/15/20顆)
+function setPresetQty(num, element) {
+    selectedQty = num;
+    const qtyValEl = document.getElementById("modal-qty-val");
+    if (qtyValEl) {
+        qtyValEl.innerText = `${selectedQty} 顆`;
+    }
+    
+    // 更新按鈕 active 樣式
+    const parent = element.parentElement;
+    parent.querySelectorAll('.btn-preset-qty').forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+}
+
+// 微調彈窗內的數量 (+ / -)
+function adjustModalQty(delta) {
+    selectedQty += delta;
+    if (selectedQty < 1) selectedQty = 1; // 最少 1 顆
+    
+    const qtyValEl = document.getElementById("modal-qty-val");
+    if (qtyValEl) {
+        qtyValEl.innerText = `${selectedQty} 顆`;
+    }
+
+    // 重置預設顆數按鈕高亮狀態
+    document.querySelectorAll('.btn-preset-qty').forEach(btn => {
+        const btnVal = parseInt(btn.innerText);
+        if (btnVal === selectedQty) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
         }
     });
 }
@@ -953,7 +1075,7 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        finalSummary += `${item.baseName}(${item.sauce}/${item.spicy})*${item.qty} `;
+        finalSummary += `${item.baseName}(${item.sauce}/${item.spicy})*${item.qty}${item.unit || ''} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -1024,7 +1146,7 @@ function renderModalCartList() {
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
                 <button class="btn-qty" onclick="changeQtyByKey('${key}', -1)">-</button>
-                <span style="font-weight:700; font-size:14px; min-width:18px; text-align:center;">${item.qty}</span>
+                <span style="font-weight:700; font-size:14px; min-width:24px; text-align:center;">${item.qty}${item.unit || ''}</span>
                 <button class="btn-qty" onclick="changeQtyByKey('${key}', 1)">+</button>
             </div>
         `;
