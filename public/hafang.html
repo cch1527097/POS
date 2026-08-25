@@ -767,16 +767,41 @@ function selectOption(element) {
     element.classList.add('active');
 }
 
-// 點擊新增按鈕：彈出圖形化客製化選項視窗
+// 彈窗內的數量微調輔助函式
+function adjustModalQty(delta) {
+    const qtyInput = document.getElementById("pop-item-qty");
+    if (qtyInput) {
+        let val = parseInt(qtyInput.value, 10) || 1;
+        val += delta;
+        if (val < 1) val = 1;
+        qtyInput.value = val;
+    }
+}
+
+// 點擊新增按鈕：彈出圖形化客製化選項與數量詢問視窗
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
+    // 判斷是否為鍋貼類或水餃類
+    const isDumplingOrPotsticker = item.category === "鍋貼類" || item.category === "水餃類";
+
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
-            ${item.icon || '🥟'} ${item.name} ($${item.price})
+            ${item.icon || '🥟'} ${item.name} ($${item.price}${isDumplingOrPotsticker ? '/顆' : ''})
         </div>
         
+        ${isDumplingOrPotsticker ? `
+            <div class="opt-group">
+                <div class="opt-title">🔢 請選擇點購數量 (顆)</div>
+                <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin:10px 0;">
+                    <button type="button" class="btn-qty" style="width:36px; height:36px; font-size:18px;" onclick="adjustModalQty(-1)">-</button>
+                    <input type="number" id="pop-item-qty" value="10" min="1" style="width:70px; text-align:center; font-size:16px; font-weight:bold; padding:4px; border:1px solid var(--border-color); border-radius:6px; outline:none;">
+                    <button type="button" class="btn-qty" style="width:36px; height:36px; font-size:18px;" onclick="adjustModalQty(1)">+</button>
+                </div>
+            </div>
+        ` : ''}
+
         <div class="opt-group">
             <div class="opt-title">🧂 配料 / 醬料設定</div>
             <div class="opt-grid" id="pop-sauce-group">
@@ -810,19 +835,24 @@ function clickAddItem(name) {
             const sauce = activeSauce ? activeSauce.getAttribute("data-val") : "正常";
             const spicy = activeSpicy ? activeSpicy.getAttribute("data-val") : "不辣";
 
-            const unitPrice = item.price;
+            // 讀取數量
+            let selectedQty = 1;
+            const qtyInput = document.getElementById("pop-item-qty");
+            if (qtyInput) {
+                selectedQty = parseInt(qtyInput.value, 10) || 1;
+            }
 
-            // 建立客製化識別 Key
+            const unitPrice = item.price;
             const customKey = `${item.name}|${sauce}|${spicy}`;
 
             if (cart[customKey]) {
-                cart[customKey].qty += 1;
+                cart[customKey].qty += selectedQty;
             } else {
                 cart[customKey] = {
                     key: customKey,
                     baseName: item.name,
                     price: unitPrice,
-                    qty: 1,
+                    qty: selectedQty,
                     sauce: sauce,
                     spicy: spicy
                 };
