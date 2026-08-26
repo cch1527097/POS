@@ -175,7 +175,8 @@ async function initDatabase() {
             { id: 'store_50', name: '茶湯會', category: '喝涼涼', isOpen: false },
             { id: 'store_51', name: '樂法', category: '喝涼涼', isOpen: false },
             { id: 'store_52', name: '一鳴', category: '美味餐點', isOpen: false },
-            { id: 'store_53', name: '五路鍋聖', category: '美味餐點', isOpen: false }
+            { id: 'store_53', name: '五路鍋聖', category: '美味餐點', isOpen: false },
+            { id: 'store_54', name: '秈鋤料理廚房', category: '美味餐點', isOpen: false }
         ];
 
         const currentStoreRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
