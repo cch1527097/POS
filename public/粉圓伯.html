@@ -506,10 +506,10 @@
         </div>
     </div>
 
-    <!-- 低消訊息橫幅 -->
+    <!-- 低消與優惠訊息橫幅 -->
     <div class="promo-banner">
-        <span class="promo-badge">低消</span>
-        <span class="promo-text">外送最低金額 <b>500</b> 元</span>
+        <span class="promo-badge">優惠</span>
+        <span class="promo-text">瓶裝飲品任選<b>2瓶100元</b>｜外送最低金額 <b>500</b> 元</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -582,6 +582,8 @@ let searchDebounceTimer = null;
 let selectedSpecs = { size: '大杯', temp: '冰', topping: [], toppingPrice: 0, customIngredients: [], addCondensedMilk: false };
 
 let finalTotal = 0;
+let rawSubtotal = 0;
+let bottleDiscount = 0;
 let finalSummary = "";
 
 window.onload = function() {
@@ -712,7 +714,7 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 單純的加料區品項直接加入
+    // 單純的加料區品項或瓶裝飲品直接加入
     if (item.category === "加料區" || item.category === "瓶裝飲品") {
         const customKey = `${item.name}|標準`;
         if (cart[customKey]) {
@@ -721,6 +723,7 @@ function clickAddItem(name) {
             cart[customKey] = {
                 key: customKey,
                 baseName: item.name,
+                category: item.category,
                 size: '標準',
                 price: item.price,
                 qty: 1,
@@ -822,6 +825,7 @@ function clickAddItem(name) {
                 cart[customKey] = {
                     key: customKey,
                     baseName: item.name,
+                    category: item.category,
                     price: basePrice,
                     qty: 1,
                     desc: specDesc
@@ -889,19 +893,30 @@ function removeOneBaseItem(baseName) {
 }
 
 function renderCart() {
+    rawSubtotal = 0;
+    bottleDiscount = 0;
     finalTotal = 0;
     finalSummary = "";
     
     let totalCount = 0;
+    let bottleCount = 0; // 瓶裝飲品總數量
     const keys = Object.keys(cart);
 
     keys.forEach(key => {
         const item = cart[key];
         totalCount += item.qty;
         const sub = item.qty * item.price;
-        finalTotal += sub;
+        rawSubtotal += sub;
         finalSummary += `${item.baseName}(${item.desc})*${item.qty} `;
+
+        if (item.category === "瓶裝飲品") {
+            bottleCount += item.qty;
+        }
     });
+
+    // 計算瓶裝飲品「任選兩瓶100元」優惠（每滿2瓶省下20元）
+    bottleDiscount = Math.floor(bottleCount / 2) * 20;
+    finalTotal = rawSubtotal - bottleDiscount;
 
     const badgeEl = document.getElementById("cart-badge");
     if (badgeEl) {
@@ -933,8 +948,7 @@ function openCartModal() {
         </div>
         <div id="modal-cart-list" style="max-height: 280px; overflow-y: auto; margin-bottom: 12px; padding-right: 4px;"></div>
         
-        <div id="modal-total-amount" style="text-align:right; font-size:18px; font-weight:bold; margin-top:14px; color:var(--accent); border-top:1px dashed #e2e8f0; padding-top:10px;">
-            總計: $${finalTotal}
+        <div id="modal-total-amount" style="text-align:right; font-size:14px; color:#475569; margin-top:14px; border-top:1px dashed #e2e8f0; padding-top:10px;">
         </div>
     `;
 
@@ -1000,7 +1014,11 @@ function updateModalTotal() {
     renderCart();
     const totalEl = document.getElementById("modal-total-amount");
     if (totalEl) {
-        totalEl.innerText = `總計: $${finalTotal}`;
+        let discountHtml = bottleDiscount > 0 ? `<div style="color:#16a34a; font-weight:600; font-size:13px; margin-bottom:2px;">🎉 瓶裝飲品任選兩瓶優惠：-$${bottleDiscount}</div>` : '';
+        totalEl.innerHTML = `
+            ${discountHtml}
+            <div style="font-size:18px; font-weight:bold; color:var(--accent);">總計: $${finalTotal}</div>
+        `;
     }
 }
 
@@ -1063,6 +1081,9 @@ async function submitOrderToServer() {
 
     let summaryDetailHtml = `<div style="margin-bottom:6px;">💳 卡號：<b>${currentCardId}</b></div>`;
     summaryDetailHtml += `<div style="margin-bottom:6px;">📝 餐點明細：<br><span style="color:#475569; font-size:14px;">${finalSummary}</span></div>`;
+    if (bottleDiscount > 0) {
+        summaryDetailHtml += `<div style="color:#16a34a; font-weight:bold; margin-top:6px;">🎉 瓶裝飲品任選兩瓶優惠：扣除 $${bottleDiscount}</div>`;
+    }
     summaryDetailHtml += `<div style="font-size:18px; font-weight:bold; margin-top:10px; color:var(--primary);">💰 總金額：$${finalTotal}</div>`;
 
     showCustomModal({
@@ -1080,7 +1101,7 @@ async function submitOrderToServer() {
                 cardId: currentCardId,
                 category: "dessert",
                 type: "dessert",
-                meal: `粉圓伯：${finalSummary.trim()}`,
+                meal: `粉圓伯：${finalSummary.trim()}${bottleDiscount > 0 ? ` (已套用優惠扣除$${bottleDiscount})` : ''}`,
                 total: finalTotal,
                 note: `總計：$${finalTotal}`
             };
