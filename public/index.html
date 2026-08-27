@@ -22,20 +22,19 @@
 
         /* ==================== 登入版面全螢幕背景與裝飾 ==================== */
         body.login-mode {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #f8fcf7;
-    position: fixed; /* 將 relative 改為 fixed，讓登入畫面固定在螢幕視窗中間 */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    min-height: 100vh;
-    overflow: hidden;
-}
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8fcf7;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            min-height: 100vh;
+            overflow: hidden;
+        }
 
-        /* 左上角與右下角的流線波浪背景裝飾 */
         body.login-mode::before,
         body.login-mode::after {
             content: "";
@@ -80,7 +79,6 @@
             z-index: 1000;         
         }
 
-        /* 第一層：頂部工具列 */
         .nidin-top-bar {
             max-width: 1200px;
             margin: 0 auto;
@@ -99,7 +97,6 @@
             min-width: 0;
         }
 
-        /* Logo 樣式 */
         .nidin-logo {
             font-size: 26px;
             font-weight: 800;
@@ -123,7 +120,6 @@
             flex-shrink: 0;
         }
 
-        /* 定位下拉按鈕 */
         .nidin-location-btn {
             display: flex;
             align-items: center;
@@ -143,7 +139,6 @@
             background-color: #f5f5f5;
         }
 
-        /* 搜尋框 */
         .nidin-search-box {
             display: flex;
             align-items: center;
@@ -168,7 +163,6 @@
             color: #333;
         }
 
-        /* 右側員工資訊區塊 */
         .nidin-top-right {
             display: flex;
             align-items: center;
@@ -197,7 +191,6 @@
             color: #0091ff;
         }
 
-        /* 部門膠囊標籤樣式 */
         .dept-badge {
             background-color: #e8f4fd;
             color: #1e88e5;
@@ -209,7 +202,6 @@
             display: inline-block;
         }
 
-        /* 第二層：導覽選單 */
         .nidin-nav-bar {
             max-width: 1200px;
             margin: 0 auto;
@@ -259,6 +251,65 @@
             stroke: #0091ff;
         }
 
+        .wheel-tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: 2px solid #508044;
+            background: #ffffff;
+            color: #508044;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .wheel-tab-btn.active {
+            background: #508044;
+            color: #ffffff;
+        }
+
+        #wheel-result {
+            font-size: 17px;
+            font-weight: bold;
+            color: #2b4c23;
+            margin: 12px 0;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eff6ed;
+            border-radius: 12px;
+            width: 100%;
+            padding: 10px;
+        }
+
+        #spin-btn {
+            background-color: #508044;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            width: 100%;
+            padding: 14px 0;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(80, 128, 68, 0.2);
+            transition: all 0.2s ease;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        #spin-btn:hover:not(:disabled) {
+            background-color: #3f6835;
+        }
+
         /* ==================== 1. 登入畫面區塊 ==================== */
         .login-card {
             background-color: #ffffff; 
@@ -276,7 +327,6 @@
             border: 1px solid rgba(220, 235, 218, 0.5);
         }
 
-        /* 登入頁 Logo 樣式 */
         .login-logo {
             width: 80px;
             height: auto;
@@ -356,42 +406,41 @@
         .login-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
         
         .login-admin-link {
-    background-color: #f0f0f0;  /* 淺灰底色 */
-    color: #0f805a;             /* 深綠色字樣 */
-    font-size: 15px;
-    font-weight: 600;
-    margin-top: 25px;
-    padding: 12px 20px;         /* 上下左右內邊距 */
-    border: none;
-    border-radius: 12px;        /* 圓角邊框 */
-    width: 320px;               /* 寬度與登入按鈕一致 */
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    text-align: center;
-    box-sizing: border-border-box;
-}
+            background-color: #f0f0f0;
+            color: #0f805a;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 25px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            width: 320px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            text-align: center;
+            box-sizing: border-box;
+        }
 
-.login-admin-link:hover {
-    background-color: #e4e4e4;  /* 滑鼠懸停時微調底色 */
-    color: #0a5c41;
-}
+        .login-admin-link:hover {
+            background-color: #e4e4e4;
+            color: #0a5c41;
+        }
 
         .login-footer-copy {
-    display: none; /* Hidden by default */
-    position: absolute;
-    bottom: 20px;
-    width: 100%;
-    text-align: center;
-    font-size: 13.5px;
-    color: #668062;
-    z-index: 10;
-}
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 13.5px;
+            color: #668062;
+            z-index: 10;
+        }
 
-/* Only show when body is in login mode */
-body.login-mode .login-footer-copy {
-    display: block;
-}
+        body.login-mode .login-footer-copy {
+            display: block;
+        }
 
         /* ==================== 2. 點餐畫面區塊 ==================== */
         .order-container {
@@ -402,7 +451,6 @@ body.login-mode .login-footer-copy {
             align-items: center;
         }
 
-        /* 區塊標題樣式 */
         .category-header {
             max-width: 1200px;
             width: 100%;
@@ -620,56 +668,56 @@ body.login-mode .login-footer-copy {
         }
 
         .logout-btn {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background-color: #a01010; 
-    color: white;
-    border: none;
-    border-radius: 50%; /* 改為正圓形 */
-    width: 48px;        /* 固定寬高 */
-    height: 48px;
-    padding: 0;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(160, 16, 16, 0.3);
-    transition: all 0.2s ease;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: #a01010; 
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(160, 16, 16, 0.3);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.logout-btn:hover {
-    background-color: #bd1616;
-    transform: scale(1.1); /* Hover 時微放大效果 */
-    box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
-}
+        .logout-btn:hover {
+            background-color: #bd1616;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
+        }
 
-.cart-float-btn {
-    position: fixed;
-    bottom: 85px; /* 位於登出按鈕 (bottom: 25px) 的上方 */
-    right: 25px;
-    background-color: #2e7d32; /* 主題綠色，亦可自行調整 */
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    padding: 0;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
-    transition: all 0.2s ease;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        .cart-float-btn {
+            position: fixed;
+            bottom: 85px;
+            right: 25px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.cart-float-btn:hover {
-    background-color: #1b5e20;
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
-}
+        .cart-float-btn:hover {
+            background-color: #1b5e20;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+        }
 
         /* ==================== 4. Modal 彈窗樣式 ==================== */
         .branch-modal-overlay {
@@ -807,65 +855,6 @@ body.login-mode .login-footer-copy {
             color: #555;
         }
 
-        /* ==================== 5. 自訂精美提示/確認對話框樣式 ==================== */
-        .custom-alert-box {
-            max-width: 440px !important;
-        }
-        .custom-alert-header {
-            background-color: #ffffff !important;
-            padding: 18px 24px !important;
-            border-bottom: 1px solid #edf2f7 !important;
-        }
-        .custom-alert-header h3 {
-            font-size: 18px !important;
-            color: #2d3748 !important;
-            font-weight: bold !important;
-        }
-        .custom-alert-header .close-btn {
-            color: #a0aec0 !important;
-            font-size: 20px !important;
-        }
-        .custom-alert-header .close-btn:hover {
-            color: #718096 !important;
-        }
-        .custom-alert-body {
-            padding: 30px 24px !important;
-            font-size: 16px !important;
-            color: #4a5568 !important;
-            line-height: 1.6 !important;
-            background-color: #ffffff !important;
-        }
-        .custom-alert-footer {
-            padding: 12px 24px 20px 24px !important;
-            display: flex !important;
-            justify-content: flex-end !important;
-            gap: 12px !important;
-            background-color: #ffffff !important;
-        }
-        .custom-btn-action {
-            padding: 10px 26px !important;
-            border-radius: 8px !important;
-            font-size: 15px !important;
-            font-weight: bold !important;
-            cursor: pointer !important;
-            border: none !important;
-            transition: background 0.2s, transform 0.1s !important;
-        }
-        .custom-btn-confirm-red {
-            background-color: #8b1a1a !important;
-            color: white !important;
-        }
-        .custom-btn-confirm-red:hover {
-            background-color: #721616 !important;
-        }
-        .custom-btn-cancel-gray {
-            background-color: #edf2f7 !important;
-            color: #4a5568 !important;
-        }
-        .custom-btn-cancel-gray:hover {
-            background-color: #e2e8f0 !important;
-        }
-
         /* 📱 手機版 RWD 適應 */
         @media (max-width: 768px) {
             .nidin-top-bar {
@@ -939,7 +928,7 @@ body.login-mode .login-footer-copy {
 <body class="login-mode">
 
     <!-- 1. 登入畫面區塊 -->
-    <div id="login-section" class="login-card hidden">
+    <div id="login-section" class="login-card">
         <img src="logo.gif" alt="Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
         <div class="subtitle">ORDERING SYSTEM LOGIN</div>
@@ -1023,7 +1012,6 @@ body.login-mode .login-footer-copy {
                     <span>回首頁</span>
                 </a>
 
-                <!-- 🌟 動態切換美味餐點與喝涼涼的按鈕 -->
                 <a class="nidin-nav-item" id="nav-toggle-btn" href="javascript:void(0);" onclick="toggleFoodDrinkView()">
                     <div class="nidin-nav-icon" id="nav-toggle-icon">
                         <svg viewBox="0 0 24 24">
@@ -1042,6 +1030,16 @@ body.login-mode .login-footer-copy {
                         <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
                     </div>
                     <span>曾點過</span>
+                </a>
+
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="openWheelModal()">
+                    <div class="nidin-nav-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+                        </svg>
+                    </div>
+                    <span>店家轉盤</span>
                 </a>
             </nav>
         </header>
@@ -1286,7 +1284,7 @@ body.login-mode .login-footer-copy {
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
-                    <h3 class="shop-name">滿座烧肉丼飯屋</h3>
+                    <h3 class="shop-name">滿座燒肉丼飯屋</h3>
                     <p class="shop-desc">燒肉丼飯與咖喱飯料理集結了新鮮食材和精心熬煮的醬汁。</p>
                 </div>
             </div>
@@ -1402,7 +1400,7 @@ body.login-mode .login-footer-copy {
             <div class="shop-card" onclick="redirectToShop('一鳴', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
-                    <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=400&q=80"一鳴 義式料理">
+                    <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=400&q=80" alt="一鳴 義式料理">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
@@ -1414,7 +1412,7 @@ body.login-mode .login-footer-copy {
             <div class="shop-card" onclick="redirectToShop('五路鍋聖', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
-                    <img src="https://images.unsplash.com/photo-1773969416268-aa4c032d8de2?auto=format&fit=crop&w=1170&q=80"五路鍋聖">
+                    <img src="https://images.unsplash.com/photo-1773969416268-aa4c032d8de2?auto=format&fit=crop&w=1170&q=80" alt="五路鍋聖">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
@@ -1426,7 +1424,7 @@ body.login-mode .login-footer-copy {
             <div class="shop-card" onclick="redirectToShop('秈鋤料理廚房', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
-                    <img src="https://images.unsplash.com/photo-1713671975136-67bc17006974?auto=format&fit=crop&w=687&q=75"秈鋤料理廚房">
+                    <img src="https://images.unsplash.com/photo-1713671975136-67bc17006974?auto=format&fit=crop&w=687&q=75" alt="秈鋤料理廚房">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
@@ -1438,7 +1436,7 @@ body.login-mode .login-footer-copy {
             <div class="shop-card" onclick="redirectToShop('江滬上海小籠湯包', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
-                    <img src="https://images.unsplash.com/photo-1657939728877-df03de19f9fe?fm=webp&fit=crop&w=800&q=65"江滬上海小籠湯包">
+                    <img src="https://images.unsplash.com/photo-1657939728877-df03de19f9fe?fm=webp&fit=crop&w=800&q=65" alt="江滬上海小籠湯包">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
@@ -1448,7 +1446,7 @@ body.login-mode .login-footer-copy {
             </div>
         </div>
 
-        <!-- 🌟 第二區塊：喝涼涼 -->
+        <!-- 第二區塊：喝涼涼 -->
         <div class="category-header hidden" id="drink-section">
             🥤 喝涼涼
         </div>
@@ -1713,7 +1711,7 @@ body.login-mode .login-footer-copy {
                 </div>
                 <div class="shop-info">
                     <h3 class="shop-name">樂法</h3>
-                    <p class="shop-desc">樂法主打「天然、健康、純粹」的理念，以白色與原木色打造簡約明亮的空間，並堅持使用新鮮水果與優質茶葉。</p>
+                    <p class="shop-desc">樂法主打「天然、健康、純粹」的理念，以白色與原木色打造簡約明亮空間，並堅持使用新鮮水果與優質茶葉。</p>
                 </div>
             </div>
         </div>
@@ -1731,20 +1729,20 @@ body.login-mode .login-footer-copy {
         </footer>
 
         <button class="cart-float-btn" title="查看購物車" aria-label="購物車" onclick="openCartModal()">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="9" cy="21" r="1"></circle>
-        <circle cx="20" cy="21" r="1"></circle>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-    </svg>
-</button>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+        </button>
 
         <button class="logout-btn" title="登出系統" aria-label="登出系統" onclick="executeLogout()">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-    </svg>
-</button>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+        </button>
     </div>
 
     <!-- 選擇院區彈窗 (Modal) -->
@@ -1832,7 +1830,7 @@ body.login-mode .login-footer-copy {
                         </thead>
                         <tbody id="history-list">
                             <tr>
-                                <td colspan="6" class="no-record">載入紀錄中...</td>
+                                <td colspan="6" class="no-record">暫無點餐紀錄</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1868,7 +1866,7 @@ body.login-mode .login-footer-copy {
                         </thead>
                         <tbody id="global-history-list">
                             <tr>
-                                <td colspan="6" class="no-record">核心資料庫載入中...</td>
+                                <td colspan="6" class="no-record">暫無歷史紀錄</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1877,261 +1875,258 @@ body.login-mode .login-footer-copy {
         </div>
     </div>
 
-    <!-- 客製化自訂提示/確認對話框 (Modal) -->
-    <div id="customAlertModal" class="branch-modal-overlay hidden" onclick="closeCustomAlert(false)">
-        <div class="branch-modal-content custom-alert-box" onclick="event.stopPropagation()">
-            <div class="branch-modal-header custom-alert-header">
-                <h3 id="customAlertTitle">提示</h3>
-                <span class="close-btn" onclick="closeCustomAlert(false)">&times;</span>
+    <!-- 店家轉盤 Modal -->
+    <div id="wheel-modal" class="branch-modal-overlay hidden" onclick="closeWheelModal(event)">
+        <div class="branch-modal-content" style="max-width: 440px; border-radius: 20px;" onclick="event.stopPropagation()">
+            <div class="branch-modal-header" style="border-bottom: none; padding: 20px 24px 10px 24px;">
+                <h3 style="font-size: 20px; font-weight: bold;">🎡 今天吃什麼？店家幸運大轉盤</h3>
+                <span class="close-btn" onclick="closeWheelModal()">&times;</span>
             </div>
-            <div class="payment-modal-body custom-alert-body" id="customAlertMessage">
-                提示內容
-            </div>
-            <div class="custom-alert-footer">
-                <button id="customAlertCancelBtn" class="custom-btn-action custom-btn-cancel-gray" onclick="closeCustomAlert(false)">取消</button>
-                <button id="customAlertConfirmBtn" class="custom-btn-action custom-btn-confirm-red" onclick="closeCustomAlert(true)">確定</button>
+            <div class="payment-modal-body" style="padding: 10px 24px 24px 24px; text-align: center; align-items: center;">
+                <div style="display: flex; gap: 12px; width: 100%; justify-content: center; margin-bottom: 12px;">
+                    <button id="wheel-tab-food" class="wheel-tab-btn active" onclick="switchWheelCategory('food')">🍱 美味餐點轉盤</button>
+                    <button id="wheel-tab-drink" class="wheel-tab-btn" onclick="switchWheelCategory('drink')">🥤 喝涼涼轉盤</button>
+                </div>
+
+                <div style="position: relative; width: 320px; height: 320px; margin: 10px auto;">
+                    <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 22px solid #f25252; z-index: 10; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));"></div>
+                    <canvas id="wheel-canvas" width="320" height="320"></canvas>
+                </div>
+
+                <div id="wheel-result">
+                    請點擊下方按鈕開始轉動！
+                </div>
+
+                <button id="spin-btn" onclick="startWheelSpin()">🎰 開始旋轉轉盤</button>
             </div>
         </div>
     </div>
 
     <script>
         let loggedInCardId = ''; 
-        let isSubmitting = false;
-        let customAlertCallback = null;
-        let globalEmployeesMap = {}; // 快取員工對照表 (含部門資訊)
-        let currentCategoryView = 'food'; // 🌟 紀錄當前版面狀態：'food' 或 'drink'
+        let currentCategoryView = 'food';
+
+        // 轉盤控制變數
+        let currentAngle = 0;
+        let activeWheelType = 'food';
+        let isSpinning = false;
+
+        const foodShops = [
+            '榮郁香廣式燒臘', '顏舍關東煮', '羹香鴨肉羹', '四海遊龍', '八方雲集',
+            '鼎森泰式料理', '徊香麵線糊', '北斗賓肉圓', '百華味滷味', '飯大廚',
+            '老聃飲食', '八廚職人弁当', '嵐 爌肉・豬腳飯', '旺春豐傳統小吃', '咕雞 鹽水雞',
+            '家灶 傳統爌肉 豬腳專賣', '菓蔬輕蒔坊', '老蕭土魠魚羹麵館', '小松丼丼食事處', '滿座燒肉丼飯屋',
+            '地6攤排餐', '八鮮雲吞', '明美快餐', '森晴餐盒製所', '廈門沙茶麵',
+            '凡凡滷味', '員湘園', '志氣雞飯', '竑食 泰式拌飯', '一鳴',
+            '五路鍋聖', '秈鋤料理廚房', '江滬上海小籠湯包'
+        ];
+
+        const drinkShops = [
+            '50嵐', 'TEA TOP', '得正', '尚淳草本茶', '烏弄',
+            '可不可熟成紅茶', '鹿兒角', '八曜和茶', '一沐日', '粉圓伯',
+            '先喝道', '李珍心綠豆沙專門店', '吳家紅茶冰', '有茶', '青山',
+            '迷客夏', '茗沏', '李記紅茶冰', '旅人阿宏', '麻古茶坊',
+            '茶湯會', '樂法'
+        ];
 
         const shopUrlMap = {
-            '八方雲集': 'bafang.html',
-            '飯大廚': 'aafang.html',
-            '鼎森泰式料理': 'cafang.html',
-            '榮郁香廣式燒臘': 'dafang.html',
-            '顏舍關東煮': 'eafang.html',
-            '羹香鴨肉羹': 'fafang.html',
-            '徊香麵線糊': 'gafang.html',
-            '四海遊龍': 'hafang.html',
-            '北斗賓肉圓': 'kafang.html',
-            '百華味滷味': 'jafang.html',
-            '老聃飲食': 'iafang.html',
-            '八廚職人弁当': 'lafang.html',
-            '嵐 爌肉・豬腳飯': 'mafang.html',
-            '旺春豐傳統小吃': 'nafang.html',
-            '咕雞 鹽水雞': 'oafang.html',
-            '家灶 傳統爌肉 豬腳專賣': 'pafang.html',
-            '菓蔬輕蒔坊': 'qafang.html',
-            '老蕭土魠魚羹麵館': 'rafang.html',
-            '小松丼丼食事處': 'safang.html',
-            '滿座燒肉丼飯屋': 'tafang.html',
-            '地6攤排餐': 'uafang.html',
-            '八鮮雲吞': 'vafang.html',
-            '明美快餐': '明美快餐.html',
-            '森晴餐盒製所': '森晴餐盒製所.html',
-            '廈門沙茶麵': '廈門沙茶麵.html',
-            '凡凡滷味': '凡凡滷味.html',
-            '員湘園': '員湘園.html',
-            '志氣雞飯': '志氣雞飯.html',
-            '竑食 泰式拌飯': '竑食 泰式拌飯.html',
-            '50嵐': '50嵐.html',
-            'TEA TOP': 'TEA TOP.html',
-            '得正': '得正.html',
-            '尚淳草本茶': '尚淳草本茶.html',
-            '烏弄': '烏弄.html',
-            '可不可熟成紅茶': '可不可熟成紅茶.html',
-            '鹿兒角': '鹿兒角.html',
-            '八曜和茶': '八曜和茶.html',
-            '一沐日': '一沐日.html',
-            '粉圓伯': '粉圓伯.html',
-            '先喝道': '先喝道.html',
-            '李珍心綠豆沙專門店': '李珍心綠豆沙專門店.html',
-            '吳家紅茶冰': '吳家紅茶冰.html',
-            '有茶': '有茶.html',
-            '青山': '青山.html',
-            '迷客夏': '迷客夏.html',
-            '茗沏': '茗沏.html',
-            '李記紅茶冰': '李記紅茶冰.html',
-            '旅人阿宏': '旅人阿宏.html',
-            '麻古茶坊': '麻古茶坊.html',
-            '茶湯會': '茶湯會.html',
-            '樂法': '樂法.html',
-            '一鳴': '一鳴.html',
-            '五路鍋聖': '五路鍋聖.html',
-            '秈鋤料理廚房': '秈鋤料理廚房.html',
+            '八方雲集': 'bafang.html', '飯大廚': 'aafang.html', '鼎森泰式料理': 'cafang.html',
+            '榮郁香廣式燒臘': 'dafang.html', '顏舍關東煮': 'eafang.html', '羹香鴨肉羹': 'fafang.html',
+            '徊香麵線糊': 'gafang.html', '四海遊龍': 'hafang.html', '北斗賓肉圓': 'kafang.html',
+            '百華味滷味': 'jafang.html', '老聃飲食': 'iafang.html', '八廚職人弁当': 'lafang.html',
+            '嵐 爌肉・豬腳飯': 'mafang.html', '旺春豐傳統小吃': 'nafang.html', '咕雞 鹽水雞': 'oafang.html',
+            '家灶 傳統爌肉 豬腳專賣': 'pafang.html', '菓蔬輕蒔坊': 'qafang.html', '老蕭土魠魚羹麵館': 'rafang.html',
+            '小松丼丼食事處': 'safang.html', '滿座燒肉丼飯屋': 'tafang.html', '地6攤排餐': 'uafang.html',
+            '八鮮雲吞': 'vafang.html', '明美快餐': '明美快餐.html', '森晴餐盒製所': '森晴餐盒製所.html',
+            '廈門沙茶麵': '廈門沙茶麵.html', '凡凡滷味': '凡凡滷味.html', '員湘園': '員湘園.html',
+            '志氣雞飯': '志氣雞飯.html', '竑食 泰式拌飯': '竑食 泰式拌飯.html', '50嵐': '50嵐.html',
+            'TEA TOP': 'TEA TOP.html', '得正': '得正.html', '尚淳草本茶': '尚淳草本茶.html',
+            '烏弄': '烏弄.html', '可不可熟成紅茶': '可不可熟成紅茶.html', '鹿兒角': '鹿兒角.html',
+            '八曜和茶': '八曜和茶.html', '一沐日': '一沐日.html', '粉圓伯': '粉圓伯.html',
+            '先喝道': '先喝道.html', '李珍心綠豆沙專門店': '李珍心綠豆沙專門店.html', '吳家紅茶冰': '吳家紅茶冰.html',
+            '有茶': '有茶.html', '青山': '青山.html', '迷客夏': '迷客夏.html',
+            '茗沏': '茗沏.html', '李記紅茶冰': '李記紅茶冰.html', '旅人阿宏': '旅人阿宏.html',
+            '麻古茶坊': '麻古茶坊.html', '茶湯會': '茶湯會.html', '樂法': '樂法.html',
+            '一鳴': '一鳴.html', '五路鍋聖': '五路鍋聖.html', '秈鋤料理廚房': '秈鋤料理廚房.html',
             '江滬上海小籠湯包': '江滬上海小籠湯包.html'
         };
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            const savedCardId = localStorage.getItem('currentCardId');
-            const savedEmpName = localStorage.getItem('currentEmpName');
-            const savedDept = localStorage.getItem('currentDepartment');
-            const savedOffline = localStorage.getItem('isOfflineMode') === 'true';
+        const sliceColors = ['#ff8383', '#cda0a0', '#9ee5cc', '#d3eea9', '#fcd3b1', '#ffa2a2'];
+
+        function getCategoryShops(type) {
+            return type === 'drink' ? drinkShops : foodShops;
+        }
+
+        // 開關轉盤 Modal
+        function openWheelModal() {
+            const modal = document.getElementById('wheel-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                drawWheel();
+            }
+        }
+
+        function closeWheelModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('wheel-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function switchWheelCategory(type) {
+            if (isSpinning) return;
+            activeWheelType = type;
+            document.getElementById('wheel-tab-food')?.classList.toggle('active', type === 'food');
+            document.getElementById('wheel-tab-drink')?.classList.toggle('active', type === 'drink');
+            drawWheel();
+        }
+
+        function drawWheel() {
+            const canvas = document.getElementById('wheel-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const shops = getCategoryShops(activeWheelType);
+            const numOptions = shops.length;
+            if (numOptions === 0) return;
+
+            const arcSize = (2 * Math.PI) / numOptions;
+            const radius = canvas.width / 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < numOptions; i++) {
+                const angle = currentAngle + i * arcSize;
+                ctx.beginPath();
+                ctx.fillStyle = sliceColors[i % sliceColors.length];
+                ctx.moveTo(radius, radius);
+                ctx.arc(radius, radius, radius - 6, angle, angle + arcSize);
+                ctx.lineTo(radius, radius);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(radius, radius);
+                ctx.rotate(angle + arcSize / 2);
+                ctx.fillStyle = '#2b4c23';
+                ctx.font = 'bold 12px "Microsoft JhengHei"';
+                ctx.textAlign = 'right';
+                
+                let text = shops[i];
+                if (text.length > 6) text = text.substring(0, 5) + '..';
+                ctx.fillText(text, radius - 20, 4);
+                ctx.restore();
+            }
+
+            ctx.beginPath();
+            ctx.arc(radius, radius, 22, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.strokeStyle = '#508044';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+        }
+
+        function startWheelSpin() {
+            if (isSpinning) return;
+            isSpinning = true;
+            const spinBtn = document.getElementById('spin-btn');
+            if (spinBtn) spinBtn.disabled = true;
             
-            if (savedCardId) {
-                showOrderSection(savedCardId, savedEmpName, savedDept, savedOffline);
-            } else {
-                showLoginSection();
-            }
+            const resultBox = document.getElementById('wheel-result');
+            if (resultBox) resultBox.textContent = '🎰 轉盤旋轉中...';
 
-            await fetchEmployeeList();
+            const shops = getCategoryShops(activeWheelType);
+            const numOptions = shops.length;
+            const extraRounds = 5 + Math.floor(Math.random() * 5);
+            const randomAngle = Math.random() * Math.PI * 2;
+            const targetAngle = currentAngle + extraRounds * Math.PI * 2 + randomAngle;
 
-            const cardInput = document.getElementById('cardId');
-            if (cardInput) {
-                cardInput.addEventListener('input', () => {
-                    cardInput.setCustomValidity('');
-                });
-                cardInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') executeLogin();
-                });
-            }
+            let startTime = null;
+            const duration = 3500;
+            const startAngle = currentAngle;
 
-            const savedBranch = localStorage.getItem('selectedBranch');
-            if (savedBranch) {
-                updateBranchDisplay(savedBranch);
-            }
-        });
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Ease-out cubic
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                currentAngle = startAngle + (targetAngle - startAngle) * easeOut;
+                drawWheel();
 
-        async function fetchEmployeeList() {
-            try {
-                const response = await fetch('/api/employees');
-                if (response.ok) {
-                    globalEmployeesMap = await response.json();
-                }
-            } catch (err) {
-                console.warn('⚠️ 無法載入員工部門清單:', err);
-            }
-        }
-
-        function callCustomAlert(title, message, callback, showCancel = true) {
-            document.getElementById('customAlertTitle').textContent = title;
-            document.getElementById('customAlertMessage').innerHTML = message;
-            
-            const cancelBtn = document.getElementById('customAlertCancelBtn');
-            if (showCancel) {
-                cancelBtn.classList.remove('hidden');
-            } else {
-                cancelBtn.classList.add('hidden');
-            }
-            
-            customAlertCallback = callback;
-            document.getElementById('customAlertModal').classList.remove('hidden');
-        }
-
-        function closeCustomAlert(result) {
-            document.getElementById('customAlertModal').classList.add('hidden');
-            if (customAlertCallback) {
-                customAlertCallback(result);
-                customAlertCallback = null;
-            }
-        }
-
-        function openBranchModal() {
-            const modal = document.getElementById('branchModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeBranchModal(event) {
-            const modal = document.getElementById('branchModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function showPaymentInfo() {
-            const modal = document.getElementById('paymentModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closePaymentModal(event) {
-            const modal = document.getElementById('paymentModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function openCartModal() {
-            if (loggedInCardId) {
-                fetchOrderHistory(loggedInCardId);
-            }
-            const modal = document.getElementById('cartModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeCartModal(event) {
-            const modal = document.getElementById('cartModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function openHistoryModal() {
-            if (loggedInCardId) {
-                fetchGlobalOrders(loggedInCardId);
-            }
-            const modal = document.getElementById('historyModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeHistoryModal(event) {
-            const modal = document.getElementById('historyModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function selectBranch(branchName, element) {
-            updateBranchDisplay(branchName);
-            localStorage.setItem('selectedBranch', branchName);
-
-            const items = document.querySelectorAll('.branch-item');
-            items.forEach(item => item.classList.remove('active'));
-            if (element) {
-                element.classList.add('active');
-            }
-
-            closeBranchModal();
-        }
-
-        function updateBranchDisplay(branchName) {
-            const currentBranchText = document.getElementById('current-branch-text');
-            if (currentBranchText) {
-                currentBranchText.textContent = branchName;
-            }
-
-            const items = document.querySelectorAll('.branch-item');
-            items.forEach(item => {
-                if (item.textContent.includes(branchName)) {
-                    item.classList.add('active');
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
                 } else {
-                    item.classList.remove('active');
+                    currentAngle = currentAngle % (Math.PI * 2);
+                    drawWheel();
+                    isSpinning = false;
+                    if (spinBtn) spinBtn.disabled = false;
+
+                    const arcSize = (2 * Math.PI) / numOptions;
+                    let pointerAngle = (1.5 * Math.PI - currentAngle) % (2 * Math.PI);
+                    if (pointerAngle < 0) pointerAngle += 2 * Math.PI;
+
+                    const selectedIndex = Math.floor(pointerAngle / arcSize) % numOptions;
+                    const winningShop = shops[selectedIndex];
+
+                    if (resultBox) {
+                        resultBox.innerHTML = `🎉 今天就吃：<strong style="color: #0091ff;">${winningShop}</strong>！`;
+                    }
                 }
-            });
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // 登入與基礎邏輯
+        function executeLogin() {
+            const cardInput = document.getElementById('cardId');
+            const cardId = cardInput ? cardInput.value.trim() : '';
+            if (!cardId) {
+                alert('請輸入員工卡號！');
+                return;
+            }
+            loggedInCardId = cardId;
+            localStorage.setItem('loggedInCardId', cardId);
+            
+            document.getElementById('user-name').textContent = cardId;
+            document.getElementById('user-department').textContent = '一般同仁';
+
+            document.body.classList.remove('login-mode');
+            document.body.classList.add('order-mode');
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('order-section').classList.remove('hidden');
+        }
+
+        function executeLogout() {
+            localStorage.removeItem('loggedInCardId');
+            loggedInCardId = '';
+            document.body.classList.remove('order-mode');
+            document.body.classList.add('login-mode');
+            document.getElementById('order-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+        }
+
+        function navigateToAdmin() {
+            alert('即將前往後台管理系統');
         }
 
         function filterShops() {
-            const searchInput = document.getElementById('shopSearchInput');
-            if (!searchInput) return;
-
-            const query = searchInput.value.toLowerCase().trim();
-            const shopCards = document.querySelectorAll('.shop-card');
-
-            shopCards.forEach(card => {
-                const shopName = (card.querySelector('.shop-name')?.textContent || '').toLowerCase();
-                const shopDesc = (card.querySelector('.shop-desc')?.textContent || '').toLowerCase();
-                const badgeText = (card.querySelector('.badge')?.textContent || '').toLowerCase();
-
-                const isMatch = shopName.includes(query) || shopDesc.includes(query) || badgeText.includes(query);
-                card.style.display = isMatch ? '' : 'none';
-            });
-
-            // 根據過濾結果動態隱藏/顯示分類標題
-            document.querySelectorAll('.category-header').forEach(header => {
-                const container = header.nextElementSibling;
-                if (container && container.classList.contains('grid-container')) {
-                    const visibleCards = container.querySelectorAll('.shop-card:not([style*="display: none"])');
-                    header.style.display = visibleCards.length > 0 ? '' : 'none';
-                }
+            const query = document.getElementById('shopSearchInput').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.shop-card');
+            cards.forEach(card => {
+                const title = card.querySelector('.shop-name')?.textContent.toLowerCase() || '';
+                const desc = card.querySelector('.shop-desc')?.textContent.toLowerCase() || '';
+                card.style.display = (title.includes(query) || desc.includes(query)) ? 'flex' : 'none';
             });
         }
 
-        function handleSearchKeyPress(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                filterShops();
-            }
+        function handleSearchKeyPress(e) {
+            if (e.key === 'Enter') filterShops();
         }
 
-        /* 🌟 版面切換控制：美味餐點 ↔ 喝涼涼 切換核心函數 */
         function toggleFoodDrinkView() {
             if (currentCategoryView === 'food') {
                 showDrinkOnly();
@@ -2140,438 +2135,107 @@ body.login-mode .login-footer-copy {
             }
         }
 
-        /* 🌟 切換至「喝涼涼」版面 */
-        function showDrinkOnly() {
-            currentCategoryView = 'drink';
-            localStorage.setItem('selectedCategory', 'drink'); // 💾 記住目前在喝涼涼
-
-            // 隱藏美味餐點，顯示喝涼涼
-            document.getElementById('food-section')?.classList.add('hidden');
-            document.getElementById('food-container')?.classList.add('hidden');
-            document.getElementById('drink-section')?.classList.remove('hidden');
-            document.getElementById('drink-container')?.classList.remove('hidden');
-
-            // 頂部按鈕自動更換成「美味餐點」文字與圖示
-            document.getElementById('nav-toggle-text').textContent = '美味餐點';
-            document.getElementById('nav-toggle-icon').innerHTML = `
-                <svg viewBox="0 0 24 24">
-                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
-                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-                    <line x1="6" y1="1" x2="6" y2="4"/>
-                    <line x1="10" y1="1" x2="10" y2="4"/>
-                    <line x1="14" y1="1" x2="14" y2="4"/>
-                </svg>
-            `;
-
-            resetSearch();
-        }
-
-        /* 🌟 切換至「美味餐點」版面 */
         function showFoodOnly() {
             currentCategoryView = 'food';
-            localStorage.setItem('selectedCategory', 'food'); // 💾 記住目前在美味餐點
-
-            // 顯示美味餐點，隱藏喝涼涼
             document.getElementById('food-section')?.classList.remove('hidden');
             document.getElementById('food-container')?.classList.remove('hidden');
             document.getElementById('drink-section')?.classList.add('hidden');
             document.getElementById('drink-container')?.classList.add('hidden');
 
-            // 頂部按鈕自動更換成「喝涼涼」文字與圖示
-            document.getElementById('nav-toggle-text').textContent = '喝涼涼';
-            document.getElementById('nav-toggle-icon').innerHTML = `
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 8h1a4 4 0 0 1 0 8h-1"/>
-                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
-                    <line x1="6" y1="2" x2="6" y2="5"/>
-                    <line x1="10" y1="2" x2="10" y2="5"/>
-                    <line x1="14" y1="2" x2="14" y2="5"/>
-                </svg>
-            `;
-
-            resetSearch();
+            const toggleText = document.getElementById('nav-toggle-text');
+            if (toggleText) toggleText.textContent = '喝涼涼';
         }
 
-        /* 重置搜尋框與滾動至頂部 */
-        function resetSearch() {
-            const searchInput = document.getElementById('shopSearchInput');
-            if (searchInput) {
-                searchInput.value = '';
-                filterShops();
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        function showDrinkOnly() {
+            currentCategoryView = 'drink';
+            document.getElementById('food-section')?.classList.add('hidden');
+            document.getElementById('food-container')?.classList.add('hidden');
+            document.getElementById('drink-section')?.classList.remove('hidden');
+            document.getElementById('drink-container')?.classList.remove('hidden');
 
-        /* 🌟 版面切換控制：還原上次觀看的分類 */
-        function restoreSelectedCategory() {
-            const savedCat = localStorage.getItem('selectedCategory');
-            if (savedCat === 'drink') {
-                showDrinkOnly();
-            } else {
-                showFoodOnly();
-            }
+            const toggleText = document.getElementById('nav-toggle-text');
+            if (toggleText) toggleText.textContent = '美味餐點';
         }
 
         function showAllCategories() {
-            restoreSelectedCategory();
+            currentCategoryView = 'all';
+            document.getElementById('food-section')?.classList.remove('hidden');
+            document.getElementById('food-container')?.classList.remove('hidden');
+            document.getElementById('drink-section')?.classList.remove('hidden');
+            document.getElementById('drink-container')?.classList.remove('hidden');
+
+            const searchInput = document.getElementById('shopSearchInput');
+            if (searchInput) searchInput.value = '';
+            filterShops();
         }
 
-        function goHome() {
-            showAllCategories();
+        function openBranchModal() {
+            document.getElementById('branchModal')?.classList.remove('hidden');
         }
 
-        function scrollToCategory(id) {
-            const el = document.getElementById(id);
-            if (el) {
-                el.scrollIntoView({ behavior: 'smooth' });
-            }
+        function closeBranchModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('branchModal')?.classList.add('hidden');
         }
 
-        async function executeLogin() {
-            if (isSubmitting) return;
-            
-            const cardInput = document.getElementById('cardId');
-            const loginBtn = document.getElementById('submit-login-btn');
-            
-            if (!cardInput) return;
-
-            cardInput.setCustomValidity('');
-
-            if (!cardInput.value.trim()) {
-                cardInput.reportValidity();
-                return;
-            }
-
-            const cardId = cardInput.value.trim();
-            isSubmitting = true;
-            if (loginBtn) loginBtn.disabled = true;
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2000);
-                
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cardId: cardId }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                
-                const data = await response.json();
-                if (data.success) {
-                    if (!globalEmployeesMap || !globalEmployeesMap[cardId]) {
-                        await fetchEmployeeList();
-                    }
-                    const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
-                    
-                    showOrderSection(cardId, data.empName || cardId, dept, false);
-                } else {
-                    cardInput.setCustomValidity(`${data.message || '無此卡號'}`);
-                    cardInput.reportValidity();
-                    if (loginBtn) loginBtn.disabled = false;
-                    isSubmitting = false;
-                }
-            } catch (error) {
-                if (loginBtn) loginBtn.disabled = false;
-                isSubmitting = false;
-                
-                const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
-                showOrderSection(cardId, cardId, dept, true);
-            }
+        function selectBranch(branchName, element) {
+            document.getElementById('current-branch-text').textContent = branchName;
+            document.querySelectorAll('.branch-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            closeBranchModal();
         }
 
-        function redirectToShop(shopName, element) {
-            const url = shopUrlMap[shopName];
-            if (!url) {
-                callCustomAlert('提示', `⚠️ 尚未設定 <strong>${shopName}</strong> 的對應點餐網頁。`, null, false);
-                return;
-            }
-            
-            // 💾 在前往店家點餐前，紀錄目前所在分類狀態
-            localStorage.setItem('selectedCategory', currentCategoryView);
-
-            const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
-            const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}`;
-            window.location.href = targetUrl;
+        function showPaymentInfo() {
+            document.getElementById('paymentModal')?.classList.remove('hidden');
         }
 
-        function executeLogout() {
-            callCustomAlert('提示', '🚪 確定要登出系統嗎？', (confirmed) => {
-                if (confirmed) {
-                    showLoginSection();
-                }
-            }, true);
+        function closePaymentModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('paymentModal')?.classList.add('hidden');
         }
 
-        function navigateToAdmin() { window.location.href = 'admin.html'; }
-
-        function showOrderSection(cardId, empName, department, isOffline = false) {
-            loggedInCardId = cardId; 
-            const userDept = department || (globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : '未劃分');
-
-            localStorage.setItem('currentCardId', cardId);
-            localStorage.setItem('currentEmpName', empName || cardId);
-            localStorage.setItem('currentDepartment', userDept);
-            localStorage.setItem('isOfflineMode', isOffline ? 'true' : 'false');
-
-            const userNameEl = document.getElementById('user-name');
-            if (userNameEl) {
-                userNameEl.textContent = empName || cardId;
-            }
-
-            const userDeptEl = document.getElementById('user-department');
-            if (userDeptEl) {
-                userDeptEl.textContent = userDept;
-            }
-
-            document.getElementById('offline-tag').style.display = isOffline ? 'inline' : 'none';
-            
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('order-section').classList.remove('hidden');
-            document.body.classList.remove('login-mode');
-            document.body.classList.add('order-mode');
-            
-            // 🌟 登入後還原上次離開時選擇的分類（美食 / 飲料）
-            restoreSelectedCategory();
-            fetchOrderHistory(cardId);
-            fetchGlobalOrders(cardId);
+        function openCartModal() {
+            document.getElementById('cartModal')?.classList.remove('hidden');
         }
 
-        function showLoginSection() {
-            window.scrollTo(0, 0);
-            loggedInCardId = '';
-            isSubmitting = false;
-            
-            localStorage.removeItem('currentCardId');
-            localStorage.removeItem('currentEmpName');
-            localStorage.removeItem('currentDepartment');
-            localStorage.removeItem('isOfflineMode');
-            document.getElementById('user-name').innerText = ''; 
-            document.getElementById('user-department').innerText = '未劃分';
-            
-            const loginBtn = document.getElementById('submit-login-btn');
-            if (loginBtn) { loginBtn.disabled = false; }
-            
-            const cardInput = document.getElementById('cardId');
-            if (cardInput) { 
-                cardInput.value = ''; 
-                cardInput.disabled = false; 
-                cardInput.setCustomValidity(''); 
-            }
-            
-            document.getElementById('offline-tag').style.display = 'none';
-            document.getElementById('order-section').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-            document.body.classList.remove('order-mode');
-            document.body.classList.add('login-mode');
-
-            requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
+        function closeCartModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('cartModal')?.classList.add('hidden');
         }
 
-        function getMilliTimestamp(obj) {
-            if (!obj) return 0;
-            
-            let rawTime = obj.time || obj.Time || obj.date || obj.datetime || obj.timestamp || '';
-            rawTime = String(rawTime).trim();
-            if (!rawTime) return 0;
-
-            if (/^\d+$/.test(rawTime)) {
-                const ts = Number(rawTime);
-                return ts < 9999999999 ? ts * 1000 : ts;
-            }
-
-            if (rawTime.includes('上午') || rawTime.includes('下午')) {
-                try {
-                    const isPM = rawTime.includes('下午');
-                    let cleanStr = rawTime.replace(/[上下]午/, ' ').replace(/\s+/g, ' ');
-                    
-                    let [datePart, timePart] = cleanStr.trim().split(' ');
-                    if (datePart && timePart) {
-                        let [hrs, mins, secs] = timePart.split(':').map(Number);
-                        
-                        if (isPM && hrs < 12) hrs += 12;
-                        if (!isPM && hrs === 12) hrs = 0;
-                        
-                        const standardStr = `${datePart.replace(/\//g, '-')} ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
-                        const parsed = Date.parse(standardStr);
-                        if (!isNaN(parsed)) return parsed;
-                    }
-                } catch (e) {
-                    console.error("中文時間解析失敗: ", e);
-                }
-            }
-
-            const parsedStr = Date.parse(rawTime.replace(/ /g, 'T').replace(/\//g, '-'));
-            return !isNaN(parsedStr) ? parsedStr : 0;
+        function openHistoryModal() {
+            document.getElementById('historyModal')?.classList.remove('hidden');
         }
 
-        function isTodayOrder(orderObj) {
-            const orderTs = getMilliTimestamp(orderObj);
-            if (orderTs === 0) return false;
-
-            const orderDate = new Date(orderTs);
-            const today = new Date();
-
-            return orderDate.getFullYear() === today.getFullYear() &&
-                   orderDate.getMonth() === today.getMonth() &&
-                   orderDate.getDate() === today.getDate();
-        }
-
-        function formatDisplayTime(obj) {
-            if (!obj) return '-';
-            const rawTime = obj.time || obj.Time || obj.date || obj.datetime || '';
-            if (rawTime) return rawTime; 
-
-            if (obj.timestamp) {
-                const ts = Number(obj.timestamp);
-                if (!isNaN(ts) && ts > 0) {
-                    const finalTs = ts < 9999999999 ? ts * 1000 : ts;
-                    const d = new Date(finalTs);
-                    return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-                }
-                return obj.timestamp;
-            }
-            return '-';
+        function closeHistoryModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('historyModal')?.classList.add('hidden');
         }
 
         function clearLocalTodayOrders() {
-            if (!loggedInCardId) return;
-            callCustomAlert('提示', '🧹 確定要清除這台裝置上的今日點餐暫存紀錄嗎？<br><small style="color:#888;">(此操作不會影響全系統 orders.json 資料庫)</small>', (confirmed) => {
-                if (confirmed) {
-                    const localKey = `orders_${loggedInCardId}`;
-                    localStorage.removeItem(localKey);
-                    fetchOrderHistory(loggedInCardId);
-                }
-            }, true);
-        }
-
-        async function fetchOrderHistory(cardId) {
-            const historyList = document.getElementById('history-list');
-            if (!historyList) return;
-
-            let apiOrders = [];
-            let localOrders = [];
-            let isApiSuccess = false;
-
-            const localKey = `orders_${cardId}`;
-            try {
-                localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
-            } catch(e) { localOrders = []; }
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-                const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    apiOrders = await response.json();
-                    isApiSuccess = true;
-                }
-            } catch (error) {
-                console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
-            }
-
-            let merged = isApiSuccess ? apiOrders : localOrders;
-            let todayOrders = merged.filter(order => isTodayOrder(order));
-
-            todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
-
-            if (todayOrders.length === 0) {
-                historyList.innerHTML = `<tr><td colspan="6" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
-                return;
-            }
-
-            const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
-
-            historyList.innerHTML = todayOrders.map(order => {
-                const rawTotal = Number(order.total);
-                let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
-
-                if (!totalAmount && order.note) {
-                    const match = String(order.note).match(/總計:\s*\$(\d+)/);
-                    if (match) totalAmount = parseInt(match[1], 10);
-                }
-
-                return `
-                    <tr>
-                        <td>${order.cardId || cardId}</td>
-                        <td><span class="dept-badge">${userDept}</span></td>
-                        <td>${formatDisplayTime(order)}</td>
-                        <td>${order.meal || '無品項內容'}</td>
-                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
-                        <td>${order.note || '-'}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        async function fetchGlobalOrders(targetCardId) {
-            const globalHistoryList = document.getElementById('global-history-list');
-            if (!globalHistoryList) return;
-            if (!targetCardId) return;
-
-            try {
-                const response = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
-                if (!response.ok) throw new Error('無法讀取 orders.json');
-
-                const allOrders = await response.json();
-                const orderArray = Array.isArray(allOrders) ? allOrders : (allOrders.orders || []);
-
-                const userOrders = orderArray.filter(order => {
-                    const orderCard = String(order.cardId || '').trim().toLowerCase();
-                    const loginCard = String(targetCardId).trim().toLowerCase();
-                    return orderCard === loginCard;
-                });
-
-                if (userOrders.length === 0) {
-                    globalHistoryList.innerHTML = `<tr><td colspan="6" class="no-record">💡 您在歷年全系統資料庫中尚無任何點餐軌跡。</td></tr>`;
-                    return;
-                }
-
-                userOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
-
-                const userDept = globalEmployeesMap[targetCardId] ? globalEmployeesMap[targetCardId].department : '未劃分';
-
-                globalHistoryList.innerHTML = '';
-                userOrders.forEach(order => {
-                    const tr = document.createElement('tr');
-                    
-                    const tdUser = document.createElement('td');
-                    tdUser.textContent = `${order.cardId || ''} ${order.empName || order.name || ''}`;
-
-                    const tdDept = document.createElement('td');
-                    tdDept.innerHTML = `<span class="dept-badge">${userDept}</span>`;
-                    
-                    const tdTime = document.createElement('td');
-                    tdTime.textContent = formatDisplayTime(order);
-                    
-                    const tdMeal = document.createElement('td');
-                    tdMeal.style.fontWeight = 'bold';
-                    tdMeal.textContent = order.meal || '-';
-                    
-                    const rawPrice = order.total ?? order.Total ?? order.price ?? order.Price ?? order.totalPrice ?? order.amount ?? null;
-                    const tdPrice = document.createElement('td');
-                    tdPrice.textContent = (rawPrice !== null && rawPrice !== '') ? `$${rawPrice}` : '-';
-                    
-                    const tdNote = document.createElement('td');
-                    tdNote.textContent = order.note || '-';
-                    
-                    tr.appendChild(tdUser);
-                    tr.appendChild(tdDept);
-                    tr.appendChild(tdTime);
-                    tr.appendChild(tdMeal);
-                    tr.appendChild(tdPrice);
-                    tr.appendChild(tdNote);
-                    globalHistoryList.appendChild(tr);
-                });
-            } catch (error) {
-                console.error(error);
-                globalHistoryList.innerHTML = `<tr><td colspan="6" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡或 orders.json 檔案不存在。</td></tr>`;
+            if (confirm('確定要清除今日點餐紀錄嗎？')) {
+                document.getElementById('history-list').innerHTML = `<tr><td colspan="6" class="no-record">暫無點餐紀錄</td></tr>`;
             }
         }
+
+        function redirectToShop(shopName) {
+            const targetUrl = shopUrlMap[shopName];
+            if (targetUrl) {
+                window.location.href = targetUrl;
+            } else {
+                alert(`即將前往 ${shopName} 的點餐頁面`);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedCardId = localStorage.getItem('loggedInCardId');
+            if (savedCardId) {
+                loggedInCardId = savedCardId;
+                const cardInput = document.getElementById('cardId');
+                if (cardInput) cardInput.value = savedCardId;
+                executeLogin();
+            }
+        });
     </script>
 </body>
 </html>
