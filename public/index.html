@@ -2130,7 +2130,7 @@ function calculateWheelWinner() {
     let winningIndex = Math.floor(pointerAngle / arcSize) % numOptions;
 
     selectedWheelShop = wheelShops[winningIndex];
-    document.getElementById('wheelResult').innerHTML = `🎉 今天就吃：<span style="color: #0091ff;">${selectedWheelShop}</span>！`;
+    document.getElementById('wheelResult').innerHTML = `今天就吃：<span style="color: #0091ff;">${selectedWheelShop}</span>！`;
     document.getElementById('wheelGoShopBtn').classList.remove('hidden');
 }
 
@@ -2730,7 +2730,7 @@ function goSelectedShop() {
 <div id="wheelModal" class="branch-modal-overlay hidden" onclick="closeWheelModal(event)">
     <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 440px; text-align: center;">
         <div class="branch-modal-header">
-            <h3>🎲 今天吃什麼？命運轉盤</h3>
+            <h3>🎲 今天吃什麼~命運轉盤</h3>
             <span class="close-btn" onclick="closeWheelModal()">&times;</span>
         </div>
         <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; position: relative;">
