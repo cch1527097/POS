@@ -1043,6 +1043,17 @@ body.login-mode .login-footer-copy {
                     </div>
                     <span>曾點過</span>
                 </a>
+
+                <!-- 🎲 新增店家轉盤按鈕 -->
+<a class="nidin-nav-item" href="javascript:void(0);" onclick="openWheelModal()">
+    <div class="nidin-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+        </svg>
+    </div>
+    <span>吃啥轉盤</span>
+</a>
             </nav>
         </header>
 
@@ -1989,6 +2000,147 @@ body.login-mode .login-footer-copy {
             }
         });
 
+        /* ==================== 🎲 店家轉盤功能邏輯 ==================== */
+let wheelShops = [];
+let currentWheelAngle = 0;
+let isWheelSpinning = false;
+let selectedWheelShop = '';
+
+// 色彩庫 (輪流作為轉盤扇形顏色)
+const wheelColors = ['#ffd1dc', '#d1e7dd', '#fff3cd', '#cff4fc', '#e2e3e5', '#f3d9fa', '#ffe8cc', '#d3f9d8', '#e0f2fe', '#fef08a'];
+
+// 抓取當前分頁（美味餐點或喝涼涼）可抽籤的店家清單
+function getActiveShops() {
+    const activeContainerId = currentCategoryView === 'food' ? 'food-container' : 'drink-container';
+    const container = document.getElementById(activeContainerId);
+    if (!container) return [];
+    
+    const cards = container.querySelectorAll('.shop-card');
+    const list = [];
+    cards.forEach(card => {
+        if (card.style.display !== 'none') {
+            const name = card.querySelector('.shop-name')?.textContent.trim();
+            if (name) list.push(name);
+        }
+    });
+    return list;
+}
+
+function openWheelModal() {
+    wheelShops = getActiveShops();
+    if (wheelShops.length === 0) {
+        callCustomAlert('提示', '目前畫面上沒有可供抽籤的店家。', null, false);
+        return;
+    }
+
+    selectedWheelShop = '';
+    document.getElementById('wheelResult').textContent = '點擊下方按鈕開始抽籤！';
+    document.getElementById('wheelGoShopBtn').classList.add('hidden');
+    
+    drawWheel();
+    document.getElementById('wheelModal').classList.remove('hidden');
+}
+
+function closeWheelModal(event) {
+    if (isWheelSpinning) return;
+    const modal = document.getElementById('wheelModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function drawWheel() {
+    const canvas = document.getElementById('wheelCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const numOptions = wheelShops.length;
+    const arcSize = (2 * Math.PI) / numOptions;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const radius = cx - 8;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < numOptions; i++) {
+        const angle = currentWheelAngle + i * arcSize;
+        ctx.beginPath();
+        ctx.fillStyle = wheelColors[i % wheelColors.length];
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, angle, angle + arcSize);
+        ctx.lineTo(cx, cy);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 繪製店家文字
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle + arcSize / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#2b4c23';
+        ctx.font = 'bold 12px "Microsoft JhengHei", sans-serif';
+        
+        let name = wheelShops[i];
+        if (name.length > 7) name = name.substring(0, 6) + '..';
+        ctx.fillText(name, radius - 12, 4);
+        ctx.restore();
+    }
+}
+
+function spinWheel() {
+    if (isWheelSpinning || wheelShops.length === 0) return;
+    
+    isWheelSpinning = true;
+    document.getElementById('spinWheelBtn').disabled = true;
+    document.getElementById('wheelGoShopBtn').classList.add('hidden');
+    document.getElementById('wheelResult').textContent = '命運轉盤旋轉中...';
+
+    // 隨機旋轉 4~6 圈 + 隨機角度
+    const spinAngle = Math.floor(Math.random() * 360) + 1440;
+    const startAngle = currentWheelAngle;
+    const duration = 3200; // 動畫時間 3.2 秒
+    const startTime = performance.now();
+
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        if (elapsed < duration) {
+            const progress = elapsed / duration;
+            // 減速動畫 cubic ease-out
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            currentWheelAngle = startAngle + (spinAngle * Math.PI / 180) * easeOut;
+            drawWheel();
+            requestAnimationFrame(animate);
+        } else {
+            currentWheelAngle = startAngle + (spinAngle * Math.PI / 180);
+            drawWheel();
+            isWheelSpinning = false;
+            document.getElementById('spinWheelBtn').disabled = false;
+            calculateWheelWinner();
+        }
+    }
+    requestAnimationFrame(animate);
+}
+
+function calculateWheelWinner() {
+    const numOptions = wheelShops.length;
+    const arcSize = (2 * Math.PI) / numOptions;
+    
+    // 正上方 12 點鐘方向的角度 (1.5 * Math.PI)
+    let normalizedAngle = (currentWheelAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    let pointerAngle = (1.5 * Math.PI - normalizedAngle + 2 * Math.PI) % (2 * Math.PI);
+    let winningIndex = Math.floor(pointerAngle / arcSize) % numOptions;
+
+    selectedWheelShop = wheelShops[winningIndex];
+    document.getElementById('wheelResult').innerHTML = `🎉 今天就吃：<span style="color: #0091ff;">${selectedWheelShop}</span>！`;
+    document.getElementById('wheelGoShopBtn').classList.remove('hidden');
+}
+
+function goSelectedShop() {
+    if (selectedWheelShop) {
+        closeWheelModal();
+        redirectToShop(selectedWheelShop);
+    }
+}
+
         async function fetchEmployeeList() {
             try {
                 const response = await fetch('/api/employees');
@@ -2573,5 +2725,30 @@ body.login-mode .login-footer-copy {
             }
         }
     </script>
+
+<!-- 🎲 店家轉盤彈窗 (Modal) -->
+<div id="wheelModal" class="branch-modal-overlay hidden" onclick="closeWheelModal(event)">
+    <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 440px; text-align: center;">
+        <div class="branch-modal-header">
+            <h3>🎲 今天吃什麼？命運轉盤</h3>
+            <span class="close-btn" onclick="closeWheelModal()">&times;</span>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; position: relative;">
+            <!-- 轉盤頂部指標 -->
+            <div style="position: absolute; top: 12px; z-index: 10; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid #ff4d4f; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></div>
+            
+            <canvas id="wheelCanvas" width="300" height="300" style="max-width: 100%; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-top: 10px;"></canvas>
+            
+            <div id="wheelResult" style="margin-top: 16px; font-size: 18px; font-weight: bold; color: #2b4c23; min-height: 28px;">
+                點擊下方按鈕開始抽籤！
+            </div>
+
+            <div style="margin-top: 16px; display: flex; gap: 12px;">
+                <button id="spinWheelBtn" class="login-btn" style="width: 130px; padding: 10px 0; font-size: 16px;" onclick="spinWheel()">開始旋轉</button>
+                <button id="wheelGoShopBtn" class="login-btn hidden" style="width: 130px; padding: 10px 0; font-size: 16px; background-color: #0091ff;" onclick="goSelectedShop()">進入點餐 ➔</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
