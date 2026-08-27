@@ -22,18 +22,18 @@
 
         /* ==================== 登入版面全螢幕背景與裝飾 ==================== */
         body.login-mode {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f8fcf7;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            min-height: 100vh;
-            overflow: hidden;
-        }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8fcf7;
+    position: fixed; /* 將 relative 改為 fixed，讓登入畫面固定在螢幕視窗中間 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+}
 
         /* 左上角與右下角的流線波浪背景裝飾 */
         body.login-mode::before,
@@ -276,6 +276,7 @@
             border: 1px solid rgba(220, 235, 218, 0.5);
         }
 
+        /* 登入頁 Logo 樣式 */
         .login-logo {
             width: 80px;
             height: auto;
@@ -355,41 +356,42 @@
         .login-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
         
         .login-admin-link {
-            background-color: #f0f0f0;  
-            color: #0f805a;             
-            font-size: 15px;
-            font-weight: 600;
-            margin-top: 25px;
-            padding: 12px 20px;         
-            border: none;
-            border-radius: 12px;        
-            width: 320px;               
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            text-align: center;
-            box-sizing: border-box; /* 修正 border-border-box 錯誤 */
-        }
+    background-color: #f0f0f0;  /* 淺灰底色 */
+    color: #0f805a;             /* 深綠色字樣 */
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 25px;
+    padding: 12px 20px;         /* 上下左右內邊距 */
+    border: none;
+    border-radius: 12px;        /* 圓角邊框 */
+    width: 320px;               /* 寬度與登入按鈕一致 */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    text-align: center;
+    box-sizing: border-border-box;
+}
 
-        .login-admin-link:hover {
-            background-color: #e4e4e4;  
-            color: #0a5c41;
-        }
+.login-admin-link:hover {
+    background-color: #e4e4e4;  /* 滑鼠懸停時微調底色 */
+    color: #0a5c41;
+}
 
         .login-footer-copy {
-            display: none; 
-            position: absolute;
-            bottom: 20px;
-            width: 100%;
-            text-align: center;
-            font-size: 13.5px;
-            color: #668062;
-            z-index: 10;
-        }
+    display: none; /* Hidden by default */
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 13.5px;
+    color: #668062;
+    z-index: 10;
+}
 
-        body.login-mode .login-footer-copy {
-            display: block;
-        }
+/* Only show when body is in login mode */
+body.login-mode .login-footer-copy {
+    display: block;
+}
 
         /* ==================== 2. 點餐畫面區塊 ==================== */
         .order-container {
@@ -400,6 +402,7 @@
             align-items: center;
         }
 
+        /* 區塊標題樣式 */
         .category-header {
             max-width: 1200px;
             width: 100%;
@@ -617,56 +620,56 @@
         }
 
         .logout-btn {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background-color: #a01010; 
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            padding: 0;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(160, 16, 16, 0.3);
-            transition: all 0.2s ease;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: #a01010; 
+    color: white;
+    border: none;
+    border-radius: 50%; /* 改為正圓形 */
+    width: 48px;        /* 固定寬高 */
+    height: 48px;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(160, 16, 16, 0.3);
+    transition: all 0.2s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .logout-btn:hover {
-            background-color: #bd1616;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
-        }
+.logout-btn:hover {
+    background-color: #bd1616;
+    transform: scale(1.1); /* Hover 時微放大效果 */
+    box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
+}
 
-        .cart-float-btn {
-            position: fixed;
-            bottom: 85px;
-            right: 25px;
-            background-color: #2e7d32;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            padding: 0;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
-            transition: all 0.2s ease;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.cart-float-btn {
+    position: fixed;
+    bottom: 85px; /* 位於登出按鈕 (bottom: 25px) 的上方 */
+    right: 25px;
+    background-color: #2e7d32; /* 主題綠色，亦可自行調整 */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+    transition: all 0.2s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .cart-float-btn:hover {
-            background-color: #1b5e20;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
-        }
+.cart-float-btn:hover {
+    background-color: #1b5e20;
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+}
 
         /* ==================== 4. Modal 彈窗樣式 ==================== */
         .branch-modal-overlay {
@@ -1020,6 +1023,7 @@
                     <span>回首頁</span>
                 </a>
 
+                <!-- 🌟 動態切換美味餐點與喝涼涼的按鈕 -->
                 <a class="nidin-nav-item" id="nav-toggle-btn" href="javascript:void(0);" onclick="toggleFoodDrinkView()">
                     <div class="nidin-nav-icon" id="nav-toggle-icon">
                         <svg viewBox="0 0 24 24">
@@ -1282,7 +1286,7 @@
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
-                    <h3 class="shop-name">滿座燒肉丼飯屋</h3>
+                    <h3 class="shop-name">滿座烧肉丼飯屋</h3>
                     <p class="shop-desc">燒肉丼飯與咖喱飯料理集結了新鮮食材和精心熬煮的醬汁。</p>
                 </div>
             </div>
@@ -1398,7 +1402,7 @@
             <div class="shop-card" onclick="redirectToShop('一鳴', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
-                    <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=400&q=80" alt="一鳴 義式料理">
+                    <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=400&q=80"一鳴 義式料理">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
@@ -1410,7 +1414,7 @@
             <div class="shop-card" onclick="redirectToShop('五路鍋聖', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
-                    <img src="https://images.unsplash.com/photo-1773969416268-aa4c032d8de2?auto=format&fit=crop&w=1170&q=80" alt="五路鍋聖">
+                    <img src="https://images.unsplash.com/photo-1773969416268-aa4c032d8de2?auto=format&fit=crop&w=1170&q=80"五路鍋聖">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
@@ -1422,7 +1426,7 @@
             <div class="shop-card" onclick="redirectToShop('秈鋤料理廚房', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
-                    <img src="https://images.unsplash.com/photo-1713671975136-67bc17006974?auto=format&fit=crop&w=687&q=75" alt="秈鋤料理廚房">
+                    <img src="https://images.unsplash.com/photo-1713671975136-67bc17006974?auto=format&fit=crop&w=687&q=75"秈鋤料理廚房">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
@@ -1434,7 +1438,7 @@
             <div class="shop-card" onclick="redirectToShop('江滬上海小籠湯包', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge main">主食精選</span>
-                    <img src="https://images.unsplash.com/photo-1657939728877-df03de19f9fe?fm=webp&fit=crop&w=800&q=65" alt="江滬上海小籠湯包">
+                    <img src="https://images.unsplash.com/photo-1657939728877-df03de19f9fe?fm=webp&fit=crop&w=800&q=65"江滬上海小籠湯包">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
@@ -1444,7 +1448,7 @@
             </div>
         </div>
 
-        <!-- 第二區塊：喝涼涼 -->
+        <!-- 🌟 第二區塊：喝涼涼 -->
         <div class="category-header hidden" id="drink-section">
             🥤 喝涼涼
         </div>
@@ -1727,20 +1731,20 @@
         </footer>
 
         <button class="cart-float-btn" title="查看購物車" aria-label="購物車" onclick="openCartModal()">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-            </svg>
-        </button>
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+    </svg>
+</button>
 
         <button class="logout-btn" title="登出系統" aria-label="登出系統" onclick="executeLogout()">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-        </button>
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+    </svg>
+</button>
     </div>
 
     <!-- 選擇院區彈窗 (Modal) -->
@@ -1894,8 +1898,8 @@
         let loggedInCardId = ''; 
         let isSubmitting = false;
         let customAlertCallback = null;
-        let globalEmployeesMap = {}; 
-        let currentCategoryView = 'food'; 
+        let globalEmployeesMap = {}; // 快取員工對照表 (含部門資訊)
+        let currentCategoryView = 'food'; // 🌟 紀錄當前版面狀態：'food' 或 'drink'
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -2110,6 +2114,7 @@
                 card.style.display = isMatch ? '' : 'none';
             });
 
+            // 根據過濾結果動態隱藏/顯示分類標題
             document.querySelectorAll('.category-header').forEach(header => {
                 const container = header.nextElementSibling;
                 if (container && container.classList.contains('grid-container')) {
@@ -2126,6 +2131,7 @@
             }
         }
 
+        /* 🌟 版面切換控制：美味餐點 ↔ 喝涼涼 切換核心函數 */
         function toggleFoodDrinkView() {
             if (currentCategoryView === 'food') {
                 showDrinkOnly();
@@ -2134,15 +2140,18 @@
             }
         }
 
+        /* 🌟 切換至「喝涼涼」版面 */
         function showDrinkOnly() {
             currentCategoryView = 'drink';
-            localStorage.setItem('selectedCategory', 'drink');
+            localStorage.setItem('selectedCategory', 'drink'); // 💾 記住目前在喝涼涼
 
+            // 隱藏美味餐點，顯示喝涼涼
             document.getElementById('food-section')?.classList.add('hidden');
             document.getElementById('food-container')?.classList.add('hidden');
             document.getElementById('drink-section')?.classList.remove('hidden');
             document.getElementById('drink-container')?.classList.remove('hidden');
 
+            // 頂部按鈕自動更換成「美味餐點」文字與圖示
             document.getElementById('nav-toggle-text').textContent = '美味餐點';
             document.getElementById('nav-toggle-icon').innerHTML = `
                 <svg viewBox="0 0 24 24">
@@ -2157,15 +2166,18 @@
             resetSearch();
         }
 
+        /* 🌟 切換至「美味餐點」版面 */
         function showFoodOnly() {
             currentCategoryView = 'food';
-            localStorage.setItem('selectedCategory', 'food');
+            localStorage.setItem('selectedCategory', 'food'); // 💾 記住目前在美味餐點
 
+            // 顯示美味餐點，隱藏喝涼涼
             document.getElementById('food-section')?.classList.remove('hidden');
             document.getElementById('food-container')?.classList.remove('hidden');
             document.getElementById('drink-section')?.classList.add('hidden');
             document.getElementById('drink-container')?.classList.add('hidden');
 
+            // 頂部按鈕自動更換成「喝涼涼」文字與圖示
             document.getElementById('nav-toggle-text').textContent = '喝涼涼';
             document.getElementById('nav-toggle-icon').innerHTML = `
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2180,6 +2192,7 @@
             resetSearch();
         }
 
+        /* 重置搜尋框與滾動至頂部 */
         function resetSearch() {
             const searchInput = document.getElementById('shopSearchInput');
             if (searchInput) {
@@ -2189,6 +2202,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        /* 🌟 版面切換控制：還原上次觀看的分類 */
         function restoreSelectedCategory() {
             const savedCat = localStorage.getItem('selectedCategory');
             if (savedCat === 'drink') {
@@ -2274,6 +2288,7 @@
                 return;
             }
             
+            // 💾 在前往店家點餐前，紀錄目前所在分類狀態
             localStorage.setItem('selectedCategory', currentCategoryView);
 
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
@@ -2317,6 +2332,7 @@
             document.body.classList.remove('login-mode');
             document.body.classList.add('order-mode');
             
+            // 🌟 登入後還原上次離開時選擇的分類（美食 / 飲料）
             restoreSelectedCategory();
             fetchOrderHistory(cardId);
             fetchGlobalOrders(cardId);
@@ -2485,45 +2501,75 @@
                         <td><span class="dept-badge">${userDept}</span></td>
                         <td>${formatDisplayTime(order)}</td>
                         <td>${order.meal || '無品項內容'}</td>
-                        <td>$${totalAmount}</td>
-                        <td>${order.note || ''}</td>
+                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
+                        <td>${order.note || '-'}</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        async function fetchGlobalOrders(cardId) {
-            const globalList = document.getElementById('global-history-list');
-            if (!globalList) return;
+        async function fetchGlobalOrders(targetCardId) {
+            const globalHistoryList = document.getElementById('global-history-list');
+            if (!globalHistoryList) return;
+            if (!targetCardId) return;
 
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2500);
+                const response = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
+                if (!response.ok) throw new Error('無法讀取 orders.json');
 
-                const response = await fetch(`/api/global-orders?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
-                clearTimeout(timeoutId);
+                const allOrders = await response.json();
+                const orderArray = Array.isArray(allOrders) ? allOrders : (allOrders.orders || []);
 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (!data || data.length === 0) {
-                        globalList.innerHTML = `<tr><td colspan="6" class="no-record">尚無歷年點餐紀錄。</td></tr>`;
-                        return;
-                    }
-                    globalList.innerHTML = data.map(order => `
-                        <tr>
-                            <td>${order.cardId || cardId}</td>
-                            <td><span class="dept-badge">${order.department || '未劃分'}</span></td>
-                            <td>${formatDisplayTime(order)}</td>
-                            <td>${order.meal || '無品項內容'}</td>
-                            <td>$${order.total || 0}</td>
-                            <td>${order.note || ''}</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    globalList.innerHTML = `<tr><td colspan="6" class="no-record">無法讀取歷史紀錄。</td></tr>`;
+                const userOrders = orderArray.filter(order => {
+                    const orderCard = String(order.cardId || '').trim().toLowerCase();
+                    const loginCard = String(targetCardId).trim().toLowerCase();
+                    return orderCard === loginCard;
+                });
+
+                if (userOrders.length === 0) {
+                    globalHistoryList.innerHTML = `<tr><td colspan="6" class="no-record">💡 您在歷年全系統資料庫中尚無任何點餐軌跡。</td></tr>`;
+                    return;
                 }
-            } catch (err) {
-                globalList.innerHTML = `<tr><td colspan="6" class="no-record">載入失敗。</td></tr>`;
+
+                userOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+                const userDept = globalEmployeesMap[targetCardId] ? globalEmployeesMap[targetCardId].department : '未劃分';
+
+                globalHistoryList.innerHTML = '';
+                userOrders.forEach(order => {
+                    const tr = document.createElement('tr');
+                    
+                    const tdUser = document.createElement('td');
+                    tdUser.textContent = `${order.cardId || ''} ${order.empName || order.name || ''}`;
+
+                    const tdDept = document.createElement('td');
+                    tdDept.innerHTML = `<span class="dept-badge">${userDept}</span>`;
+                    
+                    const tdTime = document.createElement('td');
+                    tdTime.textContent = formatDisplayTime(order);
+                    
+                    const tdMeal = document.createElement('td');
+                    tdMeal.style.fontWeight = 'bold';
+                    tdMeal.textContent = order.meal || '-';
+                    
+                    const rawPrice = order.total ?? order.Total ?? order.price ?? order.Price ?? order.totalPrice ?? order.amount ?? null;
+                    const tdPrice = document.createElement('td');
+                    tdPrice.textContent = (rawPrice !== null && rawPrice !== '') ? `$${rawPrice}` : '-';
+                    
+                    const tdNote = document.createElement('td');
+                    tdNote.textContent = order.note || '-';
+                    
+                    tr.appendChild(tdUser);
+                    tr.appendChild(tdDept);
+                    tr.appendChild(tdTime);
+                    tr.appendChild(tdMeal);
+                    tr.appendChild(tdPrice);
+                    tr.appendChild(tdNote);
+                    globalHistoryList.appendChild(tr);
+                });
+            } catch (error) {
+                console.error(error);
+                globalHistoryList.innerHTML = `<tr><td colspan="6" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡或 orders.json 檔案不存在。</td></tr>`;
             }
         }
     </script>
