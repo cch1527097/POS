@@ -8,10 +8,10 @@
         html { scroll-behavior: smooth; }
 
         :root { 
-            --primary: #c2410c;       /* 品牌主題色：暖紅/磚紅 */
-            --primary-light: #fff7ed; /* 淺橘底色 */
-            --primary-hover: #9a3412; /* 深紅 Hover */
-            --accent: #ea580c;        
+            --primary: #991b1b;       /* 品牌主題色：深紅 */
+            --primary-light: #fef2f2; /* 淺紅底色 */
+            --primary-hover: #b91c1c; /* 深紅 Hover */
+            --accent: #991b1b;        
             --bg-main: #f8fafc;       
             --text-dark: #0f172a;      
             --text-muted: #64748b;    
@@ -27,6 +27,7 @@
             line-height: 1.5;
         }
 
+        /* ==================== 頂部 Header 樣式 ==================== */
         .navbar {
             width: 100%;
             background-color: #ffffff;
@@ -102,12 +103,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(194, 65, 12, 0.25);
+            box-shadow: 0 4px 10px rgba(153, 27, 27, 0.25);
             flex-shrink: 0;
-            text-align: center;
-            line-height: 1.2;
         }
         .store-details h1 { margin: 0 0 8px 0; font-size: 22px; font-weight: 700; color: var(--text-dark); }
         .store-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--text-muted); }
@@ -221,6 +220,7 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
+        /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
             position: fixed;
             bottom: 24px;
@@ -297,6 +297,7 @@
             100% { transform: scale(1); }
         }
 
+        /* ==================== Modal 彈窗樣式 ==================== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -393,10 +394,11 @@
             font-weight: 600;
             border-radius: 10px;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(194, 65, 12, 0.3);
+            box-shadow: 0 2px 6px rgba(153, 27, 27, 0.3);
         }
         .btn-modal-confirm:hover { background: var(--primary-hover); }
 
+        /* ==================== 客製化選單 - 按鈕網格 ==================== */
         .option-section {
             margin-bottom: 20px;
         }
@@ -419,7 +421,7 @@
 
         .option-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
         }
 
@@ -429,7 +431,7 @@
             border-radius: 12px;
             padding: 12px 6px;
             text-align: center;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             color: #334155;
             cursor: pointer;
@@ -463,6 +465,7 @@
             margin-top: 2px;
         }
 
+        /* RWD 調整 */
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
@@ -515,9 +518,9 @@
 <body>
 
 <div class="navbar">
-    <a href="#" class="navbar-brand">江滬上海小籠湯包</a>
+    <a href="#" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (例如：湯包、排骨酥麵、紅茶)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (例如：小籠包、排骨酥、牛肉麵)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -540,7 +543,7 @@
         <div class="store-info-left">
             <div class="store-logo">江滬</div>
             <div class="store-details">
-                <h1>江滬上海小籠湯包 鹿港店</h1>
+                <h1>江滬上海小籠湯包 彰化鹿港店</h1>
                 <div class="store-meta">
                     <span class="rating">⭐ 4.3 (236)</span>
                     <span>🕒 11:00 ~ 14:00，16:30 ~ 20:30</span>
@@ -581,49 +584,49 @@
 
 <script>
 function goBack() {
-    window.location.href = 'index.html';
+    window.location.href = 'index.html'; 
 }
 
 const menuItems = [
-    // === 爆汁湯包．蒸餃 ===
-    {name: "干貝高湯絲瓜湯包 (7粒)", price: 90, category: "爆汁湯包．蒸餃", icon: "🥟", isDumpling: true},
-    {name: "蔬菜鮮肉湯包 (7粒)", price: 80, category: "爆汁湯包．蒸餃", icon: "🥟", isDumpling: true},
-    {name: "鮮肉小籠湯包 (7粒)", price: 75, category: "爆汁湯包．蒸餃", icon: "🥟", isDumpling: true},
-    {name: "高麗菜鮮肉蒸餃 (7粒)", price: 75, category: "爆汁湯包．蒸餃", icon: "🥟", isDumpling: true},
+    // === 爆汁湯包.蒸餃 ===
+    {name: "干貝高湯絲瓜湯包 (7粒)", price: 90, category: "爆汁湯包.蒸餃", icon: "🥟", isMain: true},
+    {name: "蔬菜鮮肉湯包 (7粒)", price: 80, category: "爆汁湯包.蒸餃", icon: "🥟", isMain: true},
+    {name: "鮮肉小籠湯包 (7粒)", price: 75, category: "爆汁湯包.蒸餃", icon: "🥟", isMain: true},
+    {name: "高麗菜鮮肉蒸餃 (7粒)", price: 75, category: "爆汁湯包.蒸餃", icon: "🥟", isMain: true},
 
     // === 滬味麵食 ===
-    {name: "紅燒牛肉麵", price: 120, category: "滬味麵食", icon: "🍜"},
-    {name: "蘿蔔排骨酥麵", price: 98, category: "滬味麵食", icon: "🍜"},
-    {name: "芋頭排骨酥麵", price: 98, category: "滬味麵食", icon: "🍜"},
-    {name: "蒜頭蛤蜊雞麵", price: 95, category: "滬味麵食", icon: "🍜"},
-    {name: "剝皮皮蛋拌麵", price: 80, category: "滬味麵食", icon: "🍝", isSpicy: true},
-    {name: "鹿港麵茶辣拌麵", price: 75, category: "滬味麵食", icon: "🍝", isSpicy: true},
-    {name: "虎媽香辣麵", price: 65, category: "滬味麵食", icon: "🍝", isSpicy: true},
-    {name: "古早味肉燥乾麵", price: 50, category: "滬味麵食", icon: "🍜"},
-
-    // === 飯食 ===
-    {name: "紅燒牛肉泡飯", price: 120, category: "飯食", icon: "🍚"},
-    {name: "蒜頭蛤蜊雞泡飯", price: 95, category: "飯食", icon: "🍚"},
-    {name: "秘製滷肉飯", price: 50, category: "飯食", icon: "🍚"},
+    {name: "紅燒牛肉麵", price: 120, category: "滬味麵食", icon: "🍜", isMain: true},
+    {name: "蘿蔔排骨酥麵", price: 98, category: "滬味麵食", icon: "🍜", isMain: true},
+    {name: "芋頭排骨酥麵", price: 98, category: "滬味麵食", icon: "🍜", isMain: true},
+    {name: "蒜頭蛤蠣雞麵", price: 95, category: "滬味麵食", icon: "🍜", isMain: true},
+    {name: "剁椒皮蛋拌麵", price: 80, category: "滬味麵食", icon: "🌶️", isMain: true},
+    {name: "鹿港麵茶辣拌麵", price: 75, category: "滬味麵食", icon: "🌶️", isMain: true},
+    {name: "虎媽香辣麵", price: 65, category: "滬味麵食", icon: "🌶️", isMain: true},
+    {name: "古早味肉燥乾麵", price: 50, category: "滬味麵食", icon: "🍜", isMain: true},
 
     // === 慢熬湯盅 ===
-    {name: "蒜頭蛤蜊雞湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
-    {name: "雙菇蛤蜊雞湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
+    {name: "蒜頭蛤蠣雞湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
+    {name: "雙菇蛤蠣雞湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
     {name: "白玉蘿蔔排骨湯", price: 60, category: "慢熬湯盅", icon: "🥣"},
     {name: "蘿蔔排骨酥湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
     {name: "芋頭排骨酥湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
     {name: "當令時蔬排骨湯", price: 65, category: "慢熬湯盅", icon: "🥣"},
 
+    // === 飯食 ===
+    {name: "紅燒牛肉泡飯", price: 120, category: "飯食", icon: "🍚", isMain: true},
+    {name: "蒜頭蛤蠣雞泡飯", price: 95, category: "飯食", icon: "🍚", isMain: true},
+    {name: "秘製滷肉飯", price: 50, category: "飯食", icon: "🍚", isMain: true},
+
     // === 單點 ===
     {name: "汆燙當令青菜", price: 40, category: "單點", icon: "🥬"},
     {name: "滷蛋 (單顆)", price: 15, category: "單點", icon: "🥚"},
-    {name: "油豆腐 (單塊)", price: 10, category: "單點", icon: "🧈"},
+    {name: "油豆腐 (單塊)", price: 10, category: "單點", icon: "🧊"},
 
     // === 去冰飲品 ===
     {name: "黑芝麻堅果飲 (微糖)", price: 35, category: "去冰飲品", icon: "🥤"},
-    {name: "天后豆漿 (非基改/微糖)", price: 25, category: "去冰飲品", icon: "🥛"},
+    {name: "天后豆漿 (非基改黃豆/微糖)", price: 25, category: "去冰飲品", icon: "🥛"},
     {name: "小鎮奶茶 (微糖)", price: 25, category: "去冰飲品", icon: "🧋"},
-    {name: "鹿港紅茶 (微糖)", price: 20, category: "去冰飲品", icon: "🍹"}
+    {name: "鹿港紅茶 (微糖)", price: 20, category: "去冰飲品", icon: "🥤"}
 ];
 
 let cart = {};
@@ -705,7 +708,7 @@ function renderMenu(items) {
                     </div>
                 </div>
                 <div class="item-img-placeholder">
-                    ${item.icon || '🥟'}
+                    ${item.icon || '🥣'}
                     ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
                 </div>
                 <div class="action-zone" style="margin-left: 10px;">
@@ -747,41 +750,16 @@ function clickAddItem(name) {
     let bodyHtml = "";
     let hasOption = false;
 
-    if (item.isDumpling) {
+    // 若為主餐，則顯示升級套餐選項
+    if (item.isMain) {
         hasOption = true;
         bodyHtml += `
             <div class="option-section">
-                <div class="option-section-title">升級超值套餐</div>
+                <div class="option-section-title">搭配套餐</div>
                 <div class="option-grid">
-                    <div class="opt-card selected" data-group="combo" data-value="單點" data-price="0">單點 ($0)</div>
-                    <div class="opt-card" data-group="combo" data-value="A套餐:紅茶+小菜" data-price="49">A套餐 (+$49)</div>
-                    <div class="opt-card" data-group="combo" data-value="B套餐:例湯+小菜二道" data-price="79">B套餐 (+$79)</div>
-                </div>
-            </div>
-
-            <!-- 動態小菜選擇區 -->
-            <div id="side-dish-section" class="option-section" style="display: none;">
-                <div class="option-section-title">
-                    <span class="required">*</span><span id="side-dish-title">請選擇小菜</span>
-                </div>
-                <div class="option-grid" id="side-dish-grid">
-                    <div class="opt-card side-opt" data-value="汆燙當令青菜">汆燙當令青菜</div>
-                    <div class="opt-card side-opt" data-value="滷蛋 (單顆)">滷蛋 (單顆)</div>
-                    <div class="opt-card side-opt" data-value="油豆腐 (單塊)">油豆腐 (單塊)</div>
-                </div>
-            </div>
-        `;
-    }
-
-    if (item.isSpicy) {
-        hasOption = true;
-        bodyHtml += `
-            <div class="option-section">
-                <div class="option-section-title"><span class="required">*</span>辣度選擇</div>
-                <div class="option-grid">
-                    <div class="opt-card selected" data-group="spicy" data-value="正常辣" data-price="0">正常辣</div>
-                    <div class="opt-card" data-group="spicy" data-value="微辣" data-price="0">微辣</div>
-                    <div class="opt-card" data-group="spicy" data-value="大辣" data-price="0">大辣</div>
+                    <div class="opt-card selected" data-group="set-meal" data-value="單點" data-price="0">單點</div>
+                    <div class="opt-card" data-group="set-meal" data-value="A套餐(紅茶+小菜+開胃菜)" data-price="49">A套餐(+$49)</div>
+                    <div class="opt-card" data-group="set-meal" data-value="B套餐(例湯+小菜*2+開胃菜)" data-price="79">B套餐(+$79)</div>
                 </div>
             </div>
         `;
@@ -801,11 +779,9 @@ function clickAddItem(name) {
         onConfirm: () => {
             let addPrice = 0;
             let options = [];
-            let selectedCombo = "單點";
-            let sideDishes = [];
 
-            // 計算套餐與辣度選項
-            document.querySelectorAll('#modal-body .opt-card.selected:not(.side-opt)').forEach(card => {
+            document.querySelectorAll('#modal-body .opt-card.selected').forEach(card => {
+                const group = card.getAttribute('data-group');
                 const val = card.getAttribute('data-value');
                 const price = parseInt(card.getAttribute('data-price') || 0);
 
@@ -813,29 +789,7 @@ function clickAddItem(name) {
                 if (val !== '單點') {
                     options.push(val);
                 }
-                if (card.getAttribute('data-group') === 'combo') {
-                    selectedCombo = val;
-                }
             });
-
-            // 收集選取的小菜
-            document.querySelectorAll('#modal-body .opt-card.side-opt.selected').forEach(card => {
-                sideDishes.push(card.getAttribute('data-value'));
-            });
-
-            // 檢查套餐小菜數量
-            if (selectedCombo.startsWith('A套餐') && sideDishes.length !== 1) {
-                alert('A套餐請選擇 1 道小菜！');
-                return;
-            }
-            if (selectedCombo.startsWith('B套餐') && sideDishes.length !== 2) {
-                alert('B套餐請選擇 2 道小菜！');
-                return;
-            }
-
-            if (sideDishes.length > 0) {
-                options.push(`小菜:${sideDishes.join('+')}`);
-            }
 
             addItemToCart(item, addPrice, options);
             closeModal();
@@ -843,59 +797,11 @@ function clickAddItem(name) {
     });
 
     setTimeout(() => {
-        // 主套餐選擇綁定事件
-        document.querySelectorAll('#modal-body .opt-card[data-group="combo"]').forEach(card => {
+        document.querySelectorAll('#modal-body .opt-card').forEach(card => {
             card.onclick = function() {
-                document.querySelectorAll('#modal-body .opt-card[data-group="combo"]').forEach(c => c.classList.remove('selected'));
+                const group = this.getAttribute('data-group');
+                document.querySelectorAll(`#modal-body .opt-card[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
-
-                const comboVal = this.getAttribute('data-value');
-                const sideSection = document.getElementById('side-dish-section');
-                const sideTitle = document.getElementById('side-dish-title');
-
-                // 切換套餐時重置小菜選取
-                document.querySelectorAll('#modal-body .side-opt').forEach(s => s.classList.remove('selected'));
-
-                if (comboVal.startsWith('A套餐')) {
-                    sideSection.style.display = 'block';
-                    sideTitle.innerText = '選擇小菜（任選 1 道）';
-                } else if (comboVal.startsWith('B套餐')) {
-                    sideSection.style.display = 'block';
-                    sideTitle.innerText = '選擇小菜（任選 2 道）';
-                } else {
-                    sideSection.style.display = 'none';
-                }
-            };
-        });
-
-        // 辣度選擇綁定事件
-        document.querySelectorAll('#modal-body .opt-card[data-group="spicy"]').forEach(card => {
-            card.onclick = function() {
-                document.querySelectorAll('#modal-body .opt-card[data-group="spicy"]').forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-            };
-        });
-
-        // 小菜選取互動（A套餐單選、B套餐最多選2項）
-        document.querySelectorAll('#modal-body .side-opt').forEach(card => {
-            card.onclick = function() {
-                const currentCombo = document.querySelector('#modal-body .opt-card[data-group="combo"].selected')?.getAttribute('data-value') || '';
-
-                if (currentCombo.startsWith('A套餐')) {
-                    document.querySelectorAll('#modal-body .side-opt').forEach(s => s.classList.remove('selected'));
-                    this.classList.add('selected');
-                } else if (currentCombo.startsWith('B套餐')) {
-                    if (this.classList.contains('selected')) {
-                        this.classList.remove('selected');
-                    } else {
-                        const selectedCount = document.querySelectorAll('#modal-body .side-opt.selected').length;
-                        if (selectedCount < 2) {
-                            this.classList.add('selected');
-                        } else {
-                            alert('B套餐最多只能選擇 2 道小菜！');
-                        }
-                    }
-                }
             };
         });
     }, 50);
@@ -1128,9 +1034,9 @@ async function submitOrderToServer() {
 
             const payload = {
                 cardId: currentCardId,
-                category: "dumplings",
+                category: "xiaolongbao",
                 type: "food",
-                meal: `江滬湯包：${finalSummary.trim()}`,
+                meal: `江滬上海小籠湯包：${finalSummary.trim()}`,
                 spicy: "依餐點選擇",
                 total: finalTotal,
                 note: `總計：$${finalTotal}`
