@@ -220,9 +220,47 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box sizing: border-box; background: #fff; }
+        /* ==================== 圖形化選單 (Custom Pill Group) ==================== */
+        .option-section {
+            margin-top: 14px;
+            text-align: left;
+        }
+        .option-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pill-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .pill-btn {
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            color: var(--text-dark);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .pill-btn:hover {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+        .pill-btn.active {
+            background: var(--secondary);
+            color: #ffffff;
+            border-color: var(--secondary);
+            box-shadow: 0 2px 6px rgba(230, 126, 34, 0.3);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -699,39 +737,57 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+/* ==================== 圖形化客製選單 ==================== */
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
+    let selectedOptions = {
+        egg: "不加蛋",
+        spicy: "不辣",
+        note: "無特殊需求"
+    };
+
     let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
-            ${item.icon || '🍱'} ${item.name} ($${item.price})
+        <div style="text-align:center; font-size:20px; font-weight:800; margin-bottom:16px; color:var(--primary);">
+            ${item.icon || '🍱'} ${item.name} <span style="color:var(--accent); font-size:18px;">($${item.price})</span>
         </div>
         
-        <div class="opt-group">
-            <label>🥚 加蛋選項</label>
-            <select id="pop-egg" class="select-box">
-                <option value="不加蛋">不加蛋</option>
-                <option value="加蛋 (+15元)">加蛋 (+15元)</option>
-            </select>
+        <div class="option-section">
+            <div class="option-title">🥚 加蛋選項</div>
+            <div class="pill-group" id="group-egg">
+                <button class="pill-btn active" data-value="不加蛋" onclick="selectPill(this, 'egg')">不加蛋</button>
+                <button class="pill-btn" data-value="加蛋 (+15元)" onclick="selectPill(this, 'egg')">加蛋 (+15元)</button>
+            </div>
+        </div>
 
-            <label>🌶️ 辣度調整</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微辣">微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="大辣">大辣</option>
-            </select>
+        <div class="option-section">
+            <div class="option-title">🌶️ 辣度調整</div>
+            <div class="pill-group" id="group-spicy">
+                <button class="pill-btn active" data-value="不辣" onclick="selectPill(this, 'spicy')">不辣 🫑</button>
+                <button class="pill-btn" data-value="微辣" onclick="selectPill(this, 'spicy')">微辣 🌶️</button>
+                <button class="pill-btn" data-value="小辣" onclick="selectPill(this, 'spicy')">小辣 🔥</button>
+                <button class="pill-btn" data-value="大辣" onclick="selectPill(this, 'spicy')">大辣 💥</button>
+            </div>
+        </div>
 
-            <label>備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="飯少">飯少</option>
-                <option value="汁多">汁多</option>
-                <option value="汁少">汁少</option>
-            </select>
+        <div class="option-section">
+            <div class="option-title">📝 備註需求</div>
+            <div class="pill-group" id="group-note">
+                <button class="pill-btn active" data-value="無特殊需求" onclick="selectPill(this, 'note')">無特殊需求</button>
+                <button class="pill-btn" data-value="飯少" onclick="selectPill(this, 'note')">飯少 🍚</button>
+                <button class="pill-btn" data-value="汁多" onclick="selectPill(this, 'note')">汁多 🍲</button>
+                <button class="pill-btn" data-value="汁少" onclick="selectPill(this, 'note')">汁少 🥣</button>
+            </div>
         </div>
     `;
+
+    window.selectPill = function(el, type) {
+        const parent = el.parentElement;
+        parent.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
+        el.classList.add('active');
+        selectedOptions[type] = el.getAttribute('data-value');
+    };
 
     showCustomModal({
         title: "請選擇餐點客製化選項",
@@ -740,15 +796,11 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const eggOpt = document.getElementById("pop-egg").value;
-            const spicy = document.getElementById("pop-spicy").value;
-            const note = document.getElementById("pop-note").value;
+            const eggOpt = selectedOptions.egg;
+            const spicy = selectedOptions.spicy;
+            const note = selectedOptions.note;
 
-            let addPrice = 0;
-            if (eggOpt.includes("+15元")) {
-                addPrice = 15;
-            }
-
+            let addPrice = eggOpt.includes("+15元") ? 15 : 0;
             const unitPrice = item.price + addPrice;
             const customKey = `${item.name}|${eggOpt}|${spicy}|${note}`;
 
