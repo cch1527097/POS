@@ -213,16 +213,24 @@
             user-select: none;
         }
 
-        .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
+        .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .btn-clear-all:hover { background: #fca5a5; color: #7f1d1d; }
+        .cart-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 14px; 
+            margin-bottom: 10px; 
+            padding: 12px; 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 10px; 
+            transition: all 0.2s;
+        }
         
         .action-zone { display: flex; align-items: center; gap: 8px; }
-        .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
+        .btn-qty { background: #e2e8f0; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; transition: all 0.2s; }
         .btn-qty:hover { background: var(--primary); color: white; }
-
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -301,14 +309,15 @@
             100% { transform: scale(1); }
         }
 
-        /* ==================== Modal 彈窗樣式 ==================== */
+        /* ==================== Modal 圖形化彈窗樣式 ==================== */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -326,41 +335,48 @@
         .modal-container {
             background: #fff;
             width: 90%;
-            max-width: 440px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            max-width: 450px;
+            border-radius: 20px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
             overflow: hidden;
-            transform: scale(0.95);
-            transition: transform 0.2s ease;
+            transform: scale(0.9) translateY(10px);
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             max-height: 90vh;
             display: flex;
             flex-direction: column;
         }
 
-        .modal-overlay.active .modal-container { transform: scale(1); }
+        .modal-overlay.active .modal-container { transform: scale(1) translateY(0); }
 
         .modal-header {
-            padding: 16px 20px;
+            padding: 18px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: #ffffff;
             border-bottom: 1px solid #f1f5f9;
         }
 
-        .modal-title { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; }
+        .modal-title { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px; }
 
         .modal-close {
-            background: none;
+            background: #f1f5f9;
             border: none;
-            font-size: 20px;
-            color: #94a3b8;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            color: #64748b;
             cursor: pointer;
-            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
-        .modal-close:hover { color: #475569; }
+        .modal-close:hover { background: #e2e8f0; color: #0f172a; }
 
         .modal-body {
-            padding: 16px 20px;
+            padding: 20px 24px;
             font-size: 15px;
             color: #334155;
             line-height: 1.6;
@@ -369,45 +385,120 @@
         }
 
         .modal-footer {
-            padding: 14px 20px;
+            padding: 16px 24px;
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            border-top: 1px solid #f8fafc;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
         }
 
         .btn-modal-cancel {
             background: #fff;
             border: 1px solid #cbd5e1;
-            color: #334155;
-            padding: 8px 16px;
+            color: #475569;
+            padding: 10px 18px;
             font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
+            font-weight: 700;
+            border-radius: 10px;
             cursor: pointer;
+            transition: all 0.2s;
         }
-        .btn-modal-cancel:hover { background: #f8fafc; }
+        .btn-modal-cancel:hover { background: #f1f5f9; color: #0f172a; }
 
         .btn-modal-confirm {
             background: var(--primary);
             border: none;
             color: white;
-            padding: 8px 16px;
+            padding: 10px 20px;
             font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
+            font-weight: 700;
+            border-radius: 10px;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(139, 0, 0, 0.25);
+            transition: all 0.2s;
         }
-        .btn-modal-confirm:hover { background: #5c0000; }
+        .btn-modal-confirm:hover { background: #6b0000; transform: translateY(-1px); }
+
+        /* 圖形化選單選項 (Option Chips) 樣式 */
+        .modal-item-banner {
+            background: linear-gradient(135deg, var(--primary-light), #fff);
+            border: 1px solid #fecaca;
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        .modal-item-banner .item-icon { font-size: 36px; line-height: 1; margin-bottom: 6px; }
+        .modal-item-banner .item-title { font-size: 18px; font-weight: 800; color: var(--primary); }
+        .modal-item-banner .item-price { font-size: 16px; font-weight: 700; color: var(--accent); margin-top: 2px; }
+
+        .option-group-title {
+            font-weight: 700;
+            font-size: 13px;
+            color: #64748b;
+            margin: 14px 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+            gap: 8px;
+        }
+
+        .option-chip {
+            padding: 9px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: #ffffff;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .option-chip:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .option-chip.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(139, 0, 0, 0.12);
+        }
 
         .custom-item-tag {
             font-size: 12px;
-            color: #64748b;
-            background: #f1f5f9;
-            padding: 2px 6px;
-            border-radius: 4px;
+            color: #475569;
+            background: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 6px;
             display: inline-block;
-            margin-top: 2px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .summary-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
         }
 
         /* RWD 調整 */
@@ -689,58 +780,64 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+// 圖形化晶片選項切換
+function selectChip(groupClass, element) {
+    document.querySelectorAll('.' + groupClass).forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
     let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
-            ${item.icon || '🍱'} ${item.name} ($${item.price})
+        <div class="modal-item-banner">
+            <div class="item-icon">${item.icon || '🍱'}</div>
+            <div class="item-title">${item.name}</div>
+            <div class="item-price">$${item.price}</div>
         </div>
         
         <div class="opt-group">
-            <label>🥚 加蛋選項</label>
-            <select id="pop-egg" class="select-box">
-                <option value="不加蛋">不加蛋</option>
-                <option value="加滷蛋 (+15元)">加滷蛋 (+15元)</option>
-            </select>
+            <div class="option-group-title">🥚 加蛋選項</div>
+            <div class="option-grid">
+                <div class="option-chip egg-chip selected" data-value="不加蛋" onclick="selectChip('egg-chip', this)">❌ 不加蛋</div>
+                <div class="option-chip egg-chip" data-value="加滷蛋 (+15元)" onclick="selectChip('egg-chip', this)">🥚 加滷蛋 (+15)</div>
+            </div>
 
-            <label>🌶️ 辣度調整</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微辣">微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="大辣">大辣</option>
-            </select>
+            <div class="option-group-title">🌶️ 辣度調整</div>
+            <div class="option-grid">
+                <div class="option-chip spicy-chip selected" data-value="不辣" onclick="selectChip('spicy-chip', this)">🚫 不辣</div>
+                <div class="option-chip spicy-chip" data-value="微辣" onclick="selectChip('spicy-chip', this)">🌱 微辣</div>
+                <div class="option-chip spicy-chip" data-value="小辣" onclick="selectChip('spicy-chip', this)">🌶️ 小辣</div>
+                <div class="option-chip spicy-chip" data-value="大辣" onclick="selectChip('spicy-chip', this)">🔥 大辣</div>
+            </div>
 
-            <label>備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="飯少">飯少</option>
-                <option value="湯多">湯多</option>
-                <option value="醬少">醬少</option>
-            </select>
+            <div class="option-group-title">🥣 湯麵是否分開</div>
+            <div class="option-grid">
+                <div class="option-chip note-chip selected" data-value="不分開" onclick="selectChip('note-chip', this)">🥣 不分開</div>
+                <div class="option-chip note-chip" data-value="湯麵分開" onclick="selectChip('note-chip', this)">🍜 湯麵分開</div>
+            </div>
         </div>
     `;
 
     showCustomModal({
-        title: "請選擇餐點客製化選項",
+        title: "✨ 客製化您的餐點",
         bodyHtml: bodyHtml,
-        confirmText: "加入購物車",
+        confirmText: "+ 加入購物車",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const eggOpt = document.getElementById("pop-egg").value;
-            const spicy = document.getElementById("pop-spicy").value;
-            const note = document.getElementById("pop-note").value;
+            const selectedEgg = document.querySelector('.egg-chip.selected')?.getAttribute('data-value') || "不加蛋";
+            const selectedSpicy = document.querySelector('.spicy-chip.selected')?.getAttribute('data-value') || "不辣";
+            const selectedNote = document.querySelector('.note-chip.selected')?.getAttribute('data-value') || "不分開";
 
             let addPrice = 0;
-            if (eggOpt.includes("+15元")) {
+            if (selectedEgg.includes("+15元")) {
                 addPrice = 15;
             }
 
             const unitPrice = item.price + addPrice;
-            const customKey = `${item.name}|${eggOpt}|${spicy}|${note}`;
+            const customKey = `${item.name}|${selectedEgg}|${selectedSpicy}|${selectedNote}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -750,9 +847,9 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    egg: eggOpt,
-                    spicy: spicy,
-                    note: note
+                    egg: selectedEgg,
+                    spicy: selectedSpicy,
+                    note: selectedNote
                 };
             }
 
@@ -807,22 +904,22 @@ function openCartModal() {
     
     if (keys.length === 0) {
         return showCustomModal({
-            title: "購物車提示",
-            bodyHtml: "<p style='text-align:center; color:#666;'>🛒 購物車目前是空的喔！</p>",
+            title: "🛒 購物車提示",
+            bodyHtml: "<div style='text-align:center; padding: 20px 0; color:#64748b;'><div style='font-size:40px; margin-bottom:8px;'>🛒</div><div style='font-weight:600;'>購物車目前是空的喔！</div></div>",
             confirmText: "我知道了",
             showCancel: false
         });
     }
 
     let cartContentHtml = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #f1f5f9;">
-            <span style="font-weight:bold; font-size:15px;">已點餐點明細</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <span style="font-weight:700; font-size:15px; color:#1e293b;">已選購餐點明細</span>
             <button class="btn-clear-all" onclick="clearCartModal()">🗑️ 清空購物車</button>
         </div>
-        <div id="modal-cart-list" style="max-height: 280px; overflow-y: auto; margin-bottom: 12px; padding-right: 4px;"></div>
+        <div id="modal-cart-list" style="max-height: 280px; overflow-y: auto; padding-right: 4px;"></div>
         
-        <div id="modal-total-amount" style="text-align:right; font-size:18px; font-weight:bold; margin-top:14px; color:var(--accent); border-top:1px dashed #e2e8f0; padding-top:10px;">
-            總計: $${finalTotal}
+        <div id="modal-total-amount" style="text-align:right; font-size:18px; font-weight:800; margin-top:16px; color:var(--accent); background:#fff5f5; padding:12px 16px; border-radius:12px; border:1px solid #fecaca;">
+            總計：$${finalTotal}
         </div>
     `;
 
@@ -852,13 +949,17 @@ function renderModalCartList() {
         div.className = "cart-item";
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
-                <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                <div class="custom-item-tag">🥚 ${item.egg} | 🌶️ ${item.spicy} | 📝 ${item.note}</div>
-                <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
+                <div style="font-weight:700; font-size:15px; color:#0f172a;">${item.baseName}</div>
+                <div>
+                    <span class="custom-item-tag">🥚 ${item.egg}</span>
+                    <span class="custom-item-tag">🌶️ ${item.spicy}</span>
+                    <span class="custom-item-tag">🥣 ${item.note}</span>
+                </div>
+                <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:6px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
-            <div style="display:flex; align-items:center; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px;">
                 <button class="btn-qty" onclick="changeQtyByKey('${key}', -1)">-</button>
-                <span style="font-weight:700; font-size:14px; min-width:18px; text-align:center;">${item.qty}</span>
+                <span style="font-weight:800; font-size:15px; min-width:20px; text-align:center;">${item.qty}</span>
                 <button class="btn-qty" onclick="changeQtyByKey('${key}', 1)">+</button>
             </div>
         `;
@@ -888,7 +989,7 @@ function updateModalTotal() {
     renderCart();
     const totalEl = document.getElementById("modal-total-amount");
     if (totalEl) {
-        totalEl.innerText = `總計: $${finalTotal}`;
+        totalEl.innerText = `總計：$${finalTotal}`;
     }
 }
 
@@ -900,7 +1001,7 @@ function clearCartModal() {
 }
 
 function showCustomModal({ title, bodyHtml, confirmText = "確定", cancelText = "取消", showCancel = true, onConfirm = null }) {
-    document.getElementById("modal-title").innerText = title;
+    document.getElementById("modal-title").innerHTML = title;
     document.getElementById("modal-body").innerHTML = bodyHtml;
     
     const confirmBtn = document.getElementById("btn-modal-confirm");
@@ -933,8 +1034,8 @@ function closeModal() {
 async function submitOrderToServer() {
     if (!currentCardId) {
         return showCustomModal({
-            title: "提示",
-            bodyHtml: "⚠️ 無法送出：未感應到卡號，請重新卡片開單！",
+            title: "⚠️ 提示",
+            bodyHtml: "<div style='text-align:center; padding: 10px 0;'>無法送出：未感應到卡號，請重新卡片開單！</div>",
             confirmText: "確定",
             showCancel: false
         });
@@ -942,21 +1043,31 @@ async function submitOrderToServer() {
 
     if (Object.keys(cart).length === 0) {
         return showCustomModal({
-            title: "提示",
-            bodyHtml: "⚠️ 購物車是空的，請先挑選餐點！",
+            title: "⚠️ 提示",
+            bodyHtml: "<div style='text-align:center; padding: 10px 0;'>購物車是空的，請先挑選餐點！</div>",
             confirmText: "確定",
             showCancel: false
         });
     }
 
-    let summaryDetailHtml = `<div style="margin-bottom:6px;">💳 卡號：<b>${currentCardId}</b></div>`;
-    summaryDetailHtml += `<div style="margin-bottom:6px;">📝 餐點明細：<br><span style="color:#475569; font-size:14px;">${finalSummary}</span></div>`;
-    summaryDetailHtml += `<div style="font-size:18px; font-weight:bold; margin-top:10px; color:var(--accent);">💰 總金額：$${finalTotal}</div>`;
+    let summaryDetailHtml = `
+        <div class="summary-card">
+            <div style="font-size:14px; color:#64748b; margin-bottom:4px;">💳 感應卡號</div>
+            <div style="font-weight:800; font-size:16px; color:#0f172a;">${currentCardId}</div>
+        </div>
+        <div class="summary-card">
+            <div style="font-size:14px; color:#64748b; margin-bottom:6px;">📝 餐點明細</div>
+            <div style="color:#334155; font-size:14px; line-height:1.5;">${finalSummary}</div>
+        </div>
+        <div style="text-align:right; font-size:20px; font-weight:800; color:var(--accent); background:#fff5f5; padding:12px 16px; border-radius:12px; border:1px solid #fecaca; margin-top:8px;">
+            💰 應付總金額：$${finalTotal}
+        </div>
+    `;
 
     showCustomModal({
-        title: "最後訂單確認",
+        title: "📋 最後訂單確認",
         bodyHtml: summaryDetailHtml,
-        confirmText: "確認無誤送出",
+        confirmText: "🚀 確認無誤送出",
         cancelText: "返回修改",
         showCancel: true,
         onConfirm: async () => {
@@ -985,8 +1096,8 @@ async function submitOrderToServer() {
 
                 if (response.ok && resData.success) {
                     showCustomModal({
-                        title: "提示",
-                        bodyHtml: "🎉 點餐成功！訂單已送到後端。",
+                        title: "🎉 點餐成功",
+                        bodyHtml: "<div style='text-align:center; padding: 20px 0;'><div style='font-size:48px; margin-bottom:10px;'>✅</div><div style='font-weight:700; font-size:16px;'>訂單已順利送到後端！</div></div>",
                         confirmText: "確定",
                         showCancel: false
                     });
@@ -1001,8 +1112,8 @@ async function submitOrderToServer() {
                     renderMenu(currentFilteredItems);
                 } else {
                     showCustomModal({
-                        title: "提示",
-                        bodyHtml: `⚠️ 送出失敗：${resData.message || '請稍後再試'}`,
+                        title: "❌ 送出失敗",
+                        bodyHtml: `<div style='text-align:center; padding: 10px 0;'>${resData.message || '請稍後再試'}</div>`,
                         confirmText: "確定",
                         showCancel: false
                     });
@@ -1010,14 +1121,14 @@ async function submitOrderToServer() {
             } catch (err) {
                 console.error("發送失敗:", err);
                 showCustomModal({
-                    title: "提示",
-                    bodyHtml: "❌ 網路發送失敗，請確認網路連線或改用人工點餐！",
+                    title: "❌ 網路錯誤",
+                    bodyHtml: "<div style='text-align:center; padding: 10px 0;'>網路發送失敗，請確認網路連線或改用人工點餐！</div>",
                     confirmText: "確定",
                     showCancel: false
                 });
             } finally {
                 btn.disabled = false;
-                btn.innerText = "確認送出訂單";
+                btn.innerText = "🚀 確認無誤送出";
             }
         }
     });
