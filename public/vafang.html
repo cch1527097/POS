@@ -222,9 +222,47 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* 圖形化客製化選項群組 */
+        .opt-group { margin-top: 14px; }
+        .opt-group label { font-weight: 700; display: block; margin-top: 12px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+        }
+
+        .opt-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 6px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .opt-card:hover {
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        .opt-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 0 0 1px var(--primary);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -585,6 +623,12 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 暫存彈窗選擇狀態
+let currentOptions = {
+    style: "湯麵",
+    spicy: "正常辣"
+};
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -691,12 +735,45 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectOptCard(group, val, el) {
+    currentOptions[group] = val;
+    const parent = el.parentElement;
+    parent.querySelectorAll('.opt-card').forEach(card => card.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
     let isNoodle = item.category.includes("餛飩麵");
     let isChaoShou = item.name.includes("抄手");
+
+    // 若無特殊做法或辣度，則直接加入購物車
+    if (!isNoodle && !isChaoShou) {
+        const customKey = `${item.name}|-|-`;
+        if (cart[customKey]) {
+            cart[customKey].qty += 1;
+        } else {
+            cart[customKey] = {
+                key: customKey,
+                baseName: item.name,
+                price: item.price,
+                qty: 1,
+                style: "-",
+                spicy: "-"
+            };
+        }
+        renderCart();
+        renderMenu(currentFilteredItems);
+        return;
+    }
+
+    // 重設預設值
+    currentOptions = {
+        style: isNoodle ? "湯麵" : "-",
+        spicy: isChaoShou ? "正常辣" : "-"
+    };
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -706,44 +783,36 @@ function clickAddItem(name) {
         <div class="opt-group">
             ${isNoodle ? `
             <label>🍜 麵類做法</label>
-            <select id="pop-style" class="select-box">
-                <option value="湯麵">湯麵 (預設)</option>
-                <option value="乾麵">乾麵</option>
-            </select>
+            <div class="option-grid">
+                <div class="opt-card selected" onclick="selectOptCard('style', '湯麵', this)">🥣 湯麵</div>
+                <div class="opt-card" onclick="selectOptCard('style', '乾麵', this)">🍜 乾麵</div>
+            </div>
             ` : ''}
 
             ${isChaoShou ? `
             <label>🌶️ 辣度選擇</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="正常辣">正常辣</option>
-                <option value="微辣">微辣</option>
-                <option value="大辣">大辣</option>
-                <option value="不辣">不辣</option>
-            </select>
+            <div class="option-grid">
+                <div class="opt-card selected" onclick="selectOptCard('spicy', '正常辣', this)">🌶️ 正常辣</div>
+                <div class="opt-card" onclick="selectOptCard('spicy', '微辣', this)">🤏 微辣</div>
+                <div class="opt-card" onclick="selectOptCard('spicy', '大辣', this)">🔥 大辣</div>
+                <div class="opt-card" onclick="selectOptCard('spicy', '不辣', this)">🚫 不辣</div>
+            </div>
             ` : ''}
-
-            <label>📝 備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="不要蔥">不要蔥</option>
-                <option value="醬少">醬少</option>
-            </select>
         </div>
     `;
 
     showCustomModal({
-        title: "請選擇餐點客製化選項",
+        title: "請選擇餐點做法",
         bodyHtml: bodyHtml,
         confirmText: "加入購物車",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const style = isNoodle ? document.getElementById("pop-style").value : "-";
-            const spicy = isChaoShou ? document.getElementById("pop-spicy").value : "-";
-            const note = document.getElementById("pop-note").value;
+            const style = currentOptions.style;
+            const spicy = currentOptions.spicy;
 
             const unitPrice = item.price;
-            const customKey = `${item.name}|${style}|${spicy}|${note}`;
+            const customKey = `${item.name}|${style}|${spicy}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -754,8 +823,7 @@ function clickAddItem(name) {
                     price: unitPrice,
                     qty: 1,
                     style: style,
-                    spicy: spicy,
-                    note: note
+                    spicy: spicy
                 };
             }
 
@@ -795,7 +863,6 @@ function renderCart() {
         let details = [];
         if (item.style !== "-") details.push(item.style);
         if (item.spicy !== "-") details.push(item.spicy);
-        if (item.note !== "無特殊需求") details.push(item.note);
         
         const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
         finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
@@ -864,7 +931,6 @@ function renderModalCartList() {
         let tags = [];
         if (item.style !== "-") tags.push(`🍜 ${item.style}`);
         if (item.spicy !== "-") tags.push(`🌶️ ${item.spicy}`);
-        if (item.note !== "無特殊需求") tags.push(`📝 ${item.note}`);
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
