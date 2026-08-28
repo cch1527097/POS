@@ -198,8 +198,50 @@
         .btn-qty:hover { background: var(--primary); color: white; }
 
         .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        .opt-group label.section-title { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+
+        /* ==================== 圖形化選項按鈕樣式 ==================== */
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .option-btn {
+            background: #f8fafc;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .option-btn .opt-icon { font-size: 20px; }
+        .option-btn .opt-text { font-size: 13px; font-weight: 600; color: #334155; }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .option-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .option-btn.selected .opt-text {
+            color: var(--primary);
+            font-weight: 700;
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -279,38 +321,38 @@
         }
 
         /* ==================== 低消訊息橫條樣式 ==================== */
-.promo-banner {
-    background: #fff7ed;
-    border: 1px solid #ffedd5;
-    border-radius: 10px;
-    padding: 10px 16px;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-}
+        .promo-banner {
+            background: #fff7ed;
+            border: 1px solid #ffedd5;
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
 
-.promo-badge {
-    background: #ea580c;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 6px;
-    letter-spacing: 1px;
-    flex-shrink: 0;
-}
+        .promo-badge {
+            background: #ea580c;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+        }
 
-.promo-text {
-    font-size: 14px;
-    color: #9a3412;
-}
+        .promo-text {
+            font-size: 14px;
+            color: #9a3412;
+        }
 
-.promo-text b {
-    color: #c2410c;
-    font-size: 16px;
-}
+        .promo-text b {
+            color: #c2410c;
+            font-size: 16px;
+        }
 
         /* ==================== Modal 彈窗樣式 ==================== */
         .modal-overlay {
@@ -694,37 +736,41 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectOptionBtn(el) {
+    const parent = el.closest('.option-grid');
+    parent.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
     let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
+        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:16px; color:var(--primary);">
             ${item.icon || '🍱'} ${item.name} ($${item.price})
         </div>
         
         <div class="opt-group">
-            <label>📝 備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="飯少">飯少</option>
-                <option value="不辣">不辣</option>
-                <option value="加辣">加辣</option>
-            </select>
+            <label class="section-title">✨ 請確認餐點</label>
+            <div class="option-grid">
+                <div class="option-btn selected" onclick="selectOptionBtn(this)" data-value="標準">
+                    <span class="opt-icon">👍</span>
+                    <span class="opt-text">標準份量</span>
+                </div>
+            </div>
         </div>
     `;
 
     showCustomModal({
-        title: "請選擇餐點客製化選項",
+        title: "餐點確認",
         bodyHtml: bodyHtml,
         confirmText: "加入購物車",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const note = document.getElementById("pop-note").value;
-
             const unitPrice = item.price;
-            const customKey = `${item.name}|${note}`;
+            const customKey = `${item.name}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -733,8 +779,7 @@ function clickAddItem(name) {
                     key: customKey,
                     baseName: item.name,
                     price: unitPrice,
-                    qty: 1,
-                    note: note
+                    qty: 1
                 };
             }
 
@@ -771,11 +816,7 @@ function renderCart() {
         const sub = item.qty * item.price;
         finalTotal += sub;
         
-        let details = [];
-        if (item.note && item.note !== "無特殊需求") details.push(item.note);
-        
-        const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
-        finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
+        finalSummary += `${item.baseName}*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -837,14 +878,10 @@ function renderModalCartList() {
         const sub = item.qty * item.price;
         const div = document.createElement("div");
         div.className = "cart-item";
-        
-        let tags = [];
-        if (item.note && item.note !== "無特殊需求") tags.push(`📝 ${item.note}`);
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                ${tags.length > 0 ? `<div class="custom-item-tag">${tags.join(' | ')}</div>` : ''}
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
@@ -960,8 +997,7 @@ async function submitOrderToServer() {
                 category: "food",
                 type: "food",
                 meal: `志氣雞飯：${finalSummary.trim()}`,
-                total: finalTotal,
-                note: `總計：$${finalTotal}`
+                total: finalTotal
             };
 
             try {
