@@ -223,8 +223,53 @@
         .btn-qty:hover { background: var(--primary); color: white; }
 
         .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        .opt-group label.section-title { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+
+        /* ==================== 圖形化選項按鈕樣式 ==================== */
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .option-btn {
+            background: #f8fafc;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .option-btn .opt-icon { font-size: 18px; }
+        .option-btn .opt-text { font-size: 12px; font-weight: 600; color: #334155; }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .option-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .option-btn.selected .opt-text {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* 隱藏原生 checkbox */
+        .checkbox-btn input[type="checkbox"] { display: none; }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -738,6 +783,22 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectRadioOption(el) {
+    const parent = el.closest('.option-grid');
+    parent.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function toggleCheckboxOption(el) {
+    const cb = el.querySelector('input[type="checkbox"]');
+    cb.checked = !cb.checked;
+    if (cb.checked) {
+        el.classList.add('selected');
+    } else {
+        el.classList.remove('selected');
+    }
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
@@ -752,37 +813,47 @@ function clickAddItem(name) {
         
         <div class="opt-group">
             ${isSoupMain ? `
-            <label>🍜 主食選擇</label>
-            <select id="pop-noodle" class="select-box">
-                <option value="泡飯">泡飯</option>
-                <option value="油麵">油麵</option>
-                <option value="意麵">意麵</option>
-                <option value="拉麵">拉麵</option>
-                <option value="米粉">米粉</option>
-                <option value="冬粉">冬粉</option>
-                <option value="陽春麵">陽春麵</option>
-            </select>
-            ` : ''}
-
-            ${isCustom3 ? `
-            <label>📌 自選配料 (請選3項，多選預設取前3項)</label>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; font-size:14px; text-align:left; margin-top:6px;">
-                <label><input type="checkbox" name="pop-topping" value="貢丸"> 貢丸</label>
-                <label><input type="checkbox" name="pop-topping" value="肉片"> 肉片</label>
-                <label><input type="checkbox" name="pop-topping" value="鴨血"> 鴨血</label>
-                <label><input type="checkbox" name="pop-topping" value="油豆腐"> 油豆腐</label>
-                <label><input type="checkbox" name="pop-topping" value="油豆皮"> 油豆皮</label>
-                <label><input type="checkbox" name="pop-topping" value="滷蛋半顆"> 滷蛋半顆</label>
+            <label class="section-title">🍜 主食選擇</label>
+            <div class="option-grid" id="pop-noodle-group">
+                <div class="option-btn selected" onclick="selectRadioOption(this)" data-value="泡飯"><span class="opt-icon">🍚</span><span class="opt-text">泡飯</span></div>
+                <div class="option-btn" onclick="selectRadioOption(this)" data-value="油麵"><span class="opt-icon">🍜</span><span class="opt-text">油麵</span></div>
+                <div class="option-btn" onclick="selectRadioOption(this)" data-value="意麵"><span class="opt-icon">🍜</span><span class="opt-text">意麵</span></div>
+                <div class="option-btn" onclick="selectRadioOption(this)" data-value="拉麵"><span class="opt-icon">🍜</span><span class="opt-text">拉麵</span></div>
+                <div class="option-btn" onclick="selectRadioOption(this)" data-value="米粉"><span class="opt-icon">🍜</span><span class="opt-text">米粉</span></div>
+                <div class="option-btn" onclick="selectRadioOption(this)" data-value="冬粉"><span class="opt-icon">🍜</span><span class="opt-text">冬粉</span></div>
+                <div class="option-btn" onclick="selectRadioOption(this)" data-value="陽春麵"><span class="opt-icon">🍜</span><span class="opt-text">陽春麵</span></div>
             </div>
             ` : ''}
 
-            <label>📝 備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="不要蔥">不要蔥</option>
-                <option value="加辣">加辣</option>
-                <option value="湯分開">湯分開</option>
-            </select>
+            ${isCustom3 ? `
+            <label class="section-title">📌 自選配料 (請選3項)</label>
+            <div class="option-grid">
+                <div class="option-btn checkbox-btn" onclick="toggleCheckboxOption(this)">
+                    <input type="checkbox" name="pop-topping" value="貢丸">
+                    <span class="opt-icon">🍡</span><span class="opt-text">貢丸</span>
+                </div>
+                <div class="option-btn checkbox-btn" onclick="toggleCheckboxOption(this)">
+                    <input type="checkbox" name="pop-topping" value="肉片">
+                    <span class="opt-icon">🥩</span><span class="opt-text">肉片</span>
+                </div>
+                <div class="option-btn checkbox-btn" onclick="toggleCheckboxOption(this)">
+                    <input type="checkbox" name="pop-topping" value="鴨血">
+                    <span class="opt-icon">🩸</span><span class="opt-text">鴨血</span>
+                </div>
+                <div class="option-btn checkbox-btn" onclick="toggleCheckboxOption(this)">
+                    <input type="checkbox" name="pop-topping" value="油豆腐">
+                    <span class="opt-icon">🧈</span><span class="opt-text">油豆腐</span>
+                </div>
+                <div class="option-btn checkbox-btn" onclick="toggleCheckboxOption(this)">
+                    <input type="checkbox" name="pop-topping" value="油豆皮">
+                    <span class="opt-icon">🥢</span><span class="opt-text">油豆皮</span>
+                </div>
+                <div class="option-btn checkbox-btn" onclick="toggleCheckboxOption(this)">
+                    <input type="checkbox" name="pop-topping" value="滷蛋半顆">
+                    <span class="opt-icon">🥚</span><span class="opt-text">滷蛋半顆</span>
+                </div>
+            </div>
+            ` : ''}
         </div>
     `;
 
@@ -793,7 +864,11 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const noodle = isSoupMain ? document.getElementById("pop-noodle").value : "-";
+            let noodle = "-";
+            if (isSoupMain) {
+                const selectedNoodle = document.querySelector("#pop-noodle-group .option-btn.selected");
+                if (selectedNoodle) noodle = selectedNoodle.getAttribute("data-value");
+            }
             
             let toppingStr = "-";
             if (isCustom3) {
@@ -806,10 +881,8 @@ function clickAddItem(name) {
                 toppingStr = selected.join('、');
             }
 
-            const note = document.getElementById("pop-note").value;
-
             const unitPrice = item.price;
-            const customKey = `${item.name}|${noodle}|${toppingStr}|${note}`;
+            const customKey = `${item.name}|${noodle}|${toppingStr}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -820,8 +893,7 @@ function clickAddItem(name) {
                     price: unitPrice,
                     qty: 1,
                     noodle: noodle,
-                    topping: toppingStr,
-                    note: note
+                    topping: toppingStr
                 };
             }
 
@@ -861,7 +933,6 @@ function renderCart() {
         let details = [];
         if (item.noodle !== "-") details.push(item.noodle);
         if (item.topping !== "-") details.push(`配料:${item.topping}`);
-        if (item.note !== "無特殊需求") details.push(item.note);
         
         const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
         finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
@@ -930,7 +1001,6 @@ function renderModalCartList() {
         let tags = [];
         if (item.noodle !== "-") tags.push(`🍜 ${item.noodle}`);
         if (item.topping !== "-") tags.push(`🥢 ${item.topping}`);
-        if (item.note !== "無特殊需求") tags.push(`📝 ${item.note}`);
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
@@ -1052,8 +1122,7 @@ async function submitOrderToServer() {
                 type: "food",
                 meal: `廈門沙茶麵：${finalSummary.trim()}`,
                 spicy: "微辣",
-                total: finalTotal,
-                note: `總計：$${finalTotal}`
+                total: finalTotal
             };
 
             try {
