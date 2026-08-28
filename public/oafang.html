@@ -220,9 +220,44 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
+        /* ==================== 圖形化客製選項 ==================== */
         .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        .opt-group label { font-weight: 700; display: block; margin-top: 14px; margin-bottom: 6px; font-size: 14px; color: var(--primary); }
+        .opt-hint { font-size: 11px; color: #64748b; font-weight: normal; margin-left: 6px; }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .option-btn {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+        .option-btn:hover {
+            background: #e2e8f0;
+        }
+        .option-btn.selected {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(44, 62, 80, 0.3);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -326,7 +361,7 @@
         .modal-container {
             background: #fff;
             width: 90%;
-            max-width: 440px;
+            max-width: 460px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             overflow: hidden;
@@ -547,37 +582,37 @@ const menuItems = [
     {name: "舒肥胸", price: 60, category: "單點肉類", icon:"🍗"},
     {name: "松坂肉", price: 80, category: "單點肉類", icon:"🥩"},
 
-    // === 小菜 (單點$25/套餐加購$20) ===
+    // === 小菜 ===
     {name: "雞心", price: 25, category: "小菜", icon:"🐔"},
     {name: "雞診", price: 25, category: "小菜", icon:"🐔"},
     {name: "雞冠", price: 25, category: "小菜", icon:"🐔"},
     {name: "雞屁股", price: 25, category: "小菜", icon:"🐔"},
     {name: "雞翅", price: 25, category: "小菜", icon:"🐔"},
     {name: "蛋胚", price: 25, category: "小菜", icon:"🥚"},
-    {name: "德式香腸", price: 25, category: "小菜", icon:"🥬"},
+    {name: "德式香腸", price: 25, category: "小菜", icon:"🌭"},
     {name: "豬耳朵絲", price: 25, category: "小菜", icon:"🐷"},
     {name: "溏心蛋", price: 25, category: "小菜", icon:"🥚"},
-    {name: "米血", price: 25, category: "小菜", icon:"🥬"},
-    {name: "甜不辣", price: 25, category: "小菜", icon:"🥬"},
-    {name: "魚豆腐", price: 25, category: "小菜", icon:"🥬"},
-    {name: "豆皮(炸)", price: 25, category: "小菜", icon:"🥬"},
-    {name: "豆包(無炸)", price: 25, category: "小菜", icon:"🥬"},
-    {name: "百頁豆腐", price: 25, category: "小菜", icon:"🥬"},
-    {name: "貢丸", price: 25, category: "小菜", icon:"🥬"},
-    {name: "大豆干", price: 25, category: "小菜", icon:"🥬"},
+    {name: "米血", price: 25, category: "小菜", icon:"🍢"},
+    {name: "甜不辣", price: 25, category: "小菜", icon:"🍢"},
+    {name: "魚豆腐", price: 25, category: "小菜", icon:"🧊"},
+    {name: "豆皮(炸)", price: 25, category: "小菜", icon:"🥟"},
+    {name: "豆包(無炸)", price: 25, category: "小菜", icon:"🥟"},
+    {name: "百頁豆腐", price: 25, category: "小菜", icon:"🧊"},
+    {name: "貢丸", price: 25, category: "小菜", icon:"🍡"},
+    {name: "大豆干", price: 25, category: "小菜", icon:"🔲"},
     {name: "韓式泡菜", price: 25, category: "小菜", icon:"🥬"},
-    {name: "豆干絲(麵)", price: 25, category: "小菜", icon:"🥬"},
+    {name: "豆干絲(麵)", price: 25, category: "小菜", icon:"🍜"},
     {name: "泡麵", price: 25, category: "小菜", icon:"🍜"},
     {name: "義大利麵", price: 25, category: "小菜", icon:"🍝"},
     {name: "毛豆仁", price: 25, category: "小菜", icon:"🫛"},
     {name: "高麗菜", price: 25, category: "小菜", icon:"🥬"},
-    {name: "綠花椰", price: 25, category: "小菜", icon:"🥬"},
-    {name: "龍鬚菜", price: 25, category: "小菜", icon:"🥬"},
+    {name: "綠花椰", price: 25, category: "小菜", icon:"🥦"},
+    {name: "龍鬚菜", price: 25, category: "小菜", icon:"🌱"},
     {name: "玉米筍", price: 25, category: "小菜", icon:"🌽"},
     {name: "小黃瓜", price: 25, category: "小菜", icon:"🥒"},
-    {name: "水晶藻", price: 25, category: "小菜", icon:"🥬"},
-    {name: "白蘿蔔", price: 25, category: "小菜", icon:"🥬"},
-    {name: "黑木耳", price: 25, category: "小菜", icon:"🥬"},
+    {name: "水晶藻", price: 25, category: "小菜", icon:"🌿"},
+    {name: "白蘿蔔", price: 25, category: "小菜", icon:"🧅"},
+    {name: "黑木耳", price: 25, category: "小菜", icon:"🍄"},
     {name: "杏鮑菇", price: 25, category: "小菜", icon:"🍄"},
     {name: "洋蔥", price: 25, category: "小菜", icon:"🧅"},
     {name: "蓮藕", price: 25, category: "小菜", icon:"🪷"},
@@ -700,11 +735,73 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+// 輔助函式：單選按鈕切換
+function selectOptionBtn(groupName, selectedVal) {
+    const container = document.getElementById(`group-${groupName}`);
+    if (!container) return;
+    const btns = container.querySelectorAll('.option-btn');
+    btns.forEach(btn => {
+        if (btn.getAttribute('data-value') === selectedVal) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+}
+
+// 輔助函式：多選按鈕切換 (可複選)
+function toggleMultiOptionBtn(groupName, clickedVal, isExclusive = false) {
+    const container = document.getElementById(`group-${groupName}`);
+    if (!container) return;
+    const btns = container.querySelectorAll('.option-btn');
+    
+    btns.forEach(btn => {
+        const val = btn.getAttribute('data-value');
+        if (isExclusive) {
+            // 清空型選項（如：都不要蔥蒜、清淡）：選中自己，取消其他
+            if (val === clickedVal) {
+                btn.classList.add('selected');
+            } else {
+                btn.classList.remove('selected');
+            }
+        } else {
+            // 普通多選項：先取消所有排他選項
+            if (btn.getAttribute('data-exclusive') === 'true') {
+                btn.classList.remove('selected');
+            }
+            if (val === clickedVal) {
+                btn.classList.toggle('selected');
+            }
+        }
+    });
+
+    // 若全部都被取消，預設自動還原為預設或清空
+    const anySelected = container.querySelector('.option-btn.selected');
+    if (!anySelected) {
+        const defaultBtn = container.querySelector('[data-exclusive="true"]') || btns[0];
+        if (defaultBtn) defaultBtn.classList.add('selected');
+    }
+}
+
+function getSelectedVal(groupName) {
+    const container = document.getElementById(`group-${groupName}`);
+    if (!container) return "";
+    const selectedBtn = container.querySelector('.option-btn.selected');
+    return selectedBtn ? selectedBtn.getAttribute('data-value') : "";
+}
+
+function getMultiSelectedVals(groupName) {
+    const container = document.getElementById(`group-${groupName}`);
+    if (!container) return [];
+    const selectedBtns = container.querySelectorAll('.option-btn.selected');
+    return Array.from(selectedBtns).map(b => b.getAttribute('data-value'));
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 非「套餐」類別（單點肉類、小菜）：直接加入購物車（不顯示口味標籤）
+    // 非「套餐」類別：直接加入購物車
     if (item.category !== "套餐") {
         const customKey = `${item.name}||筍片正常|蔥蒜正常|不辣|胡椒檸檬正常`;
 
@@ -729,7 +826,7 @@ function clickAddItem(name) {
         return;
     }
 
-    // 只有「套餐」類別才會跳出彈窗選擇配菜與調味
+    // 「套餐」類別
     let sideDishCount = 0;
     if (item.name.includes("2份小菜") || item.name.includes("2小菜")) {
         sideDishCount = 2;
@@ -741,17 +838,61 @@ function clickAddItem(name) {
     let sideDishHtml = "";
 
     if (sideDishCount > 0) {
-        sideDishHtml += `<div style="margin-top:10px; padding:8px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;"><b style="color:var(--primary);">🥗 請選擇套餐小菜 (${sideDishCount} 份)：</b>`;
+        sideDishHtml += `<div style="margin-top:10px; padding:10px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0;"><b style="color:var(--primary);">🥗 請選擇套餐小菜 (${sideDishCount} 份)：</b>`;
         for (let i = 1; i <= sideDishCount; i++) {
+            const defaultSide = sideOptions[(i - 1) % sideOptions.length].name;
             sideDishHtml += `
-                <label style="margin-top:6px;">小菜 ${i}</label>
-                <select id="pop-side-${i}" class="select-box">
-                    ${sideOptions.map((s, idx) => `<option value="${s.name}" ${idx === (i - 1) % sideOptions.length ? 'selected' : ''}>${s.name}</option>`).join('')}
-                </select>
+                <div style="font-size:13px; font-weight:bold; margin-top:8px; margin-bottom:4px; color:#475569;">小菜 ${i}</div>
+                <div class="option-grid" id="group-side-${i}">
+                    ${sideOptions.map(s => `
+                        <div class="option-btn ${s.name === defaultSide ? 'selected' : ''}" data-value="${s.name}" onclick="selectOptionBtn('side-${i}', '${s.name}')">
+                            <span>${s.icon || '🥗'}</span>
+                            <span>${s.name}</span>
+                        </div>
+                    `).join('')}
+                </div>
             `;
         }
         sideDishHtml += `</div>`;
     }
+
+    const bambooOpts = [
+        { label: "無", val: "無筍片", icon: "🚫" },
+        { label: "少", val: "筍片少", icon: "🤏" },
+        { label: "正常", val: "筍片正常", icon: "👌" },
+        { label: "+10元", val: "加筍片 (+10元)", icon: "➕" },
+        { label: "+20元", val: "加筍片 (+20元)", icon: "➕" }
+    ];
+
+    // 多選配置：蔥蒜
+    const flavorOpts = [
+        { label: "蔥蒜正常", val: "蔥蒜正常", icon: "🧄", exclusive: true },
+        { label: "蔥多", val: "蔥多", icon: "🌿" },
+        { label: "蔥少", val: "蔥少", icon: "🌿" },
+        { label: "不要蔥", val: "不要蔥", icon: "🚫" },
+        { label: "蒜多", val: "蒜多", icon: "🧄" },
+        { label: "蒜少", val: "蒜少", icon: "🧄" },
+        { label: "不要蒜", val: "不要蒜", icon: "🚫" },
+        { label: "全無蔥蒜", val: "都不要蔥蒜", icon: "❌", exclusive: true }
+    ];
+
+    const spicyOpts = [
+        { label: "不辣", val: "不辣", icon: "🟢" },
+        { label: "微微辣", val: "微微辣", icon: "🟡" },
+        { label: "小辣", val: "小辣", icon: "🟠" },
+        { label: "中辣", val: "中辣", icon: "🔴" },
+        { label: "大辣", val: "大辣", icon: "🔥" }
+    ];
+
+    // 多選配置：胡椒檸檬
+    const seasoningOpts = [
+        { label: "正常", val: "胡椒檸檬正常", icon: "🍋", exclusive: true },
+        { label: "胡椒少", val: "胡椒少", icon: "🧂" },
+        { label: "胡椒多", val: "胡椒多", icon: "🧂" },
+        { label: "檸檬少", val: "檸檬少", icon: "🍋" },
+        { label: "檸檬多", val: "檸檬多", icon: "🍋" },
+        { label: "清淡(少鹽)", val: "清淡", icon: "💧", exclusive: true }
+    ];
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -762,44 +903,44 @@ function clickAddItem(name) {
             ${sideDishHtml}
 
             <label>🧂 筍片選項</label>
-            <select id="pop-bamboo" class="select-box">
-                <option value="無筍片">無</option>
-                <option value="筍片少">少</option>
-                <option value="筍片正常" selected>正常</option>
-                <option value="加筍片 (+10元)">加10元 (+10元)</option>
-                <option value="加筍片 (+20元)">加20元 (+20元)</option>
-            </select>
+            <div class="option-grid" id="group-bamboo">
+                ${bambooOpts.map(o => `
+                    <div class="option-btn ${o.val === '筍片正常' ? 'selected' : ''}" data-value="${o.val}" onclick="selectOptionBtn('bamboo', '${o.val}')">
+                        <span>${o.icon}</span>
+                        <span>${o.label}</span>
+                    </div>
+                `).join('')}
+            </div>
 
-            <label>🌿 蔥蒜配料</label>
-            <select id="pop-flavor" class="select-box">
-                <option value="蔥蒜正常">蔥蒜正常</option>
-                <option value="蔥多">蔥多</option>
-                <option value="蔥少">蔥少</option>
-                <option value="不要蔥">不要蔥</option>
-                <option value="蒜多">蒜多</option>
-                <option value="蒜少">蒜少</option>
-                <option value="不要蒜">不要蒜</option>
-                <option value="都不要蔥蒜">都不要蔥蒜</option>
-            </select>
+            <label>🌿 蔥蒜配料 <span class="opt-hint">(可複選)</span></label>
+            <div class="option-grid" id="group-flavor">
+                ${flavorOpts.map(o => `
+                    <div class="option-btn ${o.val === '蔥蒜正常' ? 'selected' : ''}" data-value="${o.val}" data-exclusive="${o.exclusive ? 'true' : 'false'}" onclick="toggleMultiOptionBtn('flavor', '${o.val}', ${o.exclusive || false})">
+                        <span>${o.icon}</span>
+                        <span>${o.label}</span>
+                    </div>
+                `).join('')}
+            </div>
 
             <label>🌶️ 辣度調整</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微微辣">微微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="中辣">中辣</option>
-                <option value="大辣">大辣</option>
-            </select>
+            <div class="option-grid" id="group-spicy">
+                ${spicyOpts.map(o => `
+                    <div class="option-btn ${o.val === '不辣' ? 'selected' : ''}" data-value="${o.val}" onclick="selectOptionBtn('spicy', '${o.val}')">
+                        <span>${o.icon}</span>
+                        <span>${o.label}</span>
+                    </div>
+                `).join('')}
+            </div>
 
-            <label>🍋 胡椒與檸檬 (鹹度)</label>
-            <select id="pop-seasoning" class="select-box">
-                <option value="胡椒檸檬正常">胡椒/檸檬 正常</option>
-                <option value="胡椒少">胡椒少</option>
-                <option value="胡椒多">胡椒多</option>
-                <option value="檸檬少">檸檬少</option>
-                <option value="檸檬多">檸檬多</option>
-                <option value="清淡">清淡 (少鹽)</option>
-            </select>
+            <label>🍋 胡椒與檸檬 <span class="opt-hint">(可複選)</span></label>
+            <div class="option-grid" id="group-seasoning">
+                ${seasoningOpts.map(o => `
+                    <div class="option-btn ${o.val === '胡椒檸檬正常' ? 'selected' : ''}" data-value="${o.val}" data-exclusive="${o.exclusive ? 'true' : 'false'}" onclick="toggleMultiOptionBtn('seasoning', '${o.val}', ${o.exclusive || false})">
+                        <span>${o.icon}</span>
+                        <span>${o.label}</span>
+                    </div>
+                `).join('')}
+            </div>
         </div>
     `;
 
@@ -810,16 +951,22 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const bambooOpt = document.getElementById("pop-bamboo").value;
-            const flavor = document.getElementById("pop-flavor").value;
-            const spicy = document.getElementById("pop-spicy").value;
-            const seasoning = document.getElementById("pop-seasoning").value;
+            const bambooOpt = getSelectedVal("bamboo") || "筍片正常";
+            
+            // 抓取多選結果，使用逗號串接
+            const flavorArr = getMultiSelectedVals("flavor");
+            const flavor = flavorArr.length > 0 ? flavorArr.join(',') : "蔥蒜正常";
+
+            const spicy = getSelectedVal("spicy") || "不辣";
+
+            const seasoningArr = getMultiSelectedVals("seasoning");
+            const seasoning = seasoningArr.length > 0 ? seasoningArr.join(',') : "胡椒檸檬正常";
 
             let chosenSides = [];
             if (sideDishCount > 0) {
                 for (let i = 1; i <= sideDishCount; i++) {
-                    const el = document.getElementById(`pop-side-${i}`);
-                    if (el) chosenSides.push(el.value);
+                    const val = getSelectedVal(`side-${i}`);
+                    if (val) chosenSides.push(val);
                 }
             }
             const sideStr = chosenSides.length > 0 ? chosenSides.join('+') : '';
