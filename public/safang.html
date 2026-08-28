@@ -220,9 +220,56 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
+        /* ==================== 客製化圖形選項樣式 ==================== */
         .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        .opt-group label.opt-title { font-weight: 600; display: block; margin-top: 14px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        
+        .visual-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .visual-option-item {
+            position: relative;
+            flex: 1 1 calc(50% - 8px);
+            min-width: 110px;
+        }
+
+        .visual-option-item input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .visual-option-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 10px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--text-dark);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            user-select: none;
+        }
+
+        .visual-option-item input[type="radio"]:checked + .visual-option-card {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+            color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .visual-option-card:hover {
+            border-color: var(--primary);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -533,79 +580,79 @@ function goBack() {
 
 const menuItems = [
     // === 飯・食 ===
-    {name: "豚燒丼飯", price: 139, note: "熱銷經典", category: "飯・食", icon:"🍱"},
-    {name: "豚燒丼飯 極盛", price: 169, note: "肉量加倍 👍", category: "飯・食", icon:"🍱"},
-    {name: "炙燒烤肉丼", price: 139, note: "香氣十足", category: "飯・食", icon:"🍱"},
-    {name: "炙燒烤肉丼 極盛", price: 169, note: "肉量加倍 👍", category: "飯・食", icon:"🍱"},
-    {name: "泡菜烤肉丼", price: 159, note: "開胃首選 🌶️", category: "飯・食", icon:"🍱"},
-    {name: "炙燒牛丼", price: 169, note: "嫩煎美味", category: "飯・食", icon:"🍱"},
-    {name: "焗烤燒肉丼", price: 179, note: "濃郁起司 (限內用)", category: "飯・食", icon:"🍱"},
-    {name: "醬燒松坂豬丼", price: 189, note: "脆口彈牙", category: "飯・食", icon:"🍱"},
-    {name: "日式炸雞排丼", price: 199, note: "外酥內嫩", category: "飯・食", icon:"🍱"},
-    {name: "日式炸豬排丼", price: 199, note: "厚實卡滋", category: "飯・食", icon:"🍱"},
-    {name: "安格斯肩排丼", price: 279, note: "嚴選牛肉", category: "飯・食", icon:"🍱"},
-    {name: "安格斯牛小排丼", price: 299, note: "頂級奢華 👍", category: "飯・食", icon:"🍱"},
+    {name: "豚燒丼飯", price: 139, category: "飯・食", icon:"🍱"},
+    {name: "豚燒丼飯 極盛", price: 169, category: "飯・食", icon:"🍱"},
+    {name: "炙燒烤肉丼", price: 139, category: "飯・食", icon:"🍱"},
+    {name: "炙燒烤肉丼 極盛", price: 169, category: "飯・食", icon:"🍱"},
+    {name: "泡菜烤肉丼", price: 159, category: "飯・食", icon:"🍱"},
+    {name: "炙燒牛丼", price: 169, category: "飯・食", icon:"🍱"},
+    {name: "焗烤燒肉丼", price: 179, category: "飯・食", icon:"🍱"},
+    {name: "醬燒松坂豬丼", price: 189, category: "飯・食", icon:"🍱"},
+    {name: "日式炸雞排丼", price: 199, category: "飯・食", icon:"🍱"},
+    {name: "日式炸豬排丼", price: 199, category: "飯・食", icon:"🍱"},
+    {name: "安格斯肩排丼", price: 279, category: "飯・食", icon:"🍱"},
+    {name: "安格斯牛小排丼", price: 299, category: "飯・食", icon:"🍱"},
 
     // === 鍋燒 ===
-    {name: "原味鍋燒意麵", price: 90, note: "經典清甜", category: "鍋燒", icon:"🍲"},
-    {name: "原味鍋燒泡麵", price: 90, note: "傳統湯頭", category: "鍋燒", icon:"🍲"},
-    {name: "鍋燒泡飯", price: 100, note: "暖胃首選", category: "鍋燒", icon:"🍲"},
-    {name: "鍋燒烏龍麵", price: 100, note: "Q彈麵條", category: "鍋燒", icon:"🍲"},
-    {name: "麻辣鍋燒意麵", price: 100, note: "麻辣香濃 🌶️", category: "鍋燒", icon:"🍲"},
-    {name: "麻辣鍋燒泡麵", price: 100, note: "麻辣香濃 🌶️", category: "鍋燒", icon:"🍲"},
-    {name: "麻辣鍋燒泡飯", price: 110, note: "麻辣香濃 🌶️", category: "鍋燒", icon:"🍲"},
-    {name: "麻辣鍋燒烏龍麵", price: 110, note: "麻辣香濃 🌶️", category: "鍋燒", icon:"🍲"},
-    {name: "泡菜鍋燒意麵", price: 100, note: "酸辣開胃", category: "鍋燒", icon:"🍲"},
-    {name: "泡菜鍋燒泡麵", price: 100, note: "酸辣開胃", category: "鍋燒", icon:"🍲"},
-    {name: "泡菜鍋燒泡飯", price: 110, note: "酸辣開胃", category: "鍋燒", icon:"🍲"},
-    {name: "泡菜鍋燒烏龍麵", price: 110, note: "酸辣開胃", category: "鍋燒", icon:"🍲"},
-    {name: "麻辣牛奶意麵", price: 140, note: "人氣推薦 👍 濃醇滑順", category: "鍋燒", icon:"🍲"},
-    {name: "麻辣牛奶泡麵", price: 140, note: "濃醇滑順", category: "鍋燒", icon:"🍲"},
-    {name: "麻辣牛奶泡飯", price: 150, note: "濃醇滑順", category: "鍋燒", icon:"🍲"},
-    {name: "麻辣牛奶烏龍麵", price: 150, note: "濃醇滑順", category: "鍋燒", icon:"🍲"},
-    {name: "牛奶起司意麵", price: 140, note: "濃郁奶香", category: "鍋燒", icon:"🍲"},
-    {name: "牛奶起司泡麵", price: 140, note: "濃郁奶香", category: "鍋燒", icon:"🍲"},
-    {name: "牛奶起司泡飯", price: 140, note: "濃郁奶香", category: "鍋燒", icon:"🍲"},
-    {name: "牛奶起司烏龍麵", price: 150, note: "濃郁奶香 👍", category: "鍋燒", icon:"🍲"},
+    {name: "原味鍋燒意麵", price: 90, category: "鍋燒", icon:"🍲"},
+    {name: "原味鍋燒泡麵", price: 90, category: "鍋燒", icon:"🍲"},
+    {name: "鍋燒泡飯", price: 100, category: "鍋燒", icon:"🍲"},
+    {name: "鍋燒烏龍麵", price: 100, category: "鍋燒", icon:"🍲"},
+    {name: "麻辣鍋燒意麵", price: 100, category: "鍋燒", icon:"🍲"},
+    {name: "麻辣鍋燒泡麵", price: 100, category: "鍋燒", icon:"🍲"},
+    {name: "麻辣鍋燒泡飯", price: 110, category: "鍋燒", icon:"🍲"},
+    {name: "麻辣鍋燒烏龍麵", price: 110, category: "鍋燒", icon:"🍲"},
+    {name: "泡菜鍋燒意麵", price: 100, category: "鍋燒", icon:"🍲"},
+    {name: "泡菜鍋燒泡麵", price: 100, category: "鍋燒", icon:"🍲"},
+    {name: "泡菜鍋燒泡飯", price: 110, category: "鍋燒", icon:"🍲"},
+    {name: "泡菜鍋燒烏龍麵", price: 110, category: "鍋燒", icon:"🍲"},
+    {name: "麻辣牛奶意麵", price: 140, category: "鍋燒", icon:"🍲"},
+    {name: "麻辣牛奶泡麵", price: 140, category: "鍋燒", icon:"🍲"},
+    {name: "麻辣牛奶泡飯", price: 150, category: "鍋燒", icon:"🍲"},
+    {name: "麻辣牛奶烏龍麵", price: 150, category: "鍋燒", icon:"🍲"},
+    {name: "牛奶起司意麵", price: 140, category: "鍋燒", icon:"🍲"},
+    {name: "牛奶起司泡麵", price: 140, category: "鍋燒", icon:"🍲"},
+    {name: "牛奶起司泡飯", price: 140, category: "鍋燒", icon:"🍲"},
+    {name: "牛奶起司烏龍麵", price: 150, category: "鍋燒", icon:"🍲"},
 
     // === 炒麵 ===
-    {name: "烤肉炒麵", price: 110, note: "醬香鑊氣", category: "炒麵", icon:"🍜"},
-    {name: "烤肉炒泡麵", price: 110, note: "熱門餐點", category: "炒麵", icon:"🍜"},
-    {name: "烤肉炒烏龍麵", price: 120, note: "彈牙入味", category: "炒麵", icon:"🍜"},
-    {name: "麻辣炒麵", price: 110, note: "辛香夠味 🌶️", category: "炒麵", icon:"🍜"},
-    {name: "麻辣炒泡麵", price: 110, note: "辛香夠味 🌶️", category: "炒麵", icon:"🍜"},
-    {name: "麻辣炒意麵", price: 120, note: "辛香夠味 🌶️", category: "炒麵", icon:"🍜"},
-    {name: "麻辣炒烏龍麵", price: 140, note: "辛香夠味 🌶️", category: "炒麵", icon:"🍜"},
-    {name: "泡菜炒麵", price: 110, note: "酸辣爽口", category: "炒麵", icon:"🍜"},
-    {name: "泡菜炒意麵", price: 120, note: "酸辣爽口", category: "炒麵", icon:"🍜"},
-    {name: "泡菜炒泡麵", price: 130, note: "酸辣爽口", category: "炒麵", icon:"🍜"},
-    {name: "泡菜炒烏龍麵", price: 140, note: "酸辣爽口 👍", category: "炒麵", icon:"🍜"},
+    {name: "烤肉炒麵", price: 110, category: "炒麵", icon:"🍜"},
+    {name: "烤肉炒泡麵", price: 110, category: "炒麵", icon:"🍜"},
+    {name: "烤肉炒烏龍麵", price: 120, category: "炒麵", icon:"🍜"},
+    {name: "麻辣炒麵", price: 110, category: "炒麵", icon:"🍜"},
+    {name: "麻辣炒泡麵", price: 110, category: "炒麵", icon:"🍜"},
+    {name: "麻辣炒意麵", price: 120, category: "炒麵", icon:"🍜"},
+    {name: "麻辣炒烏龍麵", price: 140, category: "炒麵", icon:"🍜"},
+    {name: "泡菜炒麵", price: 110, category: "炒麵", icon:"🍜"},
+    {name: "泡菜炒意麵", price: 120, category: "炒麵", icon:"🍜"},
+    {name: "泡菜炒泡麵", price: 130, category: "炒麵", icon:"🍜"},
+    {name: "泡菜炒烏龍麵", price: 140, category: "炒麵", icon:"🍜"},
 
     // === 咖哩飯 ===
-    {name: "唐揚雞咖哩飯", price: 239, note: "日式甘口咖哩", category: "咖哩飯", icon:"🍛"},
-    {name: "唐揚雞辛咖哩飯", price: 249, note: "辛口微辣 🌶️", category: "咖哩飯", icon:"🍛"},
-    {name: "日式炸蝦咖哩飯", price: 239, note: "金黃酥脆", category: "咖哩飯", icon:"🍛"},
-    {name: "日式炸蝦辛咖哩飯", price: 249, note: "辛口微辣 🌶️", category: "咖哩飯", icon:"🍛"},
-    {name: "豬排咖哩飯", price: 269, note: "經典厚切", category: "咖哩飯", icon:"🍛"},
-    {name: "豬排辛咖哩飯", price: 279, note: "辛口微辣 🌶️", category: "咖哩飯", icon:"🍛"},
-    {name: "雞排咖哩飯", price: 289, note: "巨無霸雞排", category: "咖哩飯", icon:"🍛"},
-    {name: "雞排辛咖哩飯", price: 289, note: "辛口微辣 🌶️", category: "咖哩飯", icon:"🍛"},
+    {name: "唐揚雞咖哩飯", price: 239, category: "咖哩飯", icon:"🍛"},
+    {name: "唐揚雞辛咖哩飯", price: 249, category: "咖哩飯", icon:"🍛"},
+    {name: "日式炸蝦咖哩飯", price: 239, category: "咖哩飯", icon:"🍛"},
+    {name: "日式炸蝦辛咖哩飯", price: 249, category: "咖哩飯", icon:"🍛"},
+    {name: "豬排咖哩飯", price: 269, category: "咖哩飯", icon:"🍛"},
+    {name: "豬排辛咖哩飯", price: 279, category: "咖哩飯", icon:"🍛"},
+    {name: "雞排咖哩飯", price: 289, category: "咖哩飯", icon:"🍛"},
+    {name: "雞排辛咖哩飯", price: 289, category: "咖哩飯", icon:"🍛"},
 
     // === 點心 ===
-    {name: "溏心蛋", price: 25, note: "軟嫩濃郁", category: "點心", icon:"🍢"},
-    {name: "韓式泡菜", price: 35, note: "微辣開胃", category: "點心", icon:"🥬"},
-    {name: "黃金泡菜", price: 35, note: "甘甜爽口", category: "點心", icon:"🥬"},
-    {name: "甜不辣", price: 40, note: "外酥內軟", category: "點心", icon:"🍢"},
-    {name: "煉乳銀絲卷", price: 40, note: "甜蜜點心 👍", category: "點心", icon:"🍞"},
-    {name: "雞塊", price: 40, note: "經典點心", category: "點心", icon:"🍗"},
-    {name: "肥薯", price: 50, note: "美式美薯", category: "點心", icon:"🍟"},
-    {name: "炸雞薯條", price: 50, note: "雙重滿足", category: "點心", icon:"🍟"},
-    {name: "檸檬雞柳條", price: 70, note: "清香解膩", category: "點心", icon:"🍗"},
-    {name: "唐揚雞", price: 90, note: "人氣招牌 👍", category: "點心", icon:"🍗"},
+    {name: "溏心蛋", price: 25, category: "點心", icon:"🍢"},
+    {name: "韓式泡菜", price: 35, category: "點心", icon:"🥬"},
+    {name: "黃金泡菜", price: 35, category: "點心", icon:"🥬"},
+    {name: "甜不辣", price: 40, category: "點心", icon:"🍢"},
+    {name: "煉乳銀絲卷", price: 40, category: "點心", icon:"🍞"},
+    {name: "雞塊", price: 40, category: "點心", icon:"🍗"},
+    {name: "肥薯", price: 50, category: "點心", icon:"🍟"},
+    {name: "炸雞薯條", price: 50, category: "點心", icon:"🍟"},
+    {name: "檸檬雞柳條", price: 70, category: "點心", icon:"🍗"},
+    {name: "唐揚雞", price: 90, category: "點心", icon:"🍗"},
 
     // === 飲品 ===
-    {name: "可樂", price: 25, note: "罐裝 330ml", category: "飲品", icon:"🥤"},
-    {name: "雪碧", price: 25, note: "罐裝 330ml", category: "飲品", icon:"🥤"}
+    {name: "可樂", price: 25, category: "飲品", icon:"🥤"},
+    {name: "雪碧", price: 25, category: "飲品", icon:"🥤"}
 ];
 
 let cart = {};
@@ -726,7 +773,7 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    let showAddRiceOption = item.category === "飯·食";
+    let showAddRiceOption = item.category === "飯・食";
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -735,28 +782,38 @@ function clickAddItem(name) {
         
         <div class="opt-group">
             ${showAddRiceOption ? `
-            <label>🍚 加飯選項</label>
-            <select id="pop-rice" class="select-box">
-                <option value="不加飯">正常飯量</option>
-                <option value="加飯 (+10元)">加飯 (+10元)</option>
-            </select>
+            <label class="opt-title">🍚 加飯選項</label>
+            <div class="visual-options">
+                <label class="visual-option-item">
+                    <input type="radio" name="pop-rice" value="不加飯" checked>
+                    <div class="visual-option-card">正常飯量</div>
+                </label>
+                <label class="visual-option-item">
+                    <input type="radio" name="pop-rice" value="加飯 (+10元)">
+                    <div class="visual-option-card">加飯 (+10元)</div>
+                </label>
+            </div>
             ` : ''}
 
-            <label>🌶️ 辣度調整 / 七味粉</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="正常">正常 (含七味粉)</option>
-                <option value="不加七味粉">不加七味粉</option>
-                <option value="小辣">小辣</option>
-                <option value="大辣">大辣</option>
-            </select>
-
-            <label>備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="飯少">飯少</option>
-                <option value="醬少">醬少</option>
-                <option value="不要泡菜">不要泡菜</option>
-            </select>
+            <label class="opt-title">🌶️ 辣度調整 / 七味粉</label>
+            <div class="visual-options">
+                <label class="visual-option-item">
+                    <input type="radio" name="pop-spicy" value="正常" checked>
+                    <div class="visual-option-card">正常 (含七味粉)</div>
+                </label>
+                <label class="visual-option-item">
+                    <input type="radio" name="pop-spicy" value="不加七味粉">
+                    <div class="visual-option-card">不加七味粉</div>
+                </label>
+                <label class="visual-option-item">
+                    <input type="radio" name="pop-spicy" value="小辣">
+                    <div class="visual-option-card">小辣</div>
+                </label>
+                <label class="visual-option-item">
+                    <input type="radio" name="pop-spicy" value="大辣">
+                    <div class="visual-option-card">大辣</div>
+                </label>
+            </div>
         </div>
     `;
 
@@ -767,9 +824,11 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const riceOpt = showAddRiceOption ? document.getElementById("pop-rice").value : "不加飯";
-            const spicy = document.getElementById("pop-spicy").value;
-            const note = document.getElementById("pop-note").value;
+            const riceRadio = document.querySelector('input[name="pop-rice"]:checked');
+            const spicyRadio = document.querySelector('input[name="pop-spicy"]:checked');
+
+            const riceOpt = showAddRiceOption && riceRadio ? riceRadio.value : "不加飯";
+            const spicy = spicyRadio ? spicyRadio.value : "正常";
 
             let addPrice = 0;
             if (riceOpt.includes("+10元")) {
@@ -777,7 +836,7 @@ function clickAddItem(name) {
             }
 
             const unitPrice = item.price + addPrice;
-            const customKey = `${item.name}|${riceOpt}|${spicy}|${note}`;
+            const customKey = `${item.name}|${riceOpt}|${spicy}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -788,8 +847,7 @@ function clickAddItem(name) {
                     price: unitPrice,
                     qty: 1,
                     rice: riceOpt,
-                    spicy: spicy,
-                    note: note
+                    spicy: spicy
                 };
             }
 
@@ -825,7 +883,7 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        finalSummary += `${item.baseName}(${item.rice}/${item.spicy}/${item.note})*${item.qty} `;
+        finalSummary += `${item.baseName}(${item.rice}/${item.spicy})*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -890,7 +948,7 @@ function renderModalCartList() {
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                <div class="custom-item-tag">🍚 ${item.rice} | 🌶️ ${item.spicy} | 📝 ${item.note}</div>
+                <div class="custom-item-tag">🍚 ${item.rice} | 🌶️ ${item.spicy}</div>
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
