@@ -1356,91 +1356,83 @@ ${openStores}
         }
 
         function showStoreSummaryModal() {
-    if (!currentTodayOrders || currentTodayOrders.length === 0) {
-        showCustomModal({ title: '店家餐點統計', message: '今日目前尚無任何點餐資料！' });
-        return;
-    }
-
-    const storeMap = {};
-    currentTodayOrders.forEach(order => {
-        let storeName = order.storeName || order.store || '';
-        let mealName = order.meal || '未指定餐點';
-
-        if (!storeName) {
-            const matchedStore = storeList.find(s => mealName.includes(s.name));
-            if (matchedStore) storeName = matchedStore.name;
-            else if (mealName.includes('[') && mealName.includes(']')) {
-                storeName = mealName.substring(mealName.indexOf('[') + 1, mealName.indexOf(']'));
-                mealName = mealName.substring(mealName.indexOf(']') + 1).trim();
-            } else storeName = '其他/未分類店家';
-        }
-
-        // 去除餐點名稱開頭重複的店家名稱與冒號 (例: "老蕭土魠魚羹麵館 : 燙青菜" -> "燙青菜")
-        mealName = mealName.replace(new RegExp(`^${storeName}\\s*[:：]?\\s*`), '');
-
-        let qty = Number(order.qty || order.count || 1);
-        if (mealName.includes('x')) {
-            const parts = mealName.split('x');
-            const possibleQty = parseInt(parts[parts.length - 1].trim());
-            if (!isNaN(possibleQty)) {
-                qty = possibleQty;
-                mealName = parts.slice(0, -1).join('x').trim();
+            if (!currentTodayOrders || currentTodayOrders.length === 0) {
+                showCustomModal({ title: '店家餐點統計', message: '今日目前尚無任何點餐資料！' });
+                return;
             }
-        }
 
-        const price = Number(order.total || 0);
-        if (!storeMap[storeName]) {
-            storeMap[storeName] = { totalAmount: 0, totalCount: 0, items: {} };
-        }
+            const storeMap = {};
+            currentTodayOrders.forEach(order => {
+                let storeName = order.storeName || order.store || '';
+                let mealName = order.meal || '未指定餐點';
 
-        storeMap[storeName].totalAmount += price;
-        storeMap[storeName].totalCount += qty;
+                if (!storeName) {
+                    const matchedStore = storeList.find(s => mealName.includes(s.name));
+                    if (matchedStore) storeName = matchedStore.name;
+                    else if (mealName.includes('[') && mealName.includes(']')) {
+                        storeName = mealName.substring(mealName.indexOf('[') + 1, mealName.indexOf(']'));
+                        mealName = mealName.substring(mealName.indexOf(']') + 1).trim();
+                    } else storeName = '其他/未分類店家';
+                }
 
-        if (!storeMap[storeName].items[mealName]) storeMap[storeName].items[mealName] = { count: 0, amount: 0 };
-        storeMap[storeName].items[mealName].count += qty;
-        storeMap[storeName].items[mealName].amount += price;
-    });
+                let qty = Number(order.qty || order.count || 1);
+                if (mealName.includes('x')) {
+                    const parts = mealName.split('x');
+                    const possibleQty = parseInt(parts[parts.length - 1].trim());
+                    if (!isNaN(possibleQty)) {
+                        qty = possibleQty;
+                        mealName = parts.slice(0, -1).join('x').trim();
+                    }
+                }
 
-    let htmlContent = `<div style="display:flex; flex-direction:column; gap:12px;">`;
-    Object.keys(storeMap).forEach(store => {
-        const storeData = storeMap[store];
-        htmlContent += `
-            <div class="store-summary-card">
-                <div class="store-summary-title">
-                    <span>🏪 ${store}</span>
-                    <span style="font-size:13px; color:var(--text-sub);">共 ${storeData.totalCount} 份 | $${storeData.totalAmount}</span>
-                </div>
-                <table style="width:100%; table-layout:fixed; border-collapse:collapse; font-size:13px;">
-                    <colgroup>
-                        <col style="width: 65%;">
-                        <col style="width: 15%;">
-                        <col style="width: 20%;">
-                    </colgroup>
-                    <thead>
-                        <tr style="background:#edf2f0; color:var(--text-sub);">
-                            <th style="padding:6px; text-align:left;">餐點</th>
-                            <th style="padding:6px; text-align:center;">數量</th>
-                            <th style="padding:6px; text-align:right;">小計</th>
+                const price = Number(order.total || 0);
+                if (!storeMap[storeName]) {
+                    storeMap[storeName] = { totalAmount: 0, totalCount: 0, items: {} };
+                }
+
+                storeMap[storeName].totalAmount += price;
+                storeMap[storeName].totalCount += qty;
+
+                if (!storeMap[storeName].items[mealName]) storeMap[storeName].items[mealName] = { count: 0, amount: 0 };
+                storeMap[storeName].items[mealName].count += qty;
+                storeMap[storeName].items[mealName].amount += price;
+            });
+
+            let htmlContent = `<div style="display:flex; flex-direction:column; gap:12px;">`;
+            Object.keys(storeMap).forEach(store => {
+                const storeData = storeMap[store];
+                htmlContent += `
+                    <div class="store-summary-card">
+                        <div class="store-summary-title">
+                            <span>🏪 ${store}</span>
+                            <span style="font-size:13px; color:var(--text-sub);">共 ${storeData.totalCount} 份 | $${storeData.totalAmount}</span>
+                        </div>
+                        <table style="min-width:100%; border-collapse:collapse; font-size:13px;">
+                            <thead>
+                                <tr style="background:#edf2f0; color:var(--text-sub);">
+                                    <th style="padding:6px; text-align:left;">餐點</th>
+                                    <th style="padding:6px; text-align:center;">數量</th>
+                                    <th style="padding:6px; text-align:right;">小計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                Object.keys(storeData.items).forEach(item => {
+                    const itemData = storeData.items[item];
+                    htmlContent += `
+                        <tr style="border-bottom:1px dashed var(--border-color);">
+                            <td style="padding:6px; font-weight:600;">${item}</td>
+                            <td style="padding:6px; text-align:center; color:var(--primary); font-weight:700;">x${itemData.count}</td>
+                            <td style="padding:6px; text-align:right; font-weight:600;">$${itemData.amount}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-        `;
-        Object.keys(storeData.items).forEach(item => {
-            const itemData = storeData.items[item];
-            htmlContent += `
-                <tr style="border-bottom:1px dashed var(--border-color);">
-                    <td style="padding:6px; font-weight:600; white-space:normal; word-break:break-all;">${item}</td>
-                    <td style="padding:6px; text-align:center; color:var(--primary); font-weight:700;">x${itemData.count}</td>
-                    <td style="padding:6px; text-align:right; font-weight:600;">$${itemData.amount}</td>
-                </tr>
-            `;
-        });
-        htmlContent += `</tbody></table></div>`;
-    });
-    htmlContent += `</div>`;
+                    `;
+                });
+                htmlContent += `</tbody></table></div>`;
+            });
+            htmlContent += `</div>`;
 
-    showCustomModal({ title: '📊 今日店家餐點統計', message: htmlContent });
-}
+            showCustomModal({ title: '📊 今日店家餐點統計', message: htmlContent });
+        }
 
         async function loadEmployees() {
             try {
