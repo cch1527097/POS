@@ -220,9 +220,38 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* 圖形化客製化選項 UI */
+        .opt-group { margin-top: 14px; }
+        .opt-group label { font-weight: 700; display: block; margin-top: 12px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        .opt-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .opt-card {
+            flex: 1 1 calc(33.333% - 8px);
+            min-width: 80px;
+            background: #f8fafc;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        .opt-card:hover { border-color: var(--primary); background: #f1f5f9; }
+        .opt-card.selected {
+            background: #e0f2fe;
+            border-color: #0284c7;
+            color: #0369a1;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -585,6 +614,9 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 儲存當前點擊彈窗的選擇狀態（已移除 note）
+let currentOptions = { egg: '不加蛋', spicy: '不辣' };
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -691,9 +723,22 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+// 選擇圖形化卡片 handler
+function selectOptionCard(group, val, el) {
+    currentOptions[group] = val;
+    const parentContainer = el.parentElement;
+    parentContainer.querySelectorAll('.opt-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    el.classList.add('selected');
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
+
+    // 重設為預設值
+    currentOptions = { egg: '不加蛋', spicy: '不辣' };
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -702,26 +747,18 @@ function clickAddItem(name) {
         
         <div class="opt-group">
             <label>🥚 加蛋選項</label>
-            <select id="pop-egg" class="select-box">
-                <option value="不加蛋">不加蛋</option>
-                <option value="加魯蛋 (+15元)">加魯蛋 (+15元)</option>
-            </select>
+            <div class="opt-grid">
+                <div class="opt-card selected" onclick="selectOptionCard('egg', '不加蛋', this)">🚫 不加蛋</div>
+                <div class="opt-card" onclick="selectOptionCard('egg', '加魯蛋 (+15元)', this)">🥚 加魯蛋<br><span style="font-size:11px; color:#e67e22;">+$15</span></div>
+            </div>
 
             <label>🌶️ 辣度調整</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微辣">微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="大辣">大辣</option>
-            </select>
-
-            <label>備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="飯少">飯少</option>
-                <option value="汁多">汁多</option>
-                <option value="汁少">汁少</option>
-            </select>
+            <div class="opt-grid">
+                <div class="opt-card selected" onclick="selectOptionCard('spicy', '不辣', this)">🌱 不辣</div>
+                <div class="opt-card" onclick="selectOptionCard('spicy', '微辣', this)">🌶️ 微辣</div>
+                <div class="opt-card" onclick="selectOptionCard('spicy', '小辣', this)">🌶️🌶️ 小辣</div>
+                <div class="opt-card" onclick="selectOptionCard('spicy', '大辣', this)">🔥 大辣</div>
+            </div>
         </div>
     `;
 
@@ -732,9 +769,8 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const eggOpt = document.getElementById("pop-egg").value;
-            const spicy = document.getElementById("pop-spicy").value;
-            const note = document.getElementById("pop-note").value;
+            const eggOpt = currentOptions.egg;
+            const spicy = currentOptions.spicy;
 
             let addPrice = 0;
             if (eggOpt.includes("+15元")) {
@@ -742,7 +778,7 @@ function clickAddItem(name) {
             }
 
             const unitPrice = item.price + addPrice;
-            const customKey = `${item.name}|${eggOpt}|${spicy}|${note}`;
+            const customKey = `${item.name}|${eggOpt}|${spicy}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -753,8 +789,7 @@ function clickAddItem(name) {
                     price: unitPrice,
                     qty: 1,
                     egg: eggOpt,
-                    spicy: spicy,
-                    note: note
+                    spicy: spicy
                 };
             }
 
@@ -790,7 +825,7 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        finalSummary += `${item.baseName}(${item.egg}/${item.spicy}/${item.note})*${item.qty} `;
+        finalSummary += `${item.baseName}(${item.egg}/${item.spicy})*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -855,7 +890,7 @@ function renderModalCartList() {
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                <div class="custom-item-tag">🥚 ${item.egg} | 🌶️ ${item.spicy} | 📝 ${item.note}</div>
+                <div class="custom-item-tag">🥚 ${item.egg} | 🌶️ ${item.spicy}</div>
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
