@@ -559,6 +559,27 @@
             justify-content: space-between;
         }
 
+        /* ------------------ RBAC 權限控管視覺隱藏 ------------------ */
+        /* 1. 唯讀檢視員 (viewer)：隱藏所有修改/刪除按鈕與員工管理 */
+        body.role-viewer .btn-delete,
+        body.role-viewer .btn-edit,
+        body.role-viewer .btn-status,
+        body.role-viewer #lockTimeInput,
+        body.role-viewer button[onclick*="saveLockTime"],
+        body.role-viewer button[onclick*="unlockOrderTime"],
+        body.role-viewer button[onclick*="openStore"],
+        body.role-viewer button[onclick*="closeStore"],
+        body.role-viewer button[onclick*="addNewEmployee"],
+        body.role-viewer .sidebar .menu-item[onclick*="employee-mgr"] {
+            display: none !important;
+        }
+
+        /* 2. 現場管理員 (operator)：隱藏刪除按鈕與員工管理 */
+        body.role-operator .btn-delete,
+        body.role-operator .sidebar .menu-item[onclick*="employee-mgr"] {
+            display: none !important;
+        }
+
         /* ------------------ RWD 響應式優化 ------------------ */
         @media (max-width: 992px) {
             body { flex-direction: column; }
@@ -918,6 +939,55 @@
         let currentOverviewCategory = 'all';
         let searchTimeout = null;
 
+        // ------------------ RBAC 權限控制邏輯 ------------------
+        const ROLE_PERMISSIONS = {
+            super_admin: { name: '最高管理者', canDelete: true,  canEditEmp: true,  canManageStore: true,  canChangeStatus: true },
+            operator:    { name: '現場管理員', canDelete: false, canEditEmp: false, canManageStore: true,  canChangeStatus: true },
+            viewer:      { name: '唯讀檢視員', canDelete: false, canEditEmp: false, canManageStore: false, canChangeStatus: false }
+        };
+
+        function getAdminRole() {
+            return localStorage.getItem('currentAdminRole') || 'viewer';
+        }
+
+        function checkPermission(action) {
+            const role = getAdminRole();
+            const perm = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.viewer;
+
+            if (action === 'delete' && !perm.canDelete) {
+                showCustomModal({ message: '⚠️ 您目前的權限無法執行「刪除」操作！' });
+                return false;
+            }
+            if (action === 'edit_emp' && !perm.canEditEmp) {
+                showCustomModal({ message: '⚠️ 您目前的權限無法存取/修改「員工管理」！' });
+                return false;
+            }
+            if (action === 'manage_store' && !perm.canManageStore) {
+                showCustomModal({ message: '⚠️ 唯讀權限無法修改「店家開放設定」！' });
+                return false;
+            }
+            if (action === 'change_status' && !perm.canChangeStatus) {
+                showCustomModal({ message: '⚠️ 唯讀權限無法變更「繳費狀態」或「時間鎖定」！' });
+                return false;
+            }
+            return true;
+        }
+
+        function applyRolePermissionsUI() {
+            const role = getAdminRole();
+            document.body.classList.remove('role-super_admin', 'role-operator', 'role-viewer');
+            document.body.classList.add(`role-${role}`);
+
+            const roleName = (ROLE_PERMISSIONS[role] && ROLE_PERMISSIONS[role].name) || '未知角色';
+            const adminName = localStorage.getItem('currentAdminName') || '管理員';
+            
+            const adminInfoElem = document.getElementById('adminDisplayInfo');
+            if (adminInfoElem) {
+                adminInfoElem.innerText = `☁️ ${adminName} [${roleName}]`;
+            }
+        }
+        // -------------------------------------------------------
+
         let storeList = [
             { id: 'store_1', name: '八方雲集', category: '美味餐點', isOpen: true },
             { id: 'store_2', name: '飯大廚', category: '美味餐點', isOpen: false },
@@ -1063,6 +1133,8 @@ ${openStores}
         }
 
         async function openStore(storeId) {
+            if (!checkPermission('manage_store')) return; // 👈 權限檢查
+
             const targetStore = storeList.find(s => s.id === storeId);
             if (!targetStore) return;
 
@@ -1089,6 +1161,8 @@ ${openStores}
         }
 
         async function closeStore(storeId) {
+            if (!checkPermission('manage_store')) return; // 👈 權限檢查
+
             const store = storeList.find(s => s.id === storeId);
             if (!store) return;
 
@@ -1133,6 +1207,8 @@ ${openStores}
         }
 
         async function saveLockTime() {
+            if (!checkPermission('change_status')) return; // 👈 權限檢查
+
             const lockTime = document.getElementById('lockTimeInput').value;
             if (!lockTime) {
                 showCustomModal({ message: '請選擇有效的時間！' });
@@ -1159,6 +1235,8 @@ ${openStores}
         }
 
         async function unlockOrderTime() {
+            if (!checkPermission('change_status')) return; // 👈 權限檢查
+
             showCustomModal({
                 title: '確認解除鎖定',
                 message: '確定要解除點餐時間限制嗎？解除後前台將全天開放下單。',
@@ -1246,6 +1324,8 @@ ${openStores}
         }
 
         function switchTab(tabId, menuItem) {
+            if (tabId === 'employee-mgr' && !checkPermission('edit_emp')) return; // 👈 權限檢查
+
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.querySelectorAll('.sidebar .menu-item').forEach(item => item.classList.remove('active'));
             
@@ -1396,6 +1476,8 @@ ${openStores}
         }
 
         function openEditEmployeeModal(cardId) {
+            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
+
             let currentName = '', currentDept = '';
             if (Array.isArray(USER_DB_PREVIEW)) {
                 const found = USER_DB_PREVIEW.find(e => (e.cardId || e.id) === cardId);
@@ -1433,6 +1515,8 @@ ${openStores}
         }
 
         async function saveEmployeeEdit(cardId, name, department) {
+            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
+
             try {
                 const response = await fetch(`/api/employees/${cardId}`, {
                     method: 'PUT',
@@ -1449,6 +1533,8 @@ ${openStores}
         }
 
         async function toggleOrderPaymentStatus(orderId, newStatus) {
+            if (!checkPermission('change_status')) return; // 👈 權限檢查
+
             try {
                 const response = await fetch(`/api/orders/${orderId}/payment`, {
                     method: 'PATCH',
@@ -1471,6 +1557,8 @@ ${openStores}
         }
 
         async function addNewEmployee() {
+            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
+
             const cardId = document.getElementById('newCardId').value.trim();
             const name = document.getElementById('newEmpName').value.trim();
             const department = document.getElementById('newDepartment').value.trim() || '未劃分';
@@ -1500,6 +1588,8 @@ ${openStores}
         }
 
         async function deleteEmployee(cardId) {
+            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
+
             showCustomModal({
                 title: '確認刪除',
                 message: `確定要刪除員工卡號「${cardId}」嗎？`,
@@ -1624,6 +1714,7 @@ ${openStores}
 
         async function deleteOrder(orderId) {
             if (!orderId) return;
+            if (!checkPermission('delete')) return; // 👈 權限檢查
 
             showCustomModal({
                 title: '確認刪除',
@@ -1736,10 +1827,8 @@ ${openStores}
         }
 
         window.onload = async function() {
-            const adminInfoElem = document.getElementById('adminDisplayInfo');
-            if (adminInfoElem) {
-                adminInfoElem.innerText = `☁️ 管理員: ${localStorage.getItem('currentAdminName') || '管理員'}`;
-            }
+            // 1. 初始化套用 RBAC 權限 UI
+            applyRolePermissionsUI();
 
             try {
                 const res = await fetch('/api/stores');
