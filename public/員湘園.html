@@ -222,9 +222,36 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
+        /* ==================== 圖形化選項按鈕樣式 ==================== */
         .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        .option-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+        .opt-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            background: #f8fafc;
+            color: var(--text-dark);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .opt-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+        .opt-btn.selected {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(192, 57, 43, 0.25);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -553,27 +580,27 @@ const menuItems = [
     {name: "鴨香拌麵 (大)", price: 50, category: "飯/麵類主食", icon:"🍜"},
 
     // === 當歸主食類 (麵線/油麵/冬粉) ===
-    {name: "當歸鴨肉 麵線", price: 75, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸鴨肉 油麵", price: 75, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸鴨肉 冬粉", price: 75, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸下水 麵線", price: 75, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸下水 油麵", price: 75, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸下水 冬粉", price: 75, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸脆腸 麵線", price: 75, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸脆腸 油麵", price: 75, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸脆腸 冬粉", price: 75, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸鴨腿 麵線", price: 100, category: "當歸主食類", icon:"🍗"},
-    {name: "當歸鴨腿 油麵", price: 100, category: "當歸主食類", icon:"🍗"},
-    {name: "當歸鴨腿 冬粉", price: 100, category: "當歸主食類", icon:"🍗"},
-    {name: "松阪豬肉 麵線", price: 105, category: "當歸主食類", icon:"🍜"},
-    {name: "松阪豬肉 油麵", price: 105, category: "當歸主食類", icon:"🍜"},
-    {name: "松阪豬肉 冬粉", price: 105, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸豬腳 麵線", price: 105, category: "當歸主食類", icon:"🍖"},
-    {name: "當歸豬腳 油麵", price: 105, category: "當歸主食類", icon:"🍖"},
-    {name: "當歸豬腳 冬粉", price: 105, category: "當歸主食類", icon:"🍖"},
-    {name: "當歸清湯 麵線", price: 40, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸清湯 油麵", price: 40, category: "當歸主食類", icon:"🍜"},
-    {name: "當歸清湯 冬粉", price: 40, category: "當歸主食類", icon:"🍜"},
+    {name: "當歸鴨肉 麵線", price: 75, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸鴨肉 油麵", price: 75, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸鴨肉 冬粉", price: 75, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸下水 麵線", price: 75, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸下水 油麵", price: 75, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸下水 冬粉", price: 75, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸脆腸 麵線", price: 75, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸脆腸 油麵", price: 75, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸脆腸 冬粉", price: 75, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸鴨腿 麵線", price: 100, category: "當歸主食類", icon:"🍗", hasNoodleOpt: true},
+    {name: "當歸鴨腿 油麵", price: 100, category: "當歸主食類", icon:"🍗", hasNoodleOpt: true},
+    {name: "當歸鴨腿 冬粉", price: 100, category: "當歸主食類", icon:"🍗", hasNoodleOpt: true},
+    {name: "松阪豬肉 麵線", price: 105, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "松阪豬肉 油麵", price: 105, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "松阪豬肉 冬粉", price: 105, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸豬腳 麵線", price: 105, category: "當歸主食類", icon:"🍖", hasNoodleOpt: true},
+    {name: "當歸豬腳 油麵", price: 105, category: "當歸主食類", icon:"🍖", hasNoodleOpt: true},
+    {name: "當歸豬腳 冬粉", price: 105, category: "當歸主食類", icon:"🍖", hasNoodleOpt: true},
+    {name: "當歸清湯 麵線", price: 40, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸清湯 油麵", price: 40, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
+    {name: "當歸清湯 冬粉", price: 40, category: "當歸主食類", icon:"🍜", hasNoodleOpt: true},
 
     // === 小菜類 ===
     {name: "松阪豬肉 (盤)", price: 150, category: "小菜類", icon:"🥩"},
@@ -612,6 +639,7 @@ let searchDebounceTimer = null;
 
 let finalTotal = 0;
 let finalSummary = "";
+let selectedNoodleOption = "麵線";
 
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -719,11 +747,18 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectNoodle(btn, val) {
+    document.querySelectorAll('#noodle-grid .opt-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedNoodleOption = val;
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
     let hasNoodleOpt = item.hasNoodleOpt || false;
+    selectedNoodleOption = "麵線"; // 預設選項
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -733,40 +768,25 @@ function clickAddItem(name) {
         <div class="opt-group">
             ${hasNoodleOpt ? `
             <label>🍜 麵體選擇</label>
-            <select id="pop-noodle" class="select-box">
-                <option value="麵線">麵線</option>
-                <option value="油麵">油麵</option>
-                <option value="冬粉">冬粉</option>
-            </select>
-            ` : ''}
-
-            <label>📝 備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="不要薑絲">不要薑絲</option>
-                <option value="加辣不薑絲">加辣不薑絲</option>
-                <option value="不加辣">不加辣</option>
-                <option value="加辣">加辣</option>
-                <option value="不加辣不薑絲">不加辣不薑絲</option>
-                <option value="加辣加薑絲">加辣加薑絲</option>
-                <option value="湯麵分開">湯麵分開</option>
-                <option value="湯麵不分開">湯麵不分開</option>
-            </select>
+            <div class="option-grid" id="noodle-grid">
+                <button class="opt-btn selected" onclick="selectNoodle(this, '麵線')">麵線</button>
+                <button class="opt-btn" onclick="selectNoodle(this, '油麵')">油麵</button>
+                <button class="opt-btn" onclick="selectNoodle(this, '冬粉')">冬粉</button>
+            </div>
+            ` : '<p style="text-align:center; color:#64748b; margin-top:10px;">確認將此餐點加入購物車？</p>'}
         </div>
     `;
 
     showCustomModal({
-        title: "請選擇餐點客製化選項",
+        title: "請選擇餐點選項",
         bodyHtml: bodyHtml,
         confirmText: "加入購物車",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const noodle = hasNoodleOpt ? document.getElementById("pop-noodle").value : "-";
-            const note = document.getElementById("pop-note").value;
-
+            const noodle = hasNoodleOpt ? selectedNoodleOption : "-";
             const unitPrice = item.price;
-            const customKey = `${item.name}|${noodle}|${note}`;
+            const customKey = `${item.name}|${noodle}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -776,8 +796,7 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    noodle: noodle,
-                    note: note
+                    noodle: noodle
                 };
             }
 
@@ -816,7 +835,6 @@ function renderCart() {
         
         let details = [];
         if (item.noodle && item.noodle !== "-") details.push(item.noodle);
-        if (item.note && item.note !== "無特殊需求") details.push(item.note);
         
         const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
         finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
@@ -884,7 +902,6 @@ function renderModalCartList() {
         
         let tags = [];
         if (item.noodle && item.noodle !== "-") tags.push(`🍜 ${item.noodle}`);
-        if (item.note && item.note !== "無特殊需求") tags.push(`📝 ${item.note}`);
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
