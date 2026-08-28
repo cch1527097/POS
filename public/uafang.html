@@ -220,9 +220,52 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* 圖形化客製化選項群組 */
+        .opt-group { margin-top: 14px; }
+        .opt-group label { font-weight: 700; display: block; margin-top: 12px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 8px;
+        }
+
+        .opt-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 6px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .opt-card:hover {
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        .opt-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .opt-card .sub-price {
+            font-size: 11px;
+            color: var(--secondary);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -594,6 +637,13 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 暫存彈窗選擇狀態
+let currentOptions = {
+    sauce: "綜合醬",
+    doneness: "7分熟",
+    addOpt: "無加購"
+};
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -700,12 +750,26 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectOptCard(group, val, el) {
+    currentOptions[group] = val;
+    const parent = el.parentElement;
+    parent.querySelectorAll('.opt-card').forEach(card => card.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
     let isSteakOrMeal = item.category.includes("排餐") || item.category.includes("雙拼") || item.category.includes("鐵板麵");
     let isBeef = item.name.includes("牛");
+
+    // 初始化預設值
+    currentOptions = {
+        sauce: isSteakOrMeal ? "綜合醬" : "標準",
+        doneness: isBeef ? "7分熟" : "-",
+        addOpt: isSteakOrMeal ? "無加購" : "無加購"
+    };
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -715,41 +779,33 @@ function clickAddItem(name) {
         <div class="opt-group">
             ${isSteakOrMeal ? `
             <label>🧂 醬料選擇</label>
-            <select id="pop-sauce" class="select-box">
-                <option value="綜合醬">綜合醬 (黑胡椒+蘑菇)</option>
-                <option value="黑胡椒醬">黑胡椒醬</option>
-                <option value="蘑菇醬">蘑菇醬</option>
-                <option value="不加醬">不加醬</option>
-            </select>
+            <div class="option-grid">
+                <div class="opt-card selected" onclick="selectOptCard('sauce', '綜合醬', this)">🍲 綜合醬</div>
+                <div class="opt-card" onclick="selectOptCard('sauce', '黑胡椒醬', this)">🌶️ 黑胡椒</div>
+                <div class="opt-card" onclick="selectOptCard('sauce', '蘑菇醬', this)">🍄 蘑菇醬</div>
+                <div class="opt-card" onclick="selectOptCard('sauce', '不加醬', this)">🚫 不加醬</div>
+            </div>
             ` : ''}
 
             ${isBeef ? `
             <label>🥩 牛排熟度</label>
-            <select id="pop-doneness" class="select-box">
-                <option value="7分熟">7分熟 (預設)</option>
-                <option value="5分熟">5分熟</option>
-                <option value="3分熟">3分熟</option>
-                <option value="全熟">全熟</option>
-            </select>
+            <div class="option-grid">
+                <div class="opt-card" onclick="selectOptCard('doneness', '3分熟', this)">🔴 3分熟</div>
+                <div class="opt-card" onclick="selectOptCard('doneness', '5分熟', this)">🟠 5分熟</div>
+                <div class="opt-card selected" onclick="selectOptCard('doneness', '7分熟', this)">🟡 7分熟</div>
+                <div class="opt-card" onclick="selectOptCard('doneness', '全熟', this)">🟤 全熟</div>
+            </div>
             ` : ''}
 
             ${isSteakOrMeal ? `
             <label>➕ 加價附餐選項</label>
-            <select id="pop-add-option" class="select-box">
-                <option value="無加購">不加購</option>
-                <option value="加麵 (+5元)">加麵 (+5元)</option>
-                <option value="加蛋 (+15元)">加蛋 (+15元)</option>
-                <option value="加飯 (+15元)">加1碗飯 (+15元)</option>
-            </select>
+            <div class="option-grid">
+                <div class="opt-card selected" onclick="selectOptCard('addOpt', '無加購', this)">❌ 不加購</div>
+                <div class="opt-card" onclick="selectOptCard('addOpt', '加麵 (+5元)', this)">🍝 加麵<span class="sub-price">+5元</span></div>
+                <div class="opt-card" onclick="selectOptCard('addOpt', '加蛋 (+15元)', this)">🍳 加蛋<span class="sub-price">+15元</span></div>
+                <div class="opt-card" onclick="selectOptCard('addOpt', '加飯 (+15元)', this)">🍚 加1碗飯<span class="sub-price">+15元</span></div>
+            </div>
             ` : ''}
-
-            <label>📝 備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="麵換蛋">麵換蛋</option>
-                <option value="醬少">醬少</option>
-                <option value="醬多">醬多</option>
-            </select>
         </div>
     `;
 
@@ -760,17 +816,16 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const sauce = isSteakOrMeal ? document.getElementById("pop-sauce").value : "標準";
-            const doneness = isBeef ? document.getElementById("pop-doneness").value : "-";
-            const addOpt = isSteakOrMeal ? document.getElementById("pop-add-option").value : "無加購";
-            const note = document.getElementById("pop-note").value;
+            const sauce = currentOptions.sauce;
+            const doneness = currentOptions.doneness;
+            const addOpt = currentOptions.addOpt;
 
             let addPrice = 0;
             if (addOpt.includes("+5元")) addPrice = 5;
             else if (addOpt.includes("+15元")) addPrice = 15;
 
             const unitPrice = item.price + addPrice;
-            const customKey = `${item.name}|${sauce}|${doneness}|${addOpt}|${note}`;
+            const customKey = `${item.name}|${sauce}|${doneness}|${addOpt}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -782,8 +837,7 @@ function clickAddItem(name) {
                     qty: 1,
                     sauce: sauce,
                     doneness: doneness,
-                    addOpt: addOpt,
-                    note: note
+                    addOpt: addOpt
                 };
             }
 
@@ -824,7 +878,6 @@ function renderCart() {
         if (item.sauce !== "標準") details.push(item.sauce);
         if (item.doneness !== "-") details.push(item.doneness);
         if (item.addOpt !== "無加購") details.push(item.addOpt);
-        if (item.note !== "無特殊需求") details.push(item.note);
         
         const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
         finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
@@ -894,7 +947,6 @@ function renderModalCartList() {
         if (item.sauce !== "標準") tags.push(`🧂 ${item.sauce}`);
         if (item.doneness !== "-") tags.push(`🥩 ${item.doneness}`);
         if (item.addOpt !== "無加購") tags.push(`➕ ${item.addOpt}`);
-        if (item.note !== "無特殊需求") tags.push(`📝 ${item.note}`);
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
