@@ -220,9 +220,29 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
+        /* 圖形化客製化選項樣式 */
         .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        .opt-group label { font-weight: 600; display: block; margin-top: 14px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        .opt-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+        .opt-btn {
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            color: #475569;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .opt-btn:hover { background: #f1f5f9; }
+        .opt-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(139, 0, 0, 0.25);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -629,6 +649,10 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 暫存彈窗選項變數
+let selectedUdon = "白飯";
+let selectedSpicy = "正常";
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -735,11 +759,26 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+// 切換圖形化按鈕狀態
+function selectOption(group, value, btnEl) {
+    const parent = btnEl.parentElement;
+    parent.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('active'));
+    btnEl.classList.add('active');
+
+    if (group === 'udon') {
+        selectedUdon = value;
+    } else if (group === 'spicy') {
+        selectedSpicy = value;
+    }
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
     let showUdonOption = item.category === "咖哩飯";
+    selectedUdon = "白飯";
+    selectedSpicy = "正常";
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -749,26 +788,19 @@ function clickAddItem(name) {
         <div class="opt-group">
             ${showUdonOption ? `
             <label>🍜 主食變更</label>
-            <select id="pop-udon" class="select-box">
-                <option value="白飯">白飯</option>
-                <option value="換烏龍麵 (+15元)">換烏龍麵 (+15元)</option>
-            </select>
+            <div class="opt-buttons">
+                <button type="button" class="opt-btn active" onclick="selectOption('udon', '白飯', this)">白飯</button>
+                <button type="button" class="opt-btn" onclick="selectOption('udon', '換烏龍麵 (+15元)', this)">換烏龍麵 (+15元)</button>
+            </div>
             ` : ''}
 
             <label>🧅 蔥 / 洋蔥調整</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="正常">正常</option>
-                <option value="不要蔥">不要蔥</option>
-                <option value="不要洋蔥">不要洋蔥</option>
-                <option value="蔥與洋蔥都不加">蔥與洋蔥都不加</option>
-            </select>
-
-            <label>備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="飯少">飯少</option>
-                <option value="醬少">醬少</option>
-            </select>
+            <div class="opt-buttons">
+                <button type="button" class="opt-btn active" onclick="selectOption('spicy', '正常', this)">正常</button>
+                <button type="button" class="opt-btn" onclick="selectOption('spicy', '不要蔥', this)">不要蔥</button>
+                <button type="button" class="opt-btn" onclick="selectOption('spicy', '不要洋蔥', this)">不要洋蔥</button>
+                <button type="button" class="opt-btn" onclick="selectOption('spicy', '蔥與洋蔥都不加', this)">蔥與洋蔥都不加</button>
+            </div>
         </div>
     `;
 
@@ -779,9 +811,8 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const udonOpt = showUdonOption ? document.getElementById("pop-udon").value : "白飯";
-            const spicy = document.getElementById("pop-spicy").value;
-            const note = document.getElementById("pop-note").value;
+            const udonOpt = showUdonOption ? selectedUdon : "白飯";
+            const spicy = selectedSpicy;
 
             let addPrice = 0;
             if (udonOpt.includes("+15元")) {
@@ -789,7 +820,7 @@ function clickAddItem(name) {
             }
 
             const unitPrice = item.price + addPrice;
-            const customKey = `${item.name}|${udonOpt}|${spicy}|${note}`;
+            const customKey = `${item.name}|${udonOpt}|${spicy}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -800,8 +831,7 @@ function clickAddItem(name) {
                     price: unitPrice,
                     qty: 1,
                     rice: udonOpt,
-                    spicy: spicy,
-                    note: note
+                    spicy: spicy
                 };
             }
 
@@ -837,7 +867,7 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        finalSummary += `${item.baseName}(${item.rice}/${item.spicy}/${item.note})*${item.qty} `;
+        finalSummary += `${item.baseName}(${item.rice}/${item.spicy})*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -902,7 +932,7 @@ function renderModalCartList() {
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                <div class="custom-item-tag">🍚 ${item.rice} | 🧅 ${item.spicy} | 📝 ${item.note}</div>
+                <div class="custom-item-tag">🍚 ${item.rice} | 🧅 ${item.spicy}</div>
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
@@ -1019,8 +1049,7 @@ async function submitOrderToServer() {
                 type: "food",
                 meal: `滿座燒肉丼飯屋：${finalSummary.trim()}`,
                 spicy: "無",
-                total: finalTotal,
-                note: `總計：$${finalTotal}`
+                total: finalTotal
             };
 
             try {
