@@ -473,6 +473,13 @@
             '11110': '林佳蘭'
         };
 
+        // 管理員角色設定檔 ('super_admin' | 'operator' | 'viewer')
+        const ADMIN_ROLES = {
+            '18445': 'super_admin',
+            '16661': 'viewer',    
+            '11110': 'viewer'       
+        };
+
         async function executeAdminLogin(event) {
             if (event) event.preventDefault();
             if (isSubmitting) return;
@@ -533,7 +540,11 @@
 
                 if (validAdmins[username] && validAdmins[username].includes(password)) {
                     const adminName = ADMIN_NAMES[username] || '管理員';
+                    const adminRole = ADMIN_ROLES[username] || 'super_admin';
+
+                    // 寫入 LocalStorage 供後台頁面讀取
                     localStorage.setItem('currentAdminName', adminName);
+                    localStorage.setItem('currentAdminRole', adminRole);
 
                     loginBtn.innerText = '認證成功';
                     setTimeout(() => {
@@ -553,7 +564,11 @@
 
                     if (response.ok && data.success) {
                         const adminName = data.name || ADMIN_NAMES[username] || '管理員';
+                        const adminRole = data.role || ADMIN_ROLES[username] || 'super_admin';
+
+                        // 寫入 LocalStorage 供後台頁面讀取
                         localStorage.setItem('currentAdminName', adminName);
+                        localStorage.setItem('currentAdminRole', adminRole);
 
                         loginBtn.innerText = '認證成功';
                         setTimeout(() => {
