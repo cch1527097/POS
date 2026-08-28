@@ -221,9 +221,42 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* ==================== 圖形化客製化選項樣式 ==================== */
+        .opt-group { margin-top: 14px; }
+        .opt-group label { font-weight: 700; display: block; margin-top: 10px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        
+        .opt-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .opt-chip {
+            border: 1.5px solid var(--border-color);
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 8px 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .opt-chip:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        
+        .opt-chip.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(158, 28, 17, 0.15);
+        }
 
         /* ==================== 懸浮圓形按鈕群 (Floating Action Buttons) ==================== */
         .fab-container {
@@ -576,6 +609,9 @@ let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
 
+let selectedNoodle = "";
+let selectedSpicy = "";
+
 let finalTotal = 0;
 let finalSummary = "";
 
@@ -686,10 +722,27 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 點擊新增按鈕：彈出選擇視窗詢問客製化選項
+// 點選圖形化選單選項
+function selectOption(group, val, el) {
+    const parent = el.parentElement;
+    parent.querySelectorAll('.opt-chip').forEach(chip => chip.classList.remove('active'));
+    el.classList.add('active');
+
+    if (group === 'noodle') {
+        selectedNoodle = val;
+    } else if (group === 'spicy') {
+        selectedSpicy = val;
+    }
+}
+
+// 點擊新增按鈕：彈出選擇視窗詢問客製化選項（圖形化版本、無備註欄位）
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
+
+    // 預設預設值
+    selectedNoodle = item.isNoodle ? "油麵" : "";
+    selectedSpicy = (item.category !== "單點" && item.name !== "泰式奶茶") ? "微辣" : "";
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -699,29 +752,29 @@ function clickAddItem(name) {
         <div class="opt-group">
     `;
 
-    // 若為湯麵類，顯示麵體選擇
+    // 若為湯麵類，顯示圖形化麵体選項
     if (item.isNoodle) {
         bodyHtml += `
             <label>🍜 麵體選擇</label>
-            <select id="pop-noodle" class="select-box">
-                <option value="油麵">油麵</option>
-                <option value="河粉">河粉</option>
-                <option value="米線">米線</option>
-            </select>
+            <div class="opt-grid">
+                <div class="opt-chip active" onclick="selectOption('noodle', '油麵', this)">🍜 油麵</div>
+                <div class="opt-chip" onclick="selectOption('noodle', '河粉', this)">🥢 河粉</div>
+                <div class="opt-chip" onclick="selectOption('noodle', '米線', this)">🍝 米線</div>
+            </div>
         `;
     }
 
-    // 單點類別通常不需要選辣度，其餘項目均提供辣度選擇
+    // 提供圖形化辣度選項
     if (item.category !== "單點" && item.name !== "泰式奶茶") {
         bodyHtml += `
             <label>🌶️ 辣度選擇</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微辣">微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="中辣">中辣</option>
-                <option value="大辣">大辣</option>
-            </select>
+            <div class="opt-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="opt-chip" onclick="selectOption('spicy', '不辣', this)">🟢 不辣</div>
+                <div class="opt-chip active" onclick="selectOption('spicy', '微辣', this)">🟡 微辣</div>
+                <div class="opt-chip" onclick="selectOption('spicy', '小辣', this)">🟠 小辣</div>
+                <div class="opt-chip" onclick="selectOption('spicy', '中辣', this)">🌶️ 中辣</div>
+                <div class="opt-chip" onclick="selectOption('spicy', '大辣', this)">🔥 大辣</div>
+            </div>
         `;
     }
 
@@ -734,11 +787,8 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const noodleEl = document.getElementById("pop-noodle");
-            const spicyEl = document.getElementById("pop-spicy");
-
-            const noodle = noodleEl ? noodleEl.value : "";
-            const spicy = spicyEl ? spicyEl.value : "";
+            const noodle = selectedNoodle;
+            const spicy = selectedSpicy;
 
             const unitPrice = item.price;
 
@@ -946,7 +996,6 @@ function closeModal() {
     document.getElementById("custom-modal").classList.remove("active");
 }
 
-// 修改第二個系統中的 submitOrderToServer 函式
 async function submitOrderToServer() {
     if (!currentCardId) {
         return showCustomModal({
@@ -981,7 +1030,6 @@ async function submitOrderToServer() {
             btn.disabled = true;
             btn.innerText = "正在送出...";
 
-            // 調整為與第一個系統一致的資料結構
             const payload = {
                 cardId: currentCardId,
                 category: "food",
@@ -993,7 +1041,6 @@ async function submitOrderToServer() {
             };
 
             try {
-                // 網址改為與第一個系統相同的 /api/order
                 const response = await fetch("/api/order", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
