@@ -197,9 +197,34 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        /* 圖形化選項按鈕樣式 */
+        .option-group-title { font-weight: 600; margin-top: 14px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        .option-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+        .opt-btn {
+            background: #f8fafc;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            user-select: none;
+        }
+        .opt-btn .opt-icon { font-size: 20px; }
+        .opt-btn .opt-text { font-size: 12px; font-weight: 600; color: #334155; }
+        .opt-btn .opt-price { font-size: 11px; color: var(--accent); font-weight: 700; }
+        .opt-btn:hover { border-color: var(--secondary); background: #fff; }
+        .opt-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+        .opt-btn.selected .opt-text { color: var(--primary); }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -601,6 +626,7 @@ let cart = {};
 let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
+let selectedRiceOption = "正常飯";
 
 let finalTotal = 0;
 let finalSummary = "";
@@ -711,31 +737,40 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectRiceBtn(el, val) {
+    document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedRiceOption = val;
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
+
+    selectedRiceOption = "正常飯";
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
             ${item.icon || '🍱'} ${item.name} ($${item.price})
         </div>
         
-        <div class="opt-group">
-            <label>📝 飯量調整</label>
-            <select id="pop-rice" class="select-box">
-                <option value="正常飯">正常飯 (低GI藜麥飯)</option>
-                <option value="飯少">飯少</option>
-                <option value="換紫米飯 (+15元)">換紫米飯 (+15元)</option>
-            </select>
-        </div>
-
-        <div class="opt-group">
-            <label>📝 備註需求</label>
-            <select id="pop-note" class="select-box">
-                <option value="無特殊需求">無特殊需求</option>
-                <option value="菜多">菜多</option>
-                <option value="不加蔥/醬">不加醬</option>
-            </select>
+        <div class="option-group-title">🍚 飯量選項調整</div>
+        <div class="option-grid">
+            <div class="opt-btn selected" onclick="selectRiceBtn(this, '正常飯')">
+                <span class="opt-icon">🍚</span>
+                <span class="opt-text">正常飯</span>
+                <span class="opt-price">+$0</span>
+            </div>
+            <div class="opt-btn" onclick="selectRiceBtn(this, '飯少')">
+                <span class="opt-icon">🥣</span>
+                <span class="opt-text">飯少</span>
+                <span class="opt-price">+$0</span>
+            </div>
+            <div class="opt-btn" onclick="selectRiceBtn(this, '換紫米飯 (+15元)')">
+                <span class="opt-icon">🌾</span>
+                <span class="opt-text">換紫米飯</span>
+                <span class="opt-price">+$15</span>
+            </div>
         </div>
     `;
 
@@ -746,19 +781,15 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const riceOpt = document.getElementById("pop-rice").value;
-            const noteOpt = document.getElementById("pop-note").value;
+            const riceOpt = selectedRiceOption;
 
             let extraPrice = 0;
             if (riceOpt.includes("+15")) extraPrice += 15;
 
             const unitPrice = item.price + extraPrice;
-            const customKey = `${item.name}|${riceOpt}|${noteOpt}`;
+            const customKey = `${item.name}|${riceOpt}`;
 
-            let noteText = [];
-            if (riceOpt !== "正常飯") noteText.push(riceOpt);
-            if (noteOpt !== "無特殊需求") noteText.push(noteOpt);
-            const finalNoteStr = noteText.length > 0 ? noteText.join(', ') : '無特殊需求';
+            const finalRiceStr = riceOpt !== "正常飯" ? riceOpt : "正常飯";
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -768,7 +799,7 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    note: finalNoteStr
+                    rice: finalRiceStr
                 };
             }
 
@@ -806,7 +837,7 @@ function renderCart() {
         finalTotal += sub;
         
         let details = [];
-        if (item.note && item.note !== "無特殊需求") details.push(item.note);
+        if (item.rice && item.rice !== "正常飯") details.push(item.rice);
         
         const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
         finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
@@ -873,7 +904,7 @@ function renderModalCartList() {
         div.className = "cart-item";
         
         let tags = [];
-        if (item.note && item.note !== "無特殊需求") tags.push(`📝 ${item.note}`);
+        if (item.rice && item.rice !== "正常飯") tags.push(`🍚 ${item.rice}`);
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
@@ -994,8 +1025,7 @@ async function submitOrderToServer() {
                 category: "food",
                 type: "food",
                 meal: `森晴餐盒製所：${finalSummary.trim()}`,
-                total: finalTotal,
-                note: `總計：$${finalTotal}`
+                total: finalTotal
             };
 
             try {
