@@ -936,7 +936,11 @@
         let allHistoryOrders = []; 
         let currentFilteredHistoryOrders = []; 
         let currentOverviewCategory = 'all';
-        let searchTimeout = null;
+
+        // 正則轉義工具函式 (避免動態帶入店家名包含特殊字元時導致 RegExp 崩潰)
+        function escapeRegExp(string) {
+            return string ? string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '';
+        }
 
         // ------------------ RBAC 權限控制邏輯 ------------------
         const ROLE_PERMISSIONS = {
@@ -1151,7 +1155,7 @@
             }).catch(err => console.log('僅儲存於本地快取'));
         }
 
-        // ------------------ **完全修復：店家統計 Modal 自動換行與拆分** ------------------
+        // ------------------ 店家統計 Modal 與品項精確解析 ------------------
         function showStoreSummaryModal() {
             if (!currentTodayOrders || currentTodayOrders.length === 0) {
                 showCustomModal({ title: '店家餐點統計', message: '今日目前尚無任何點餐資料！' });
@@ -1163,7 +1167,6 @@
                 let storeName = order.storeName || order.store || '';
                 let rawMealName = order.meal || '未指定餐點';
 
-                // 嘗試提取店家名稱
                 if (!storeName) {
                     const matchedStore = storeList.find(s => rawMealName.includes(s.name));
                     if (matchedStore) storeName = matchedStore.name;
@@ -1175,29 +1178,35 @@
                     }
                 }
 
-                // 清除前綴店家名（例："老蕭土魠魚羹麵館 : "）避免字串過長
-                let cleanMeal = rawMealName.replace(new RegExp(`^${storeName}\\s*[:：]?\\s*`), '');
-
-                // 依據 *1, *2 數量標籤切分餐點
-                const subItems = cleanMeal.split(/(?<=\*\d+)\s*/).filter(item => item.trim() !== '');
+                let cleanMeal = rawMealName.replace(new RegExp('^' + escapeRegExp(storeName) + '\\s*[:：]?\\s*'), '');
 
                 if (!storeMap[storeName]) {
                     storeMap[storeName] = { totalAmount: 0, totalCount: 0, items: {} };
                 }
 
-                subItems.forEach(item => {
-                    let itemName = item.trim();
+                // 拆分餐點品項 (支援逗號, 換行, 分號, 斜線與數量標記切分)
+                const rawItems = cleanMeal.split(/[\n,;;\/]+|(?<=\*\d+)\s*|(?<=\bx\d+)\s*/i);
+
+                rawItems.forEach(rawItem => {
+                    let itemStr = rawItem.trim().replace(/^[,;\/]+|[,;\/]+$/g, '').trim();
+                    if (!itemStr) return;
+
                     let qty = 1;
+                    let displayName = itemStr;
 
-                    const match = itemName.match(/\*(\d+)$/);
-                    if (match) {
-                        qty = parseInt(match[1], 10);
+                    // 匹配數量標籤 (如 *2, * 2, x2, x 2)
+                    const qtyMatch = itemStr.match(/(?:[\*xX]\s*(\d+))\s*$/);
+                    if (qtyMatch) {
+                        qty = parseInt(qtyMatch[1], 10);
+                        displayName = itemStr.replace(/(?:[\*xX]\s*\d+)\s*$/, '').trim();
                     }
 
-                    if (!storeMap[storeName].items[itemName]) {
-                        storeMap[storeName].items[itemName] = 0;
+                    if (!displayName) displayName = itemStr;
+
+                    if (!storeMap[storeName].items[displayName]) {
+                        storeMap[storeName].items[displayName] = 0;
                     }
-                    storeMap[storeName].items[itemName] += qty;
+                    storeMap[storeName].items[displayName] += qty;
                     storeMap[storeName].totalCount += qty;
                 });
 
@@ -1406,7 +1415,7 @@
 
                 return `
                     <tr>
-                        <td data-label="訂單編號">#${order.id.slice(-5)}</td>
+                        <td data-label="訂單編號">#${String(order.id).slice(-5)}</td>
                         <td data-label="類別">${categoryBadge}</td>
                         <td data-label="部門"><span class="badge badge-dept">${order.department || '未填寫'}</span></td>
                         <td data-label="點餐人"><strong>${order.name}</strong> (${order.cardId || '無'})</td>
@@ -1444,7 +1453,7 @@
 
                 return `
                     <tr>
-                        <td data-label="訂單編號">#${order.id.slice(-5)}</td>
+                        <td data-label="訂單編號">#${String(order.id).slice(-5)}</td>
                         <td data-label="部門"><span class="badge badge-dept">${order.department || '未填寫'}</span></td>
                         <td data-label="點餐人"><strong>${order.name}</strong> (${order.cardId || '無'})</td>
                         <td data-label="點餐時間">
@@ -1502,7 +1511,7 @@
 
             showCustomModal({
                 title: '確認刪除訂單',
-                message: `確定要刪除該筆訂單 (#${orderId.slice(-5)}) 嗎？此操作無法復原！`,
+                message: `確定要刪除該筆訂單 (#${String(orderId).slice(-5)}) 嗎？此操作無法復原！`,
                 isConfirm: true,
                 onConfirm: async () => {
                     try {
@@ -1544,13 +1553,14 @@
             }
 
             tbody.innerHTML = cardIds.map(cardId => {
-                const user = USER_DB_PREVIEW[cardId];
+                const user = USER_DB_PREVIEW[cardId] || {};
+                const deptName = user.department || user.dept || '未指派';
                 return `
                     <tr>
                         <td data-label="員工卡號"><strong>${cardId}</strong></td>
-                        <td data-label="員工姓名">${user.name}</td>
+                        <td data-label="員工姓名">${user.name || '未知'}</td>
                         <td data-label="權限狀態"><span class="badge badge-paid">一般員工</span></td>
-                        <td data-label="部門"><span class="badge badge-dept">${user.dept || '未指派'}</span></td>
+                        <td data-label="部門"><span class="badge badge-dept">${deptName}</span></td>
                         <td data-label="操作">
                             <button class="btn-delete" onclick="deleteEmployee('${cardId}')">刪除卡號</button>
                         </td>
@@ -1671,11 +1681,13 @@
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
+            const url = URL.createObjectURL(blob);
+            link.href = url;
             link.setAttribute("download", `${filename}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 100);
         }
 
         function exportCategoryToCSV(sourceType, targetCategory) {
@@ -1683,8 +1695,8 @@
             const prefix = (sourceType === 'today') ? "今日訂單" : "歷史訂單";
             const todayStr = new Date().toISOString().split('T')[0];
 
-            if (targetCategory === 'drink') generateCSV(rawData.filter(o => isDrinkOrder(o)), `${prefix}_喝涼涼_${todayStr}`);
-            else if (targetCategory === 'food') generateCSV(rawData.filter(o => !isDrinkOrder(o)), `${prefix}_美味餐點_${todayStr}`);
+            if (targetCategory === 'drink') generateCSV((rawData || []).filter(o => isDrinkOrder(o)), `${prefix}_喝涼涼_${todayStr}`);
+            else if (targetCategory === 'food') generateCSV((rawData || []).filter(o => !isDrinkOrder(o)), `${prefix}_美味餐點_${todayStr}`);
         }
 
         window.onload = async function() {
