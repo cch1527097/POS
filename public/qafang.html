@@ -299,7 +299,7 @@
             100% { transform: scale(1); }
         }
 
-        /* ==================== Modal 彈窗樣式 ==================== */
+        /* ==================== Modal 彈窗與圖形化選項樣式 ==================== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -400,61 +400,37 @@
         }
         .btn-modal-confirm:hover { background: var(--primary-hover); }
 
-        /* ==================== 客製化選單 - 按鈕網格 ==================== */
-        .option-section {
-            margin-bottom: 20px;
-        }
-
-        .option-section-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #475569;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .option-section-title span.required {
-            color: var(--primary);
-            font-size: 16px;
-            margin-right: 2px;
-        }
-
-        .option-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
+        /* 圖形化卡片選單樣式 */
+        .opt-group { margin-top: 10px; }
+        .opt-group label { font-weight: 700; display: block; margin-top: 12px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
+        .opt-grid { display: flex; flex-wrap: wrap; gap: 10px; }
         .opt-card {
-            background: #ffffff;
-            border: 1px solid #d1d5db;
+            flex: 1 1 calc(50% - 10px);
+            min-width: 120px;
+            background: #f8fafc;
+            border: 1.5px solid var(--border-color);
             border-radius: 12px;
-            padding: 12px 6px;
+            padding: 12px 8px;
             text-align: center;
             font-size: 14px;
             font-weight: 600;
-            color: #334155;
+            color: #475569;
             cursor: pointer;
+            transition: all 0.2s ease;
             user-select: none;
-            transition: all 0.15s ease;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 44px;
             box-sizing: border-box;
         }
-
-        .opt-card:hover {
-            border-color: #94a3b8;
-        }
-
+        .opt-card:hover { border-color: var(--primary); background: #fff; }
         .opt-card.selected {
-            border: 2px solid var(--primary);
-            background-color: var(--primary-light);
+            background: var(--primary-light);
+            border-color: var(--primary);
             color: var(--primary);
             font-weight: 700;
+            box-shadow: 0 2px 8px rgba(194, 65, 12, 0.15);
         }
 
         .custom-item-tag {
@@ -513,7 +489,6 @@
             .menu-grid { grid-template-columns: 1fr; }
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
-            .option-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -643,6 +618,9 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 紀錄彈窗選擇狀態
+let currentOptions = { staple: '飯' };
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -749,66 +727,61 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectOptionCard(group, val, el) {
+    currentOptions[group] = val;
+    const parentContainer = el.parentElement;
+    parentContainer.querySelectorAll('.opt-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    el.classList.add('selected');
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    let bodyHtml = "";
-    let hasOption = false;
-
-    // 若為主餐類別，提供選擇「飯」或「烏龍麵 (+$10)」
-    if (item.isMain) {
-        hasOption = true;
-        bodyHtml += `
-            <div class="option-section">
-                <div class="option-section-title"><span class="required">*</span>選擇主食</div>
-                <div class="option-grid">
-                    <div class="opt-card selected" data-group="main-staple" data-value="飯" data-price="0">飯</div>
-                    <div class="opt-card" data-group="main-staple" data-value="烏龍麵" data-price="10">烏龍麵 (+$10)</div>
-                </div>
-            </div>
-        `;
-    }
-
-    if (!hasOption) {
+    if (!item.isMain) {
         addItemToCart(item, 0, []);
         return;
     }
 
+    currentOptions = { staple: '飯' };
+
+    let bodyHtml = `
+        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
+            ${item.icon || '🍱'} ${item.name} ($${item.price})
+        </div>
+        <div class="opt-group">
+            <label>🍚 選擇主食</label>
+            <div class="opt-grid">
+                <div class="opt-card selected" onclick="selectOptionCard('staple', '飯', this)">
+                    🍚 飯
+                </div>
+                <div class="opt-card" onclick="selectOptionCard('staple', '烏龍麵 (+10元)', this)">
+                    🍜 烏龍麵<br><span style="font-size:11px; color:#c2410c;">+$10</span>
+                </div>
+            </div>
+        </div>
+    `;
+
     showCustomModal({
-        title: `請選擇「${item.name}」的客製選項`,
+        title: "請選擇餐點規格",
         bodyHtml: bodyHtml,
-        confirmText: "確定",
+        confirmText: "加入購物車",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
+            const stapleOpt = currentOptions.staple;
             let addPrice = 0;
-            let options = [];
+            if (stapleOpt.includes("+10元")) {
+                addPrice = 10;
+            }
 
-            document.querySelectorAll('#modal-body .opt-card.selected').forEach(card => {
-                const val = card.getAttribute('data-value');
-                const price = parseInt(card.getAttribute('data-price') || 0);
-
-                addPrice += price;
-                if (val) {
-                    options.push(val);
-                }
-            });
-
-            addItemToCart(item, addPrice, options);
+            const cleanStaple = stapleOpt.replace(" (+10元)", "");
+            addItemToCart(item, addPrice, [cleanStaple]);
             closeModal();
         }
     });
-
-    setTimeout(() => {
-        document.querySelectorAll('#modal-body .opt-card').forEach(card => {
-            card.onclick = function() {
-                const group = this.getAttribute('data-group');
-                document.querySelectorAll(`#modal-body .opt-card[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-            };
-        });
-    }, 50);
 }
 
 function addItemToCart(item, extraPrice, optionsArray) {
@@ -1042,8 +1015,7 @@ async function submitOrderToServer() {
                 type: "food",
                 meal: `丼滋丼滋：${finalSummary.trim()}`,
                 spicy: "依餐點選擇",
-                total: finalTotal,
-                note: `總計：$${finalTotal}`
+                total: finalTotal
             };
 
             try {
