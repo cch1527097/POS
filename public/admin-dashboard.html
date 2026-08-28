@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>後台管理系統 | Admin Dashboard</title>
-    <!-- 引入 Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -559,8 +558,19 @@
             justify-content: space-between;
         }
 
+        /* 強化店家統計 Modal 內部表格防爆版與自動換行 */
+        .store-summary-card table {
+            width: 100% !important;
+            table-layout: fixed;
+        }
+
+        .store-summary-card td {
+            white-space: normal !important;
+            word-break: break-all;
+            word-wrap: break-word;
+        }
+
         /* ------------------ RBAC 權限控管視覺隱藏 ------------------ */
-        /* 1. 唯讀檢視員 (viewer)：隱藏所有修改/刪除按鈕與員工管理 */
         body.role-viewer .btn-delete,
         body.role-viewer .btn-edit,
         body.role-viewer .btn-status,
@@ -574,7 +584,6 @@
             display: none !important;
         }
 
-        /* 2. 現場管理員 (operator)：隱藏刪除按鈕與員工管理 */
         body.role-operator .btn-delete,
         body.role-operator .sidebar .menu-item[onclick*="employee-mgr"] {
             display: none !important;
@@ -608,7 +617,6 @@
             .action-btn-group { width: 100%; flex-direction: column; }
             .action-btn-group .btn { width: 100%; }
 
-            /* 手機版：表格轉卡片式渲染 */
             .table-responsive table, .table-responsive tbody, .table-responsive tr, .table-responsive td {
                 display: block;
                 width: 100% !important;
@@ -643,7 +651,6 @@
 </head>
 <body>
 
-    <!-- 側邊欄選單 -->
     <div class="sidebar">
         <h2>後台管理系統</h2>
         <div class="user-info" id="adminDisplayInfo">☁️ 管理員: [加載中...]</div>
@@ -659,10 +666,8 @@
         </div>
     </div>
 
-    <!-- 主內容區 -->
     <div class="main-content">
         
-        <!-- 分頁一：當天系統總覽 -->
         <div id="overview" class="tab-content active">
             <div class="header">
                 <h1>系統儀表板 (全部訂單)</h1>
@@ -696,7 +701,6 @@
             <div class="card">
                 <h3>當天訂單紀錄 (即時接收)</h3>
                 
-                <!-- 膠囊切換列 -->
                 <div class="segmented-control">
                     <button class="segmented-btn active" onclick="setOverviewCategory('all', this)">全部品項</button>
                     <button class="segmented-btn" onclick="setOverviewCategory('drink', this)">🥤 喝涼涼</button>
@@ -741,7 +745,6 @@
             </div>
         </div>
 
-        <!-- 分頁二：店家管理 -->
         <div id="store-mgr" class="tab-content">
             <div class="header">
                 <h1>🏪 店家開放權限管理</h1>
@@ -797,7 +800,6 @@
             </div>
         </div>
 
-        <!-- 分頁三：喝涼涼紀錄 -->
         <div id="drink-mgr" class="tab-content">
             <div class="header">
                 <h1>🥤 喝涼涼 - 飲料歷史紀錄</h1>
@@ -829,7 +831,6 @@
             </div>
         </div>
 
-        <!-- 分頁四：美味餐點紀錄 -->
         <div id="food-mgr" class="tab-content">
             <div class="header">
                 <h1>🍱 美味餐點 - 正餐歷史紀錄</h1>
@@ -861,7 +862,6 @@
             </div>
         </div>
 
-        <!-- 分頁五：員工管理 -->
         <div id="employee-mgr" class="tab-content">
             <div class="header">
                 <h1>員工卡號管理</h1>
@@ -913,7 +913,6 @@
 
     </div>
 
-    <!-- 動態彈出視窗 Modal -->
     <div id="customModal" class="modal-overlay">
         <div class="modal-window">
             <div class="modal-header">
@@ -986,7 +985,6 @@
                 adminInfoElem.innerText = `☁️ ${adminName} [${roleName}]`;
             }
         }
-        // -------------------------------------------------------
 
         let storeList = [
             { id: 'store_1', name: '八方雲集', category: '美味餐點', isOpen: true },
@@ -1060,16 +1058,7 @@
             const lockTime = document.getElementById('lockTimeInput').value || '未設定';
             const frontendUrl = `${window.location.protocol}//${window.location.host}/index.html`;
 
-            const announcementMsg = 
-`📢 【今日點餐公告通知】
-
-今日開放點餐店家：
-${openStores}
-
-⏰ 點餐截止時間：${lockTime}
-🔗 前台點餐連結：${frontendUrl}
-
-請大家務必於截止時間前完成下單，謝謝！`;
+            const announcementMsg = `📢 【今日點餐公告通知】\n今日開放點餐店家：\n${openStores}\n\n⏰ 點餐截止時間：${lockTime}\n🔗 前台點餐連結：${frontendUrl}\n\n請大家務必於截止時間前完成下單，謝謝！`;
 
             showCustomModal({
                 title: '確認發送 LINE 公告',
@@ -1085,7 +1074,6 @@ ${openStores}
         function switchStoreTab(type, btn) {
             document.querySelectorAll('.store-subtab-content').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.store-subtab-btn').forEach(b => b.classList.remove('active'));
-
             document.getElementById(`subtab-${type}`).style.display = 'block';
             btn.classList.add('active');
         }
@@ -1120,7 +1108,7 @@ ${openStores}
                         <tr>
                             <td data-label="店家名稱"><strong>${store.name}</strong></td>
                             <td data-label="餐點類別"><span class="badge ${categoryBadgeClass}">${store.category}</span></td>
-                            <td data-label="開放狀態">${statusBadge}</td>
+                            <td data-label="目前開放狀態">${statusBadge}</td>
                             <td data-label="前台權限">${permissionText}</td>
                             <td data-label="控制操作">${actionBtn}</td>
                         </tr>
@@ -1133,228 +1121,37 @@ ${openStores}
         }
 
         async function openStore(storeId) {
-            if (!checkPermission('manage_store')) return; // 👈 權限檢查
+            if (!checkPermission('manage_store')) return;
+            const target = storeList.find(s => s.id === storeId);
+            if (!target) return;
 
-            const targetStore = storeList.find(s => s.id === storeId);
-            if (!targetStore) return;
-
-            targetStore.isOpen = true;
+            target.isOpen = true;
             renderStoreTable();
-            localStorage.setItem('active_store_config', JSON.stringify(storeList));
-
-            try {
-                const response = await fetch('/api/stores', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ stores: storeList })
-                });
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    showCustomModal({ message: `已成功開放「<b>${targetStore.name}</b>」供員工點餐！` });
-                } else {
-                    showCustomModal({ message: `店家開放設定已儲存於本地。` });
-                }
-            } catch (error) {
-                showCustomModal({ message: `已開放「<b>${targetStore.name}</b>」（本地暫存）。` });
-            }
+            saveStoreConfigToLocal();
+            showCustomModal({ message: `已成功開放：【${target.name}】` });
         }
 
         async function closeStore(storeId) {
-            if (!checkPermission('manage_store')) return; // 👈 權限檢查
+            if (!checkPermission('manage_store')) return;
+            const target = storeList.find(s => s.id === storeId);
+            if (!target) return;
 
-            const store = storeList.find(s => s.id === storeId);
-            if (!store) return;
-
-            store.isOpen = false;
+            target.isOpen = false;
             renderStoreTable();
+            saveStoreConfigToLocal();
+            showCustomModal({ message: `已關閉開放：【${target.name}】` });
+        }
+
+        function saveStoreConfigToLocal() {
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
-
-            try {
-                const response = await fetch('/api/stores', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ stores: storeList })
-                });
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    showCustomModal({ message: `已關閉「<b>${store.name}</b>」。` });
-                } else {
-                    showCustomModal({ message: `設定已暫存於本地。` });
-                }
-            } catch (e) {
-                showCustomModal({ message: `已關閉「<b>${store.name}</b>」（本地暫存）。` });
-            }
+            fetch('/api/stores', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stores: storeList })
+            }).catch(err => console.log('僅儲存於本地快取'));
         }
 
-        async function loadLockTime() {
-            try {
-                const response = await fetch('/api/lock-time');
-                const data = await response.json();
-                if (data.success) {
-                    if (data.lockTime) {
-                        document.getElementById('lockTimeInput').value = data.lockTime;
-                        document.getElementById('lockTimeDisplay').innerText = `[目前截止：${data.lockTime}]`;
-                    } else {
-                        document.getElementById('lockTimeInput').value = '';
-                        document.getElementById('lockTimeDisplay').innerText = `[目前狀態：無限制]`;
-                    }
-                }
-            } catch (error) {
-                console.error('讀取鎖定時間失敗:', error);
-            }
-        }
-
-        async function saveLockTime() {
-            if (!checkPermission('change_status')) return; // 👈 權限檢查
-
-            const lockTime = document.getElementById('lockTimeInput').value;
-            if (!lockTime) {
-                showCustomModal({ message: '請選擇有效的時間！' });
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/lock-time', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lockTime })
-                });
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    showCustomModal({ message: result.message });
-                    document.getElementById('lockTimeDisplay').innerText = `[目前截止：${lockTime}]`;
-                } else {
-                    showCustomModal({ message: `設定失敗：${result.message || '未知錯誤'}` });
-                }
-            } catch (error) {
-                showCustomModal({ message: '網路連線失敗，無法更新鎖定時間！' });
-            }
-        }
-
-        async function unlockOrderTime() {
-            if (!checkPermission('change_status')) return; // 👈 權限檢查
-
-            showCustomModal({
-                title: '確認解除鎖定',
-                message: '確定要解除點餐時間限制嗎？解除後前台將全天開放下單。',
-                isConfirm: true,
-                onConfirm: async () => {
-                    try {
-                        const response = await fetch('/api/lock-time', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ lockTime: "" })
-                        });
-                        const result = await response.json();
-
-                        if (response.ok && result.success) {
-                            document.getElementById('lockTimeInput').value = '';
-                            document.getElementById('lockTimeDisplay').innerText = `[目前狀態：無限制]`;
-                            showCustomModal({ message: result.message });
-                        } else {
-                            showCustomModal({ message: `解除失敗：${result.message || '未知錯誤'}` });
-                        }
-                    } catch (error) {
-                        showCustomModal({ message: '網路連線失敗，無法解除鎖定！' });
-                    }
-                }
-            });
-        }
-
-        function isDrinkOrder(order) {
-            if (order.category === 'drink' || order.type === 'drink') return true;
-            const mealStr = (order.meal || '').toLowerCase();
-            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯', '一鳴', '五路鍋聖', '江滬湯包'];
-            if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
-            const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品', '李記', '可不可熟成紅茶', '鹿兒角', '八曜和茶', '一沐日', '粉圓伯', '旅人阿宏', '茗沏', '迷客夏', '青山', '有茶', '吳家紅茶冰', '先喝道', '麻古茶坊'];
-            return drinkKeywords.some(kw => mealStr.includes(kw));
-        }
-
-        function parseTimestamp(ts) {
-            if (!ts) return 0;
-            let str = String(ts).trim();
-            const isPM = str.includes('下午');
-            const isAM = str.includes('上午');
-            str = str.replace(/上午|下午/g, '').trim().replace(/-/g, '/');
-            const parts = str.split(/\s+/);
-            if (parts.length >= 2) {
-                const datePart = parts[0];
-                const timePart = parts[1];
-                const tParts = timePart.split(':');
-                let hour = parseInt(tParts[0], 10) || 0;
-                const min = parseInt(tParts[1], 10) || 0;
-                const sec = parseInt(tParts[2], 10) || 0;
-                if (isPM && hour < 12) hour += 12;
-                if (isAM && hour === 12) hour = 0;
-                const dParts = datePart.split('/');
-                if (dParts.length === 3) {
-                    return new Date(parseInt(dParts[0], 10), parseInt(dParts[1], 10) - 1, parseInt(dParts[2], 10), hour, min, sec).getTime();
-                }
-            }
-            const parsed = Date.parse(str);
-            return isNaN(parsed) ? 0 : parsed;
-        }
-
-        function showCustomModal({ title = '提示', message = '', isConfirm = false, onConfirm = null }) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalMessage').innerHTML = message;
-            
-            const cancelBtn = document.getElementById('modalCancelBtn');
-            const confirmBtn = document.getElementById('modalConfirmBtn');
-            const overlay = document.getElementById('customModal');
-
-            cancelBtn.style.display = isConfirm ? 'inline-block' : 'none';
-
-            const newConfirmBtn = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-
-            newConfirmBtn.addEventListener('click', () => {
-                closeCustomModal();
-                if (onConfirm) onConfirm();
-            });
-
-            overlay.classList.add('active');
-        }
-
-        function closeCustomModal() {
-            document.getElementById('customModal').classList.remove('active');
-        }
-
-        function switchTab(tabId, menuItem) {
-            if (tabId === 'employee-mgr' && !checkPermission('edit_emp')) return; // 👈 權限檢查
-
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            document.querySelectorAll('.sidebar .menu-item').forEach(item => item.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            menuItem.classList.add('active');
-
-            if(tabId === 'drink-mgr' || tabId === 'food-mgr') loadHistoryOrders();
-            else if (tabId === 'overview') loadOrders();
-            else if (tabId === 'employee-mgr') loadEmployees();
-            else if (tabId === 'store-mgr') renderStoreTable();
-        }
-
-        async function refreshCurrentTab() {
-            const activeTab = document.querySelector('.tab-content.active');
-            if (!activeTab) return;
-
-            if (activeTab.id === 'overview') await loadOrders();
-            else if (activeTab.id === 'drink-mgr' || activeTab.id === 'food-mgr') await loadHistoryOrders();
-            else if (activeTab.id === 'employee-mgr') await loadEmployees();
-            else if (activeTab.id === 'store-mgr') renderStoreTable();
-        }
-
-        function setOverviewCategory(cat, btn) {
-            currentOverviewCategory = cat;
-            document.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            filterOrders('today');
-        }
-
+        // ------------------ **完全修復：店家統計 Modal 自動換行與拆分** ------------------
         function showStoreSummaryModal() {
             if (!currentTodayOrders || currentTodayOrders.length === 0) {
                 showCustomModal({ title: '店家餐點統計', message: '今日目前尚無任何點餐資料！' });
@@ -1364,38 +1161,47 @@ ${openStores}
             const storeMap = {};
             currentTodayOrders.forEach(order => {
                 let storeName = order.storeName || order.store || '';
-                let mealName = order.meal || '未指定餐點';
+                let rawMealName = order.meal || '未指定餐點';
 
+                // 嘗試提取店家名稱
                 if (!storeName) {
-                    const matchedStore = storeList.find(s => mealName.includes(s.name));
+                    const matchedStore = storeList.find(s => rawMealName.includes(s.name));
                     if (matchedStore) storeName = matchedStore.name;
-                    else if (mealName.includes('[') && mealName.includes(']')) {
-                        storeName = mealName.substring(mealName.indexOf('[') + 1, mealName.indexOf(']'));
-                        mealName = mealName.substring(mealName.indexOf(']') + 1).trim();
-                    } else storeName = '其他/未分類店家';
-                }
-
-                let qty = Number(order.qty || order.count || 1);
-                if (mealName.includes('x')) {
-                    const parts = mealName.split('x');
-                    const possibleQty = parseInt(parts[parts.length - 1].trim());
-                    if (!isNaN(possibleQty)) {
-                        qty = possibleQty;
-                        mealName = parts.slice(0, -1).join('x').trim();
+                    else if (rawMealName.includes('[') && rawMealName.includes(']')) {
+                        storeName = rawMealName.substring(rawMealName.indexOf('[') + 1, rawMealName.indexOf(']'));
+                        rawMealName = rawMealName.substring(rawMealName.indexOf(']') + 1).trim();
+                    } else {
+                        storeName = '其他/未分類店家';
                     }
                 }
 
-                const price = Number(order.total || 0);
+                // 清除前綴店家名（例："老蕭土魠魚羹麵館 : "）避免字串過長
+                let cleanMeal = rawMealName.replace(new RegExp(`^${storeName}\\s*[:：]?\\s*`), '');
+
+                // 依據 *1, *2 數量標籤切分餐點
+                const subItems = cleanMeal.split(/(?<=\*\d+)\s*/).filter(item => item.trim() !== '');
+
                 if (!storeMap[storeName]) {
                     storeMap[storeName] = { totalAmount: 0, totalCount: 0, items: {} };
                 }
 
-                storeMap[storeName].totalAmount += price;
-                storeMap[storeName].totalCount += qty;
+                subItems.forEach(item => {
+                    let itemName = item.trim();
+                    let qty = 1;
 
-                if (!storeMap[storeName].items[mealName]) storeMap[storeName].items[mealName] = { count: 0, amount: 0 };
-                storeMap[storeName].items[mealName].count += qty;
-                storeMap[storeName].items[mealName].amount += price;
+                    const match = itemName.match(/\*(\d+)$/);
+                    if (match) {
+                        qty = parseInt(match[1], 10);
+                    }
+
+                    if (!storeMap[storeName].items[itemName]) {
+                        storeMap[storeName].items[itemName] = 0;
+                    }
+                    storeMap[storeName].items[itemName] += qty;
+                    storeMap[storeName].totalCount += qty;
+                });
+
+                storeMap[storeName].totalAmount += Number(order.total || 0);
             });
 
             let htmlContent = `<div style="display:flex; flex-direction:column; gap:12px;">`;
@@ -1407,23 +1213,21 @@ ${openStores}
                             <span>🏪 ${store}</span>
                             <span style="font-size:13px; color:var(--text-sub);">共 ${storeData.totalCount} 份 | $${storeData.totalAmount}</span>
                         </div>
-                        <table style="min-width:100%; border-collapse:collapse; font-size:13px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:13px; table-layout: fixed;">
                             <thead>
                                 <tr style="background:#edf2f0; color:var(--text-sub);">
-                                    <th style="padding:6px; text-align:left;">餐點</th>
-                                    <th style="padding:6px; text-align:center;">數量</th>
-                                    <th style="padding:6px; text-align:right;">小計</th>
+                                    <th style="padding:6px; text-align:left; width: 75%;">餐點明細</th>
+                                    <th style="padding:6px; text-align:center; width: 25%;">數量</th>
                                 </tr>
                             </thead>
                             <tbody>
                 `;
                 Object.keys(storeData.items).forEach(item => {
-                    const itemData = storeData.items[item];
+                    const count = storeData.items[item];
                     htmlContent += `
                         <tr style="border-bottom:1px dashed var(--border-color);">
-                            <td style="padding:6px; font-weight:600;">${item}</td>
-                            <td style="padding:6px; text-align:center; color:var(--primary); font-weight:700;">x${itemData.count}</td>
-                            <td style="padding:6px; text-align:right; font-weight:600;">$${itemData.amount}</td>
+                            <td style="padding:6px; font-weight:600; word-break: break-word; white-space: normal;">${item}</td>
+                            <td style="padding:6px; text-align:center; color:var(--primary); font-weight:700;">x${count}</td>
                         </tr>
                     `;
                 });
@@ -1434,384 +1238,441 @@ ${openStores}
             showCustomModal({ title: '📊 今日店家餐點統計', message: htmlContent });
         }
 
-        async function loadEmployees() {
+        async function loadLockTime() {
             try {
-                const response = await fetch('/api/employees');
-                if (response.ok) {
-                    USER_DB_PREVIEW = await response.json();
-                    renderEmployeeDirectory();
+                const res = await fetch('/api/locktime');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.lockTime) {
+                        document.getElementById('lockTimeInput').value = data.lockTime;
+                        document.getElementById('lockTimeDisplay').innerText = `目前設定：${data.lockTime} 止`;
+                    }
                 }
-            } catch (error) {
-                console.error('讀取員工失敗:', error);
+            } catch (e) {
+                console.error("載入時間失敗", e);
             }
         }
 
-        function renderEmployeeDirectory() {
-            const tbody = document.getElementById('cardTableBody');
-            let employeeList = Array.isArray(USER_DB_PREVIEW) ? USER_DB_PREVIEW : Object.keys(USER_DB_PREVIEW).map(cardId => {
-                return typeof USER_DB_PREVIEW[cardId] === 'object' ? { cardId, ...USER_DB_PREVIEW[cardId] } : { cardId, name: USER_DB_PREVIEW[cardId], department: '未劃分' };
-            });
-
-            if (employeeList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999;">目前無任何員工資料</td></tr>`;
-                return;
-            }
-
-            const rows = employeeList.map(emp => {
-                const cardId = emp.cardId || emp.id;
-                return `
-                    <tr>
-                        <td data-label="員工卡號"><code style="background:var(--primary-light); padding:2px 6px; border-radius:4px; color:var(--primary);">${cardId}</code></td>
-                        <td data-label="員工姓名"><strong>${emp.name || '未知'}</strong></td>
-                        <td data-label="權限狀態"><span class="badge badge-paid">已授權</span></td>
-                        <td data-label="部門"><span class="badge badge-dept">${emp.department || '未設定'}</span></td>
-                        <td data-label="操作">
-                            <button class="btn-edit" onclick="openEditEmployeeModal('${cardId}')">✏️ 編輯</button>
-                            <button class="btn-delete" onclick="deleteEmployee('${cardId}')">❌ 刪除</button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = rows.join('');
-        }
-
-        function openEditEmployeeModal(cardId) {
-            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
-
-            let currentName = '', currentDept = '';
-            if (Array.isArray(USER_DB_PREVIEW)) {
-                const found = USER_DB_PREVIEW.find(e => (e.cardId || e.id) === cardId);
-                if (found) { currentName = found.name || ''; currentDept = found.department || ''; }
-            } else if (USER_DB_PREVIEW[cardId]) {
-                currentName = typeof USER_DB_PREVIEW[cardId] === 'object' ? USER_DB_PREVIEW[cardId].name : USER_DB_PREVIEW[cardId];
-                currentDept = USER_DB_PREVIEW[cardId].department || '';
-            }
-
-            showCustomModal({
-                title: `編輯員工 (${cardId})`,
-                message: `
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        <div>
-                            <label style="font-size:12px; font-weight:600;">卡號</label>
-                            <input type="text" value="${cardId}" disabled style="background:#eee;">
-                        </div>
-                        <div>
-                            <label style="font-size:12px; font-weight:600;">姓名</label>
-                            <input type="text" id="editEmpName" value="${currentName}">
-                        </div>
-                        <div>
-                            <label style="font-size:12px; font-weight:600;">部門</label>
-                            <input type="text" id="editEmpDepartment" value="${currentDept}">
-                        </div>
-                    </div>
-                `,
-                isConfirm: true,
-                onConfirm: async () => {
-                    const newName = document.getElementById('editEmpName').value.trim();
-                    const newDept = document.getElementById('editEmpDepartment').value.trim();
-                    if (newName) await saveEmployeeEdit(cardId, newName, newDept);
-                }
-            });
-        }
-
-        async function saveEmployeeEdit(cardId, name, department) {
-            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
-
-            try {
-                const response = await fetch(`/api/employees/${cardId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, department })
-                });
-                if (response.ok) {
-                    await loadEmployees();
-                    showCustomModal({ message: `員工資料已更新！` });
-                }
-            } catch (error) {
-                showCustomModal({ message: '連線失敗！' });
-            }
-        }
-
-        async function toggleOrderPaymentStatus(orderId, newStatus) {
-            if (!checkPermission('change_status')) return; // 👈 權限檢查
-
-            try {
-                const response = await fetch(`/api/orders/${orderId}/payment`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ isPaid: newStatus })
-                });
-
-                if (response.ok) {
-                    const tToday = currentTodayOrders.find(o => String(o.orderId) === String(orderId));
-                    if (tToday) tToday.isPaid = newStatus;
-                    const tHist = allHistoryOrders.find(o => String(o.orderId) === String(orderId));
-                    if (tHist) tHist.isPaid = newStatus;
-
-                    refreshCurrentTab();
-                    showCustomModal({ message: `繳費狀態已更新！` });
-                }
-            } catch (error) {
-                showCustomModal({ message: '連線失敗！' });
-            }
-        }
-
-        async function addNewEmployee() {
-            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
-
-            const cardId = document.getElementById('newCardId').value.trim();
-            const name = document.getElementById('newEmpName').value.trim();
-            const department = document.getElementById('newDepartment').value.trim() || '未劃分';
-
-            if (!cardId || !name) {
-                showCustomModal({ message: '請填寫完整資訊！' });
+        async function saveLockTime() {
+            if (!checkPermission('change_status')) return;
+            const lockTime = document.getElementById('lockTimeInput').value;
+            if (!lockTime) {
+                showCustomModal({ message: '請選擇時間！' });
                 return;
             }
 
             try {
-                const response = await fetch('/api/employees', {
+                const res = await fetch('/api/locktime', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cardId, name, department })
+                    body: JSON.stringify({ lockTime })
                 });
-
-                if (response.ok) {
-                    await loadEmployees();
-                    document.getElementById('newCardId').value = '';
-                    document.getElementById('newEmpName').value = '';
-                    document.getElementById('newDepartment').value = '';
-                    showCustomModal({ message: `成功新增員工：${name}` });
+                if (res.ok) {
+                    showCustomModal({ message: `已儲存每日截止時間為：${lockTime}` });
+                    document.getElementById('lockTimeDisplay').innerText = `目前設定：${lockTime} 止`;
+                } else {
+                    showCustomModal({ message: '儲存失敗，請再試一次。' });
                 }
-            } catch (error) {
-                showCustomModal({ message: '新增失敗！' });
+            } catch (e) {
+                showCustomModal({ message: '連線錯誤！' });
             }
         }
 
-        async function deleteEmployee(cardId) {
-            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
-
+        async function unlockOrderTime() {
+            if (!checkPermission('change_status')) return;
             showCustomModal({
-                title: '確認刪除',
-                message: `確定要刪除員工卡號「${cardId}」嗎？`,
+                title: '確認解除鎖定',
+                message: '解除鎖定後前台將可重新開放下單，確定要解除嗎？',
                 isConfirm: true,
                 onConfirm: async () => {
                     try {
-                        const response = await fetch(`/api/employees/${cardId}`, { method: 'DELETE' });
-                        if (response.ok) {
-                            await loadEmployees();
-                            showCustomModal({ message: `已成功刪除！` });
+                        const res = await fetch('/api/locktime', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ lockTime: '23:59' })
+                        });
+                        if (res.ok) {
+                            document.getElementById('lockTimeInput').value = '23:59';
+                            document.getElementById('lockTimeDisplay').innerText = '狀態：解鎖中 (23:59止)';
+                            showCustomModal({ message: '🔓 已成功解除限制！' });
                         }
-                    } catch (error) {
-                        showCustomModal({ message: '刪除失敗！' });
+                    } catch(e) {
+                        showCustomModal({ message: '解除失敗！' });
                     }
                 }
             });
         }
 
         async function loadOrders() {
-            const statusSpan = document.getElementById('syncStatus');
-            if(statusSpan) statusSpan.innerText = "同步中...";
-            
+            const syncElem = document.getElementById('syncStatus');
+            if (syncElem) syncElem.innerText = "同步中...";
+
             try {
-                const response = await fetch(`/orders.json?_=${new Date().getTime()}`); 
-                if (!response.ok) throw new Error();
-                
-                const allOrders = await response.json();
-                const today = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Taipei"}));
-                
-                currentTodayOrders = allOrders.filter(order => {
-                    if (!order.timestamp) return false;
-                    const orderTime = parseTimestamp(order.timestamp);
-                    if (!orderTime) return false;
-                    const oDate = new Date(orderTime);
-                    return oDate.getFullYear() === today.getFullYear() &&
-                           oDate.getMonth() === today.getMonth() &&
-                           oDate.getDate() === today.getDate();
-                });
-
-                updateSummary(currentTodayOrders);
-
-                const searchInput = document.getElementById('orderSearchInput');
-                executeFilter(searchInput ? searchInput.value.trim().toLowerCase() : '', 'today');
-                
-                if(statusSpan) statusSpan.innerText = `最後同步：${new Date().toLocaleTimeString('zh-TW', {hour12:false})}`;
-
+                const response = await fetch('/api/orders');
+                if (response.ok) {
+                    currentTodayOrders = await response.json();
+                    renderOverviewTable(currentTodayOrders);
+                    updateSummaryCards(currentTodayOrders);
+                    if (syncElem) syncElem.innerText = "🟢 即時同步中";
+                } else {
+                    if (syncElem) syncElem.innerText = "🔴 連線異常";
+                }
             } catch (error) {
-                document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--danger);">同步失敗</td></tr>`;
-                if(statusSpan) statusSpan.innerText = "同步失敗";
+                console.error("載入訂單失敗:", error);
+                if (syncElem) syncElem.innerText = "🔴 連線失敗";
             }
         }
 
         async function loadHistoryOrders() {
             try {
-                const response = await fetch(`/orders.json?_=${new Date().getTime()}`);
-                if (!response.ok) throw new Error();
-                
-                allHistoryOrders = await response.json();
-                renderOrderTable(allHistoryOrders.filter(o => isDrinkOrder(o)), 'drinkTableBody', true, true);
-                renderOrderTable(allHistoryOrders.filter(o => !isDrinkOrder(o)), 'foodTableBody', true, true);
+                const response = await fetch('/api/orders/history');
+                if (response.ok) {
+                    allHistoryOrders = await response.json();
+                    renderCategoryTable('drink', allHistoryOrders.filter(o => isDrinkOrder(o)));
+                    renderCategoryTable('food', allHistoryOrders.filter(o => !isDrinkOrder(o)));
+                }
             } catch (error) {
-                console.error('歷史資料讀取失敗:', error);
+                console.error("載入歷史紀錄失敗:", error);
             }
         }
 
-        function renderOrderTable(orders, tableBodyId, showFullTime = false, hideCategoryCol = false) {
-            const tbody = document.getElementById(tableBodyId);
+        function isDrinkOrder(order) {
+            const drinkCategoryStores = storeList.filter(s => s.category === '喝涼涼').map(s => s.name);
+            const rawMeal = (order.meal || '').toLowerCase();
+            const rawStore = (order.storeName || order.store || '').toLowerCase();
+
+            if (drinkCategoryStores.some(ds => rawStore.includes(ds.toLowerCase()) || rawMeal.includes(ds.toLowerCase()))) {
+                return true;
+            }
+            if (rawMeal.includes('冰') || rawMeal.includes('糖') || rawMeal.includes('杯') || rawMeal.includes('飲料') || rawMeal.includes('茶')) {
+                return true;
+            }
+            return false;
+        }
+
+        function setOverviewCategory(category, btn) {
+            currentOverviewCategory = category;
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            filterOrders('today');
+        }
+
+        function filterOrders(type) {
+            if (type === 'today') {
+                const query = document.getElementById('orderSearchInput').value.toLowerCase().trim();
+                let filtered = currentTodayOrders;
+
+                if (currentOverviewCategory === 'drink') {
+                    filtered = filtered.filter(o => isDrinkOrder(o));
+                } else if (currentOverviewCategory === 'food') {
+                    filtered = filtered.filter(o => !isDrinkOrder(o));
+                }
+
+                if (query) {
+                    filtered = filtered.filter(o => 
+                        (o.name && o.name.toLowerCase().includes(query)) ||
+                        (o.cardId && o.cardId.toLowerCase().includes(query)) ||
+                        (o.meal && o.meal.toLowerCase().includes(query))
+                    );
+                }
+
+                currentFilteredTodayOrders = filtered;
+                renderOverviewTable(filtered);
+            }
+        }
+
+        function renderOverviewTable(orders) {
+            const tbody = document.getElementById('orderTableBody');
             if (!tbody) return;
 
-            if (orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${hideCategoryCol ? 8 : 10}" style="text-align:center; color:#999;">無點餐紀錄</td></tr>`;
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#999;">目前沒有符合條件的訂單紀錄</td></tr>`;
                 return;
             }
 
-            const sortedOrders = [...orders].sort((a, b) => parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp));
-            const htmlRows = sortedOrders.map(order => {
-                const orderIdStr = order.orderId ? String(order.orderId) : '';
-                const cardId = order.cardId || '';
-                order.department = order.department || (USER_DB_PREVIEW[cardId] ? (USER_DB_PREVIEW[cardId].department || USER_DB_PREVIEW[cardId]) : '未劃分');
-
-                let timeHtml = '-';
-                if (order.timestamp) {
-                    const trimmed = order.timestamp.trim();
-                    const firstSpaceIndex = trimmed.indexOf(' ');
-                    timeHtml = firstSpaceIndex !== -1 ? `
-                        <div class="time-stacked">
-                            <span class="date-part">${trimmed.substring(0, firstSpaceIndex)}</span>
-                            <span class="time-part">${trimmed.substring(firstSpaceIndex + 1)}</span>
-                        </div>` : `<div class="time-stacked"><span class="date-part">${trimmed}</span></div>`;
-                }
-
-                const isPaid = order.isPaid === true || order.isPaid === 'true';
-                const paidBadge = isPaid ? `<span class="badge badge-paid">已繳費</span>` : `<span class="badge badge-unpaid">未繳費</span>`;
+            tbody.innerHTML = orders.map(order => {
                 const isDrink = isDrinkOrder(order);
-                const categoryBadge = isDrink ? `<span class="badge badge-drink">🥤 喝涼涼</span>` : `<span class="badge badge-food">🍱 美味餐點</span>`;
+                const categoryBadge = isDrink 
+                    ? `<span class="badge badge-drink">🥤 喝涼涼</span>` 
+                    : `<span class="badge badge-food">🍱 美味餐點</span>`;
+
+                const paidBadge = order.isPaid 
+                    ? `<span class="badge badge-paid">已繳費</span>` 
+                    : `<span class="badge badge-unpaid">未繳費</span>`;
+
+                const statusToggleBtn = `<button class="btn-status" onclick="togglePaidStatus('${order.id}', ${!order.isPaid})">切換狀態</button>`;
 
                 return `
                     <tr>
-                        <td data-label="訂單編號"><code style="background:var(--primary-light); padding:2px 6px; border-radius:4px; color:var(--primary);">${order.orderId || '無'}</code></td>
-                        ${hideCategoryCol ? '' : `<td data-label="類別">${categoryBadge}</td>`}
-                        <td data-label="部門"><span class="badge badge-dept">${order.department}</span></td>
-                        <td data-label="點餐人"><strong>${order.name || '未知'}</strong> <small style="color:#888;">(${cardId})</small></td>
-                        <td data-label="點餐時間">${timeHtml}</td>
-                        <td data-label="明細" class="col-meal-detail">
-                            <strong style="color:var(--primary);">${order.meal || '未選擇'}</strong><br>
-                            <small style="color:var(--text-sub);">${isDrink ? '甜冰' : '醬辣'}: ${order.spicy || '標準'} | 備註: ${order.note || '無'}</small>
+                        <td data-label="訂單編號">#${order.id.slice(-5)}</td>
+                        <td data-label="類別">${categoryBadge}</td>
+                        <td data-label="部門"><span class="badge badge-dept">${order.department || '未填寫'}</span></td>
+                        <td data-label="點餐人"><strong>${order.name}</strong> (${order.cardId || '無'})</td>
+                        <td data-label="點餐時間">
+                            <div class="time-stacked">
+                                <span class="date-part">${order.time ? order.time.split(' ')[0] : '-'}</span>
+                                <span class="time-part">${order.time ? order.time.split(' ')[1] : '-'}</span>
+                            </div>
                         </td>
-                        <td data-label="總金額"><strong style="color:var(--danger);">$${order.total || 0}</strong></td>
-                        <td data-label="繳費狀態">
-                            ${paidBadge}
-                            <button class="btn-status" onclick="toggleOrderPaymentStatus('${orderIdStr}', ${!isPaid})">切換</button>
-                        </td>
-                        ${hideCategoryCol ? '' : `<td data-label="狀態"><span class="badge">已同步</span></td>`}
+                        <td data-label="餐點與備註明細" class="col-meal-detail">${order.meal}</td>
+                        <td data-label="總金額" style="font-weight:700; color:var(--primary);">$${order.total || 0}</td>
+                        <td data-label="繳費狀態">${paidBadge} ${statusToggleBtn}</td>
+                        <td data-label="狀態"><span class="badge badge-paid">🟢 已接單</span></td>
                         <td data-label="操作">
-                            <button class="btn-delete" onclick="deleteOrder('${orderIdStr}')">❌ 刪除</button>
+                            <button class="btn-delete" onclick="deleteOrder('${order.id}')">刪除</button>
                         </td>
                     </tr>
                 `;
-            });
-            tbody.innerHTML = htmlRows.join('');
+            }).join('');
+        }
+
+        function renderCategoryTable(category, orders) {
+            const tbody = document.getElementById(`${category}TableBody`);
+            if (!tbody) return;
+
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#999;">尚無任何紀錄</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => {
+                const paidBadge = order.isPaid 
+                    ? `<span class="badge badge-paid">已繳費</span>` 
+                    : `<span class="badge badge-unpaid">未繳費</span>`;
+
+                return `
+                    <tr>
+                        <td data-label="訂單編號">#${order.id.slice(-5)}</td>
+                        <td data-label="部門"><span class="badge badge-dept">${order.department || '未填寫'}</span></td>
+                        <td data-label="點餐人"><strong>${order.name}</strong> (${order.cardId || '無'})</td>
+                        <td data-label="點餐時間">
+                            <div class="time-stacked">
+                                <span class="date-part">${order.time ? order.time.split(' ')[0] : '-'}</span>
+                                <span class="time-part">${order.time ? order.time.split(' ')[1] : '-'}</span>
+                            </div>
+                        </td>
+                        <td data-label="明細" class="col-meal-detail">${order.meal}</td>
+                        <td data-label="總金額" style="font-weight:700; color:var(--primary);">$${order.total || 0}</td>
+                        <td data-label="繳費狀態">${paidBadge}</td>
+                        <td data-label="操作">
+                            <button class="btn-delete" onclick="deleteOrder('${order.id}')">刪除</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateSummaryCards(orders) {
+            const countElem = document.getElementById('summaryCount');
+            const amountElem = document.getElementById('summaryAmount');
+
+            if (!orders) orders = [];
+
+            const totalCount = orders.length;
+            const totalAmount = orders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+
+            if (countElem) countElem.innerText = `${totalCount} 筆`;
+            if (amountElem) amountElem.innerText = `$${totalAmount}`;
+        }
+
+        async function togglePaidStatus(orderId, newPaidStatus) {
+            if (!checkPermission('change_status')) return;
+
+            try {
+                const res = await fetch(`/api/orders/${orderId}/paid`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isPaid: newPaidStatus })
+                });
+
+                if (res.ok) {
+                    loadOrders();
+                } else {
+                    showCustomModal({ message: '更新失敗！' });
+                }
+            } catch (e) {
+                showCustomModal({ message: '連線錯誤！' });
+            }
         }
 
         async function deleteOrder(orderId) {
-            if (!orderId) return;
-            if (!checkPermission('delete')) return; // 👈 權限檢查
+            if (!checkPermission('delete')) return;
 
             showCustomModal({
-                title: '確認刪除',
-                message: `確定要刪除訂單「${orderId}」嗎？`,
+                title: '確認刪除訂單',
+                message: `確定要刪除該筆訂單 (#${orderId.slice(-5)}) 嗎？此操作無法復原！`,
                 isConfirm: true,
                 onConfirm: async () => {
                     try {
-                        const response = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
-                        if (response.ok) {
-                            currentTodayOrders = currentTodayOrders.filter(o => String(o.orderId) !== orderId);
-                            allHistoryOrders = allHistoryOrders.filter(o => String(o.orderId) !== orderId);
-                            updateSummary(currentTodayOrders);
-                            refreshCurrentTab();
-                            showCustomModal({ message: `已成功刪除！` });
+                        const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+                        if (res.ok) {
+                            showCustomModal({ message: '🗑️ 訂單已順利刪除！' });
+                            loadOrders();
+                            loadHistoryOrders();
+                        } else {
+                            showCustomModal({ message: '刪除失敗，請稍後重試。' });
                         }
-                    } catch (error) {
+                    } catch (e) {
+                        showCustomModal({ message: '連線失敗！' });
+                    }
+                }
+            });
+        }
+
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/employees');
+                if (response.ok) {
+                    USER_DB_PREVIEW = await response.json();
+                    renderCardTable();
+                }
+            } catch (error) {
+                console.error("載入員工清單失敗:", error);
+            }
+        }
+
+        function renderCardTable() {
+            const tbody = document.getElementById('cardTableBody');
+            if (!tbody) return;
+
+            const cardIds = Object.keys(USER_DB_PREVIEW);
+            if (cardIds.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999;">尚無員工卡號資料</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = cardIds.map(cardId => {
+                const user = USER_DB_PREVIEW[cardId];
+                return `
+                    <tr>
+                        <td data-label="員工卡號"><strong>${cardId}</strong></td>
+                        <td data-label="員工姓名">${user.name}</td>
+                        <td data-label="權限狀態"><span class="badge badge-paid">一般員工</span></td>
+                        <td data-label="部門"><span class="badge badge-dept">${user.dept || '未指派'}</span></td>
+                        <td data-label="操作">
+                            <button class="btn-delete" onclick="deleteEmployee('${cardId}')">刪除卡號</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function addNewEmployee() {
+            if (!checkPermission('edit_emp')) return;
+
+            const cardId = document.getElementById('newCardId').value.trim();
+            const name = document.getElementById('newEmpName').value.trim();
+            const dept = document.getElementById('newDepartment').value.trim();
+
+            if (!cardId || !name) {
+                showCustomModal({ message: '請填寫卡號與姓名！' });
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/employees', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cardId, name, dept })
+                });
+
+                if (res.ok) {
+                    document.getElementById('newCardId').value = '';
+                    document.getElementById('newEmpName').value = '';
+                    document.getElementById('newDepartment').value = '';
+                    showCustomModal({ message: `已成功新增員工：${name}` });
+                    loadEmployees();
+                } else {
+                    showCustomModal({ message: '新增失敗或卡號已存在！' });
+                }
+            } catch (e) {
+                showCustomModal({ message: '連線錯誤！' });
+            }
+        }
+
+        async function deleteEmployee(cardId) {
+            if (!checkPermission('edit_emp')) return;
+
+            showCustomModal({
+                title: '確認刪除員工卡號',
+                message: `確定要刪除卡號 【${cardId}】 嗎？`,
+                isConfirm: true,
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`/api/employees/${cardId}`, { method: 'DELETE' });
+                        if (res.ok) {
+                            showCustomModal({ message: '已成功刪除員工卡號！' });
+                            loadEmployees();
+                        }
+                    } catch (e) {
                         showCustomModal({ message: '刪除失敗！' });
                     }
                 }
             });
         }
 
-        function updateSummary(orders) {
-            const totalCount = orders.length;
-            const totalAmount = orders.reduce((sum, order) => sum + (Number(order.total) || 0), 0);
-            document.getElementById('summaryCount').innerText = `${totalCount} 筆`;
-            document.getElementById('summaryAmount').innerText = `$${totalAmount}`;
+        function switchTab(tabId, btn) {
+            if (tabId === 'employee-mgr' && !checkPermission('edit_emp')) return;
+
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.sidebar .menu-item').forEach(item => item.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            if (btn) btn.classList.add('active');
         }
 
-        function filterOrders(type) {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                let keyword = document.getElementById('orderSearchInput').value.trim().toLowerCase();
-                executeFilter(keyword, type);
-            }, 150);
+        function refreshCurrentTab() {
+            loadOrders();
+            loadHistoryOrders();
+            loadEmployees();
+            showCustomModal({ message: '🔄 資料已刷新完畢！' });
         }
 
-        function executeFilter(keyword, type) {
-            const isToday = (type === 'today');
-            let targetSource = isToday ? currentTodayOrders : allHistoryOrders;
+        function showCustomModal({ title = '提示', message, isConfirm = false, onConfirm = null }) {
+            const modal = document.getElementById('customModal');
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerHTML = message;
 
-            if (isToday) {
-                if (currentOverviewCategory === 'drink') targetSource = targetSource.filter(o => isDrinkOrder(o));
-                else if (currentOverviewCategory === 'food') targetSource = targetSource.filter(o => !isDrinkOrder(o));
+            const cancelBtn = document.getElementById('modalCancelBtn');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+
+            if (isConfirm) {
+                cancelBtn.style.display = 'inline-block';
+                confirmBtn.onclick = () => {
+                    closeCustomModal();
+                    if (onConfirm) onConfirm();
+                };
+            } else {
+                cancelBtn.style.display = 'none';
+                confirmBtn.onclick = closeCustomModal;
             }
 
-            if (!keyword) {
-                if (isToday) {
-                    currentFilteredTodayOrders = [...targetSource];
-                    renderOrderTable(targetSource, 'orderTableBody', false, false);
-                    updateSummary(targetSource);
-                }
+            modal.classList.add('active');
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.remove('active');
+        }
+
+        function generateCSV(data, filename) {
+            if (!data || data.length === 0) {
+                showCustomModal({ message: '沒有資料可供匯出！' });
                 return;
             }
 
-            const filtered = targetSource.filter(order => {
-                const catText = isDrinkOrder(order) ? '喝涼涼' : '美味餐點';
-                return (order.name || '').toLowerCase().includes(keyword) || 
-                       (order.department || '').toLowerCase().includes(keyword) ||
-                       (order.cardId || '').toLowerCase().includes(keyword) || 
-                       (order.meal || '').toLowerCase().includes(keyword) || 
-                       catText.toLowerCase().includes(keyword) ||
-                       String(order.orderId || '').toLowerCase().includes(keyword);
+            let csvContent = "\uFEFF訂單編號,部門,卡號,姓名,點餐時間,餐點明細,總金額,繳費狀態\n";
+            data.forEach(order => {
+                const cleanMeal = `"${(order.meal || '').replace(/"/g, '""')}"`;
+                const paidStr = order.isPaid ? "已繳費" : "未繳費";
+                csvContent += `${order.id},${order.department || ''},${order.cardId || ''},${order.name || ''},${order.time || ''},${cleanMeal},${order.total || 0},${paidStr}\n`;
             });
 
-            if (isToday) {
-                currentFilteredTodayOrders = filtered;
-                renderOrderTable(filtered, 'orderTableBody', false, false);
-                updateSummary(filtered);
-            }
-        }
-
-        function generateCSV(data, fileName) {
-            if (!data || data.length === 0) {
-                showCustomModal({ message: '無可匯出的訂餐資料！' });
-                return;
-            }
-
-            const headers = ["訂單編號", "類別", "部門", "點餐人", "員工卡號", "時間", "餐點", "甜度辣度", "備註", "金額", "繳費狀態"];
-            const rows = data.map(order => [
-                `"${(order.orderId || '').toString().replace(/"/g, '""')}"`,
-                `"${isDrinkOrder(order) ? '喝涼涼' : '美味餐點'}"`,
-                `"${(order.department || '未劃分').toString().replace(/"/g, '""')}"`,
-                `"${(order.name || '未知').toString().replace(/"/g, '""')}"`,
-                `"${(order.cardId || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.timestamp || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.spicy || '無').toString().replace(/"/g, '""')}"`,
-                `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
-                `"${order.total || 0}"`,
-                `"${(order.isPaid === true || order.isPaid === 'true') ? '已繳費' : '未繳費'}"`
-            ]);
-
-            const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.setAttribute("href", URL.createObjectURL(new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })));
-            link.setAttribute("download", `${fileName}.csv`);
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `${filename}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1827,7 +1688,6 @@ ${openStores}
         }
 
         window.onload = async function() {
-            // 1. 初始化套用 RBAC 權限 UI
             applyRolePermissionsUI();
 
             try {
