@@ -223,8 +223,35 @@
         .btn-qty:hover { background: var(--primary); color: white; }
 
         .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 4px; font-size: 14px; color: var(--text-dark); }
-        .select-box { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; background: #fff; }
+        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 6px; font-size: 14px; color: var(--text-dark); }
+        
+        /* 圖形化按鈕選項樣式 */
+        .opt-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .opt-btn {
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            color: #334155;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .opt-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .opt-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(192, 57, 43, 0.3);
+        }
 
         /* ==================== 懸浮圓形按鈕群 ==================== */
         .fab-container {
@@ -609,6 +636,11 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
+// 選擇暫存狀態
+let selectedSoup = "乾";
+let selectedSpicy = "不辣";
+let selectedSprout = "加豆芽菜";
+
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -715,11 +747,30 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+function selectOptBtn(group, val, btn) {
+    if (group === 'soup') {
+        selectedSoup = val;
+        document.querySelectorAll('#soup-group .opt-btn').forEach(b => b.classList.remove('active'));
+    } else if (group === 'spicy') {
+        selectedSpicy = val;
+        document.querySelectorAll('#spicy-group .opt-btn').forEach(b => b.classList.remove('active'));
+    } else if (group === 'sprout') {
+        selectedSprout = val;
+        document.querySelectorAll('#sprout-group .opt-btn').forEach(b => b.classList.remove('active'));
+    }
+    btn.classList.add('active');
+}
+
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
     let isNoodle = item.category === "麵食";
+    
+    // 重設預設值
+    selectedSoup = "乾";
+    selectedSpicy = "不辣";
+    selectedSprout = "加豆芽菜";
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -727,25 +778,28 @@ function clickAddItem(name) {
         </div>
         
         <div class="opt-group">
+            <label>🥣 乾 / 湯 選擇</label>
+            <div id="soup-group" class="opt-btn-group">
+                <button type="button" class="opt-btn active" onclick="selectOptBtn('soup', '乾', this)">乾</button>
+                <button type="button" class="opt-btn" onclick="selectOptBtn('soup', '湯', this)">湯</button>
+            </div>
+
             <label>🌶️ 辣度調整</label>
-            <select id="pop-spicy" class="select-box">
-                <option value="不辣">不辣</option>
-                <option value="微辣">微辣</option>
-                <option value="小辣">小辣</option>
-                <option value="中辣">中辣</option>
-                <option value="大辣">大辣</option>
-            </select>
+            <div id="spicy-group" class="opt-btn-group">
+                <button type="button" class="opt-btn active" onclick="selectOptBtn('spicy', '不辣', this)">不辣</button>
+                <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '微辣', this)">微辣</button>
+                <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '小辣', this)">小辣</button>
+                <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '中辣', this)">中辣</button>
+                <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '大辣', this)">大辣</button>
+            </div>
 
             ${isNoodle ? `
             <label>🥬 豆芽菜需求</label>
-            <select id="pop-sprout" class="select-box">
-                <option value="加豆芽菜">要加豆芽菜 (預設)</option>
-                <option value="不加豆芽菜">不要加豆芽菜</option>
-            </select>
+            <div id="sprout-group" class="opt-btn-group">
+                <button type="button" class="opt-btn active" onclick="selectOptBtn('sprout', '加豆芽菜', this)">要加豆芽菜</button>
+                <button type="button" class="opt-btn" onclick="selectOptBtn('sprout', '不加豆芽菜', this)">不加豆芽菜</button>
+            </div>
             ` : ''}
-
-            <label>📝 特殊需求與客製內容 (包含任選配料備註)</label>
-            <input type="text" id="pop-custom-note" class="select-box" placeholder="例如：不要酸菜 / 任選組合填寫處..." value="" />
         </div>
     `;
 
@@ -756,13 +810,13 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const spicy = document.getElementById("pop-spicy").value;
-            const sprout = isNoodle ? document.getElementById("pop-sprout").value : "-";
-            const customNoteInput = document.getElementById("pop-custom-note").value.trim();
-            const note = customNoteInput || "無特殊需求";
+            const soup = selectedSoup;
+            const spicy = selectedSpicy;
+            const sprout = isNoodle ? selectedSprout : "-";
+            const note = "無特殊需求";
 
             const unitPrice = item.price;
-            const customKey = `${item.name}|${sprout}|${spicy}|${note}`;
+            const customKey = `${item.name}|${soup}|${sprout}|${spicy}|${note}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -772,6 +826,7 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
+                    soup: soup,
                     style: sprout,
                     spicy: spicy,
                     note: note
@@ -812,9 +867,9 @@ function renderCart() {
         finalTotal += sub;
         
         let details = [];
+        if (item.soup) details.push(item.soup);
         if (item.style !== "-") details.push(item.style);
         if (item.spicy !== "-") details.push(item.spicy);
-        if (item.note !== "無特殊需求") details.push(item.note);
         
         const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
         finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
@@ -881,9 +936,9 @@ function renderModalCartList() {
         div.className = "cart-item";
         
         let tags = [];
+        if (item.soup) tags.push(`🥣 ${item.soup}`);
         if (item.style !== "-") tags.push(`🌱 ${item.style}`);
         if (item.spicy !== "-") tags.push(`🌶️ ${item.spicy}`);
-        if (item.note !== "無特殊需求") tags.push(`📝 ${item.note}`);
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
