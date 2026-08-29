@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // PostgreSQL (Neon) 連線設定
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.postgresql://authenticator:npg_anmt15ufYRcO@ep-noisy-forest-axgx10ds-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require,
     ssl: {
         rejectUnauthorized: false // Neon 強制使用 SSL
     },
