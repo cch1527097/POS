@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
+const { Pool } = require('pg');
 
 // 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
 types.setTypeParser(20, val => parseInt(val, 10));
