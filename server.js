@@ -1,9 +1,21 @@
-require('dotenv').config(); // 載入 .env 環境變數
-const express = require('express');
 const path = require('path');
+// 1. 強制載入同目錄下的 .env 並啟用 override 覆寫舊變數
+require('dotenv').config({ path: path.join(__dirname, '.env'), override: true });
+
+const express = require('express');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
+
+// 2. 啟動前的 DATABASE_URL 檢查與診斷
+const dbUrl = process.env.DATABASE_URL || '';
+if (!dbUrl) {
+    console.error('❌ 錯誤：未偵測到 DATABASE_URL 環境變數，請檢查 .env 檔案是否存在！');
+} else if (dbUrl.includes('@base') || dbUrl === 'base') {
+    console.error('❌ 錯誤：DATABASE_URL 包含無效主機名稱 "base"，請將 .env 內的網址替換為完整的 Neon 數據庫連線字串！');
+} else {
+    console.log('🔍 成功載入 DATABASE_URL 環境變數');
+}
 
 // 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
 types.setTypeParser(20, val => parseInt(val, 10));
@@ -40,7 +52,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：同步寫入 public/orders.json (改為讀取 orders 表的 is_paid)
+// 輔助函式：同步寫入 public/orders.json
 async function syncOrdersJsonFile() {
     try {
         const publicDir = path.join(__dirname, 'public');
@@ -72,7 +84,6 @@ async function syncOrdersJsonFile() {
 // 初始化資料庫
 async function initDatabase() {
     try {
-        // 在 orders 資料表建立時直接包含 is_paid
         await pool.query(`
             CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
@@ -89,7 +100,6 @@ async function initDatabase() {
             );
         `);
 
-        // 自動補建舊 orders 資料表可能缺少的 is_paid 欄位
         await pool.query(`
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
         `);
@@ -369,7 +379,6 @@ app.post('/api/active-store', async (req, res) => {
     }
 });
 
-// 獲取所有訂單（改為直接讀取 orders.is_paid）
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -393,7 +402,6 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 切換特定「訂單」的繳費狀態（直接修改 orders 表）
 app.patch('/api/orders/:orderId/payment', async (req, res) => {
     const { orderId } = req.params;
     const { isPaid } = req.body;
@@ -580,7 +588,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API：預設 is_paid 為 false (未繳費)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
@@ -588,7 +595,6 @@ app.post('/api/order', async (req, res) => {
         const reqStoreId = storeId ? String(storeId).trim() : "";
         const reqStoreName = storeName ? String(storeName).trim() : "";
 
-        // 1. 店家開放狀態檢查
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
@@ -618,7 +624,6 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 2. 鎖定時間比對
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
@@ -646,7 +651,6 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 3. 員工驗證與寫入
         const cleanCardId = cardId ? String(cardId).trim() : '';
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
@@ -656,11 +660,9 @@ app.post('/api/order', async (req, res) => {
         const empName = userRes.rows[0].name;
         const numTotal = Number(total);
         
-        // 解決高併發碰撞：時間戳毫秒 + 4位隨機數
         const orderIdVal = parseInt(`${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`, 10);
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
-        // 新增訂單預設將 is_paid 設為 false
         const insertQuery = `
             INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp, is_paid)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, false);
@@ -718,7 +720,6 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// Excel 匯出（直接讀取 orders.is_paid）
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
