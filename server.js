@@ -15,9 +15,23 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 自動解析並剔除 DATABASE_URL 中的 sslmode 參數，避免 pg 模組觸發警告
+const rawDbUrl = process.env.DATABASE_URL;
+let cleanDbUrl = rawDbUrl;
+
+if (rawDbUrl) {
+    try {
+        const parsedUrl = new URL(rawDbUrl);
+        parsedUrl.searchParams.delete('sslmode'); // 自動過濾掉 sslmode 參數
+        cleanDbUrl = parsedUrl.toString();
+    } catch (err) {
+        cleanDbUrl = rawDbUrl.replace(/([?&])sslmode=[^&]*/g, '');
+    }
+}
+
 // PostgreSQL (Neon) 連線設定
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: cleanDbUrl,
     ssl: {
         rejectUnauthorized: false // Neon 強制使用 SSL
     },
