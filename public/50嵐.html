@@ -221,7 +221,7 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        /* ==================== 規格按鈕樣式 (重點修改處) ==================== */
+        /* ==================== 規格按鈕樣式 ==================== */
         .spec-group { margin-bottom: 18px; }
         .spec-title { font-weight: 700; font-size: 14px; color: #334155; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
         .spec-title::before { content: "*"; color: #e11d48; margin-right: 2px; }
@@ -233,7 +233,7 @@
             border: 1.5px solid #cbd5e1;
             border-radius: 8px;
             padding: 10px 4px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: #334155;
             cursor: pointer;
@@ -716,7 +716,7 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 點擊新增：跳出規格按鈕選單 (按鈕點擊選擇風格)
+// 點擊新增：跳出規格按鈕選單
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
@@ -755,13 +755,19 @@ function clickAddItem(name) {
         </div>
 
         <div class="spec-group">
-            <div class="spec-title" style="color: #64748b; font-weight: 600;">免費加料（可選）</div>
+            <div class="spec-title" style="color: #64748b; font-weight: 600;">加料選擇（布丁/麵茶/奶霜 +$15${item.category === '找好茶' ? '，其餘配料 +$10' : ''}）</div>
             <div class="spec-options">
                 <button type="button" class="spec-btn active" data-type="topping" data-val="不加料" onclick="selectSpec(this)">不加料</button>
                 <button type="button" class="spec-btn" data-type="topping" data-val="波霸" onclick="selectSpec(this)">波霸</button>
                 <button type="button" class="spec-btn" data-type="topping" data-val="珍珠" onclick="selectSpec(this)">珍珠</button>
-                <button type="button" class="spec-btn" data-type="topping" data-val="燕麥" onclick="selectSpec(this)">燕麥</button>
                 <button type="button" class="spec-btn" data-type="topping" data-val="椰果" onclick="selectSpec(this)">椰果</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="混珠" onclick="selectSpec(this)">混珠</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="珍波椰" onclick="selectSpec(this)">珍波椰</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="珍椰" onclick="selectSpec(this)">珍椰</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="波椰" onclick="selectSpec(this)">波椰</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="布丁" onclick="selectSpec(this)">布丁 (+$15)</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="麵茶" onclick="selectSpec(this)">麵茶 (+$15)</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="奶霜" onclick="selectSpec(this)">奶霜 (+$15)</button>
             </div>
         </div>
     `;
@@ -774,9 +780,17 @@ function clickAddItem(name) {
         showCancel: true,
         onConfirm: () => {
             const sizeLabel = selectedSpecs.size === 'L' ? '大杯' : '中杯';
-            const unitPrice = selectedSpecs.size === 'L' ? item.priceL : item.priceM;
-            const toppingText = selectedSpecs.topping === '不加料' ? '不加料' : `加${selectedSpecs.topping}`;
+            let unitPrice = selectedSpecs.size === 'L' ? item.priceL : item.priceM;
             
+            // 加料金額計算邏輯
+            const add15Toppings = ['布丁', '麵茶', '奶霜'];
+            if (add15Toppings.includes(selectedSpecs.topping)) {
+                unitPrice += 15; // 所有品項加布丁/麵茶/奶霜加價 15 元
+            } else if (item.category === '找好茶' && selectedSpecs.topping !== '不加料') {
+                unitPrice += 10; // 找好茶加其餘配料加價 10 元
+            }
+
+            const toppingText = selectedSpecs.topping === '不加料' ? '不加料' : `加${selectedSpecs.topping}`;
             const customKey = `${item.name}|${sizeLabel}|${selectedSpecs.sugar}|${selectedSpecs.ice}|${toppingText}`;
 
             if (cart[customKey]) {
