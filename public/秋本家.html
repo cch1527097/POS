@@ -831,34 +831,31 @@ function clickAddItem(name) {
 
     let bodyHtml = `
         <div class="option-section">
-            <div class="option-section-title"><span class="required">*</span>辣度／醬料選擇</div>
+            <div class="option-section-title"><span class="required">*</span>辣度選擇</div>
             <div class="option-grid">
-                <div class="opt-card selected" data-group="spicy" data-value="不辣" data-price="0">不辣</div>
-                <div class="opt-card" data-group="spicy" data-value="微辣" data-price="0">微辣</div>
-                <div class="opt-card" data-group="spicy" data-value="大辣" data-price="0">大辣</div>
+                <div class="opt-card selected" data-value="不辣">不辣</div>
+                <div class="opt-card" data-value="微辣">微辣</div>
+                <div class="opt-card" data-value="小辣">小辣</div>
+                <div class="opt-card" data-value="中辣">中辣</div>
+                <div class="opt-card" data-value="大辣">大辣</div>
             </div>
         </div>
     `;
 
     showCustomModal({
-        title: `請選擇「${item.name}」的客製選項`,
+        title: `請選擇「${item.name}」的辣度`,
         bodyHtml: bodyHtml,
         confirmText: "確定",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            let addPrice = 0;
             let options = [];
+            const selectedCard = document.querySelector('#modal-body .opt-card.selected');
+            if (selectedCard) {
+                options.push(selectedCard.getAttribute('data-value'));
+            }
 
-            document.querySelectorAll('#modal-body .opt-card.selected').forEach(card => {
-                const val = card.getAttribute('data-value');
-                const price = parseInt(card.getAttribute('data-price') || 0);
-
-                addPrice += price;
-                if (val) options.push(val);
-            });
-
-            addItemToCart(item, addPrice, options);
+            addItemToCart(item, 0, options);
             closeModal();
         }
     });
@@ -866,13 +863,8 @@ function clickAddItem(name) {
     setTimeout(() => {
         document.querySelectorAll('#modal-body .opt-card').forEach(card => {
             card.onclick = function() {
-                const group = this.getAttribute('data-group');
-                if (group === 'spicy') {
-                    document.querySelectorAll(`#modal-body .opt-card[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
-                } else {
-                    this.classList.toggle('selected');
-                }
+                document.querySelectorAll('#modal-body .opt-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
             };
         });
     }, 50);
@@ -953,7 +945,7 @@ function openCartModal() {
     }
 
     let cartContentHtml = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #f1f5f9;">
+        <div style="display:flex; justify-style:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #f1f5f9;">
             <span style="font-weight:bold; font-size:15px;">已點餐點明細</span>
             <button class="btn-clear-all" onclick="clearCartModal()">🗑️ 清空購物車</button>
         </div>
