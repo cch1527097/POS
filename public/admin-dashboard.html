@@ -1270,7 +1270,7 @@ ${openStores}
         function isDrinkOrder(order) {
             if (order.category === 'drink' || order.type === 'drink') return true;
             const mealStr = (order.meal || '').toLowerCase();
-            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯', '一鳴', '五路鍋聖', '江滬湯包', '食光飯糰'];
+            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯', '一鳴', '五路鍋聖', '江滬湯包', '食光飯糰', '秋本家'];
             if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
             const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品', '李記', '可不可熟成紅茶', '鹿兒角', '八曜和茶', '一沐日', '粉圓伯', '旅人阿宏', '茗沏', '迷客夏', '青山', '有茶', '吳家紅茶冰', '先喝道', '麻古茶坊'];
             return drinkKeywords.some(kw => mealStr.includes(kw));
