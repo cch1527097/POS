@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美食訂餐系統</title>
+    <style>
+        /* ==================== 全局與基礎樣式 ==================== */
+        * { 
+            box-sizing: border-box; 
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #bcdcb4;
+            min-height: 100vh;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        /* ==================== 登入版面全螢幕背景與裝飾 ==================== */
+        body.login-mode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f8fcf7;
+    position: fixed; /* 將 relative 改為 fixed，讓登入畫面固定在螢幕視窗中間 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+        /* 左上角與右下角的流線波浪背景裝飾 */
+        body.login-mode::before,
+        body.login-mode::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(10px);
+            z-index: 0;
+        }
+
+        body.login-mode::before {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(188, 235, 190, 0.8) 0%, rgba(215, 245, 217, 0.4) 60%, rgba(255, 255, 255, 0) 100%);
+            top: -200px;
+            left: -200px;
+        }
+
+        body.login-mode::after {
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(188, 235, 190, 0.8) 0%, rgba(215, 245, 217, 0.4) 60%, rgba(255, 255, 255, 0) 100%);
+            bottom: -250px;
+            right: -250px;
+        }
+
+        body.order-mode {
+            display: block;
+            background-color: #eef7ed;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ==================== 頂部 Header 樣式 ==================== */
+        .nidin-header {
+            width: 100%;
+            background-color: #ffffff;
+            border-bottom: 1px solid #eaeaea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            color: #333;
+            position: sticky;      
+            top: 0;                
+            z-index: 1000;         
+        }
+
+        /* 第一層：頂部工具列 */
+        .nidin-top-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .nidin-top-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Logo 樣式 */
+        .nidin-logo {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0091ff;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            user-select: none;
+            cursor: pointer;
+        }
+        .nidin-logo .dot {
+            color: #ff4d4f;
+            font-size: 22px;
+        }
+
+        .nidin-divider {
+            width: 1px;
+            height: 20px;
+            background-color: #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        /* 定位下拉按鈕 */
+        .nidin-location-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            color: #4a4a4a;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .nidin-location-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 搜尋框 */
+        .nidin-search-box {
+            display: flex;
+            align-items: center;
+            background-color: #f2f3f5;
+            border-radius: 20px;
+            padding: 8px 16px;
+            width: 100%;
+            max-width: 320px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        .nidin-search-box:focus-within {
+            background-color: #ffffff;
+            box-shadow: 0 0 0 2px #0091ff;
+        }
+        .nidin-search-box input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+            margin-left: 8px;
+            width: 100%;
+            color: #333;
+        }
+
+        /* 右側員工資訊區塊 */
+        .nidin-top-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+
+        .nidin-user-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .nidin-user-info span {
+            font-family: inherit;
+            font-weight: inherit;
+            font-size: inherit;
+        }
+
+        #user-name {
+            color: #0091ff;
+        }
+
+        /* 部門膠囊標籤樣式 */
+        .dept-badge {
+            background-color: #e8f4fd;
+            color: #1e88e5;
+            border: 1px solid #bbdefb;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        /* 第二層：導覽選單 */
+        .nidin-nav-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px 20px 14px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .nidin-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: #222;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s, transform 0.1s;
+            cursor: pointer;
+            flex-shrink: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .nidin-nav-item:hover {
+            color: #0091ff;
+            transform: translateY(-1px);
+        }
+        .nidin-nav-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nidin-nav-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: #333;
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .nidin-nav-item:hover .nidin-nav-icon svg {
+            stroke: #0091ff;
+        }
+
+        /* ==================== 1. 登入畫面區塊 ==================== */
+        .login-card {
+            background-color: #ffffff; 
+            border-radius: 16px;       
+            width: 580px;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.05);
+            padding: 50px 40px;
+            position: relative;
+            z-index: 5;
+            border: 1px solid rgba(220, 235, 218, 0.5);
+        }
+
+        /* 登入頁 Logo 樣式 */
+        .login-logo {
+            width: 80px;
+            height: auto;
+            margin-bottom: 16px;
+        }
+
+        .title {
+            font-size: 30px;
+            color: #2b4c23; 
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px; 
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #7ba370;
+            font-weight: 600;
+            letter-spacing: 3px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .input-group input {
+            background: #f7faf6;
+            border: 1px solid #d0e3ce; 
+            border-radius: 10px;
+            font-size: 18px;
+            width: 320px;
+            text-align: center;
+            outline: none;
+            padding: 14px 20px;
+            color: #2b4c23;
+            transition: all 0.25s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #4e803c;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(78, 128, 60, 0.15);
+        }
+
+        .input-group input::placeholder {
+            color: #a3baa0;
+            font-weight: normal;
+        }
+
+        .login-btn {
+            background-color: #4e803c; 
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            width: 320px;
+            padding: 13px 0;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(78, 128, 60, 0.2);
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .login-btn:hover:not(:disabled) { 
+            background-color: #3f6b30; 
+            transform: translateY(-1px);
+        }
+        .login-btn:active:not(:disabled) { transform: scale(0.98); }
+        .login-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
+        
+        .login-admin-link {
+    background-color: #f0f0f0;  /* 淺灰底色 */
+    color: #0f805a;             /* 深綠色字樣 */
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 25px;
+    padding: 12px 20px;         /* 上下左右內邊距 */
+    border: none;
+    border-radius: 12px;        /* 圓角邊框 */
+    width: 320px;               /* 寬度與登入按鈕一致 */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    text-align: center;
+    box-sizing: border-border-box;
+}
+
+.login-admin-link:hover {
+    background-color: #e4e4e4;  /* 滑鼠懸停時微調底色 */
+    color: #0a5c41;
+}
+
+        .login-footer-copy {
+    display: none; /* Hidden by default */
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 13.5px;
+    color: #668062;
+    z-index: 10;
+}
+
+/* Only show when body is in login mode */
+body.login-mode .login-footer-copy {
+    display: block;
+}
+
+        /* ==================== 2. 點餐畫面區塊 ==================== */
+        .order-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 區塊標題樣式 */
+        .category-header {
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto 0 auto;
+            padding: 0 20px 8px 20px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #2b4c23;
+            border-bottom: 2px solid #a4d49d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px 20px 30px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .shop-card {
+            background: #ffffff;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07); 
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            cursor: pointer;
+            border: 1px solid #e2ebe0;
+        }
+
+        .shop-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+        }
+
+        .shop-img-wrapper {
+            position: relative;
+            width: 100%;
+            height: 190px;
+            background-color: #f2f5f1;
+            overflow: hidden;
+        }
+
+        .shop-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.35s ease;
+        }
+
+        .shop-card:hover .shop-img-wrapper img {
+            transform: scale(1.06);
+        }
+
+        .badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+        .badge.smart { background-color: #1f8a62; }   
+        .badge.private { background-color: #618756; } 
+        .badge.local { background-color: #7ba370; }    
+        .badge.main { background-color: #436e37; }    
+        .badge.drink { background-color: #008080; }
+
+        .img-overlay-btn {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background-color: rgba(78, 128, 60, 0.9);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .shop-card:hover .img-overlay-btn {
+            background-color: #3f6b30;
+            transform: scale(1.05);
+        }
+
+        .shop-info {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            background: #ffffff;
+        }
+
+        .shop-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2b4c23; 
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .shop-desc {
+            font-size: 14px;
+            color: #556b52; 
+            line-height: 1.5;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* ==================== 頁尾 Footer 樣式 ==================== */
+        .site-footer {
+            width: 100%;
+            background-color: #ffffff;
+            border-top: 1px solid #e0e0e0;
+            padding: 20px 15px;
+            font-size: 14px;
+            color: #555555;
+            text-align: center;
+            margin-top: 40px;
+            line-height: 1.8;
+        }
+
+        .footer-info-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px 25px;
+            margin-bottom: 6px;
+        }
+
+        .footer-highlight {
+            color: #109176;
+            font-weight: 500;
+        }
+
+        .footer-copyright {
+            color: #666666;
+            font-size: 13.5px;
+        }
+
+        /* ==================== 3. 表格通用樣式 ==================== */
+        .clear-local-btn {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .clear-local-btn:hover {
+            background-color: #fca8a8;
+            color: #a01010;
+            border-color: #f5c2be;
+            transform: scale(1.02);
+        }
+
+        .history-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 16px;
+            min-width: 550px;
+        }
+
+        .history-table th {
+            background-color: #f4faf3;
+            color: #2b4c23;
+            font-weight: bold;
+            padding: 14px 16px;
+            border-bottom: 2px solid #d6ebd3;
+        }
+
+        .history-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f7f0;
+            color: #445941;
+        }
+
+        .history-table tr:hover { background-color: #fafdfa; }
+
+        .no-record {
+            text-align: center;
+            color: #88a085;
+            padding: 30px !important;
+            font-style: italic;
+        }
+
+        .logout-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: #a01010; 
+    color: white;
+    border: none;
+    border-radius: 50%; /* 改為正圓形 */
+    width: 48px;        /* 固定寬高 */
+    height: 48px;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(160, 16, 16, 0.3);
+    transition: all 0.2s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-btn:hover {
+    background-color: #bd1616;
+    transform: scale(1.1); /* Hover 時微放大效果 */
+    box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
+}
+
+.cart-float-btn {
+    position: fixed;
+    bottom: 85px; /* 位於登出按鈕 (bottom: 25px) 的上方 */
+    right: 25px;
+    background-color: #2e7d32; /* 主題綠色，亦可自行調整 */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+    transition: all 0.2s ease;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-float-btn:hover {
+    background-color: #1b5e20;
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+}
+
+        /* ==================== 4. Modal 彈窗樣式 ==================== */
+        .branch-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(3px);
+        }
+
+        .branch-modal-content {
+            background-color: #ffffff;
+            width: 90%;
+            max-width: 420px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: modalFadeIn 0.25s ease-out;
+        }
+
+        .cart-modal-content,
+        .history-modal-content {
+            width: 92vw !important;
+            max-width: 1300px !important;
+            max-height: 85vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .history-modal-body {
+            padding: 24px !important;
+            overflow-y: auto !important;
+            flex: 1 !important;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .branch-modal-header {
+            padding: 16px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eaeaea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .branch-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #2b4c23;
+        }
+
+        .branch-modal-header .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            line-height: 1;
+        }
+
+        .branch-modal-header .close-btn:hover { color: #333; }
+
+        .branch-list {
+            padding: 10px 0;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .branch-item {
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .branch-item:hover {
+            background-color: #f0f7ee;
+            color: #2b4c23;
+        }
+
+        .branch-item .check-icon {
+            display: none;
+            color: #0091ff;
+            font-weight: bold;
+        }
+
+        .branch-item.active {
+            background-color: #eef7ed;
+            color: #2b4c23;
+            font-weight: bold;
+        }
+
+        .branch-item.active .check-icon {
+            display: inline;
+        }
+
+        .payment-modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .payment-item {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px 16px;
+            border-left: 4px solid #4e803c;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .payment-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2b4c23;
+        }
+
+        .payment-detail {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* ==================== 5. 自訂精美提示/確認對話框樣式 ==================== */
+        .custom-alert-box {
+            max-width: 440px !important;
+        }
+        .custom-alert-header {
+            background-color: #ffffff !important;
+            padding: 18px 24px !important;
+            border-bottom: 1px solid #edf2f7 !important;
+        }
+        .custom-alert-header h3 {
+            font-size: 18px !important;
+            color: #2d3748 !important;
+            font-weight: bold !important;
+        }
+        .custom-alert-header .close-btn {
+            color: #a0aec0 !important;
+            font-size: 20px !important;
+        }
+        .custom-alert-header .close-btn:hover {
+            color: #718096 !important;
+        }
+        .custom-alert-body {
+            padding: 30px 24px !important;
+            font-size: 16px !important;
+            color: #4a5568 !important;
+            line-height: 1.6 !important;
+            background-color: #ffffff !important;
+        }
+        .custom-alert-footer {
+            padding: 12px 24px 20px 24px !important;
+            display: flex !important;
+            justify-content: flex-end !important;
+            gap: 12px !important;
+            background-color: #ffffff !important;
+        }
+        .custom-btn-action {
+            padding: 10px 26px !important;
+            border-radius: 8px !important;
+            font-size: 15px !important;
+            font-weight: bold !important;
+            cursor: pointer !important;
+            border: none !important;
+            transition: background 0.2s, transform 0.1s !important;
+        }
+        .custom-btn-confirm-red {
+            background-color: #8b1a1a !important;
+            color: white !important;
+        }
+        .custom-btn-confirm-red:hover {
+            background-color: #721616 !important;
+        }
+        .custom-btn-cancel-gray {
+            background-color: #edf2f7 !important;
+            color: #4a5568 !important;
+        }
+        .custom-btn-cancel-gray:hover {
+            background-color: #e2e8f0 !important;
+        }
+
+        /* 📱 手機版 RWD 適應 */
+        @media (max-width: 768px) {
+            .nidin-top-bar {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 15px;
+                gap: 12px;
+            }
+
+            .nidin-top-left {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .nidin-top-right {
+                width: 100%;
+                justify-content: center;
+                margin-left: 0;
+            }
+
+            .nidin-user-info {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .nidin-divider, .nidin-location-btn {
+                display: none;
+            }
+
+            .nidin-search-box {
+                order: 3;
+                width: 100%;
+                max-width: 100%;
+                margin-top: 2px;
+                box-sizing: border-box;
+                justify-content: center;
+            }
+
+            .nidin-search-box input {
+                text-align: center;
+            }
+
+            .nidin-nav-bar {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 15px;
+                padding: 10px 15px 15px 15px;
+            }
+
+            .footer-info-row {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .login-card { width: 90%; height: auto; padding: 40px 20px; border-radius: 16px; }
+            .title { font-size: 26px; margin-bottom: 2px; }
+            .subtitle { font-size: 12px; margin-bottom: 30px; letter-spacing: 2px; }
+            .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
+            .login-btn { width: 100%; max-width: 280px; }
+            .clear-local-btn { width: 100%; justify-content: center; }
+            .history-modal-content, .cart-modal-content { width: 95vw !important; }
+        }
+    </style>
+</head>
+<body class="login-mode">
+
+    <!-- 1. 登入畫面區塊 -->
+    <div id="login-section" class="login-card hidden">
+        <img src="logo.gif" alt="Logo" class="login-logo">
+        <div class="title">美食訂餐系統</div>
+        <div class="subtitle">ORDERING SYSTEM LOGIN</div>
+         
+        <div class="input-group">
+            <input type="text" id="cardId" placeholder="請輸入員工卡號" autocomplete="off" autofocus required inputmode="text" onclick="this.select()">
+        </div>
+
+        <button class="login-btn" id="submit-login-btn" onclick="executeLogin()">登入系統</button>
+        <button class="login-admin-link" onclick="navigateToAdmin()">後台管理系統</button>
+    </div>
+
+    <!-- 頁尾宣告 -->
+    <div class="login-footer-copy">
+        © 秀傳醫療財團法人彰濱秀傳紀念醫院 版權所有
+    </div>
+
+    <!-- 2. 點餐畫面區塊 -->
+    <div id="order-section" class="order-container hidden">
+        <header class="nidin-header">
+            <!-- 第一層：頂部工具列 -->
+            <div class="nidin-top-bar">
+                <div class="nidin-top-left">
+                    <div class="nidin-logo" onclick="showAllCategories()">智慧點餐系統<span class="dot">.</span></div>
+                    <div class="nidin-divider"></div>
+                    
+                    <button class="nidin-location-btn" onclick="openBranchModal()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span id="current-branch-text">彰濱秀傳紀念醫院</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="nidin-search-box">
+                        <svg id="searchBtn" onclick="filterShops()" style="cursor: pointer;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                        <input type="text" id="shopSearchInput" oninput="filterShops()" onkeypress="handleSearchKeyPress(event)" placeholder="搜尋品牌、門市或商品">
+                    </div>
+                </div>
+
+                <div class="nidin-top-right">
+                    <div class="nidin-user-info">
+                        <span>目前登入：</span>
+                        <span id="user-department" class="dept-badge">未劃分</span>
+                        <span id="user-name" style="color: #0091ff;"></span>
+                        <span id="offline-tag" style="color: #ff4d4f; display: none;">(離線)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第二層：導覽選單 -->
+            <nav class="nidin-nav-bar">
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="openBranchModal()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+                            <circle cx="12" cy="10" r="2.5"/>
+                            <path d="M16 16l3 3"/>
+                        </svg>
+                    </div>
+                    <span>選擇院區</span>
+                </a>
+                
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="showPaymentInfo()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/><path d="M3 20h18"/></svg>
+                    </div>
+                    <span>付款介紹</span>
+                </a>
+
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="showAllCategories()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    </div>
+                    <span>回首頁</span>
+                </a>
+
+                <!-- 🌟 動態切換美味餐點與喝涼涼的按鈕 -->
+                <a class="nidin-nav-item" id="nav-toggle-btn" href="javascript:void(0);" onclick="toggleFoodDrinkView()">
+                    <div class="nidin-nav-icon" id="nav-toggle-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M17 8h1a4 4 0 0 1 0 8h-1"/>
+                            <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+                            <line x1="6" y1="2" x2="6" y2="5"/>
+                            <line x1="10" y1="2" x2="10" y2="5"/>
+                            <line x1="14" y1="2" x2="14" y2="5"/>
+                        </svg>
+                    </div>
+                    <span id="nav-toggle-text">喝涼涼</span>
+                </a>
+
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="openHistoryModal()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
+                    </div>
+                    <span>曾點過</span>
+                </a>
+
+                <!-- 🎲 新增店家轉盤按鈕 -->
+<a class="nidin-nav-item" href="javascript:void(0);" onclick="openWheelModal()">
+    <div class="nidin-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+        </svg>
+    </div>
+    <span>吃啥轉盤</span>
+</a>
+            </nav>
+        </header>
+
+        <!-- 第一區塊：美味餐點 -->
+        <div class="category-header" id="food-section">
+            🍱 美味餐點
+        </div>
+        <div class="grid-container" id="food-container">
+            <div class="shop-card" onclick="redirectToShop('高雄', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge main">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1676037150294-837ff0c29599?auto=format&fit=crop&w=800&q=75&fm=webp" alt="高雄">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">高雄</h3>
+                    <p class="shop-desc">高雄。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🌟 第二區塊：喝涼涼 -->
+        <div class="category-header hidden" id="drink-section">
+            🥤 喝涼涼
+        </div>
+        <div class="grid-container hidden" id="drink-container">
+            <div class="shop-card" onclick="redirectToShop('50嵐', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge drink">50嵐</span>
+                    <img src="https://images.unsplash.com/photo-1633933329823-0c2677e2d8c6?fm=webp&q=60&w=800" alt="50嵐">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">50嵐</h3>
+                    <p class="shop-desc">經典台灣手搖飲，四季春茶與波霸奶茶首選。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 頁尾區塊 -->
+        <footer class="site-footer">
+            <div class="footer-info-row">
+                <span>505 彰化縣鹿港鎮鹿工路6號</span>
+                <span>TEL : <span class="footer-highlight">04-7813888</span></span>
+                <span>FAX : <span class="footer-highlight">04-7811181</span></span>
+            </div>
+            <div class="footer-copyright">
+                Copyright ©2026 本網站內容為「秀傳醫療財團法人彰濱秀傳紀念醫院」所有 未經授權．禁止轉載
+            </div>
+        </footer>
+
+        <button class="cart-float-btn" title="查看購物車" aria-label="購物車" onclick="openCartModal()">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="21" r="1"></circle>
+        <circle cx="20" cy="21" r="1"></circle>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+    </svg>
+</button>
+
+        <button class="logout-btn" title="登出系統" aria-label="登出系統" onclick="executeLogout()">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+    </svg>
+</button>
+    </div>
+
+    <!-- 選擇院區彈窗 (Modal) -->
+    <div id="branchModal" class="branch-modal-overlay hidden" onclick="closeBranchModal(event)">
+        <div class="branch-modal-content" onclick="event.stopPropagation()">
+            <div class="branch-modal-header">
+                <h3>請選擇服務院區</h3>
+                <span class="close-btn" onclick="closeBranchModal()">&times;</span>
+            </div>
+            <div class="branch-list">
+    <div class="branch-item active" onclick="switchBranch('彰濱秀傳紀念醫院')">
+        <span>彰濱秀傳紀念醫院</span>
+        <span class="check-icon">✓</span>
+    </div>
+    <div class="branch-item" onclick="switchBranch('彰化秀傳紀念醫院')">
+        <span>彰化秀傳紀念醫院</span>
+        <span class="check-icon">✓</span>
+    </div>
+    <div class="branch-item" onclick="switchBranch('高雄秀傳紀念醫院')">
+        <span>高雄秀傳紀念醫院</span>
+        <span class="check-icon">✓</span>
+    </div>
+    <div class="branch-item" onclick="switchBranch('竹山秀傳醫院')">
+        <span>竹山秀傳醫院</span>
+        <span class="check-icon">✓</span>
+    </div>
+    <div class="branch-item" onclick="switchBranch('台南市立醫院')">
+        <span>台南市立醫院</span>
+        <span class="check-icon">✓</span>
+    </div>
+    <div class="branch-item" onclick="switchBranch('高雄市立岡山醫院')">
+        <span>高雄市立岡山醫院</span>
+        <span class="check-icon">✓</span>
+    </div>
+</div>
+        </div>
+    </div>
+
+    <!-- 付款介紹彈窗 (Modal) -->
+    <div id="paymentModal" class="branch-modal-overlay hidden" onclick="closePaymentModal(event)">
+        <div class="branch-modal-content" onclick="event.stopPropagation()">
+            <div class="branch-modal-header">
+                <h3>💳 付款方式說明</h3>
+                <span class="close-btn" onclick="closePaymentModal()">&times;</span>
+            </div>
+            <div class="payment-modal-body">
+                <div class="payment-item">
+                    <span class="payment-title">1. 中國信託轉帳</span>
+                    <span class="payment-detail">帳號：<strong>428540856354</strong></span>
+                </div>
+                <div class="payment-item">
+                    <span class="payment-title">2. 現金支付</span>
+                    <span class="payment-detail">請至現場櫃檯支付現金</span>
+                </div>
+                <div class="payment-item">
+                    <span class="payment-title">3. 電子支付</span>
+                    <span class="payment-detail">現場支援 iPass money 掃碼支付</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 購物車彈窗 (Modal) -->
+    <div id="cartModal" class="branch-modal-overlay hidden" onclick="closeCartModal(event)">
+        <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
+            <div class="branch-modal-header">
+                <h3>📋 我的購物車 (今日點餐)</h3>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
+                    <span class="close-btn" onclick="closeCartModal()">&times;</span>
+                </div>
+            </div>
+            <div class="history-modal-body">
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%">卡號 / 姓名</th>
+                                <th style="width: 15%">部門</th>
+                                <th style="width: 20%">日期時間</th>
+                                <th style="width: 25%">點餐店家 / 內容</th>
+                                <th style="width: 12%">金額</th>
+                                <th style="width: 13%">備註說明</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list">
+                            <tr>
+                                <td colspan="6" class="no-record">載入紀錄中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 曾點過歷史紀錄彈窗 (Modal) -->
+    <div id="historyModal" class="branch-modal-overlay hidden" onclick="closeHistoryModal(event)">
+        <div class="branch-modal-content history-modal-content" onclick="event.stopPropagation()">
+            <div class="branch-modal-header">
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    🗄️ 曾點過歷史點餐軌跡 (歷年完整紀錄)
+                </h3>
+                <span class="close-btn" onclick="closeHistoryModal()">&times;</span>
+            </div>
+            <div class="history-modal-body">
+                <div style="margin-bottom: 12px; font-size: 13px; color: #668062; font-weight: bold; text-align: right;">
+                    資料來源：orders.json 資料庫
+                </div>
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%; background-color: #eff7ee;">卡號 / 姓名</th>
+                                <th style="width: 12%; background-color: #eff7ee;">部門</th>
+                                <th style="width: 18%; background-color: #eff7ee;">日期時間</th>
+                                <th style="width: 30%; background-color: #eff7ee;">點餐店家 / 內容</th>
+                                <th style="width: 10%; background-color: #eff7ee;">金額</th>
+                                <th style="width: 15%; background-color: #eff7ee;">備註說明</th>
+                            </tr>
+                        </thead>
+                        <tbody id="global-history-list">
+                            <tr>
+                                <td colspan="6" class="no-record">核心資料庫載入中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 客製化自訂提示/確認對話框 (Modal) -->
+    <div id="customAlertModal" class="branch-modal-overlay hidden" onclick="closeCustomAlert(false)">
+        <div class="branch-modal-content custom-alert-box" onclick="event.stopPropagation()">
+            <div class="branch-modal-header custom-alert-header">
+                <h3 id="customAlertTitle">提示</h3>
+                <span class="close-btn" onclick="closeCustomAlert(false)">&times;</span>
+            </div>
+            <div class="payment-modal-body custom-alert-body" id="customAlertMessage">
+                提示內容
+            </div>
+            <div class="custom-alert-footer">
+                <button id="customAlertCancelBtn" class="custom-btn-action custom-btn-cancel-gray" onclick="closeCustomAlert(false)">取消</button>
+                <button id="customAlertConfirmBtn" class="custom-btn-action custom-btn-confirm-red" onclick="closeCustomAlert(true)">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let loggedInCardId = ''; 
+        let isSubmitting = false;
+        let customAlertCallback = null;
+        let globalEmployeesMap = {}; // 快取員工對照表 (含部門資訊)
+        let currentCategoryView = 'food'; // 🌟 紀錄當前版面狀態：'food' 或 'drink'
+
+        const shopUrlMap = {
+            '00': '00.html',
+            '00': '00.html'
+        };
+
+        // 1. 設定每個院區對應的主頁網址 (請替換為您實際的 HTML 檔名或 URL)
+const branchUrls = {
+    '彰濱秀傳紀念醫院': 'index.html', 
+    '彰化秀傳紀念醫院': 'changhua.html',
+    '高雄秀傳紀念醫院': 'kaohsiung.html',
+    '竹山秀傳醫院': 'zhushan.html',
+    '台南市立醫院': 'tainan.html',
+    '高雄市立岡山醫院': 'gangshan.html'
+};
+
+// 2. 切換院區的執行函式
+function switchBranch(branchName) {
+    const targetUrl = branchUrls[branchName];
+
+    if (!targetUrl) {
+        alert('尚未設定該院區的主頁網址！');
+        return;
+    }
+
+    // 儲存使用者的選擇到瀏覽器本地，這樣跳轉後新頁面能知道當前院區
+    localStorage.setItem('selectedBranch', branchName);
+
+    // 視覺回饋：在跳轉前先更新畫面上的文字
+    const branchText = document.getElementById('current-branch-text');
+    if (branchText) {
+        branchText.textContent = branchName;
+    }
+
+    // 關閉 Modal (假設您原始碼中有 closeBranchModal 函式)
+    if (typeof closeBranchModal === 'function') {
+        closeBranchModal();
+    }
+
+    // 執行頁面跳轉
+    window.location.href = targetUrl;
+}
+
+// 網頁載入完成後執行
+document.addEventListener('DOMContentLoaded', function() {
+    // 從 localStorage 讀取儲存的院區，若無則預設為彰濱
+    const savedBranch = localStorage.getItem('selectedBranch') || '彰濱秀傳紀念醫院';
+    
+    // 更新頂部的院區文字
+    const currentBranchEl = document.getElementById('current-branch-text');
+    if (currentBranchEl) {
+        currentBranchEl.textContent = savedBranch;
+    }
+
+    // 更新 Modal 內的打勾狀態 (移除所有 active，加在相符的選項上)
+    const branchItems = document.querySelectorAll('.branch-item');
+    branchItems.forEach(item => {
+        // 先移除原本的 active
+        item.classList.remove('active');
+        
+        // 若文字相符，加上 active 讓打勾圖示顯示出來
+        if (item.innerText.includes(savedBranch)) {
+            item.classList.add('active');
+        }
+    });
+});
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const savedCardId = localStorage.getItem('currentCardId');
+            const savedEmpName = localStorage.getItem('currentEmpName');
+            const savedDept = localStorage.getItem('currentDepartment');
+            const savedOffline = localStorage.getItem('isOfflineMode') === 'true';
+            
+            if (savedCardId) {
+                showOrderSection(savedCardId, savedEmpName, savedDept, savedOffline);
+            } else {
+                showLoginSection();
+            }
+
+            await fetchEmployeeList();
+
+            const cardInput = document.getElementById('cardId');
+            if (cardInput) {
+                cardInput.addEventListener('input', () => {
+                    cardInput.setCustomValidity('');
+                });
+                cardInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') executeLogin();
+                });
+            }
+
+            const savedBranch = localStorage.getItem('selectedBranch');
+            if (savedBranch) {
+                updateBranchDisplay(savedBranch);
+            }
+        });
+
+        /* ==================== 🎲 店家轉盤功能邏輯 ==================== */
+let wheelShops = [];
+let currentWheelAngle = 0;
+let isWheelSpinning = false;
+let selectedWheelShop = '';
+
+// 色彩庫 (輪流作為轉盤扇形顏色)
+const wheelColors = ['#ffd1dc', '#d1e7dd', '#fff3cd', '#cff4fc', '#e2e3e5', '#f3d9fa', '#ffe8cc', '#d3f9d8', '#e0f2fe', '#fef08a'];
+
+// 抓取當前分頁（美味餐點或喝涼涼）可抽籤的店家清單
+function getActiveShops() {
+    const activeContainerId = currentCategoryView === 'food' ? 'food-container' : 'drink-container';
+    const container = document.getElementById(activeContainerId);
+    if (!container) return [];
+    
+    const cards = container.querySelectorAll('.shop-card');
+    const list = [];
+    cards.forEach(card => {
+        if (card.style.display !== 'none') {
+            const name = card.querySelector('.shop-name')?.textContent.trim();
+            if (name) list.push(name);
+        }
+    });
+    return list;
+}
+
+function openWheelModal() {
+    wheelShops = getActiveShops();
+    if (wheelShops.length === 0) {
+        callCustomAlert('提示', '目前畫面上沒有可供抽籤的店家。', null, false);
+        return;
+    }
+
+    selectedWheelShop = '';
+    document.getElementById('wheelResult').textContent = '點擊下方按鈕開始抽籤！';
+    document.getElementById('wheelGoShopBtn').classList.add('hidden');
+    
+    drawWheel();
+    document.getElementById('wheelModal').classList.remove('hidden');
+}
+
+function closeWheelModal(event) {
+    if (isWheelSpinning) return;
+    const modal = document.getElementById('wheelModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function drawWheel() {
+    const canvas = document.getElementById('wheelCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const numOptions = wheelShops.length;
+    const arcSize = (2 * Math.PI) / numOptions;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const radius = cx - 8;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < numOptions; i++) {
+        const angle = currentWheelAngle + i * arcSize;
+        ctx.beginPath();
+        ctx.fillStyle = wheelColors[i % wheelColors.length];
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, angle, angle + arcSize);
+        ctx.lineTo(cx, cy);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 繪製店家文字
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle + arcSize / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#2b4c23';
+        ctx.font = 'bold 12px "Microsoft JhengHei", sans-serif';
+        
+        let name = wheelShops[i];
+        if (name.length > 7) name = name.substring(0, 6) + '..';
+        ctx.fillText(name, radius - 12, 4);
+        ctx.restore();
+    }
+}
+
+function spinWheel() {
+    if (isWheelSpinning || wheelShops.length === 0) return;
+    
+    isWheelSpinning = true;
+    document.getElementById('spinWheelBtn').disabled = true;
+    document.getElementById('wheelGoShopBtn').classList.add('hidden');
+    document.getElementById('wheelResult').textContent = '命運轉盤旋轉中...';
+
+    // 隨機旋轉 4~6 圈 + 隨機角度
+    const spinAngle = Math.floor(Math.random() * 360) + 1440;
+    const startAngle = currentWheelAngle;
+    const duration = 3200; // 動畫時間 3.2 秒
+    const startTime = performance.now();
+
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        if (elapsed < duration) {
+            const progress = elapsed / duration;
+            // 減速動畫 cubic ease-out
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            currentWheelAngle = startAngle + (spinAngle * Math.PI / 180) * easeOut;
+            drawWheel();
+            requestAnimationFrame(animate);
+        } else {
+            currentWheelAngle = startAngle + (spinAngle * Math.PI / 180);
+            drawWheel();
+            isWheelSpinning = false;
+            document.getElementById('spinWheelBtn').disabled = false;
+            calculateWheelWinner();
+        }
+    }
+    requestAnimationFrame(animate);
+}
+
+function calculateWheelWinner() {
+    const numOptions = wheelShops.length;
+    const arcSize = (2 * Math.PI) / numOptions;
+    
+    // 正上方 12 點鐘方向的角度 (1.5 * Math.PI)
+    let normalizedAngle = (currentWheelAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    let pointerAngle = (1.5 * Math.PI - normalizedAngle + 2 * Math.PI) % (2 * Math.PI);
+    let winningIndex = Math.floor(pointerAngle / arcSize) % numOptions;
+
+    selectedWheelShop = wheelShops[winningIndex];
+    document.getElementById('wheelResult').innerHTML = `今天就吃：<span style="color: #0091ff;">${selectedWheelShop}</span>！`;
+    document.getElementById('wheelGoShopBtn').classList.remove('hidden');
+}
+
+function goSelectedShop() {
+    if (selectedWheelShop) {
+        closeWheelModal();
+        redirectToShop(selectedWheelShop);
+    }
+}
+
+        async function fetchEmployeeList() {
+            try {
+                const response = await fetch('/api/employees');
+                if (response.ok) {
+                    globalEmployeesMap = await response.json();
+                }
+            } catch (err) {
+                console.warn('⚠️ 無法載入員工部門清單:', err);
+            }
+        }
+
+        function callCustomAlert(title, message, callback, showCancel = true) {
+            document.getElementById('customAlertTitle').textContent = title;
+            document.getElementById('customAlertMessage').innerHTML = message;
+            
+            const cancelBtn = document.getElementById('customAlertCancelBtn');
+            if (showCancel) {
+                cancelBtn.classList.remove('hidden');
+            } else {
+                cancelBtn.classList.add('hidden');
+            }
+            
+            customAlertCallback = callback;
+            document.getElementById('customAlertModal').classList.remove('hidden');
+        }
+
+        function closeCustomAlert(result) {
+            document.getElementById('customAlertModal').classList.add('hidden');
+            if (customAlertCallback) {
+                customAlertCallback(result);
+                customAlertCallback = null;
+            }
+        }
+
+        function openBranchModal() {
+            const modal = document.getElementById('branchModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeBranchModal(event) {
+            const modal = document.getElementById('branchModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function showPaymentInfo() {
+            const modal = document.getElementById('paymentModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closePaymentModal(event) {
+            const modal = document.getElementById('paymentModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openCartModal() {
+            if (loggedInCardId) {
+                fetchOrderHistory(loggedInCardId);
+            }
+            const modal = document.getElementById('cartModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeCartModal(event) {
+            const modal = document.getElementById('cartModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openHistoryModal() {
+            if (loggedInCardId) {
+                fetchGlobalOrders(loggedInCardId);
+            }
+            const modal = document.getElementById('historyModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeHistoryModal(event) {
+            const modal = document.getElementById('historyModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function selectBranch(branchName, element) {
+    // 1. 更新顯示與儲存選擇的院區
+    updateBranchDisplay(branchName);
+    localStorage.setItem('selectedBranch', branchName);
+
+    // 2. 更新選單的 active 狀態
+    const items = document.querySelectorAll('.branch-item');
+    items.forEach(item => item.classList.remove('active'));
+    if (element) {
+        element.classList.add('active');
+    }
+
+    closeBranchModal();
+
+    // 3. 新增：強制轉跳至主頁 (假設主頁為 index.html)
+    window.location.href = 'index.html'; 
+    
+    // 備註：若只需要重新整理當前頁面，也可以改用 window.location.reload();
+}
+
+        function updateBranchDisplay(branchName) {
+            const currentBranchText = document.getElementById('current-branch-text');
+            if (currentBranchText) {
+                currentBranchText.textContent = branchName;
+            }
+
+            const items = document.querySelectorAll('.branch-item');
+            items.forEach(item => {
+                if (item.textContent.includes(branchName)) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function filterShops() {
+            const searchInput = document.getElementById('shopSearchInput');
+            if (!searchInput) return;
+
+            const query = searchInput.value.toLowerCase().trim();
+            const shopCards = document.querySelectorAll('.shop-card');
+
+            shopCards.forEach(card => {
+                const shopName = (card.querySelector('.shop-name')?.textContent || '').toLowerCase();
+                const shopDesc = (card.querySelector('.shop-desc')?.textContent || '').toLowerCase();
+                const badgeText = (card.querySelector('.badge')?.textContent || '').toLowerCase();
+
+                const isMatch = shopName.includes(query) || shopDesc.includes(query) || badgeText.includes(query);
+                card.style.display = isMatch ? '' : 'none';
+            });
+
+            // 根據過濾結果動態隱藏/顯示分類標題
+            document.querySelectorAll('.category-header').forEach(header => {
+                const container = header.nextElementSibling;
+                if (container && container.classList.contains('grid-container')) {
+                    const visibleCards = container.querySelectorAll('.shop-card:not([style*="display: none"])');
+                    header.style.display = visibleCards.length > 0 ? '' : 'none';
+                }
+            });
+        }
+
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                filterShops();
+            }
+        }
+
+        /* 🌟 版面切換控制：美味餐點 ↔ 喝涼涼 切換核心函數 */
+        function toggleFoodDrinkView() {
+            if (currentCategoryView === 'food') {
+                showDrinkOnly();
+            } else {
+                showFoodOnly();
+            }
+        }
+
+        /* 🌟 切換至「喝涼涼」版面 */
+        function showDrinkOnly() {
+            currentCategoryView = 'drink';
+            localStorage.setItem('selectedCategory', 'drink'); // 💾 記住目前在喝涼涼
+
+            // 隱藏美味餐點，顯示喝涼涼
+            document.getElementById('food-section')?.classList.add('hidden');
+            document.getElementById('food-container')?.classList.add('hidden');
+            document.getElementById('drink-section')?.classList.remove('hidden');
+            document.getElementById('drink-container')?.classList.remove('hidden');
+
+            // 頂部按鈕自動更換成「美味餐點」文字與圖示
+            document.getElementById('nav-toggle-text').textContent = '美味餐點';
+            document.getElementById('nav-toggle-icon').innerHTML = `
+                <svg viewBox="0 0 24 24">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
+                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                    <line x1="6" y1="1" x2="6" y2="4"/>
+                    <line x1="10" y1="1" x2="10" y2="4"/>
+                    <line x1="14" y1="1" x2="14" y2="4"/>
+                </svg>
+            `;
+
+            resetSearch();
+        }
+
+        /* 🌟 切換至「美味餐點」版面 */
+        function showFoodOnly() {
+            currentCategoryView = 'food';
+            localStorage.setItem('selectedCategory', 'food'); // 💾 記住目前在美味餐點
+
+            // 顯示美味餐點，隱藏喝涼涼
+            document.getElementById('food-section')?.classList.remove('hidden');
+            document.getElementById('food-container')?.classList.remove('hidden');
+            document.getElementById('drink-section')?.classList.add('hidden');
+            document.getElementById('drink-container')?.classList.add('hidden');
+
+            // 頂部按鈕自動更換成「喝涼涼」文字與圖示
+            document.getElementById('nav-toggle-text').textContent = '喝涼涼';
+            document.getElementById('nav-toggle-icon').innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 8h1a4 4 0 0 1 0 8h-1"/>
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+                    <line x1="6" y1="2" x2="6" y2="5"/>
+                    <line x1="10" y1="2" x2="10" y2="5"/>
+                    <line x1="14" y1="2" x2="14" y2="5"/>
+                </svg>
+            `;
+
+            resetSearch();
+        }
+
+        /* 重置搜尋框與滾動至頂部 */
+        function resetSearch() {
+            const searchInput = document.getElementById('shopSearchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                filterShops();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* 🌟 版面切換控制：還原上次觀看的分類 */
+        function restoreSelectedCategory() {
+            const savedCat = localStorage.getItem('selectedCategory');
+            if (savedCat === 'drink') {
+                showDrinkOnly();
+            } else {
+                showFoodOnly();
+            }
+        }
+
+        function showAllCategories() {
+            restoreSelectedCategory();
+        }
+
+        function goHome() {
+            showAllCategories();
+        }
+
+        function scrollToCategory(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        async function executeLogin() {
+            if (isSubmitting) return;
+            
+            const cardInput = document.getElementById('cardId');
+            const loginBtn = document.getElementById('submit-login-btn');
+            
+            if (!cardInput) return;
+
+            cardInput.setCustomValidity('');
+
+            if (!cardInput.value.trim()) {
+                cardInput.reportValidity();
+                return;
+            }
+
+            const cardId = cardInput.value.trim();
+            isSubmitting = true;
+            if (loginBtn) loginBtn.disabled = true;
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cardId: cardId }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                if (data.success) {
+                    if (!globalEmployeesMap || !globalEmployeesMap[cardId]) {
+                        await fetchEmployeeList();
+                    }
+                    const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
+                    
+                    showOrderSection(cardId, data.empName || cardId, dept, false);
+                } else {
+                    cardInput.setCustomValidity(`${data.message || '無此卡號'}`);
+                    cardInput.reportValidity();
+                    if (loginBtn) loginBtn.disabled = false;
+                    isSubmitting = false;
+                }
+            } catch (error) {
+                if (loginBtn) loginBtn.disabled = false;
+                isSubmitting = false;
+                
+                const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
+                showOrderSection(cardId, cardId, dept, true);
+            }
+        }
+
+        function redirectToShop(shopName, element) {
+            const url = shopUrlMap[shopName];
+            if (!url) {
+                callCustomAlert('提示', `⚠️ 尚未設定 <strong>${shopName}</strong> 的對應點餐網頁。`, null, false);
+                return;
+            }
+            
+            // 💾 在前往店家點餐前，紀錄目前所在分類狀態
+            localStorage.setItem('selectedCategory', currentCategoryView);
+
+            const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
+            const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}`;
+            window.location.href = targetUrl;
+        }
+
+        function executeLogout() {
+            callCustomAlert('提示', '🚪 確定要登出系統嗎？', (confirmed) => {
+                if (confirmed) {
+                    showLoginSection();
+                }
+            }, true);
+        }
+
+        function navigateToAdmin() { window.location.href = 'admin.html'; }
+
+        function showOrderSection(cardId, empName, department, isOffline = false) {
+            loggedInCardId = cardId; 
+            const userDept = department || (globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : '未劃分');
+
+            localStorage.setItem('currentCardId', cardId);
+            localStorage.setItem('currentEmpName', empName || cardId);
+            localStorage.setItem('currentDepartment', userDept);
+            localStorage.setItem('isOfflineMode', isOffline ? 'true' : 'false');
+
+            const userNameEl = document.getElementById('user-name');
+            if (userNameEl) {
+                userNameEl.textContent = empName || cardId;
+            }
+
+            const userDeptEl = document.getElementById('user-department');
+            if (userDeptEl) {
+                userDeptEl.textContent = userDept;
+            }
+
+            document.getElementById('offline-tag').style.display = isOffline ? 'inline' : 'none';
+            
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('order-section').classList.remove('hidden');
+            document.body.classList.remove('login-mode');
+            document.body.classList.add('order-mode');
+            
+            // 🌟 登入後還原上次離開時選擇的分類（美食 / 飲料）
+            restoreSelectedCategory();
+            fetchOrderHistory(cardId);
+            fetchGlobalOrders(cardId);
+        }
+
+        function showLoginSection() {
+            window.scrollTo(0, 0);
+            loggedInCardId = '';
+            isSubmitting = false;
+            
+            localStorage.removeItem('currentCardId');
+            localStorage.removeItem('currentEmpName');
+            localStorage.removeItem('currentDepartment');
+            localStorage.removeItem('isOfflineMode');
+            document.getElementById('user-name').innerText = ''; 
+            document.getElementById('user-department').innerText = '未劃分';
+            
+            const loginBtn = document.getElementById('submit-login-btn');
+            if (loginBtn) { loginBtn.disabled = false; }
+            
+            const cardInput = document.getElementById('cardId');
+            if (cardInput) { 
+                cardInput.value = ''; 
+                cardInput.disabled = false; 
+                cardInput.setCustomValidity(''); 
+            }
+            
+            document.getElementById('offline-tag').style.display = 'none';
+            document.getElementById('order-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            document.body.classList.remove('order-mode');
+            document.body.classList.add('login-mode');
+
+            requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
+        }
+
+        function getMilliTimestamp(obj) {
+            if (!obj) return 0;
+            
+            let rawTime = obj.time || obj.Time || obj.date || obj.datetime || obj.timestamp || '';
+            rawTime = String(rawTime).trim();
+            if (!rawTime) return 0;
+
+            if (/^\d+$/.test(rawTime)) {
+                const ts = Number(rawTime);
+                return ts < 9999999999 ? ts * 1000 : ts;
+            }
+
+            if (rawTime.includes('上午') || rawTime.includes('下午')) {
+                try {
+                    const isPM = rawTime.includes('下午');
+                    let cleanStr = rawTime.replace(/[上下]午/, ' ').replace(/\s+/g, ' ');
+                    
+                    let [datePart, timePart] = cleanStr.trim().split(' ');
+                    if (datePart && timePart) {
+                        let [hrs, mins, secs] = timePart.split(':').map(Number);
+                        
+                        if (isPM && hrs < 12) hrs += 12;
+                        if (!isPM && hrs === 12) hrs = 0;
+                        
+                        const standardStr = `${datePart.replace(/\//g, '-')} ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
+                        const parsed = Date.parse(standardStr);
+                        if (!isNaN(parsed)) return parsed;
+                    }
+                } catch (e) {
+                    console.error("中文時間解析失敗: ", e);
+                }
+            }
+
+            const parsedStr = Date.parse(rawTime.replace(/ /g, 'T').replace(/\//g, '-'));
+            return !isNaN(parsedStr) ? parsedStr : 0;
+        }
+
+        function isTodayOrder(orderObj) {
+            const orderTs = getMilliTimestamp(orderObj);
+            if (orderTs === 0) return false;
+
+            const orderDate = new Date(orderTs);
+            const today = new Date();
+
+            return orderDate.getFullYear() === today.getFullYear() &&
+                   orderDate.getMonth() === today.getMonth() &&
+                   orderDate.getDate() === today.getDate();
+        }
+
+        function formatDisplayTime(obj) {
+            if (!obj) return '-';
+            const rawTime = obj.time || obj.Time || obj.date || obj.datetime || '';
+            if (rawTime) return rawTime; 
+
+            if (obj.timestamp) {
+                const ts = Number(obj.timestamp);
+                if (!isNaN(ts) && ts > 0) {
+                    const finalTs = ts < 9999999999 ? ts * 1000 : ts;
+                    const d = new Date(finalTs);
+                    return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+                }
+                return obj.timestamp;
+            }
+            return '-';
+        }
+
+        function clearLocalTodayOrders() {
+            if (!loggedInCardId) return;
+            callCustomAlert('提示', '🧹 確定要清除這台裝置上的今日點餐暫存紀錄嗎？<br><small style="color:#888;">(此操作不會影響全系統 orders.json 資料庫)</small>', (confirmed) => {
+                if (confirmed) {
+                    const localKey = `orders_${loggedInCardId}`;
+                    localStorage.removeItem(localKey);
+                    fetchOrderHistory(loggedInCardId);
+                }
+            }, true);
+        }
+
+        async function fetchOrderHistory(cardId) {
+            const historyList = document.getElementById('history-list');
+            if (!historyList) return;
+
+            let apiOrders = [];
+            let localOrders = [];
+            let isApiSuccess = false;
+
+            const localKey = `orders_${cardId}`;
+            try {
+                localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+            } catch(e) { localOrders = []; }
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+                const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    apiOrders = await response.json();
+                    isApiSuccess = true;
+                }
+            } catch (error) {
+                console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
+            }
+
+            let merged = isApiSuccess ? apiOrders : localOrders;
+            let todayOrders = merged.filter(order => isTodayOrder(order));
+
+            todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+            if (todayOrders.length === 0) {
+                historyList.innerHTML = `<tr><td colspan="6" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
+                return;
+            }
+
+            const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
+
+            historyList.innerHTML = todayOrders.map(order => {
+                const rawTotal = Number(order.total);
+                let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
+
+                if (!totalAmount && order.note) {
+                    const match = String(order.note).match(/總計:\s*\$(\d+)/);
+                    if (match) totalAmount = parseInt(match[1], 10);
+                }
+
+                return `
+                    <tr>
+                        <td>${order.cardId || cardId}</td>
+                        <td><span class="dept-badge">${userDept}</span></td>
+                        <td>${formatDisplayTime(order)}</td>
+                        <td>${order.meal || '無品項內容'}</td>
+                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
+                        <td>${order.note || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function fetchGlobalOrders(targetCardId) {
+            const globalHistoryList = document.getElementById('global-history-list');
+            if (!globalHistoryList) return;
+            if (!targetCardId) return;
+
+            try {
+                const response = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
+                if (!response.ok) throw new Error('無法讀取 orders.json');
+
+                const allOrders = await response.json();
+                const orderArray = Array.isArray(allOrders) ? allOrders : (allOrders.orders || []);
+
+                const userOrders = orderArray.filter(order => {
+                    const orderCard = String(order.cardId || '').trim().toLowerCase();
+                    const loginCard = String(targetCardId).trim().toLowerCase();
+                    return orderCard === loginCard;
+                });
+
+                if (userOrders.length === 0) {
+                    globalHistoryList.innerHTML = `<tr><td colspan="6" class="no-record">💡 您在歷年全系統資料庫中尚無任何點餐軌跡。</td></tr>`;
+                    return;
+                }
+
+                userOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+                const userDept = globalEmployeesMap[targetCardId] ? globalEmployeesMap[targetCardId].department : '未劃分';
+
+                globalHistoryList.innerHTML = '';
+                userOrders.forEach(order => {
+                    const tr = document.createElement('tr');
+                    
+                    const tdUser = document.createElement('td');
+                    tdUser.textContent = `${order.cardId || ''} ${order.empName || order.name || ''}`;
+
+                    const tdDept = document.createElement('td');
+                    tdDept.innerHTML = `<span class="dept-badge">${userDept}</span>`;
+                    
+                    const tdTime = document.createElement('td');
+                    tdTime.textContent = formatDisplayTime(order);
+                    
+                    const tdMeal = document.createElement('td');
+                    tdMeal.style.fontWeight = 'bold';
+                    tdMeal.textContent = order.meal || '-';
+                    
+                    const rawPrice = order.total ?? order.Total ?? order.price ?? order.Price ?? order.totalPrice ?? order.amount ?? null;
+                    const tdPrice = document.createElement('td');
+                    tdPrice.textContent = (rawPrice !== null && rawPrice !== '') ? `$${rawPrice}` : '-';
+                    
+                    const tdNote = document.createElement('td');
+                    tdNote.textContent = order.note || '-';
+                    
+                    tr.appendChild(tdUser);
+                    tr.appendChild(tdDept);
+                    tr.appendChild(tdTime);
+                    tr.appendChild(tdMeal);
+                    tr.appendChild(tdPrice);
+                    tr.appendChild(tdNote);
+                    globalHistoryList.appendChild(tr);
+                });
+            } catch (error) {
+                console.error(error);
+                globalHistoryList.innerHTML = `<tr><td colspan="6" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡或 orders.json 檔案不存在。</td></tr>`;
+            }
+        }
+    </script>
+
+<!-- 🎲 店家轉盤彈窗 (Modal) -->
+<div id="wheelModal" class="branch-modal-overlay hidden" onclick="closeWheelModal(event)">
+    <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 440px; text-align: center;">
+        <div class="branch-modal-header">
+            <h3>🎲 今天吃什麼~命運轉盤</h3>
+            <span class="close-btn" onclick="closeWheelModal()">&times;</span>
+        </div>
+        <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; position: relative;">
+            <!-- 轉盤頂部指標 -->
+            <div style="position: absolute; top: 12px; z-index: 10; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid #ff4d4f; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></div>
+            
+            <canvas id="wheelCanvas" width="300" height="300" style="max-width: 100%; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-top: 10px;"></canvas>
+            
+            <div id="wheelResult" style="margin-top: 16px; font-size: 18px; font-weight: bold; color: #2b4c23; min-height: 28px;">
+                點擊下方按鈕開始抽籤！
+            </div>
+
+            <div style="margin-top: 16px; display: flex; gap: 12px;">
+                <button id="spinWheelBtn" class="login-btn" style="width: 130px; padding: 10px 0; font-size: 16px;" onclick="spinWheel()">開始旋轉</button>
+                <button id="wheelGoShopBtn" class="login-btn hidden" style="width: 130px; padding: 10px 0; font-size: 16px; background-color: #0091ff;" onclick="goSelectedShop()">進入點餐 ➔</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
