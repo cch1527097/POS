@@ -1802,31 +1802,31 @@ body.login-mode .login-footer-copy {
                 <span class="close-btn" onclick="closeBranchModal()">&times;</span>
             </div>
             <div class="branch-list">
-    <div class="branch-item active" onclick="switchBranch('彰濱秀傳紀念醫院')">
-        <span>彰濱秀傳紀念醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('彰化秀傳紀念醫院')">
-        <span>彰化秀傳紀念醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('高雄秀傳紀念醫院')">
-        <span>高雄秀傳紀念醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('竹山秀傳醫院')">
-        <span>竹山秀傳醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('台南市立醫院')">
-        <span>台南市立醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('高雄市立岡山醫院')">
-        <span>高雄市立岡山醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-</div>
+                <div class="branch-item active" onclick="selectBranch('彰濱秀傳紀念醫院', this)">
+                    <span>彰濱秀傳紀念醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('彰化秀傳紀念醫院', this)">
+                    <span>彰化秀傳紀念醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('高雄秀傳紀念醫院', this)">
+                    <span>高雄秀傳紀念醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('竹山秀傳醫院', this)">
+                    <span>竹山秀傳醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('台南市立醫院', this)">
+                    <span>台南市立醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="selectBranch('高雄市立岡山醫院', this)">
+                    <span>高雄市立岡山醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2008,67 +2008,6 @@ body.login-mode .login-footer-copy {
             '春耕': '春耕.html',
             '秋本家': '秋本家.html'
         };
-
-        // 1. 設定每個院區對應的主頁網址 (請替換為您實際的 HTML 檔名或 URL)
-const branchUrls = {
-    '彰濱秀傳紀念醫院': 'index.html', 
-    '彰化秀傳紀念醫院': 'changhua.html',
-    '高雄秀傳紀念醫院': 'kaohsiung.html',
-    '竹山秀傳醫院': 'zhushan.html',
-    '台南市立醫院': 'tainan.html',
-    '高雄市立岡山醫院': 'gangshan.html'
-};
-
-// 2. 切換院區的執行函式
-function switchBranch(branchName) {
-    const targetUrl = branchUrls[branchName];
-
-    if (!targetUrl) {
-        alert('尚未設定該院區的主頁網址！');
-        return;
-    }
-
-    // 儲存使用者的選擇到瀏覽器本地，這樣跳轉後新頁面能知道當前院區
-    localStorage.setItem('selectedBranch', branchName);
-
-    // 視覺回饋：在跳轉前先更新畫面上的文字
-    const branchText = document.getElementById('current-branch-text');
-    if (branchText) {
-        branchText.textContent = branchName;
-    }
-
-    // 關閉 Modal (假設您原始碼中有 closeBranchModal 函式)
-    if (typeof closeBranchModal === 'function') {
-        closeBranchModal();
-    }
-
-    // 執行頁面跳轉
-    window.location.href = targetUrl;
-}
-
-        // 網頁載入完成後執行
-document.addEventListener('DOMContentLoaded', function() {
-    // 從 localStorage 讀取儲存的院區，若無則預設為彰濱
-    const savedBranch = localStorage.getItem('selectedBranch') || '彰濱秀傳紀念醫院';
-    
-    // 更新頂部的院區文字
-    const currentBranchEl = document.getElementById('current-branch-text');
-    if (currentBranchEl) {
-        currentBranchEl.textContent = savedBranch;
-    }
-
-    // 更新 Modal 內的打勾狀態 (移除所有 active，加在相符的選項上)
-    const branchItems = document.querySelectorAll('.branch-item');
-    branchItems.forEach(item => {
-        // 先移除原本的 active
-        item.classList.remove('active');
-        
-        // 若文字相符，加上 active 讓打勾圖示顯示出來
-        if (item.innerText.includes(savedBranch)) {
-            item.classList.add('active');
-        }
-    });
-});
 
         window.addEventListener('DOMContentLoaded', async () => {
             const savedCardId = localStorage.getItem('currentCardId');
