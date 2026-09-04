@@ -1282,14 +1282,27 @@ body.login-mode .login-footer-copy {
         };
 
         // 1. 設定每個院區對應的主頁網址 (請替換為您實際的 HTML 檔名或 URL)
-const branchUrls = {
-    '彰濱秀傳紀念醫院': 'index.html', 
-    '彰化秀傳紀念醫院': 'changhua.html',
-    '高雄秀傳紀念醫院': 'kaohsiung.html',
-    '竹山秀傳醫院': 'zhushan.html',
-    '台南市立醫院': 'tainan.html',
-    '高雄市立岡山醫院': 'gangshan.html'
-};
+// 替換您店家網頁中的「返回/離開首頁」函式
+function goBackToHome() {
+    // 1. 定義院區與對應的主頁網址
+    const branchUrls = {
+        '彰濱秀傳紀念醫院': 'index.html', 
+        '彰化秀傳紀念醫院': 'changhua.html',
+        '高雄秀傳紀念醫院': 'kaohsiung.html',
+        '竹山秀傳醫院': 'zhushan.html',
+        '台南市立醫院': 'tainan.html',
+        '高雄市立岡山醫院': 'gangshan.html'
+    };
+
+    // 2. 讀取使用者當前選擇的院區 (如果沒有紀錄，預設為彰濱)
+    const savedBranch = localStorage.getItem('selectedBranch') || '彰濱秀傳紀念醫院';
+    
+    // 3. 取得對應的網址，如果對應表中找不到則預設回 index.html
+    const targetUrl = branchUrls[savedBranch] || 'index.html';
+
+    // 4. 執行跳轉，回到正確的院區專屬頁面
+    window.location.href = targetUrl;
+}
 
 // 2. 切換院區的執行函式
 function switchBranch(branchName) {
