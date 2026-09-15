@@ -539,7 +539,7 @@ function goBack() {
 // 根據「UNO CHA 烏弄原茶」菜單圖片完整建置資料
 const menuItems = [
     // === 台灣原茶 ===
-    {name: "手採阿里山金萱", price: 45, category: "台灣原茶", icon: "🍃", rec: true, note: "蘭花 奶油香 茉莉花", isHot: true},
+    {name: "手採阿里山金萱", price: 50, category: "台灣原茶", icon: "🍃", rec: true, note: "蘭花 奶油香 茉莉花", isHot: true},
     {name: "名間鄉冬片仔", price: 35, category: "台灣原茶", icon: "🍵", rec: true, note: "花香 奶油香 堅果", isHot: true},
     {name: "台茶十八號·紅玉", price: 35, category: "台灣原茶", icon: "🍂", rec: true, note: "薄荷肉桂 荔枝", isHot: true},
     {name: "碧螺春·綠", price: 35, category: "台灣原茶", icon: "🌱", note: "海苔香 碗豆香", isHot: true},
@@ -551,7 +551,6 @@ const menuItems = [
     {name: "紅玉朵朵", price: 60, category: "朵朵與莎莎", icon: "🥛", isHot: true, note: "原茶加朵朵"},
     {name: "可可脆片莎莎", price: 110, category: "朵朵與莎莎", icon: "🍫", coldOnly: true, iceFixed: true, sugarFixed: true, note: "純冰沙·甜度固定"},
     {name: "可可脆片朵朵", price: 120, category: "朵朵與莎莎", icon: "🍫", coldOnly: true, iceFixed: true, sugarFixed: true, note: "奶蓋冰沙·甜度固定"},
-
     // === 柚香橙韻 ===
     {name: "柚香金萱", price: 65, category: "柚香橙韻", icon: "🍊", note: "葡萄柚果汁"},
     {name: "柚粒金萱", price: 75, category: "柚香橙韻", icon: "🍹", note: "葡萄柚果粒"},
@@ -561,23 +560,22 @@ const menuItems = [
     {name: "鮮橙多多", price: 85, category: "柚香橙韻", icon: "🧃", rec: true},
 
     // === 水果調飲 ===
-    {name: "鳳梨金萱紅", price: 60, category: "水果調飲", icon: "🍍", sugarFixed: true, note: "甜度固定"},
-    {name: "檸檬/百香冬片仔", price: 55, category: "水果調飲", icon: "🍋", isHot: true},
-    {name: "檸檬梅綠", price: 55, category: "水果調飲", icon: "🍵", isHot: true},
-    {name: "檸檬/百香多多", price: 70, category: "水果調饮", icon: "🧃"},
-    {name: "桑莓紅玉", price: 65, category: "水果調飲", icon: "🫐"},
-    {name: "桑莓鮮奶", price: 70, category: "水果調飲", icon: "🥛", sizePrices: {M: 70, L: 90}},
-    {name: "百香·珍椰", price: 60, category: "水果調飲", icon: "🍹", rec: true},
+    {name: "檸檬冬片仔", price: 60, category: "水果調飲", icon: "🍋", isHot: true},
+    {name: "檸檬梅綠", price: 60, category: "水果調飲", icon: "🍵", isHot: true},
+    {name: "柚香金萱", price: 65, category: "水果調饮", icon: "🧃"},
+    {name: "柚粒金萱", price: 75, category: "水果調饮", icon: "🧃"},
+    {name: "鮮橙冬片", price: 70, category: "水果調飲", icon: "🫐"},
+    {name: "桑莓鮮奶", price: 70, category: "水果調飲", icon: "🥛", sizePrices: {M: 75, L: 95}},
 
     // === 香醇鮮乳 ===
-    {name: "玉露紅茶拿鐵", price: 50, category: "香醇鮮乳", icon: "🥛", isHot: true, sizePrices: {M: 50, L: 65}},
-    {name: "金萱烏龍拿鐵", price: 50, category: "香醇鮮乳", icon: "🥛", isHot: true, sizePrices: {M: 50, L: 65}},
-    {name: "蜜香紅茶拿鐵", price: 50, category: "香醇鮮乳", icon: "🥛", isHot: true, sizePrices: {M: 50, L: 65}},
-    {name: "珍珠紅茶拿鐵", price: 50, category: "香醇鮮乳", icon: "🧋", isHot: true, sizePrices: {M: 50, L: 65}},
+    {name: "玉露紅茶拿鐵", price: 50, category: "香醇鮮乳", icon: "🥛", isHot: true, sizePrices: {M: 55, L: 70}},
+    {name: "金萱烏龍拿鐵", price: 50, category: "香醇鮮乳", icon: "🥛", isHot: true, sizePrices: {M: 55, L: 70}},
+    {name: "蜜香紅茶拿鐵", price: 50, category: "香醇鮮乳", icon: "🥛", isHot: true, sizePrices: {M: 55, L: 70}},
+    {name: "珍珠紅茶拿鐵", price: 50, category: "香醇鮮乳", icon: "🧋", isHot: true, sizePrices: {M: 55, L: 70}},
     {name: "珍椰·紅茶拿鐵", price: 55, category: "香醇鮮乳", icon: "🧋", isHot: true, sizePrices: {M: 55, L: 70}},
     {name: "杏仁凍紅茶拿鐵", price: 55, category: "香醇鮮乳", icon: "🧋", sizePrices: {M: 55, L: 70}},
     {name: "大人的可可拿鐵", price: 80, category: "香醇鮮乳", icon: "☕", rec: true, isHot: true, sugarFixed: true, sizePrices: {M: 80, L: 95}},
-    {name: "黑糖鮮奶珍珠", price: 65, category: "香醇鮮乳", icon: "🧋", rec: true, isHot: true, sugarFixed: true, sizePrices: {M: 65, L: 85}},
+    {name: "黑糖鮮奶珍珠", price: 70, category: "香醇鮮乳", icon: "🧋", rec: true, isHot: true, sugarFixed: true, sizePrices: {M: 70, L: 90}},
 
     // === 醇奶特調 ===
     {name: "玉露醇奶茶", price: 40, category: "醇奶特調", icon: "🧋", isHot: true, sizePrices: {M: 40, L: 55}},
@@ -592,9 +590,9 @@ const menuItems = [
     {name: "珍椰·金萱烏龍", price: 50, category: "原茶調飲", icon: "🍵", isHot: true, rec: true},
 
     // === 不失眠 (無咖啡因) ===
-    {name: "不苦蕎麥茶", price: 45, category: "不失眠 (無咖啡因)", icon: "🌾", rec: true, isHot: true, note: "花蓮玉里"},
-    {name: "蕎麥冬露", price: 55, category: "不失眠 (無咖啡因)", icon: "🌾", rec: true, isHot: true, sugarFixed: true, note: "甜度固定"},
-    {name: "不苦蕎麥鮮奶", price: 65, category: "不失眠 (無咖啡因)", icon: "🥛", rec: true, isHot: true},
+    {name: "不苦蕎麥茶", price: 50, category: "不失眠 (無咖啡因)", icon: "🌾", rec: true, isHot: true, note: "花蓮玉里"},
+    {name: "蕎麥冬露", price: 60, category: "不失眠 (無咖啡因)", icon: "🌾", rec: true, isHot: true, sugarFixed: true, note: "甜度固定"},
+    {name: "不苦蕎麥鮮奶", price: 70, category: "不失眠 (無咖啡因)", icon: "🥛", rec: true, isHot: true},
     {name: "黃金菊花茶", price: 50, category: "不失眠 (無咖啡因)", icon: "🌼", rec: true, isHot: true, note: "苗栗銅鑼·3-11月期間限定"},
     {name: "菊花冬露", price: 60, category: "不失眠 (無咖啡因)", icon: "🌼", rec: true, isHot: true, sugarFixed: true, note: "苗栗銅鑼·3-11月期間限定"},
 
@@ -602,7 +600,7 @@ const menuItems = [
     {name: "抱抱冬瓜露", price: 35, category: "抱抱冬瓜", icon: "🧉", rec: true, isHot: true, sugarFixed: true, note: "甜度固定·無添加石灰"},
     {name: "杏仁凍冬露", price: 50, category: "抱抱冬瓜", icon: "🧉", sugarFixed: true},
     {name: "冬露冬片仔", price: 45, category: "抱抱冬瓜", icon: "🧉", sugarFixed: true},
-    {name: "檸檬冬露", price: 50, category: "抱抱冬瓜", icon: "🍋", rec: true, isHot: true, sugarFixed: true},
+    {name: "檸檬冬露", price: 55, category: "抱抱冬瓜", icon: "🍋", rec: true, isHot: true, sugarFixed: true},
     {name: "冬露鮮奶", price: 65, category: "抱抱冬瓜", icon: "🥛", rec: true, isHot: true, sugarFixed: true}
 ];
 
