@@ -146,7 +146,7 @@ async function initDatabase() {
             { id: 'store_7', name: '徊香麵線糊', category: '美味餐點', isOpen: false },
             { id: 'store_8', name: '四海遊龍', category: '美味餐點', isOpen: false },
             { id: 'store_9', name: '北斗賓肉圓', category: '美味餐點', isOpen: true },
-            { id: 'store_10', name: '百華味滷味', category: '美味餐點', isOpen: false },
+            { id: 'store_10', name: '青蔬寶蔬食滷味', category: '美味餐點', isOpen: false },
             { id: 'store_11', name: '老聃飲食', category: '美味餐點', isOpen: false },
             { id: 'store_12', name: '八廚職人弁当', category: '美味餐點', isOpen: false },
             { id: 'store_13', name: '嵐 爌肉・豬腳飯', category: '美味餐點', isOpen: true },
