@@ -998,7 +998,7 @@
             { id: 'store_7', name: '徊香麵線糊', category: '美味餐點', isOpen: false },
             { id: 'store_8', name: '四海遊龍', category: '美味餐點', isOpen: false },
             { id: 'store_9', name: '北斗賓肉圓', category: '美味餐點', isOpen: true },
-            { id: 'store_10', name: '百華味滷味', category: '美味餐點', isOpen: false },
+            { id: 'store_10', name: '青蔬寶蔬食滷味', category: '美味餐點', isOpen: false },
             { id: 'store_11', name: '老聃飲食', category: '美味餐點', isOpen: false },
             { id: 'store_12', name: '八廚職人弁当', category: '美味餐點', isOpen: false },
             { id: 'store_13', name: '嵐 爌肉・豬腳飯', category: '美味餐點', isOpen: true },
@@ -1270,7 +1270,7 @@ ${openStores}
         function isDrinkOrder(order) {
             if (order.category === 'drink' || order.type === 'drink') return true;
             const mealStr = (order.meal || '').toLowerCase();
-            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯', '一鳴', '五路鍋聖', '江滬湯包', '食光飯糰', '秋本家', '功夫炒飯'];
+            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯', '一鳴', '五路鍋聖', '江滬湯包', '食光飯糰', '秋本家', '青蔬寶蔬食滷味'];
             if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
             const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品', '李記', '可不可熟成紅茶', '鹿兒角', '八曜和茶', '一沐日', '粉圓伯', '旅人阿宏', '茗沏', '迷客夏', '青山', '有茶', '吳家紅茶冰', '先喝道', '麻古茶坊'];
             return drinkKeywords.some(kw => mealStr.includes(kw));
