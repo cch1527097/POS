@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>百華味滷味 - 智慧點餐系統</title>
+    <title>鹿港青蔬寶 - 智慧點餐系統</title>
     <style>
         html { scroll-behavior: smooth; }
 
         :root { 
-            --primary: #2c3e50;       /* 質感深藍灰 */
-            --primary-light: #f1f5f9; /* 淡藍灰底色 */
-            --secondary: #e67e22;      /* 暖橘點綴 */
-            --accent: #d35400;        /* 深橘紅 */
+            --primary: #276749;       /* 質感森林綠 */
+            --primary-light: #f0fdf4; /* 淡綠底色 */
+            --secondary: #dd6b20;      /* 暖橘點綴 */
+            --accent: #c53030;        /* 濃紅 */
             --bg-main: #f4f6f9;       /* 輕灰底色 */
-            --text-dark: #2c3e50;      /* 深色文字 */
-            --text-muted: #7f8c8d;    /* 輔助灰色 */
+            --text-dark: #2d3748;      /* 深色文字 */
+            --text-muted: #718096;    /* 輔助灰色 */
             --border-color: #e2e8f0;  /* 邊框線條 */
         }
 
@@ -103,9 +103,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(44, 62, 80, 0.2);
+            box-shadow: 0 4px 10px rgba(39, 103, 73, 0.2);
             flex-shrink: 0;
         }
         .store-details h1 { margin: 0 0 8px 0; font-size: 22px; font-weight: 700; }
@@ -176,7 +176,7 @@
 
         .menu-content { flex: 1; min-width: 0; }
         .category-block { margin-bottom: 30px; scroll-margin-top: 70px; }
-        .category-title { font-size: 18px; font-weight: 700; color: var(--primary); margin: 0 0 14px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
+        .category-title { font-size: 18px; font-weight: 700; color: var(--primary); margin: 0 0 14px 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 6px; }
         
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
         
@@ -262,7 +262,7 @@
         }
 
         .fab-cart {
-            background-color: #278638;
+            background-color: var(--primary);
             position: relative;
         }
 
@@ -394,7 +394,7 @@
             border-radius: 8px;
             cursor: pointer;
         }
-        .btn-modal-confirm:hover { background: #1a252f; }
+        .btn-modal-confirm:hover { background: #1c4d37; }
 
         .custom-item-tag {
             font-size: 12px;
@@ -459,7 +459,7 @@
             background: var(--primary);
             color: #ffffff;
             border-color: var(--primary);
-            box-shadow: 0 3px 8px rgba(44, 62, 80, 0.25);
+            box-shadow: 0 3px 8px rgba(39, 103, 73, 0.25);
         }
 
         /* RWD 調整 */
@@ -503,7 +503,7 @@
             .container { padding: 16px 12px 80px 12px; }
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
-            .store-logo { width: 60px; height: 60px; font-size: 24px; border-radius: 12px; }
+            .store-logo { width: 60px; height: 60px; font-size: 28px; border-radius: 12px; }
             .store-details h1 { font-size: 18px; }
             .menu-grid { grid-template-columns: 1fr; }
             .category-sidebar { top: 98px; }
@@ -537,14 +537,14 @@
 <div class="container">
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">百</div>
+            <div class="store-logo">蔬</div>
             <div class="store-details">
-                <h1>百華味滷味 鹿港店</h1>
+                <h1>鹿港青蔬寶</h1>
                 <div class="store-meta">
-                    <span class="rating">⭐ 4.8 (35)</span>
-                    <span>🕒 11:30 ~ 19:30</span>
-                    <span>📍 505彰化縣鹿港鎮永安里復興路283號</span>
-                    <span>📞 0984-508-826</span>
+                    <span class="rating">⭐ 4.6 (68)</span>
+                    <span>🕒 11:00 ~ 14:00</span>
+                    <span>📍 505彰化縣鹿港鎮永安里復興路296號</span>
+                    <span>📞 04-774-8748</span>
                 </div>
             </div>
         </div>
@@ -584,87 +584,133 @@ function goBack() {
 }
 
 const menuItems = [
-    // 蔬菜與菇類
-    {name: "玉米塊", price: 10, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "豆芽菜", price: 15, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "菜頭", price: 20, category: "蔬菜與菇類", icon:"🥬"},
-    {name: "洋蔥", price: 20, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "空心菜", price: 20, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "大陸妹", price: 20, category: "蔬菜與菇類", icon:"🥬"},
-    {name: "玉米筍", price: 20, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "高麗菜", price: 25, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "花椰菜", price: 25, category: "蔬菜與菇類", icon:"🥬"},
-    {name: "小黃瓜", price: 30, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "青椒", price: 30, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "水蓮", price: 30, category: "蔬菜與菇類", icon:"🥬"},
-    {name: "娃娃菜", price: 40, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "金針菇", price: 20, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "杏鮑菇", price: 20, category: "蔬菜與菇類", icon:"🥬"},
-    {name: "雪菇", price: 25, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "木耳", price: 25, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "香菇(時價)", price: 40, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "波菜(時價)", price: 40, category: "蔬菜與菇類", icon:"🥬"}, 
-    {name: "櫛瓜(時價)", price: 40, category: "蔬菜與菇類", icon:"🥬"},
+    // 鍋燒區
+    {name: "鍋燒意麵", price: 95, category: "鍋燒區", icon:"🍲"},
+    {name: "鍋燒雞絲", price: 95, category: "鍋燒區", icon:"🍲"},
+    {name: "鍋燒烏龍", price: 100, category: "鍋燒區", icon:"🍲"},
+    {name: "全素鍋燒(不含麵)", price: 75, category: "鍋燒區", icon:"🍲"},
+    {name: "麻油藥膳鍋(不含麵)", price: 95, category: "鍋燒區", icon:"🍲"},
 
-    // 肉類與內臟
-    {name: "鳥蛋", price: 5, category: "肉類與內臟", icon:"🥩"}, 
-    {name: "豬血", price: 20, category: "肉類與內臟", icon:"🥩"}, 
-    {name: "鴨腱", price: 25, category: "肉類與內臟", icon:"🥩"},
-    {name: "粉腸", price: 25, category: "肉類與內臟", icon:"🥩"}, 
-    {name: "鴨心", price: 30, category: "肉類與內臟", icon:"🥩"}, 
-    {name: "豬耳朵", price: 30, category: "肉類與內臟", icon:"🥩"},
-    {name: "豬頭皮", price: 30, category: "肉類與內臟", icon:"🥩"}, 
-    {name: "豬大腸", price: 30, category: "肉類與內臟", icon:"🥩"},
-    {name: "豬肉片", price: 35, category: "肉類與內臟", icon:"🥩"},
+    // 主食區
+    {name: "素魯飯(小)", price: 40, category: "主食區", icon:"🍚"},
+    {name: "素魯飯(大)", price: 45, category: "主食區", icon:"🍚"},
+    {name: "素肉排飯 (蛋奶素)", price: 70, category: "主食區", icon:"🍚"},
+    {name: "素控肉飯 (蛋奶素)", price: 70, category: "主食區", icon:"🍚"},
+    {name: "味噌肉排湯麵 (蛋奶素)", price: 105, category: "主食區", icon:"🍜"},
+    {name: "素燥魯麵(湯)", price: 55, category: "主食區", icon:"🍜"},
+    {name: "滷水餃10顆", price: 70, category: "主食區", icon:"🥟"},
+    {name: "素肉排湯麵 (蛋奶素)", price: 100, category: "主食區", icon:"🍜"},
 
-    // 經典麵食與副食
-    {name: "王子麵", price: 20, category: "經典麵食與副食", icon:"🍜"}, 
-    {name: "冬粉", price: 25, category: "經典麵食與副食", icon:"🍜"},
-    {name: "河粉", price: 25, category: "經典麵食與副食", icon:"🍜"}, 
-    {name: "意麵", price: 25, category: "經典麵食與副食", icon:"🍜"}, 
-    {name: "關廟麵", price: 25, category: "經典麵食與副食", icon:"🍜"},
-    {name: "雞絲麵", price: 25, category: "經典麵食與副食", icon:"🍜"}, 
-    {name: "蒸煮麵", price: 25, category: "經典麵食與副食", icon:"🍜"}, 
-    {name: "麵疙瘩", price: 35, category: "經典麵食與副食", icon:"🍜"},
-    {name: "烏龍麵", price: 35, category: "經典麵食與副食", icon:"🍜"}, 
-    {name: "韓式Q拉麵", price: 35, category: "經典麵食與副食", icon:"🍜"},
+    // 湯品區
+    {name: "豆皮湯", price: 30, category: "湯品區", icon:"🥣"},
+    {name: "豆腐湯", price: 25, category: "湯品區", icon:"🥣"},
+    {name: "菜捲湯", price: 40, category: "湯品區", icon:"🥣"},
+    {name: "紫菜湯", price: 25, category: "湯品區", icon:"🥣"},
+    {name: "紫菜蛋花湯", price: 30, category: "湯品區", icon:"🥣"},
+    {name: "大素丸湯", price: 30, category: "湯品區", icon:"🥣"},
+    {name: "猴頭菇丸湯", price: 30, category: "湯品區", icon:"🥣"},
+    {name: "味噌豆腐湯", price: 30, category: "湯品區", icon:"🥣"},
+    {name: "蛋花湯", price: 25, category: "湯品區", icon:"🥣"},
 
-    // 傳統豆腐與配料
-    {name: "小豆干", price: 5, category: "傳統豆腐與配料", icon:"🍢"},
-    {name: "蒟蒻/3個", price: 10, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "水晶餃", price: 10, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "米血", price: 10, category: "傳統豆腐與配料", icon:"🍢"},
-    {name: "黑輪", price: 10, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "甜不辣", price: 10, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "千張皮", price: 10, category: "傳統豆腐與配料", icon:"🍢"},
-    {name: "生豆包", price: 15, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "海帶", price: 15, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "芋條", price: 20, category: "傳統豆腐與配料", icon:"🍢"},
-    {name: "大豆干", price: 20, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "蘭花干", price: 20, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "米腸", price: 25, category: "傳統豆腐與配料", icon:"🍢"},
-    {name: "鴨米血", price: 25, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "德式香腸", price: 25, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "海帶芽", price: 30, category: "傳統豆腐與配料", icon:"🍢"},
-    {name: "炸豆皮", price: 20, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "炸豆皮(條)", price: 50, category: "傳統豆腐與配料", icon:"🍢"}, 
-    {name: "韓式年糕/3個", price: 10, category: "傳統豆腐與配料", icon:"🍢"},
+    // 藥膳區
+    {name: "藥膳豆皮湯", price: 60, category: "藥膳區", icon:"🍲"},
+    {name: "藥膳菜捲湯", price: 60, category: "藥膳區", icon:"🍲"},
+    {name: "藥膳豆腐湯", price: 60, category: "藥膳區", icon:"🍲"},
+    {name: "藥膳清湯", price: 30, category: "藥膳區", icon:"🥣"},
+    {name: "藥膳湯餃10顆", price: 100, category: "藥膳區", icon:"🥟"},
+    {name: "藥膳米血湯", price: 55, category: "藥膳區", icon:"🥣"},
 
-    // 精選火鍋料
-    {name: "龍蝦沙拉", price: 10, category: "精選火鍋料", icon:"🍥"}, 
-    {name: "魚板", price: 15, category: "精選火鍋料", icon:"🍥"}, 
-    {name: "韓式魚板", price: 15, category: "精選火鍋料", icon:"🍥"},
-    {name: "蟹味棒/2個", price: 15, category: "精選火鍋料", icon:"🍥"}, 
-    {name: "麻吉燒/2個(芝麻/起司/花生)", price: 15, category: "精選火鍋料", icon:"🍥"},
-    {name: "炸豆腐/2個", price: 15, category: "精選火鍋料", icon:"🍥"}, 
-    {name: "百頁豆腐", price: 20, category: "精選火鍋料", icon:"🍥"}, 
-    {name: "魚餃", price: 25, category: "精選火鍋料", icon:"🍥"},
-    {name: "鑫鑫腸", price: 25, category: "精選火鍋料", icon:"🍥"}, 
-    {name: "蝦捲", price: 25, category: "精選火鍋料", icon:"🍥"}, 
-    {name: "黃金魚丸", price: 25, category: "精選火鍋料", icon:"🍥"},
-    {name: "花枝丸", price: 25, category: "精選火鍋料", icon:"🍥"}, 
-    {name: "鱈魚丸", price: 25, category: "精選火鍋料", icon:"🍥"}, 
-    {name: "貢丸", price: 25, category: "精選火鍋料", icon:"🍥"}
+    // 麻辣系列
+    {name: "麻辣臭豆腐(小份)", price: 65, category: "麻辣系列", icon:"🌶️"},
+    {name: "麻辣臭豆腐(大份)", price: 75, category: "麻辣系列", icon:"🌶️"},
+    {name: "麻辣水餃10顆", price: 75, category: "麻辣系列", icon:"🥟"},
+    {name: "麻辣(湯)餃10顆", price: 75, category: "麻辣系列", icon:"🥟"},
+    {name: "麻辣臭臭鍋", price: 150, category: "麻辣系列", icon:"🥘"},
+
+    // 麵類
+    {name: "王子麵", price: 20, category: "麵類", icon:"🍜"},
+    {name: "雞絲麵", price: 20, category: "麵類", icon:"🍜"},
+    {name: "意麵 (蛋奶素)", price: 20, category: "麵類", icon:"🍜"},
+    {name: "冬粉", price: 25, category: "麵類", icon:"🍜"},
+    {name: "河粉", price: 30, category: "麵類", icon:"🍜"},
+    {name: "烏龍麵", price: 30, category: "麵類", icon:"🍜"},
+    {name: "蒸煮麵", price: 25, category: "麵類", icon:"🍜"},
+    {name: "關廟麵", price: 30, category: "麵類", icon:"🍜"},
+    {name: "手工拉麵", price: 40, category: "麵類", icon:"🍜"},
+    {name: "刀削麵", price: 35, category: "麵類", icon:"🍜"},
+    {name: "紫心麵", price: 30, category: "麵類", icon:"🍜"},
+    {name: "菠菜麵", price: 30, category: "麵類", icon:"🍜"},
+    {name: "蕎麥麵", price: 30, category: "麵類", icon:"🍜"},
+
+    // 豆製品區
+    {name: "千張皮*2", price: 20, category: "豆製品區", icon:"🍢"},
+    {name: "豆輪*2", price: 20, category: "豆製品區", icon:"🍢"},
+    {name: "中豆干*2", price: 25, category: "豆製品區", icon:"🍢"},
+    {name: "素肚", price: 20, category: "豆製品區", icon:"🍢"},
+    {name: "素雞", price: 25, category: "豆製品區", icon:"🍢"},
+    {name: "豆包", price: 25, category: "豆製品區", icon:"🍢"},
+    {name: "豆皮", price: 20, category: "豆製品區", icon:"🍢"},
+    {name: "大黑豆干", price: 25, category: "豆製品區", icon:"🍢"},
+    {name: "炸豆包", price: 30, category: "豆製品區", icon:"🍢"},
+    {name: "蘭花干", price: 35, category: "豆製品區", icon:"🍢"},
+    {name: "菜包(菜捲)", price: 30, category: "豆製品區", icon:"🍢"},
+    {name: "韓式年糕", price: 20, category: "豆製品區", icon:"🍢"},
+    {name: "大仙貝 (蛋奶素)", price: 25, category: "豆製品區", icon:"🍢"},
+    {name: "甜不辣 (蛋奶素)", price: 20, category: "豆製品區", icon:"🍢"},
+    {name: "滷蛋 (蛋奶素)", price: 20, category: "豆製品區", icon:"🥚"},
+    {name: "麻吉燒(起司/芝麻)", price: 10, category: "豆製品區", icon:"🍢"},
+    {name: "海帶芽", price: 25, category: "豆製品區", icon:"🌿"},
+    {name: "百頁豆腐", price: 20, category: "豆製品區", icon:"🍢"},
+    {name: "雞蛋豆腐 (蛋奶素)", price: 45, category: "豆製品區", icon:"🍢"},
+    {name: "芋頭糕", price: 25, category: "豆製品區", icon:"🍢"},
+    {name: "紫菜糕", price: 25, category: "豆製品區", icon:"🍢"},
+
+    // 蔬菜區 (時價)
+    {name: "玉米筍 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
+    {name: "菜頭 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
+    {name: "金針菇 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
+    {name: "鴻喜菇 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
+    {name: "袖珍菇 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
+    {name: "香菇 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
+    {name: "櫛瓜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
+    {name: "花椰菜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
+    {name: "木耳 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
+    {name: "水蓮 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
+    {name: "豆芽菜 (時價)", price: 15, category: "蔬菜區", icon:"🥬"},
+    {name: "地瓜葉 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
+    {name: "茼蒿(季節限定)", price: 30, category: "蔬菜區", icon:"🥬"},
+    {name: "小黃瓜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
+    {name: "高麗菜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
+    {name: "空心菜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
+    {name: "大陸妹 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
+    {name: "娃娃菜 (時價)", price: 30, category: "蔬菜區", icon:"🥬"},
+
+    // 其他區
+    {name: "素肉排 (蛋奶素)", price: 25, category: "其他區", icon:"🍢"},
+    {name: "花枝雞捲 (蛋奶素)", price: 20, category: "其他區", icon:"🍢"},
+    {name: "炸豆腐", price: 20, category: "其他區", icon:"🍢"},
+    {name: "大素丸 (蛋奶素)", price: 20, category: "其他區", icon:"🍡"},
+    {name: "干貝柱 (蛋奶素)", price: 20, category: "其他區", icon:"🍡"},
+    {name: "猴頭菇丸*2", price: 25, category: "其他區", icon:"🍡"},
+    {name: "玉米粒*2", price: 20, category: "其他區", icon:"🌽"},
+    {name: "玉米脆皮*2 (蛋奶素)", price: 35, category: "其他區", icon:"🌽"},
+    {name: "三層肉*2 (蛋奶素)", price: 30, category: "其他區", icon:"🍢"},
+    {name: "水晶餃*2 (蛋奶素)", price: 25, category: "其他區", icon:"🥟"},
+    {name: "獅子頭*2 (蛋奶素)", price: 30, category: "其他區", icon:"🍡"},
+    {name: "芋頭角*2", price: 20, category: "其他區", icon:"🍠"},
+    {name: "板豆腐*2", price: 25, category: "其他區", icon:"🍢"},
+    {name: "海帶*2", price: 25, category: "其他區", icon:"🌿"},
+    {name: "野菜百頁*3", price: 20, category: "其他區", icon:"🍢"},
+    {name: "芹菜香菇丸*3", price: 35, category: "其他區", icon:"🍡"},
+    {name: "小貢丸*3 (蛋奶素)", price: 30, category: "其他區", icon:"🍡"},
+    {name: "蒟蒻絲*3", price: 20, category: "其他區", icon:"🍥"},
+    {name: "素花枝*3", price: 20, category: "其他區", icon:"🍥"},
+    {name: "素腰花*3", price: 20, category: "其他區", icon:"🍥"},
+    {name: "蟳肉棒*3 (蛋奶素)", price: 30, category: "其他區", icon:"🍥"},
+    {name: "竹輪*3", price: 30, category: "其他區", icon:"🍢"},
+    {name: "鳥蛋*3 (蛋奶素)", price: 25, category: "其他區", icon:"🥚"},
+    {name: "干貝燒*3 (蛋奶素)", price: 25, category: "其他區", icon:"🍡"},
+    {name: "QQ腸*3 (蛋奶素)", price: 25, category: "其他區", icon:"🍢"}
 ];
 
 let cart = {};
@@ -676,7 +722,7 @@ let finalTotal = 0;
 let finalSummary = "";
 
 // 彈窗選擇狀態暫存
-let selectedSauerkraut = "要酸菜";
+let selectedSauerkraut = "原味";
 let selectedSpicy = "不辣";
 
 window.onload = function() {
@@ -801,30 +847,16 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    selectedSauerkraut = "要酸菜";
+    selectedSauerkraut = "原味";
     selectedSpicy = "不辣";
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:16px; color:var(--primary);">
             ${item.icon || '🍱'} ${item.name} ($${item.price})
         </div>
-        
-        <div class="option-section">
-            <div class="option-title">🥬 酸菜選擇</div>
-            <div class="option-grid">
-                <button type="button" class="opt-btn active" onclick="selectOption('sauerkraut', '要酸菜', this)">
-                    <span class="opt-icon">🥬</span>
-                    <span>要酸菜</span>
-                </button>
-                <button type="button" class="opt-btn" onclick="selectOption('sauerkraut', '不要酸菜', this)">
-                    <span class="opt-icon">🚫</span>
-                    <span>不要酸菜</span>
-                </button>
-            </div>
-        </div>
 
         <div class="option-section">
-            <div class="option-title">🌶️ 辣味選擇</div>
+            <div class="option-title">🌶️ 辣味調整</div>
             <div class="option-grid" style="grid-template-columns: repeat(3, 1fr);">
                 <button type="button" class="opt-btn active" onclick="selectOption('spicy', '不辣', this)">
                     <span class="opt-icon">🫑</span>
@@ -908,7 +940,7 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        finalSummary += `${item.baseName}(${item.sauerkraut}/${item.spicy})*${item.qty} `;
+        finalSummary += `${item.baseName}(${item.spicy})*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -973,7 +1005,7 @@ function renderModalCartList() {
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                <div class="custom-item-tag">🥬 ${item.sauerkraut} | 🌶️ ${item.spicy}</div>
+                <div class="custom-item-tag">🌶️ ${item.spicy}</div>
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
@@ -1088,7 +1120,7 @@ async function submitOrderToServer() {
                 cardId: currentCardId,
                 category: "food",
                 type: "food",
-                meal: `百華味滷味：${finalSummary.trim()}`,
+                meal: `鹿港青蔬寶：${finalSummary.trim()}`,
                 spicy: "依餐點標示",
                 total: finalTotal,
                 note: `總計：$${finalTotal}`
