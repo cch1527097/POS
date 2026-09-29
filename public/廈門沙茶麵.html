@@ -804,7 +804,7 @@ function clickAddItem(name) {
     if (!item) return;
 
     let isSoupMain = item.category.includes("招牌");
-    let isCustom3 = item.name.includes("自選三配料");
+    let isSoupMain = item.category.includes("沙茶湯") || item.category.includes("大骨湯");
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
