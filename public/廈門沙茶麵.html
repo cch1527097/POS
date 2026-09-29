@@ -783,12 +783,6 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-function selectRadioOption(el) {
-    const parent = el.closest('.option-grid');
-    parent.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-    el.classList.add('selected');
-}
-
 function toggleCheckboxOption(el) {
     const cb = el.querySelector('input[type="checkbox"]');
     cb.checked = !cb.checked;
@@ -803,8 +797,10 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 若無需選擇主食且無配料選項，直接加入購物車
-    if (!isSoupMain && !isCustom3) {
+    let isCustom3 = item.name.includes("自選三配料");
+
+    // 若無特殊選配項目，直接加入購物車
+    if (!isCustom3) {
         const customKey = `${item.name}|-|-`;
         if (cart[customKey]) {
             cart[customKey].qty += 1;
@@ -827,8 +823,8 @@ function clickAddItem(name) {
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
             ${item.icon || '🍜'} ${item.name} ($${item.price})
         </div>
-
-            ${isCustom3 ? `
+        
+        <div class="opt-group">
             <label class="section-title">📌 自選配料 (請選3項)</label>
             <div class="option-grid">
                 <div class="option-btn checkbox-btn" onclick="toggleCheckboxOption(this)">
@@ -856,7 +852,6 @@ function clickAddItem(name) {
                     <span class="opt-icon">🥚</span><span class="opt-text">滷蛋半顆</span>
                 </div>
             </div>
-            ` : ''}
         </div>
     `;
 
@@ -867,25 +862,17 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            let noodle = "-";
-            if (isSoupMain) {
-                const selectedNoodle = document.querySelector("#pop-noodle-group .option-btn.selected");
-                if (selectedNoodle) noodle = selectedNoodle.getAttribute("data-value");
-            }
-            
             let toppingStr = "-";
-            if (isCustom3) {
-                const checkboxes = document.querySelectorAll('input[name="pop-topping"]:checked');
-                const selected = Array.from(checkboxes).map(cb => cb.value);
-                if (selected.length === 0) {
-                    alert("請選擇 3 種配料！");
-                    return;
-                }
-                toppingStr = selected.join('、');
+            const checkboxes = document.querySelectorAll('input[name="pop-topping"]:checked');
+            const selected = Array.from(checkboxes).map(cb => cb.value);
+            if (selected.length === 0) {
+                alert("請選擇 3 種配料！");
+                return;
             }
+            toppingStr = selected.join('、');
 
             const unitPrice = item.price;
-            const customKey = `${item.name}|${noodle}|${toppingStr}`;
+            const customKey = `${item.name}|-|${toppingStr}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -895,7 +882,7 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    noodle: noodle,
+                    noodle: "-",
                     topping: toppingStr
                 };
             }
@@ -934,7 +921,6 @@ function renderCart() {
         finalTotal += sub;
         
         let details = [];
-        if (item.noodle !== "-") details.push(item.noodle);
         if (item.topping !== "-") details.push(`配料:${item.topping}`);
         
         const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
@@ -1002,7 +988,6 @@ function renderModalCartList() {
         div.className = "cart-item";
         
         let tags = [];
-        if (item.noodle !== "-") tags.push(`🍜 ${item.noodle}`);
         if (item.topping !== "-") tags.push(`🥢 ${item.topping}`);
 
         div.innerHTML = `
