@@ -803,10 +803,6 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 判斷是否為沙茶湯系列或大骨湯系列
-    let isSoupMain = item.category.includes("沙茶湯") || item.category.includes("大骨湯");
-    let isCustom3 = item.name.includes("自選三配料");
-
     // 若無需選擇主食且無配料選項，直接加入購物車
     if (!isSoupMain && !isCustom3) {
         const customKey = `${item.name}|-|-`;
@@ -831,20 +827,6 @@ function clickAddItem(name) {
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
             ${item.icon || '🍜'} ${item.name} ($${item.price})
         </div>
-        
-        <div class="opt-group">
-            ${isSoupMain ? `
-            <label class="section-title">🍜 主食選擇</label>
-            <div class="option-grid" id="pop-noodle-group">
-                <div class="option-btn selected" onclick="selectRadioOption(this)" data-value="泡飯"><span class="opt-icon">🍚</span><span class="opt-text">泡飯</span></div>
-                <div class="option-btn" onclick="selectRadioOption(this)" data-value="油麵"><span class="opt-icon">🍜</span><span class="opt-text">油麵</span></div>
-                <div class="option-btn" onclick="selectRadioOption(this)" data-value="意麵"><span class="opt-icon">🍜</span><span class="opt-text">意麵</span></div>
-                <div class="option-btn" onclick="selectRadioOption(this)" data-value="拉麵"><span class="opt-icon">🍜</span><span class="opt-text">拉麵</span></div>
-                <div class="option-btn" onclick="selectRadioOption(this)" data-value="米粉"><span class="opt-icon">🍜</span><span class="opt-text">米粉</span></div>
-                <div class="option-btn" onclick="selectRadioOption(this)" data-value="冬粉"><span class="opt-icon">🍜</span><span class="opt-text">冬粉</span></div>
-                <div class="option-btn" onclick="selectRadioOption(this)" data-value="陽春麵"><span class="opt-icon">🍜</span><span class="opt-text">陽春麵</span></div>
-            </div>
-            ` : ''}
 
             ${isCustom3 ? `
             <label class="section-title">📌 自選配料 (請選3項)</label>
