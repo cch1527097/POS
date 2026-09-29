@@ -803,8 +803,29 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    let isSoupMain = item.category.includes("招牌");
+    // 判斷是否為沙茶湯系列或大骨湯系列
     let isSoupMain = item.category.includes("沙茶湯") || item.category.includes("大骨湯");
+    let isCustom3 = item.name.includes("自選三配料");
+
+    // 若無需選擇主食且無配料選項，直接加入購物車
+    if (!isSoupMain && !isCustom3) {
+        const customKey = `${item.name}|-|-`;
+        if (cart[customKey]) {
+            cart[customKey].qty += 1;
+        } else {
+            cart[customKey] = {
+                key: customKey,
+                baseName: item.name,
+                price: item.price,
+                qty: 1,
+                noodle: "-",
+                topping: "-"
+            };
+        }
+        renderCart();
+        renderMenu(currentFilteredItems);
+        return;
+    }
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
