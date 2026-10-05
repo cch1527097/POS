@@ -1062,6 +1062,18 @@ body.login-mode .login-footer-copy {
             🍱 美味餐點
         </div>
         <div class="grid-container" id="food-container">
+            <div class="shop-card" onclick="redirectToShop('阿香師油飯', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge smart">在地美食</span>
+                    <img src="https://images.unsplash.com/photo-1768326119244-6b7055143e5f?fm=webp&q=60&w=800" alt="阿香師油飯">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">阿香師油飯</h3>
+                    <p class="shop-desc">店內除了每天新鮮現做、充滿麻油酒香的古早味油飯外，也供應多款經典手路菜與冷凍料理包。</p>
+                </div>
+            </div>
+            
             <div class="shop-card" onclick="redirectToShop('小宸義大利麵', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">主食精選</span>
@@ -2032,7 +2044,8 @@ body.login-mode .login-footer-copy {
             '春耕': '春耕.html',
             '秋本家': '秋本家.html',
             '名家大餛飩': '名家大餛飩.html',
-            '小宸義大利麵': '小宸義大利麵.html'
+            '小宸義大利麵': '小宸義大利麵.html',
+            '阿香師油飯': '阿香師油飯.html'
         };
 
         // 1. 設定每個院區對應的主頁網址 (請替換為您實際的 HTML 檔名或 URL)
