@@ -196,7 +196,8 @@ async function initDatabase() {
             { id: 'store_57', name: '春耕', category: '喝涼涼', isOpen: false },
             { id: 'store_58', name: '秋本家', category: '美味餐點', isOpen: false },
             { id: 'store_59', name: '名家大餛飩', category: '美味餐點', isOpen: false },
-            { id: 'store_60', name: '小宸義大利麵', category: '美味餐點', isOpen: false }
+            { id: 'store_60', name: '小宸義大利麵', category: '美味餐點', isOpen: false },
+            { id: 'store_61', name: '阿香師油飯', category: '美味餐點', isOpen: false }
         ];
 
         const currentStoreRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
