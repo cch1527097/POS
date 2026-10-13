@@ -1,7 +1,7 @@
-require('dotenv').config();
+require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
 const path = require('path');
-const crypto = require('crypto');
+const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
 
@@ -9,66 +9,31 @@ const { Pool, types } = require('pg');
 types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
-app.disable('x-powered-by'); // 停用 X-Powered-By 標頭以隱藏框架資訊
-
 const PORT = process.env.PORT || 3000;
-const ADMIN_SECRET = process.env.ADMIN_SECRET;
-
-// 手動設置基礎 HTTP 安全標頭
-app.use((req, res, next) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    next();
-});
-
-// 管理員權限驗證中間件 (採用 Timing-Safe 安全比對)
-const adminAuth = (req, res, next) => {
-    if (!ADMIN_SECRET || ADMIN_SECRET === 'CHANGE_THIS_TO_YOUR_ADMIN_SECRET') {
-        console.error('⚠️ [安全警告] 未於 .env 設定有效的 ADMIN_SECRET，存取被拒！');
-        return res.status(500).json({ success: false, message: '系統未完成安全金鑰設定，禁止存取管理員功能！' });
-    }
-
-    const token = req.headers['x-admin-token'] || req.headers['authorization']?.replace(/^Bearer\s+/i, '');
-
-    if (!token) {
-        return res.status(401).json({ success: false, message: '未提供管理員驗證 Token！' });
-    }
-
-    try {
-        const tokenBuffer = Buffer.from(String(token));
-        const secretBuffer = Buffer.from(String(ADMIN_SECRET));
-
-        if (tokenBuffer.length === secretBuffer.length && crypto.timingSafeEqual(tokenBuffer, secretBuffer)) {
-            return next();
-        }
-    } catch (err) {}
-
-    return res.status(403).json({ success: false, message: '權限不足：管理員金鑰無效！' });
-};
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// PostgreSQL (Neon) 連線設定
+// 自動解析並剔除 DATABASE_URL 中的 sslmode 參數，避免 pg 模組觸發警告
 const rawDbUrl = process.env.DATABASE_URL;
 let cleanDbUrl = rawDbUrl;
 
 if (rawDbUrl) {
     try {
         const parsedUrl = new URL(rawDbUrl);
-        parsedUrl.searchParams.delete('sslmode');
+        parsedUrl.searchParams.delete('sslmode'); // 自動過濾掉 sslmode 參數
         cleanDbUrl = parsedUrl.toString();
     } catch (err) {
         cleanDbUrl = rawDbUrl.replace(/([?&])sslmode=[^&]*/g, '');
     }
 }
 
+// PostgreSQL (Neon) 連線設定
 const pool = new Pool({
     connectionString: cleanDbUrl,
     ssl: {
-        rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
+        rejectUnauthorized: false // Neon 強制使用 SSL
     },
     max: 10,
     idleTimeoutMillis: 30000,
@@ -86,15 +51,46 @@ const INITIAL_USER_DB = {
     "16294": "梁婧盈", "16508": "尹語璟", "16661": "陳育倫", "16696": "賴語婕",
     "16925": "李宜珊", "16984": "梁慧如", "17020": "黃泓耀", "17528": "曾雅琴",
     "18445": "李珈豪", "20133": "吳佳文", "601207": "郭勝明", "601471": "陳永育",
-    "601473": "李羽茹"
+    "601473": "李羽茹", "TEST": "測試員"
 };
 
+// 輔助函式：同步寫入 public/orders.json (改為讀取 orders 表的 is_paid)
+async function syncOrdersJsonFile() {
+    try {
+        const publicDir = path.join(__dirname, 'public');
+        if (!fs.existsSync(publicDir)) {
+            await fs.promises.mkdir(publicDir, { recursive: true });
+        }
+
+        const result = await pool.query(`
+            SELECT 
+                order_id AS "orderId", 
+                card_id AS "cardId", 
+                name, 
+                meal, 
+                spicy, 
+                note, 
+                total, 
+                timestamp,
+                COALESCE(is_paid, false) AS "isPaid"
+            FROM orders
+            ORDER BY order_id DESC;
+        `);
+        const jsonPath = path.join(publicDir, 'orders.json');
+        await fs.promises.writeFile(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
+    } catch (err) {
+        console.warn('⚠️ 警告：同步 orders.json 失敗 (雲端環境可能為唯讀檔案系統):', err.message);
+    }
+}
+
+// 初始化資料庫
 async function initDatabase() {
     try {
+        // 在 orders 資料表建立時直接包含 is_paid
         await pool.query(`
             CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
-                order_id VARCHAR(100) UNIQUE NOT NULL,
+                order_id BIGINT UNIQUE NOT NULL,
                 card_id VARCHAR(50) NOT NULL,
                 name VARCHAR(100) NOT NULL,
                 meal TEXT NOT NULL,
@@ -107,10 +103,9 @@ async function initDatabase() {
             );
         `);
 
-        // 自動轉型相容舊版資料表
+        // 自動補建舊 orders 資料表可能缺少的 is_paid 欄位
         await pool.query(`
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
-            ALTER TABLE orders ALTER COLUMN order_id TYPE VARCHAR(100) USING order_id::text;
         `);
 
         await pool.query(`
@@ -130,8 +125,15 @@ async function initDatabase() {
         `);
 
         await pool.query(`
-            INSERT INTO settings (key, value) VALUES ('order_lock_time', '10:30') ON CONFLICT (key) DO NOTHING;
-            INSERT INTO settings (key, value) VALUES ('active_store', '老聃飲食') ON CONFLICT (key) DO NOTHING;
+            INSERT INTO settings (key, value)
+            VALUES ('order_lock_time', '10:30')
+            ON CONFLICT (key) DO NOTHING;
+        `);
+
+        await pool.query(`
+            INSERT INTO settings (key, value)
+            VALUES ('active_store', '老聃飲食')
+            ON CONFLICT (key) DO NOTHING;
         `);
 
         const DEFAULT_STORES = [
@@ -201,7 +203,10 @@ async function initDatabase() {
 
         const currentStoreRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         if (currentStoreRes.rows.length === 0) {
-            await pool.query(`INSERT INTO settings (key, value) VALUES ('store_list', $1);`, [JSON.stringify(DEFAULT_STORES)]);
+            await pool.query(`
+                INSERT INTO settings (key, value)
+                VALUES ('store_list', $1);
+            `, [JSON.stringify(DEFAULT_STORES)]);
         } else {
             try {
                 let existingStores = JSON.parse(currentStoreRes.rows[0].value) || [];
@@ -209,15 +214,24 @@ async function initDatabase() {
                 
                 const syncedStores = DEFAULT_STORES.map(defStore => {
                     const match = existingStores.find(s => s && s.id === defStore.id);
-                    return { ...defStore, isOpen: match ? Boolean(match.isOpen) : defStore.isOpen };
+                    return {
+                        ...defStore,
+                        isOpen: match ? Boolean(match.isOpen) : defStore.isOpen
+                    };
                 });
 
                 await pool.query(`
-                    INSERT INTO settings (key, value) VALUES ('store_list', $1)
+                    INSERT INTO settings (key, value)
+                    VALUES ('store_list', $1)
                     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
                 `, [JSON.stringify(syncedStores)]);
             } catch (e) {
                 console.error('解析現有店家清單失敗，重新寫入預設店家:', e);
+                await pool.query(`
+                    INSERT INTO settings (key, value)
+                    VALUES ('store_list', $1)
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+                `, [JSON.stringify(DEFAULT_STORES)]);
             }
         }
 
@@ -241,6 +255,7 @@ async function initDatabase() {
         }
 
         console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);
+        await syncOrdersJsonFile();
     } catch (err) {
         console.error(`❌ 初始化 Neon 資料庫失敗：`, err.message);
         throw err;
@@ -252,28 +267,40 @@ async function initDatabase() {
 app.get('/api/lock-time', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
-        res.json({ success: true, lockTime: result.rows.length > 0 ? result.rows[0].value : "" });
+        const lockTime = result.rows.length > 0 ? result.rows[0].value : "";
+        res.json({ success: true, lockTime });
     } catch (err) {
+        console.error('讀取鎖定時間失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得鎖定時間' });
     }
 });
 
-app.post('/api/lock-time', adminAuth, async (req, res) => {
+app.post('/api/lock-time', async (req, res) => {
     const { lockTime } = req.body;
     const newLockTime = lockTime ? String(lockTime).trim() : "";
 
     try {
         await pool.query(`
-            INSERT INTO settings (key, value) VALUES ('order_lock_time', $1)
+            INSERT INTO settings (key, value) 
+            VALUES ('order_lock_time', $1)
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [newLockTime]);
 
+        if (!newLockTime) {
+            return res.json({ 
+                success: true, 
+                message: '已成功解除點餐限制！目前系統無時間限制，隨時可進行下單。',
+                lockTime: "" 
+            });
+        }
+
         return res.json({ 
             success: true, 
-            message: newLockTime ? `已成功將點餐截止時間設定為 ${newLockTime}` : '已解除時間限制！',
+            message: `已成功將點餐截止時間設定為 ${newLockTime}`,
             lockTime: newLockTime
         });
     } catch (err) {
+        console.error('更新鎖定時間失敗:', err.message);
         res.status(500).json({ success: false, message: '設定鎖定時間失敗' });
     }
 });
@@ -281,39 +308,50 @@ app.post('/api/lock-time', adminAuth, async (req, res) => {
 app.get('/api/stores', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
-        res.json({ success: true, stores: result.rows.length > 0 ? JSON.parse(result.rows[0].value) : [] });
+        if (result.rows.length > 0) {
+            res.json({ success: true, stores: JSON.parse(result.rows[0].value) });
+        } else {
+            res.json({ success: true, stores: [] });
+        }
     } catch (err) {
+        console.error('讀取店家設定失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得店家設定' });
     }
 });
 
-app.post('/api/stores', adminAuth, async (req, res) => {
+app.post('/api/stores', async (req, res) => {
     const { stores } = req.body;
+    
     if (!Array.isArray(stores)) {
         return res.status(400).json({ success: false, message: '店家資料格式不正確！' });
     }
 
     try {
         await pool.query(`
-            INSERT INTO settings (key, value) VALUES ('store_list', $1)
+            INSERT INTO settings (key, value) 
+            VALUES ('store_list', $1)
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [JSON.stringify(stores)]);
 
         const activeStores = stores.filter(s => s && s.isOpen);
-        const activeStoreNames = activeStores.map(s => s.name.replace(/\s*\([^)]*\)/g, '').trim()).join('、');
+        const activeStoreNames = activeStores
+            .map(s => s.name.replace(/\s*\([^)]*\)/g, '').trim())
+            .join('、');
 
         await pool.query(`
-            INSERT INTO settings (key, value) VALUES ('active_store', $1)
+            INSERT INTO settings (key, value) 
+            VALUES ('active_store', $1)
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [activeStoreNames]);
 
         return res.json({ 
             success: true, 
-            message: activeStoreNames ? `已成功開放店家：${activeStoreNames}` : '已變更店家設定！',
+            message: activeStoreNames ? `已成功將開放店家設定為：${activeStoreNames}` : '已變更店家設定，目前無開放店家！',
             activeStore: activeStoreNames,
-            stores
+            stores: stores
         });
     } catch (err) {
+        console.error('更新開放店家失敗:', err.message);
         res.status(500).json({ success: false, message: '設定開放店家失敗' });
     }
 });
@@ -321,19 +359,23 @@ app.post('/api/stores', adminAuth, async (req, res) => {
 app.get('/api/active-store', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'active_store';");
-        res.json({ success: true, activeStore: result.rows.length > 0 ? result.rows[0].value : "" });
+        const activeStore = result.rows.length > 0 ? result.rows[0].value : "";
+        res.json({ success: true, activeStore });
     } catch (err) {
+        console.error('讀取開放店家失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得開放店家設定' });
     }
 });
 
-app.post('/api/active-store', adminAuth, async (req, res) => {
+app.post('/api/active-store', async (req, res) => {
     const { activeStore } = req.body;
-    const cleanStoreName = activeStore ? String(activeStore).trim().replace(/\s*\([^)]*\)/g, '') : "";
+    const storeName = activeStore ? String(activeStore).trim() : "";
+    const cleanStoreName = storeName.replace(/\s*\([^)]*\)/g, '').trim();
 
     try {
         await pool.query(`
-            INSERT INTO settings (key, value) VALUES ('active_store', $1)
+            INSERT INTO settings (key, value) 
+            VALUES ('active_store', $1)
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [cleanStoreName]);
 
@@ -343,38 +385,61 @@ app.post('/api/active-store', adminAuth, async (req, res) => {
             activeStore: cleanStoreName
         });
     } catch (err) {
+        console.error('更新開放店家失敗:', err.message);
         res.status(500).json({ success: false, message: '設定開放店家失敗' });
     }
 });
 
+// 獲取所有訂單（改為直接讀取 orders.is_paid）
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT order_id AS "orderId", card_id AS "cardId", name, meal, spicy, note, total, timestamp, COALESCE(is_paid, false) AS "isPaid"
-            FROM orders ORDER BY created_at DESC;
+            SELECT 
+                order_id AS "orderId", 
+                card_id AS "cardId", 
+                name, 
+                meal, 
+                spicy, 
+                note, 
+                total, 
+                timestamp,
+                COALESCE(is_paid, false) AS "isPaid"
+            FROM orders
+            ORDER BY order_id DESC;
         `);
         res.json(result.rows);
     } catch (err) {
+        console.error('獲取訂單失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得訂單資料' });
     }
 });
 
-app.patch('/api/orders/:orderId/payment', adminAuth, async (req, res) => {
+// 切換特定「訂單」的繳費狀態（直接修改 orders 表）
+app.patch('/api/orders/:orderId/payment', async (req, res) => {
     const { orderId } = req.params;
     const { isPaid } = req.body;
     const targetOrderIdStr = orderId ? String(orderId).trim() : '';
+    const paidBool = isPaid === true || isPaid === 'true';
 
     if (!targetOrderIdStr) {
         return res.status(400).json({ success: false, message: '無效的訂單編號！' });
     }
 
     try {
-        const result = await pool.query('UPDATE orders SET is_paid = $1 WHERE order_id = $2 RETURNING *;', [Boolean(isPaid), targetOrderIdStr]);
+        const result = await pool.query(
+            'UPDATE orders SET is_paid = $1 WHERE order_id = $2 RETURNING *;',
+            [paidBool, targetOrderIdStr]
+        );
+        
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
+
+        syncOrdersJsonFile().catch(() => {});
+
         res.json({ success: true, message: '訂單繳費狀態更新成功！' });
     } catch (err) {
+        console.error('更新訂單繳費狀態失敗:', err.message);
         res.status(500).json({ success: false, message: '伺服器更新繳費狀態失敗。' });
     }
 });
@@ -384,33 +449,47 @@ app.get('/api/employees', async (req, res) => {
         const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
         const dbMap = {};
         result.rows.forEach(row => {
-            dbMap[row.card_id] = { name: row.name, isPaid: row.is_paid, department: row.department };
+            dbMap[row.card_id] = {
+                name: row.name,
+                isPaid: row.is_paid,
+                department: row.department
+            };
         });
         res.json(dbMap);
     } catch (err) {
+        console.error('讀取員工資料失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得員工資料' });
     }
 });
 
-app.patch('/api/employees/:cardId/payment', adminAuth, async (req, res) => {
+app.patch('/api/employees/:cardId/payment', async (req, res) => {
     const { cardId } = req.params;
     const { isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
+    const paidBool = isPaid === true || isPaid === 'true';
 
     try {
-        const result = await pool.query('UPDATE users SET is_paid = $1 WHERE card_id = $2 RETURNING *;', [Boolean(isPaid), cleanCardId]);
+        const result = await pool.query(
+            'UPDATE users SET is_paid = $1 WHERE card_id = $2 RETURNING *;',
+            [paidBool, cleanCardId]
+        );
+
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
+
+        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '繳費狀態更新成功' });
     } catch (err) {
+        console.error('更新員工繳費狀態失敗:', err.message);
         res.status(500).json({ success: false, message: '更新失敗' });
     }
 });
 
-app.put('/api/employees/:cardId', adminAuth, async (req, res) => {
+app.put('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const { name, department } = req.body;
+    
     const cleanCardId = cardId ? String(cardId).trim() : '';
     const cleanName = name ? String(name).trim() : '';
     const cleanDept = department ? String(department).trim() : '未劃分';
@@ -420,22 +499,31 @@ app.put('/api/employees/:cardId', adminAuth, async (req, res) => {
     }
 
     try {
-        const result = await pool.query('UPDATE users SET name = $1, department = $2 WHERE card_id = $3 RETURNING *;', [cleanName, cleanDept, cleanCardId]);
+        const result = await pool.query(
+            'UPDATE users SET name = $1, department = $2 WHERE card_id = $3 RETURNING *;',
+            [cleanName, cleanDept, cleanCardId]
+        );
+
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
+
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
+        
+        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '員工資料更新成功' });
     } catch (err) {
+        console.error('更新員工資料失敗:', err.message);
         res.status(500).json({ success: false, message: '更新員工資料失敗' });
     }
 });
 
-app.post('/api/employees', adminAuth, async (req, res) => {
+app.post('/api/employees', async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
     const cleanName = name ? String(name).trim() : '';
     const cleanDept = department ? String(department).trim() : '未劃分';
+    const paidBool = isPaid === true || isPaid === 'true';
 
     if (!cleanCardId || !cleanName) {
         return res.status(400).json({ success: false, message: '卡號與姓名不可為空！' });
@@ -447,14 +535,18 @@ app.post('/api/employees', adminAuth, async (req, res) => {
             return res.status(400).json({ success: false, message: '此卡號已經存在！' });
         }
 
-        await pool.query('INSERT INTO users (card_id, name, is_paid, department) VALUES ($1, $2, $3, $4);', [cleanCardId, cleanName, Boolean(isPaid), cleanDept]);
+        await pool.query(
+            'INSERT INTO users (card_id, name, is_paid, department) VALUES ($1, $2, $3, $4);', 
+            [cleanCardId, cleanName, paidBool, cleanDept]
+        );
         res.json({ success: true, message: '新增成功' });
     } catch (err) {
+        console.error('新增員工失敗:', err.message);
         res.status(500).json({ success: false, message: '新增員工失敗' });
     }
 });
 
-app.delete('/api/employees/:cardId', adminAuth, async (req, res) => {
+app.delete('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const cleanCardId = cardId ? String(cardId).trim() : '';
 
@@ -465,11 +557,12 @@ app.delete('/api/employees/:cardId', adminAuth, async (req, res) => {
         }
         res.json({ success: true, message: '刪除成功' });
     } catch (err) {
+        console.error('刪除員工失敗:', err.message);
         res.status(500).json({ success: false, message: '刪除員工失敗' });
     }
 });
 
-app.delete('/api/orders/:orderId', adminAuth, async (req, res) => {
+app.delete('/api/orders/:orderId', async (req, res) => {
     const { orderId } = req.params;
     const targetOrderIdStr = orderId ? String(orderId).trim() : '';
 
@@ -482,8 +575,11 @@ app.delete('/api/orders/:orderId', adminAuth, async (req, res) => {
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
+
+        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: `訂單 ${targetOrderIdStr} 已成功刪除。` });
     } catch (error) {
+        console.error('後端處理刪除訂單發生錯誤:', error);
         res.status(500).json({ success: false, message: '伺服器刪除資料失敗。' });
     }
 });
@@ -500,10 +596,12 @@ app.post('/api/login', async (req, res) => {
             res.json({ success: false, message: '卡號無效，拒絕存取' });
         }
     } catch (err) {
+        console.error('登入驗證錯誤:', err.message);
         res.status(500).json({ success: false, message: '系統錯誤' });
     }
 });
 
+// 下訂單 API：預設 is_paid 為 false (未繳費)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
@@ -511,15 +609,16 @@ app.post('/api/order', async (req, res) => {
         const reqStoreId = storeId ? String(storeId).trim() : "";
         const reqStoreName = storeName ? String(storeName).trim() : "";
 
-        const numTotal = Number(total);
-        if (isNaN(numTotal) || numTotal < 0) {
-            return res.status(400).json({ success: false, message: '⚠️ 訂單金額不正確！' });
-        }
-
+        // 1. 店家開放狀態檢查
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
+        
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
             const stores = JSON.parse(storeListRes.rows[0].value) || [];
-            let matchedStore = reqStoreId ? stores.find(s => s && s.id === reqStoreId) : null;
+            let matchedStore = null;
+
+            if (reqStoreId) {
+                matchedStore = stores.find(s => s && s.id === reqStoreId);
+            }
 
             if (!matchedStore) {
                 matchedStore = stores.find(s => {
@@ -533,16 +632,25 @@ app.post('/api/order', async (req, res) => {
 
             if (matchedStore && !matchedStore.isOpen) {
                 const displayStoreName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
-                return res.status(403).json({ success: false, message: `⚠️ 店家「${displayStoreName}」目前尚未開放點餐！` });
+                return res.status(403).json({
+                    success: false,
+                    message: `⚠️ 店家「${displayStoreName}」目前尚未開放點餐！`
+                });
             }
         }
 
+        // 2. 鎖定時間比對
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
         if (orderLockTime && orderLockTime.includes(':')) {
             const now = new Date();
-            const taipeiFormatter = new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hour12: false });
+            const taipeiFormatter = new Intl.DateTimeFormat('zh-TW', {
+                timeZone: 'Asia/Taipei',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
             const parts = taipeiFormatter.formatToParts(now);
             const currentH = Number(parts.find(p => p.type === 'hour').value);
             const currentM = Number(parts.find(p => p.type === 'minute').value);
@@ -552,10 +660,14 @@ app.post('/api/order', async (req, res) => {
             const lockTotalMinutes = lockH * 60 + lockM;
 
             if (currentTotalMinutes >= lockTotalMinutes) {
-                return res.status(403).json({ success: false, message: `⏰ 點餐已截止！今日點餐時間限制至 ${orderLockTime}。` });
+                return res.status(403).json({
+                    success: false,
+                    message: `⏰ 點餐已截止！今日點餐時間限制至 ${orderLockTime}，系統目前已鎖定無法再下單。`
+                });
             }
         }
 
+        // 3. 員工驗證與寫入
         const cleanCardId = cardId ? String(cardId).trim() : '';
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
@@ -563,9 +675,13 @@ app.post('/api/order', async (req, res) => {
         }
 
         const empName = userRes.rows[0].name;
-        const orderIdVal = crypto.randomUUID(); // 使用安全 UUID 替代溢位的大整數
+        const numTotal = Number(total);
+        
+        // 解決高併發碰撞：時間戳毫秒 + 4位隨機數
+        const orderIdVal = parseInt(`${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`, 10);
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
+        // 新增訂單預設將 is_paid 設為 false
         const insertQuery = `
             INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp, is_paid)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, false);
@@ -577,11 +693,13 @@ app.post('/api/order', async (req, res) => {
             cleanMeal || "未知餐點",
             spicy ? String(spicy).trim() : "無",
             note ? String(note).trim() : "無",
-            numTotal,
+            !isNaN(numTotal) ? numTotal : 0,
             timestampStr
         ];
 
         await pool.query(insertQuery, values);
+        syncOrdersJsonFile().catch(() => {});
+
         res.json({ success: true, message: `🎉 訂單送出成功！` });
     } catch (error) {
         console.error('後端處理訂單發生錯誤:', error);
@@ -589,7 +707,6 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 歷史紀錄查詢：強制依台北時區邊界查詢當日訂單
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -603,9 +720,9 @@ app.get('/api/order-history', async (req, res) => {
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND created_at >= ((NOW() AT TIME ZONE 'Asia/Taipei')::date AT TIME ZONE 'Asia/Taipei')
-               AND created_at < (((NOW() AT TIME ZONE 'Asia/Taipei')::date + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
-             ORDER BY created_at DESC;`,
+               AND created_at >= ((CURRENT_DATE AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
+               AND created_at < (((CURRENT_DATE + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
+             ORDER BY order_id DESC;`,
             [cleanCardId]
         );
 
@@ -617,19 +734,24 @@ app.get('/api/order-history', async (req, res) => {
 
         res.json({ success: true, orders: userOrders });
     } catch (error) {
+        console.error('讀取紀錄失敗:', error);
         res.json({ success: false, message: '讀取歷史紀錄失敗', orders: [] });
     }
 });
 
-app.get('/api/export-excel', adminAuth, async (req, res) => {
+// Excel 匯出（直接讀取 orders.is_paid）
+app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT order_id, timestamp, card_id, name, meal, spicy, note, total, COALESCE(is_paid, false) AS is_paid
-            FROM orders ORDER BY created_at ASC;
+            SELECT 
+                order_id, timestamp, card_id, name, meal, spicy, note, total,
+                COALESCE(is_paid, false) AS is_paid
+            FROM orders
+            ORDER BY order_id ASC;
         `);
         
         const orders = result.rows.map(row => ({
-            orderId: String(row.order_id),
+            orderId: Number(row.order_id),
             timestamp: row.timestamp,
             cardId: row.card_id,
             name: row.name,
@@ -643,7 +765,7 @@ app.get('/api/export-excel', adminAuth, async (req, res) => {
         const workbook = new ExcelJS.Workbook();
         const sheet1 = workbook.addWorksheet('訂單明細');
         sheet1.columns = [
-            { header: '訂單ID', key: 'orderId', width: 36 },
+            { header: '訂單ID', key: 'orderId', width: 22 },
             { header: '時間', key: 'timestamp', width: 25 },
             { header: '員工卡號', key: 'cardId', width: 15 },
             { header: '員工姓名', key: 'name', width: 15 }, 
@@ -653,8 +775,59 @@ app.get('/api/export-excel', adminAuth, async (req, res) => {
             { header: '金額', key: 'total', width: 12 },
             { header: '繳費狀態', key: 'isPaid', width: 12 }
         ];
+        
+        const sheet2 = workbook.addWorksheet('店家點餐統計表');
+        sheet2.columns = [
+            { header: '店家/品項名稱', key: 'meal', width: 25 },
+            { header: '總點餐次數', key: 'count', width: 15 }
+        ];
 
-        orders.forEach(order => sheet1.addRow(order));
+        orders.forEach(order => {
+            sheet1.addRow({
+                orderId: order.orderId,
+                timestamp: order.timestamp,
+                cardId: order.cardId,
+                name: order.name || '未知', 
+                meal: order.meal,
+                spicy: order.spicy || '無',
+                note: order.note || '無',
+                total: !isNaN(order.total) ? order.total : 0,
+                isPaid: order.isPaid
+            });
+        });
+
+        const statistics = {};
+        orders.forEach(order => {
+            if (order.meal) {
+                statistics[order.meal] = (statistics[order.meal] || 0) + 1;
+            }
+        });
+
+        Object.keys(statistics).forEach(meal => {
+            sheet2.addRow({
+                meal: meal,
+                count: statistics[meal]
+            });
+        });
+
+        [sheet1, sheet2].forEach(sheet => {
+            const headerRow = sheet.getRow(1);
+            headerRow.height = 24;
+            headerRow.font = { bold: true, color: { argb: 'FFFFFF' }, size: 11 };
+            headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '2B4C23' } };
+            
+            sheet.eachRow((row) => {
+                row.eachCell(cell => {
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: 'DDDDDD' } },
+                        bottom: { style: 'thin', color: { argb: 'DDDDDD' } },
+                        left: { style: 'thin', color: { argb: 'DDDDDD' } },
+                        right: { style: 'thin', color: { argb: 'DDDDDD' } }
+                    };
+                });
+            });
+        });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename=orders_${Date.now()}.xlsx`);
@@ -662,26 +835,22 @@ app.get('/api/export-excel', adminAuth, async (req, res) => {
         await workbook.xlsx.write(res);
         res.end();
     } catch (err) {
+        console.error('導出 Excel 失敗:', err.message);
         res.status(500).json({ success: false, message: '無法產生 Excel 報表' });
     }
 });
 
-// 全域例外錯誤處理中間件
-app.use((err, req, res, next) => {
-    console.error('未處理的請求錯誤:', err);
-    res.status(err.status || 500).json({ success: false, message: '伺服器請求處理失敗！' });
-});
-
+// 啟動伺服器
 async function startServer() {
     try {
         await initDatabase();
         app.listen(PORT, () => {
             console.log(`================================================================`);
-            console.log(` 🚀 訂餐系統安全修正版已啟動！Port: ${PORT}`);
+            console.log(` 🚀 訂餐系統後端已啟動！Port: ${PORT}`);
             console.log(`================================================================`);
         });
     } catch (err) {
-        console.error('❌ 伺服器啟動失敗:', err);
+        console.error('❌ 伺服器啟動失敗，無法連線至 Neon PostgreSQL:', err);
         process.exit(1);
     }
 }
