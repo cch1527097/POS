@@ -4,41 +4,28 @@ const path = require('path');
 const crypto = require('crypto');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 
-// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
 types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
-// ==================== 安全性中間件 (Security Middlewares) ====================
-
-// 1. 啟用 Helmet 安全標頭防護
-app.use(helmet({
-    contentSecurityPolicy: false // 若前端載入外部 CDN 可依需求調整
-}));
-
-// 2. 全域 API 頻率限制 (15 分鐘內最多 200 次請求)
-const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 200,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { success: false, message: '請求過於頻繁，請稍後再試！' }
+// 手動設置基礎 HTTP 安全標頭（代替 helmet）
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
 });
 
-// 3. 管理員權限驗證中間件 (採用 Timing-Safe 安全比對，防範時序攻擊與 Token 洩漏)
+// 管理員權限驗證中間件 (防範時序攻擊)
 const adminAuth = (req, res, next) => {
-    // 防範弱密碼設定：若未在 .env 設定 ADMIN_SECRET，直接封鎖管理員權限
     if (!ADMIN_SECRET || ADMIN_SECRET === 'CHANGE_THIS_TO_YOUR_ADMIN_SECRET') {
         console.error('⚠️ [安全警告] 未於 .env 設定有效的 ADMIN_SECRET，存取被拒！');
         return res.status(500).json({ success: false, message: '系統未完成安全金鑰設定，禁止存取管理員功能！' });
     }
 
-    // 嚴格僅接受 Header 傳送 Token (防範 URL Query 洩露至日誌)
     const token = req.headers['x-admin-token'] || req.headers['authorization']?.replace(/^Bearer\s+/i, '');
 
     if (!token) {
@@ -49,13 +36,10 @@ const adminAuth = (req, res, next) => {
         const tokenBuffer = Buffer.from(String(token));
         const secretBuffer = Buffer.from(String(ADMIN_SECRET));
 
-        // 長度一致且使用 timingSafeEqual 比對，徹底防範時序攻擊
         if (tokenBuffer.length === secretBuffer.length && crypto.timingSafeEqual(tokenBuffer, secretBuffer)) {
             return next();
         }
-    } catch (err) {
-        // 比對過程發生例外時均判定為驗證失敗
-    }
+    } catch (err) {}
 
     return res.status(403).json({ success: false, message: '權限不足：管理員金鑰無效！' });
 };
@@ -63,10 +47,8 @@ const adminAuth = (req, res, next) => {
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/api/', apiLimiter);
 
-// ==================== PostgreSQL (Neon) 連線設定 ====================
-
+// PostgreSQL (Neon) 連線設定
 const rawDbUrl = process.env.DATABASE_URL;
 let cleanDbUrl = rawDbUrl;
 
@@ -104,7 +86,6 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹"
 };
 
-// 初始化資料庫
 async function initDatabase() {
     try {
         await pool.query(`
@@ -262,13 +243,11 @@ async function initDatabase() {
     }
 }
 
-// ==================== API 路由 ====================
-
+// API 路由
 app.get('/api/lock-time', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
-        const lockTime = result.rows.length > 0 ? result.rows[0].value : "";
-        res.json({ success: true, lockTime });
+        res.json({ success: true, lockTime: result.rows.length > 0 ? result.rows[0].value : "" });
     } catch (err) {
         res.status(500).json({ success: false, message: '無法取得鎖定時間' });
     }
@@ -520,7 +499,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API (已加入金額數值防禦性檢查)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
@@ -528,13 +506,11 @@ app.post('/api/order', async (req, res) => {
         const reqStoreId = storeId ? String(storeId).trim() : "";
         const reqStoreName = storeName ? String(storeName).trim() : "";
 
-        // 金額強型別與負數驗證防禦
         const numTotal = Number(total);
         if (isNaN(numTotal) || numTotal < 0) {
             return res.status(400).json({ success: false, message: '⚠️ 訂單金額不正確！' });
         }
 
-        // 1. 店家開放狀態檢查
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
             const stores = JSON.parse(storeListRes.rows[0].value) || [];
@@ -556,7 +532,6 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 2. 鎖定時間比對
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
@@ -576,7 +551,6 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 3. 員工驗證與寫入
         const cleanCardId = cardId ? String(cardId).trim() : '';
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
