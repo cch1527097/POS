@@ -1,4 +1,4 @@
-require('dotenv').config(); // 載入 .env 環境變數
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
@@ -12,7 +12,7 @@ types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'CHANGE_THIS_TO_YOUR_ADMIN_SECRET';
+const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
 // ==================== 安全性中間件 (Security Middlewares) ====================
 
@@ -30,13 +30,34 @@ const apiLimiter = rateLimit({
     message: { success: false, message: '請求過於頻繁，請稍後再試！' }
 });
 
-// 3. 管理員權限驗證中間件 (比對 Header 'x-admin-token' 或 Query 'adminToken')
+// 3. 管理員權限驗證中間件 (採用 Timing-Safe 安全比對，防範時序攻擊與 Token 洩漏)
 const adminAuth = (req, res, next) => {
-    const token = req.headers['x-admin-token'] || req.query.adminToken;
-    if (ADMIN_SECRET && token === ADMIN_SECRET) {
-        return next();
+    // 防範弱密碼設定：若未在 .env 設定 ADMIN_SECRET，直接封鎖管理員權限
+    if (!ADMIN_SECRET || ADMIN_SECRET === 'CHANGE_THIS_TO_YOUR_ADMIN_SECRET') {
+        console.error('⚠️ [安全警告] 未於 .env 設定有效的 ADMIN_SECRET，存取被拒！');
+        return res.status(500).json({ success: false, message: '系統未完成安全金鑰設定，禁止存取管理員功能！' });
     }
-    return res.status(403).json({ success: false, message: '權限不足：拒絕存取管理員功能！' });
+
+    // 嚴格僅接受 Header 傳送 Token (防範 URL Query 洩露至日誌)
+    const token = req.headers['x-admin-token'] || req.headers['authorization']?.replace(/^Bearer\s+/i, '');
+
+    if (!token) {
+        return res.status(401).json({ success: false, message: '未提供管理員驗證 Token！' });
+    }
+
+    try {
+        const tokenBuffer = Buffer.from(String(token));
+        const secretBuffer = Buffer.from(String(ADMIN_SECRET));
+
+        // 長度一致且使用 timingSafeEqual 比對，徹底防範時序攻擊
+        if (tokenBuffer.length === secretBuffer.length && crypto.timingSafeEqual(tokenBuffer, secretBuffer)) {
+            return next();
+        }
+    } catch (err) {
+        // 比對過程發生例外時均判定為驗證失敗
+    }
+
+    return res.status(403).json({ success: false, message: '權限不足：管理員金鑰無效！' });
 };
 
 app.use(express.json({ limit: '1mb' }));
@@ -62,7 +83,6 @@ if (rawDbUrl) {
 const pool = new Pool({
     connectionString: cleanDbUrl,
     ssl: {
-        // 可透過 .env 的 DB_SSL_REJECT_UNAUTHORIZED 決定是否嚴格驗證憑證
         rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
     },
     max: 10,
@@ -103,7 +123,6 @@ async function initDatabase() {
             );
         `);
 
-        // 自動擴充相容舊版資料表
         await pool.query(`
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
             ALTER TABLE orders ALTER COLUMN order_id TYPE VARCHAR(100);
@@ -245,19 +264,16 @@ async function initDatabase() {
 
 // ==================== API 路由 ====================
 
-// 取得點餐鎖定時間
 app.get('/api/lock-time', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const lockTime = result.rows.length > 0 ? result.rows[0].value : "";
         res.json({ success: true, lockTime });
     } catch (err) {
-        console.error('讀取鎖定時間失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得鎖定時間' });
     }
 });
 
-// 修改點餐鎖定時間 [需管理員權限]
 app.post('/api/lock-time', adminAuth, async (req, res) => {
     const { lockTime } = req.body;
     const newLockTime = lockTime ? String(lockTime).trim() : "";
@@ -274,23 +290,19 @@ app.post('/api/lock-time', adminAuth, async (req, res) => {
             lockTime: newLockTime
         });
     } catch (err) {
-        console.error('更新鎖定時間失敗:', err.message);
         res.status(500).json({ success: false, message: '設定鎖定時間失敗' });
     }
 });
 
-// 讀取店家設定
 app.get('/api/stores', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         res.json({ success: true, stores: result.rows.length > 0 ? JSON.parse(result.rows[0].value) : [] });
     } catch (err) {
-        console.error('讀取店家設定失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得店家設定' });
     }
 });
 
-// 修改店家設定 [需管理員權限]
 app.post('/api/stores', adminAuth, async (req, res) => {
     const { stores } = req.body;
     if (!Array.isArray(stores)) {
@@ -318,12 +330,10 @@ app.post('/api/stores', adminAuth, async (req, res) => {
             stores
         });
     } catch (err) {
-        console.error('更新開放店家失敗:', err.message);
         res.status(500).json({ success: false, message: '設定開放店家失敗' });
     }
 });
 
-// 獲取開放店家
 app.get('/api/active-store', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'active_store';");
@@ -333,7 +343,6 @@ app.get('/api/active-store', async (req, res) => {
     }
 });
 
-// 修改開放店家 [需管理員權限]
 app.post('/api/active-store', adminAuth, async (req, res) => {
     const { activeStore } = req.body;
     const cleanStoreName = activeStore ? String(activeStore).trim().replace(/\s*\([^)]*\)/g, '') : "";
@@ -354,7 +363,6 @@ app.post('/api/active-store', adminAuth, async (req, res) => {
     }
 });
 
-// 獲取所有訂單
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -367,7 +375,6 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 修改特定訂單繳費狀態 [需管理員權限]
 app.patch('/api/orders/:orderId/payment', adminAuth, async (req, res) => {
     const { orderId } = req.params;
     const { isPaid } = req.body;
@@ -388,7 +395,6 @@ app.patch('/api/orders/:orderId/payment', adminAuth, async (req, res) => {
     }
 });
 
-// 讀取員工資料
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name, COALESCE(is_paid, false) AS is_paid, COALESCE(department, \'未劃分\') AS department FROM users;');
@@ -402,7 +408,6 @@ app.get('/api/employees', async (req, res) => {
     }
 });
 
-// 修改員工繳費狀態 [需管理員權限]
 app.patch('/api/employees/:cardId/payment', adminAuth, async (req, res) => {
     const { cardId } = req.params;
     const { isPaid } = req.body;
@@ -419,7 +424,6 @@ app.patch('/api/employees/:cardId/payment', adminAuth, async (req, res) => {
     }
 });
 
-// 修改員工資訊 [需管理員權限]
 app.put('/api/employees/:cardId', adminAuth, async (req, res) => {
     const { cardId } = req.params;
     const { name, department } = req.body;
@@ -443,7 +447,6 @@ app.put('/api/employees/:cardId', adminAuth, async (req, res) => {
     }
 });
 
-// 新增員工 [需管理員權限]
 app.post('/api/employees', adminAuth, async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -467,7 +470,6 @@ app.post('/api/employees', adminAuth, async (req, res) => {
     }
 });
 
-// 刪除員工 [需管理員權限]
 app.delete('/api/employees/:cardId', adminAuth, async (req, res) => {
     const { cardId } = req.params;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -483,7 +485,6 @@ app.delete('/api/employees/:cardId', adminAuth, async (req, res) => {
     }
 });
 
-// 刪除訂單 [需管理員權限]
 app.delete('/api/orders/:orderId', adminAuth, async (req, res) => {
     const { orderId } = req.params;
     const targetOrderIdStr = orderId ? String(orderId).trim() : '';
@@ -503,7 +504,6 @@ app.delete('/api/orders/:orderId', adminAuth, async (req, res) => {
     }
 });
 
-// 登入驗證 API
 app.post('/api/login', async (req, res) => {
     const { cardId } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -520,13 +520,19 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API
+// 下訂單 API (已加入金額數值防禦性檢查)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
         const cleanMeal = meal ? String(meal).trim() : "";
         const reqStoreId = storeId ? String(storeId).trim() : "";
         const reqStoreName = storeName ? String(storeName).trim() : "";
+
+        // 金額強型別與負數驗證防禦
+        const numTotal = Number(total);
+        if (isNaN(numTotal) || numTotal < 0) {
+            return res.status(400).json({ success: false, message: '⚠️ 訂單金額不正確！' });
+        }
 
         // 1. 店家開放狀態檢查
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
@@ -578,9 +584,6 @@ app.post('/api/order', async (req, res) => {
         }
 
         const empName = userRes.rows[0].name;
-        const numTotal = Number(total);
-        
-        // 修正溢位問題：使用安全 UUID 作為唯一訂單編號
         const orderIdVal = crypto.randomUUID();
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
@@ -595,7 +598,7 @@ app.post('/api/order', async (req, res) => {
             cleanMeal || "未知餐點",
             spicy ? String(spicy).trim() : "無",
             note ? String(note).trim() : "無",
-            !isNaN(numTotal) ? numTotal : 0,
+            numTotal,
             timestampStr
         ];
 
@@ -607,7 +610,6 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 查詢歷史紀錄
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -639,7 +641,6 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// Excel 匯出 [需管理員權限]
 app.get('/api/export-excel', adminAuth, async (req, res) => {
     try {
         const result = await pool.query(`
@@ -685,7 +686,6 @@ app.get('/api/export-excel', adminAuth, async (req, res) => {
     }
 });
 
-// 啟動伺服器
 async function startServer() {
     try {
         await initDatabase();
