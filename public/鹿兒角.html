@@ -114,7 +114,6 @@
             letter-spacing: 1px;
         }
         .store-details h1 { margin: 0 0 4px 0; font-size: 22px; font-weight: 700; color: var(--primary); }
-        .store-subtitle { font-size: 13px; color: var(--primary); font-weight: bold; margin-bottom: 8px; }
         .store-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--text-muted); }
         .store-meta span { display: flex; align-items: center; gap: 4px; }
 
@@ -235,10 +234,8 @@
         .spec-title { font-weight: 700; font-size: 14px; color: #334155; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
         .spec-title::before { content: "*"; color: #e11d48; margin-right: 2px; }
         .spec-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .spec-options.col-1 { grid-template-columns: 1fr; }
         .spec-options.col-2 { grid-template-columns: repeat(2, 1fr); }
         .spec-options.col-3 { grid-template-columns: repeat(3, 1fr); }
-        .spec-options.col-4 { grid-template-columns: repeat(4, 1fr); }
         
         .spec-btn {
             background: #ffffff;
@@ -472,7 +469,7 @@
 <div class="navbar">
     <a href="#" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋品項（綠茶、奶茶、草莓...）" oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋品項（綠茶、奶茶、青茶...）" oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -493,9 +490,9 @@
 <div class="container">
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">鹿兒角<br>手作茶飲</div>
+            <div class="store-logo">鹿兒角<br>手作私茶</div>
             <div class="store-details">
-                <h1>鹿兒角 手作茶飲 鹿港店</h1>
+                <h1>鹿兒角 手作私茶 鹿港店</h1>
                 <div class="store-meta">
                     <span class="rating">⭐ 4.5 (266)</span>
                     <span>🕒 09:30 ~ 20:00</span>
@@ -539,91 +536,92 @@ function goBack() {
     window.location.href = 'index.html'; 
 }
 
-// 可加料品項定義 (統一加料 +10元)
+// 加料品項定義 (依菜單照片：珍珠/粉條/椰果/仙草凍 +10元，紅豆 +15元)
 const addOnsList = [
     { name: "珍珠", price: 10 },
     { name: "粉條", price: 10 },
     { name: "椰果", price: 10 },
     { name: "仙草凍", price: 10 },
-    { name: "紅豆", price: 10 }
+    { name: "紅豆", price: 15 }
 ];
 
-// 鹿角角完整菜單
+// 鹿兒角手作私茶完整菜單 (對照實體菜單照片更正)
 const menuItems = [
     // === 季節限定款 ===
-    {name: "十五濃草莓牛奶", category: "季節限定款", icon: "🍓", price: 105, note: "含兩球草莓冰淇淋/大杯/冰鎮", onlyIce: true},
-    {name: "草莓美果甜", category: "季節限定款", icon: "🍓", price: 95, note: "大杯/冰鎮", onlyIce: true},
-    {name: "草莓芭樂", category: "季節限定款", icon: "🍓", price: 85, note: "自家手工產地草莓/大杯/冰鎮", onlyIce: true},
-    {name: "椰丁綠茶", category: "季節限定款", icon: "🥥", price: 65, note: "含椰果粉條愛玉", onlyIce: true},
-    {name: "椰丁檸檬", category: "季節限定款", icon: "🍋", price: 65, onlyIce: true},
-    {name: "葡萄柚青", category: "季節限定款", icon: "🍊", price: 70, note: "手工果肉", onlyIce: true},
-    {name: "葡萄柚美梅", category: "季節限定款", icon: "🍊", price: 75, note: "手工果肉+自釀話梅", onlyIce: true},
-    {name: "葡萄柚檸檬", category: "季節限定款", icon: "🍊", price: 70, onlyIce: true},
-    {name: "葡萄柚養樂多", category: "季節限定款", icon: "🥤", price: 80, note: "兩瓶養樂多", onlyIce: true},
-
-    // === 原生好茶 ===
-    {name: "冬片青茶", category: "原生好茶", icon: "🍵", price: 35, note: "冷霜摘採/清香味/無青澀感", allowTemp: true},
-    {name: "金萱烏龍", category: "原生好茶", icon: "🍵", price: 35, note: "極微奶香味/順口回甘/無苦澀感", allowTemp: true},
-    {name: "伯爵紅茶", category: "原生好茶", icon: "☕", price: 30, note: "佛手柑香", allowTemp: true},
-    {name: "茉香綠茶", category: "原生好茶", icon: "🍵", price: 30, note: "淡雅花香", allowTemp: true},
-    {name: "碳焙鐵觀音", category: "原生好茶", icon: "🍵", price: 35, allowTemp: true},
-    {name: "玄米煎茶", category: "原生好茶", icon: "🍵", price: 35, note: "炒玄米與煎茶/沉靜茶香", allowTemp: true},
-    {name: "粉條綠茶/粉條紅茶", category: "原生好茶", icon: "🧋", price: 40, allowTemp: true},
-    {name: "養樂多綠茶", category: "原生好茶", icon: "🥤", price: 55, note: "兩瓶養樂多", onlyIce: true},
-    {name: "冰淇淋紅茶", category: "原生好茶", icon: "🍨", price: 55, onlyIce: true},
+    {name: "柳丁綠茶", category: "季節限定款", icon: "🍊", price: 70, note: "鮮採台灣雞蛋丁/L杯", allowTemp: true},
+    {name: "柳丁檸檬", category: "季節限定款", icon: "🍋", price: 70, note: "無咖啡因/L杯", allowTemp: true},
+    {name: "葡萄柚青", category: "季節限定款", icon: "🍊", price: 75, note: "手工採果肉/L杯", onlyIce: true},
+    {name: "葡萄柚美梅", category: "季節限定款", icon: "🍊", price: 75, note: "葡萄柚+熬煮話梅佐檸檬/無咖啡因/L杯", onlyIce: true},
+    {name: "葡萄柚檸檬", category: "季節限定款", icon: "🍊", price: 75, note: "無咖啡因/L杯", onlyIce: true},
+    {name: "葡萄柚養樂多", category: "季節限定款", icon: "🥤", price: 85, note: "多多3瓶/無咖啡因/L杯", onlyIce: true},
+    {name: "綠豆牛奶沙", category: "季節限定款", icon: "🥤", price: 65, note: "現煮毛綠豆/無咖啡因/L杯", onlyIce: true},
+    {name: "綠豆冰沙", category: "季節限定款", icon: "🧊", price: 55, note: "無咖啡因/L杯", onlyIce: true},
 
     // === 手沖現泡 ===
-    {name: "手沖青茶", category: "手沖現泡", icon: "🍵", price: 50, note: "輕烘焙高山青茶/採獨特沖泡法/香甜順口無苦澀感", allowTemp: true},
-    {name: "手沖烏龍", category: "手沖現泡", icon: "🍵", price: 50, note: "採獨特沖泡法/香甜順口無苦澀感", allowTemp: true},
-    {name: "手沖金萱紅", category: "手沖現泡", icon: "☕", price: 50, note: "採獨特沖泡法/甘甜醇厚", allowTemp: true},
-    {name: "金萱紅鮮奶茶", category: "手沖現泡", icon: "🥛", price: 70, note: "冷/熱/中杯/大杯/含薄厚奶霜/採獨特沖泡法", allowTemp: true},
-    {name: "冰泡鮮奶茶/焦糖", category: "手沖現泡", icon: "🥛", prices: {冰: 65, 熱: 75}, note: "含薄厚奶霜/採獨特沖泡法", allowTemp: true},
-    {name: "熱泡鮮奶茶/焦糖", category: "手沖現泡", icon: "🥛", prices: {冰: 55, 熱: 65}, note: "含薄厚奶霜/採獨特沖泡法", allowTemp: true},
+    {name: "手沖青茶", category: "手沖現泡", icon: "🍵", price: 55, note: "無糖/現磨手沖高山茶/杉林溪青/甘甜溜滑", allowTemp: true},
+    {name: "手沖烏龍", category: "手沖現泡", icon: "🍵", price: 55, note: "無糖/阿里山烏龍/煎茶解膩喉韻甘甜", allowTemp: true},
+    {name: "手沖金萱紅", category: "手沖現泡", icon: "☕", price: 50, note: "可選甜度/台茶12號小葉種金萱紅", allowTemp: true},
+    {name: "金萱紅鮮奶茶", category: "手沖現泡", icon: "🥛", price: 70, note: "UVA烏龍芭蘿紅茶現泡/固定冰量/L杯", allowTemp: true},
+    {name: "冰泡鮮奶茶/焦糖", category: "手沖現泡", icon: "🥛", prices: {M: 65, L: 75}, note: "手沖現泡/薄厚奶霜", allowTemp: true},
+    {name: "熱泡鮮奶茶/焦糖", category: "手沖現泡", icon: "🥛", prices: {M: 55, L: 65}, note: "手沖現泡/薄厚奶霜", allowTemp: true},
+
+    // === 原生好茶 ===
+    {name: "冬片青茶", category: "原生好茶", icon: "🍵", price: 40, note: "冬片仔/冬茶新芽/淡雅清香", allowTemp: true},
+    {name: "金萱烏龍", category: "原生好茶", icon: "🍵", price: 35, note: "中焙火烏龍/帶奶香氣", allowTemp: true},
+    {name: "伯爵紅茶", category: "原生好茶", icon: "☕", price: 35, note: "經典英式紅茶", allowTemp: true},
+    {name: "茉香綠茶", category: "原生好茶", icon: "🍵", price: 35, note: "茉莉花綠茶", allowTemp: true},
+    {name: "碳焙鐵觀音", category: "原生好茶", icon: "🍵", price: 40, note: "深焙烏龍/熟沉香重喉韻", allowTemp: true},
+    {name: "玄米煎茶", category: "原生好茶", icon: "🍵", price: 40, note: "淺蒸煎茶拌炒玄米粒", allowTemp: true},
+    {name: "粉條綠茶/粉條紅茶", category: "原生好茶", icon: "🧋", price: 45, onlyIce: true},
+    {name: "養樂多綠茶", category: "原生好茶", icon: "🥤", price: 60, note: "另加檸檬*1", onlyIce: true},
+    {name: "冰淇淋紅茶", category: "原生好茶", icon: "🍨", price: 60, note: "使用杜老爺冰淇淋", onlyIce: true},
 
     // === 古早風味 ===
-    {name: "梅檸檬", category: "古早風味", icon: "🍋", price: 55, note: "自釀話梅檸檬", allowTemp: true},
-    {name: "話梅綠茶", category: "古早風味", icon: "🍵", price: 45, allowTemp: true},
-    {name: "冬瓜茶", category: "古早風味", icon: "🧊", price: 30, note: "自釀冬瓜磚", allowTemp: true},
-    {name: "檸檬冬瓜", category: "古早風味", icon: "🍋", price: 45, allowTemp: true},
-    {name: "粉條冬瓜", category: "古早風味", icon: "🧋", price: 40, allowTemp: true},
-    {name: "冬瓜仙草凍", category: "古早風味", icon: "🌿", price: 40, note: "手工仙草凍", allowTemp: true},
-    {name: "洛神花茶", category: "古早風味", icon: "🌺", price: 40, note: "自釀洛神花", allowTemp: true},
-    {name: "檸檬洛神", category: "古早風味", icon: "🌺", price: 55, allowTemp: true},
+    {name: "梅檸檬", category: "古早風味", icon: "🍋", price: 60, note: "熬煮雙漬話梅/無咖啡因", allowTemp: true},
+    {name: "話梅綠茶", category: "古早風味", icon: "🍵", price: 55, allowTemp: true},
+    {name: "冬瓜茶", category: "古早風味", icon: "🧊", price: 30, note: "自然黑糖冬瓜/無咖啡因", allowTemp: true},
+    {name: "檸檬冬瓜", category: "古早風味", icon: "🍋", price: 45, note: "無咖啡因", allowTemp: true},
+    {name: "粉條冬瓜", category: "古早風味", icon: "🧋", price: 40, note: "無咖啡因", allowTemp: true},
+    {name: "冬瓜仙草凍", category: "古早風味", icon: "🌿", price: 40, note: "手工仙草凍/無咖啡因", allowTemp: true},
+    {name: "洛神花茶", category: "古早風味", icon: "🌺", price: 40, note: "自然洛神中藥包/無咖啡因", allowTemp: true},
+    {name: "檸檬洛神", category: "古早風味", icon: "🌺", price: 55, note: "無咖啡因", allowTemp: true},
 
     // === 醇香鮮奶 ===
-    {name: "伯爵紅鮮奶茶", category: "醇香鮮奶", icon: "🥛", prices: {冰: 60, 熱: 70}, note: "可選厚奶", allowTemp: true},
-    {name: "焦糖紅紅茶拿鐵", category: "醇香鮮奶", icon: "🥛", prices: {冰: 70, 熱: 80}, note: "可選厚奶", allowTemp: true},
-    {name: "焙拿鐵", category: "醇香鮮奶", icon: "🥛", prices: {冰: 65, 熱: 75}, note: "可選厚奶", allowTemp: true},
-    {name: "鐵觀音拿鐵", category: "醇香鮮奶", icon: "🥛", prices: {冰: 65, 熱: 75}, note: "可選厚奶", allowTemp: true},
-    {name: "紅豆鮮奶", category: "醇香鮮奶", icon: "🥛", price: 70, note: "現煮甜紅豆/固定甜度", allowTemp: true},
-    {name: "黑糖珍珠鮮奶", category: "醇香鮮奶", icon: "🧋", price: 70, note: "大杯/中杯/現煮黑糖珍珠", allowTemp: true},
-    {name: "黑糖仙草凍鮮奶", category: "醇香鮮奶", icon: "🌿", price: 65, note: "手工仙草凍", allowTemp: true},
+    {name: "伯爵紅鮮奶茶", category: "醇香鮮奶", icon: "🥛", prices: {一般: 65, 厚奶: 75}, note: "可選厚奶", allowTemp: true},
+    {name: "焦糖紅茶拿鐵", category: "醇香鮮奶", icon: "🥛", prices: {一般: 75, 厚奶: 85}, note: "可選厚奶", allowTemp: true},
+    {name: "焙拿鐵", category: "醇香鮮奶", icon: "🥛", prices: {一般: 70, 厚奶: 80}, note: "可選厚奶", allowTemp: true},
+    {name: "鐵觀音拿鐵", category: "醇香鮮奶", icon: "🥛", prices: {一般: 70, 厚奶: 80}, note: "可選厚奶", allowTemp: true},
+    {name: "可可拿鐵", category: "醇香鮮奶", icon: "🍫", price: 70, note: "純可可微甜", onlyIce: true},
+    {name: "紅豆鮮奶", category: "醇香鮮奶", icon: "🥛", price: 75, note: "無附加糖/不混珍珠/無咖啡因", allowTemp: true},
+    {name: "黑糖珍珠鮮奶", category: "醇香鮮奶", icon: "🧋", price: 70, note: "黑糖系列不分糖度/料多可混料/無咖啡因", allowTemp: true},
+    {name: "黑糖仙草凍鮮奶", category: "醇香鮮奶", icon: "🌿", price: 70, note: "手工仙草凍/無咖啡因", allowTemp: true},
 
     // === 奶香私茶 ===
-    {name: "珍珠奶茶", category: "奶香私茶", icon: "🧋", price: 55, allowTemp: true},
-    {name: "粉條奶綠", category: "奶香私茶", icon: "🧋", price: 55, allowTemp: true},
-    {name: "紅豆珍珠奶", category: "奶香私茶", icon: "🧋", price: 60, allowTemp: true},
-    {name: "仙草凍奶", category: "奶香私茶", icon: "🧋", price: 55, note: "手工仙草凍", allowTemp: true},
-    {name: "伯爵奶茶/茉香奶綠", category: "奶香私茶", icon: "🧋", price: 45, allowTemp: true},
-    {name: "日式烤奶", category: "奶香私茶", icon: "🧋", price: 50, note: "獨特火烤香氣", allowTemp: true},
-    {name: "玄米奶茶", category: "奶香私茶", icon: "🧋", price: 50, note: "玄米煎茶", allowTemp: true},
-    {name: "鐵觀音奶茶", category: "奶香私茶", icon: "🧋", price: 50, note: "濃郁鐵觀音", allowTemp: true},
+    {name: "珍珠奶茶", category: "奶香私茶", icon: "🧋", price: 60, allowTemp: true},
+    {name: "粉條奶綠", category: "奶香私茶", icon: "🧋", price: 60, allowTemp: true},
+    {name: "紅豆珍烤奶", category: "奶香私茶", icon: "🧋", price: 65, allowTemp: true},
+    {name: "仙草凍奶", category: "奶香私茶", icon: "🧋", price: 60, note: "手工仙草凍", allowTemp: true},
+    {name: "伯爵奶茶/茉香奶綠", category: "奶香私茶", icon: "🧋", price: 50, allowTemp: true},
+    {name: "伯爵可可奶", category: "奶香私茶", icon: "🍫", price: 65, note: "新品上市/伯爵茶+純可可", allowTemp: true},
+    {name: "日式烤奶", category: "奶香私茶", icon: "🧋", price: 55, note: "重焙火烤茶", allowTemp: true},
+    {name: "玄米奶茶", category: "奶香私茶", icon: "🧋", price: 55, note: "玄米煎茶", allowTemp: true},
+    {name: "鐵觀音奶茶", category: "奶香私茶", icon: "🧋", price: 55, note: "碳焙鐵觀音", allowTemp: true},
 
     // === 鮮果搖茶 ===
-    {name: "水果鮮茶", category: "鮮果搖茶", icon: "🍹", price: 65, note: "鳳梨/百香/鮮榨水果", onlyIce: true},
-    {name: "鳳梨青茶", category: "鮮果搖茶", icon: "🍍", price: 70, note: "自釀金鑽鳳梨", onlyIce: true},
-    {name: "金桔美梅", category: "鮮果搖茶", icon: "🍊", price: 60, note: "金桔/鮮榨/自釀梅汁", allowTemp: true},
-    {name: "金桔檸檬", category: "鮮果搖茶", icon: "🍊", price: 55, allowTemp: true},
-    {name: "百香果綠", category: "鮮果搖茶", icon: "🍹", price: 50, onlyIce: true},
-    {name: "百香Q凍飲", category: "鮮果搖茶", icon: "🍹", price: 55, onlyIce: true},
-    {name: "蜂蜜檸檬", category: "鮮果搖茶", icon: "🍯", price: 55, allowTemp: true},
+    {name: "水果鮮茶", category: "鮮果搖茶", icon: "🍹", price: 70, note: "鳳梨/百香/季節水果/L杯", onlyIce: true},
+    {name: "鳳梨青茶", category: "鮮果搖茶", icon: "🍍", price: 75, note: "白烈土鳳梨果醬/L杯", onlyIce: true},
+    {name: "金桔美梅", category: "鮮果搖茶", icon: "🍊", price: 65, note: "金桔+熬煮話梅/無咖啡因/L杯", allowTemp: true},
+    {name: "百香果綠", category: "鮮果搖茶", icon: "🍹", price: 55, note: "L杯", onlyIce: true},
+    {name: "百香美梅", category: "鮮果搖茶", icon: "🍹", price: 65, note: "新品上市/百香果+熬煮話梅/無咖啡因/L杯", onlyIce: true},
+    {name: "百香Q凍飲", category: "鮮果搖茶", icon: "🍹", price: 65, note: "L杯", onlyIce: true},
+    {name: "蜂蜜檸檬", category: "鮮果搖茶", icon: "🍯", price: 60, note: "無咖啡因/L杯", onlyIce: true},
 
-    // === 新鮮冰沙 ===
-    {name: "梅檸檬冰沙", category: "新鮮冰沙", icon: "🍧", price: 55, note: "鮮檸檬+自釀梅汁", onlyIce: true},
-    {name: "紅豆牛奶沙", category: "新鮮冰沙", icon: "🍧", price: 60, note: "微甜萬丹紅豆", onlyIce: true},
-    {name: "紅豆冰沙", category: "新鮮冰沙", icon: "🍧", price: 50, onlyIce: true},
-    {name: "漂浮黑可可冰沙", category: "新鮮冰沙", icon: "🍫", price: 70, note: "含巧克力冰淇淋", onlyIce: true},
-    {name: "黑鳳百香冰沙", category: "新鮮冰沙", icon: "🍍", price: 80, note: "自釀鳳梨+百香果肉", onlyIce: true}
+    // === 新鮮冰凍 ===
+    {name: "梅檸檬冰沙", category: "新鮮冰凍", icon: "🍧", price: 65, note: "熬煮雙漬話梅/L杯", onlyIce: true},
+    {name: "紅豆牛奶沙", category: "新鮮冰凍", icon: "🍧", price: 65, note: "熬煮萬丹紅豆/L杯", onlyIce: true},
+    {name: "紅豆冰沙", category: "新鮮冰凍", icon: "🍧", price: 55, note: "L杯", onlyIce: true},
+    {name: "漂浮黑可可冰沙", category: "新鮮冰凍", icon: "🍫", price: 80, note: ">100%可可/L杯", onlyIce: true},
+    {name: "鳳梨百香冰沙", category: "新鮮冰凍", icon: "🍍", price: 85, note: "土鳳梨+鮮百香籽/無咖啡因/L杯", onlyIce: true}
 ];
 
 let cart = {};
@@ -631,7 +629,7 @@ let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
 
-let selectedSpecs = { temp: '冰', sugar: '微糖 (2~3分)', ice: '少冰', selectedAddOns: [] };
+let selectedSpecs = { temp: '冰', sugar: '微糖 (30%)', ice: '少冰', selectedAddOns: [], specType: '一般' };
 
 let finalTotal = 0;
 let finalSummary = "";
@@ -706,12 +704,14 @@ function renderMenu(items) {
 
             let tagsHtml = '';
             if (item.allowTemp) {
-                tagsHtml += '<span class="item-tag hot">H</span><span class="item-tag ice">I</span>';
+                tagsHtml += '<span class="item-tag hot">可熱飲</span>';
             } else if (item.onlyIce) {
-                tagsHtml += '<span class="item-tag ice">冷飲</span>';
+                tagsHtml += '<span class="item-tag ice">冰飲</span>';
             }
 
-            let priceDisplay = item.prices ? `冰 $${item.prices.冰} / 熱 $${item.prices.熱}` : `$${item.price}`;
+            let priceDisplay = item.prices ? 
+                Object.keys(item.prices).map(p => `${p} $${item.prices[p]}`).join(' / ') : 
+                `$${item.price}`;
 
             card.innerHTML = `
                 <div class="item-info">
@@ -766,10 +766,28 @@ function clickAddItem(name) {
 
     selectedSpecs = { 
         temp: item.allowTemp ? '冰' : '冰', 
-        sugar: '微糖 (2~3分)', 
+        sugar: '微糖 (30%)', 
         ice: '少冰', 
-        selectedAddOns: [] 
+        selectedAddOns: [],
+        specType: item.prices ? Object.keys(item.prices)[0] : '一般'
     };
+
+    // 多重價格規格選擇 (如 厚奶/一般 或 M/L)
+    let specTypeHtml = '';
+    if (item.prices) {
+        let buttons = Object.keys(item.prices).map((pKey, idx) => `
+            <button type="button" class="spec-btn ${idx === 0 ? 'active' : ''}" data-type="specType" data-val="${pKey}" onclick="selectSpec(this)">${pKey} - $${item.prices[pKey]}</button>
+        `).join('');
+        
+        specTypeHtml = `
+            <div class="spec-group">
+                <div class="spec-title">規格選擇 TYPE</div>
+                <div class="spec-options col-2">
+                    ${buttons}
+                </div>
+            </div>
+        `;
+    }
 
     // 溫度選擇
     let tempOptionsHtml = '';
@@ -778,14 +796,14 @@ function clickAddItem(name) {
             <div class="spec-group">
                 <div class="spec-title">冷熱 TEMP</div>
                 <div class="spec-options col-2">
-                    <button type="button" class="spec-btn active" data-type="temp" data-val="冰" onclick="selectSpec(this)">冰 (Ice) - $${item.prices ? item.prices.冰 : item.price}</button>
-                    <button type="button" class="spec-btn" data-type="temp" data-val="熱" onclick="selectSpec(this)">熱 (Hot) - $${item.prices ? item.prices.熱 : item.price}</button>
+                    <button type="button" class="spec-btn active" data-type="temp" data-val="冰" onclick="selectSpec(this)">冰 (Ice)</button>
+                    <button type="button" class="spec-btn" data-type="temp" data-val="熱" onclick="selectSpec(this)">熱 (Hot)</button>
                 </div>
             </div>
         `;
     }
 
-    // 甜度選擇 (依菜單照片: 全糖, 少糖, 半糖, 微糖, 一分糖, 無糖)
+    // 甜度選擇 (全糖, 少糖, 半糖, 微糖, 1分糖, 無糖)
     let sugarOptionsHtml = `
         <div class="spec-group">
             <div class="spec-title">甜度 SWEETNESS</div>
@@ -800,28 +818,25 @@ function clickAddItem(name) {
         </div>
     `;
 
-    // 冰塊選擇 (依菜單照片: 正冰, 少冰, 微冰, 去冰/小碎冰, 完全去冰, 熱)
-    let iceOptionsHtml = '';
-    if (selectedSpecs.temp === '冰') {
-        iceOptionsHtml = `
-            <div class="spec-group">
-                <div class="spec-title">冰塊 ICE</div>
-                <div class="spec-options col-2">
-                    <button type="button" class="spec-btn" data-type="ice" data-val="正冰" onclick="selectSpec(this)">正冰 (100%)</button>
-                    <button type="button" class="spec-btn active" data-type="ice" data-val="少冰" onclick="selectSpec(this)">少冰 (80%)</button>
-                    <button type="button" class="spec-btn" data-type="ice" data-val="微冰" onclick="selectSpec(this)">微冰 (30%)</button>
-                    <button type="button" class="spec-btn" data-type="ice" data-val="去冰(小碎冰)" onclick="selectSpec(this)">去冰 (小碎冰)</button>
-                    <button type="button" class="spec-btn" data-type="ice" data-val="完全去冰" onclick="selectSpec(this)">完全去冰 (100%無冰)</button>
-                </div>
+    // 冰塊選擇 (正冰, 少冰, 微冰, 去冰/小碎冰, 完全去冰)
+    let iceOptionsHtml = `
+        <div class="spec-group" id="ice-spec-group">
+            <div class="spec-title">冰塊 ICE</div>
+            <div class="spec-options col-2">
+                <button type="button" class="spec-btn" data-type="ice" data-val="正冰" onclick="selectSpec(this)">正冰 (100%)</button>
+                <button type="button" class="spec-btn active" data-type="ice" data-val="少冰" onclick="selectSpec(this)">少冰 (80%)</button>
+                <button type="button" class="spec-btn" data-type="ice" data-val="微冰" onclick="selectSpec(this)">微冰 (30%)</button>
+                <button type="button" class="spec-btn" data-type="ice" data-val="去冰(小碎冰)" onclick="selectSpec(this)">去冰 (小碎冰)</button>
+                <button type="button" class="spec-btn" data-type="ice" data-val="完全去冰" onclick="selectSpec(this)">完全去冰 (無冰)</button>
             </div>
-        `;
-    }
+        </div>
+    `;
 
-    // 新鮮加料區 (+10元)
+    // 新鮮加料區
     let addOnBtns = addOnsList.map(a => `<button type="button" class="spec-btn" data-name="${a.name}" data-price="${a.price}" onclick="toggleAddOn(this)">+${a.price}元 ${a.name}</button>`).join('');
     let addOnsHtml = `
         <div class="spec-group">
-            <div class="spec-title">新鮮加料 ADD-ONS (+10元)</div>
+            <div class="spec-title">新鮮加料 ADD-ONS</div>
             <div class="spec-options col-3">
                 ${addOnBtns}
             </div>
@@ -829,6 +844,7 @@ function clickAddItem(name) {
     `;
 
     let bodyHtml = `
+        ${specTypeHtml}
         ${tempOptionsHtml}
         ${sugarOptionsHtml}
         ${iceOptionsHtml}
@@ -843,14 +859,15 @@ function clickAddItem(name) {
         showCancel: true,
         onConfirm: () => {
             let basePrice = item.price;
-            if (item.allowTemp && item.prices) {
-                basePrice = item.prices[selectedSpecs.temp];
+            if (item.prices && selectedSpecs.specType) {
+                basePrice = item.prices[selectedSpecs.specType];
             }
 
             let addOnTotal = selectedSpecs.selectedAddOns.reduce((sum, a) => sum + a.price, 0);
             let finalPrice = basePrice + addOnTotal;
 
             let specDescArr = [];
+            if (item.prices) specDescArr.push(selectedSpecs.specType);
             if (item.allowTemp) specDescArr.push(selectedSpecs.temp);
             specDescArr.push(selectedSpecs.sugar);
             if (selectedSpecs.temp === '冰') specDescArr.push(selectedSpecs.ice);
@@ -889,6 +906,14 @@ function selectSpec(btnEl) {
     const parent = btnEl.parentElement;
     parent.querySelectorAll(".spec-btn").forEach(el => el.classList.remove("active"));
     btnEl.classList.add("active");
+
+    // 切換熱飲時隱藏冰塊選項
+    if (type === 'temp') {
+        const iceGroup = document.getElementById('ice-spec-group');
+        if (iceGroup) {
+            iceGroup.style.display = (val === '熱') ? 'none' : 'block';
+        }
+    }
 }
 
 function toggleAddOn(btnEl) {
