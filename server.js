@@ -8,10 +8,12 @@ const { Pool, types } = require('pg');
 types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
+app.disable('x-powered-by'); // 停用 X-Powered-By 標頭
+
 const PORT = process.env.PORT || 3000;
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
-// 手動設置基礎 HTTP 安全標頭（代替 helmet）
+// 手動設置基礎 HTTP 安全標頭
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
@@ -19,7 +21,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// 管理員權限驗證中間件 (防範時序攻擊)
+// 管理員權限驗證中間件 (防範時序攻擊與無效 Token)
 const adminAuth = (req, res, next) => {
     if (!ADMIN_SECRET || ADMIN_SECRET === 'CHANGE_THIS_TO_YOUR_ADMIN_SECRET') {
         console.error('⚠️ [安全警告] 未於 .env 設定有效的 ADMIN_SECRET，存取被拒！');
@@ -104,9 +106,10 @@ async function initDatabase() {
             );
         `);
 
+        // 修正轉型語法：加入 USING order_id::text 防範 PostgreSQL 升級報錯
         await pool.query(`
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
-            ALTER TABLE orders ALTER COLUMN order_id TYPE VARCHAR(100);
+            ALTER TABLE orders ALTER COLUMN order_id TYPE VARCHAR(100) USING order_id::text;
         `);
 
         await pool.query(`
@@ -584,6 +587,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
+// 修正當日歷史紀錄 SQL：強制以台北時區 (Asia/Taipei) 進行當日日期過濾
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -597,8 +601,8 @@ app.get('/api/order-history', async (req, res) => {
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND created_at >= ((CURRENT_DATE AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
-               AND created_at < (((CURRENT_DATE + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
+               AND created_at >= ((NOW() AT TIME ZONE 'Asia/Taipei')::date AT TIME ZONE 'Asia/Taipei')
+               AND created_at < (((NOW() AT TIME ZONE 'Asia/Taipei')::date + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
              ORDER BY created_at DESC;`,
             [cleanCardId]
         );
@@ -658,6 +662,12 @@ app.get('/api/export-excel', adminAuth, async (req, res) => {
     } catch (err) {
         res.status(500).json({ success: false, message: '無法產生 Excel 報表' });
     }
+});
+
+// 全域 JSON 解析與意外處理中間件
+app.use((err, req, res, next) => {
+    console.error('未處理的請求錯誤:', err);
+    res.status(err.status || 500).json({ success: false, message: '伺服器請求處理失敗，請檢查傳遞格式！' });
 });
 
 async function startServer() {
