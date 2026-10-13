@@ -5,10 +5,11 @@ const crypto = require('crypto');
 const ExcelJS = require('exceljs');
 const { Pool, types } = require('pg');
 
+// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
 types.setTypeParser(20, val => parseInt(val, 10));
 
 const app = express();
-app.disable('x-powered-by'); // 停用 X-Powered-By 標頭
+app.disable('x-powered-by'); // 停用 X-Powered-By 標頭以隱藏框架資訊
 
 const PORT = process.env.PORT || 3000;
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
@@ -21,7 +22,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// 管理員權限驗證中間件 (防範時序攻擊與無效 Token)
+// 管理員權限驗證中間件 (採用 Timing-Safe 安全比對)
 const adminAuth = (req, res, next) => {
     if (!ADMIN_SECRET || ADMIN_SECRET === 'CHANGE_THIS_TO_YOUR_ADMIN_SECRET') {
         console.error('⚠️ [安全警告] 未於 .env 設定有效的 ADMIN_SECRET，存取被拒！');
@@ -106,7 +107,7 @@ async function initDatabase() {
             );
         `);
 
-        // 修正轉型語法：加入 USING order_id::text 防範 PostgreSQL 升級報錯
+        // 自動轉型相容舊版資料表
         await pool.query(`
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
             ALTER TABLE orders ALTER COLUMN order_id TYPE VARCHAR(100) USING order_id::text;
@@ -246,7 +247,8 @@ async function initDatabase() {
     }
 }
 
-// API 路由
+// ==================== API 路由 ====================
+
 app.get('/api/lock-time', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
@@ -561,7 +563,7 @@ app.post('/api/order', async (req, res) => {
         }
 
         const empName = userRes.rows[0].name;
-        const orderIdVal = crypto.randomUUID();
+        const orderIdVal = crypto.randomUUID(); // 使用安全 UUID 替代溢位的大整數
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
         const insertQuery = `
@@ -587,7 +589,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 修正當日歷史紀錄 SQL：強制以台北時區 (Asia/Taipei) 進行當日日期過濾
+// 歷史紀錄查詢：強制依台北時區邊界查詢當日訂單
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim() : '';
@@ -664,10 +666,10 @@ app.get('/api/export-excel', adminAuth, async (req, res) => {
     }
 });
 
-// 全域 JSON 解析與意外處理中間件
+// 全域例外錯誤處理中間件
 app.use((err, req, res, next) => {
     console.error('未處理的請求錯誤:', err);
-    res.status(err.status || 500).json({ success: false, message: '伺服器請求處理失敗，請檢查傳遞格式！' });
+    res.status(err.status || 500).json({ success: false, message: '伺服器請求處理失敗！' });
 });
 
 async function startServer() {
@@ -675,7 +677,7 @@ async function startServer() {
         await initDatabase();
         app.listen(PORT, () => {
             console.log(`================================================================`);
-            console.log(` 🚀 安全防護版後端已啟動！Port: ${PORT}`);
+            console.log(` 🚀 訂餐系統安全修正版已啟動！Port: ${PORT}`);
             console.log(`================================================================`);
         });
     } catch (err) {
