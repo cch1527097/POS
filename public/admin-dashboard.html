@@ -669,25 +669,31 @@
                 <button class="btn" onclick="window.open('index.html', '_blank')">前台點餐連結 ➔</button>
             </div>
 
-            <div class="card card-accent">
-                <h3>⏰ 每日點餐截止 / 鎖定時間設定</h3>
-                <p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
-                    設定每日截止點餐時間，系統時間到達後前台將自動停止接受新訂單。
-                </p>
-                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <input type="time" id="lockTimeInput" value="10:30" style="width: auto;">
-                    <button class="btn" onclick="saveLockTime()">💾 儲存時間</button>
-                    <button class="btn btn-danger-light" onclick="unlockOrderTime()">🔓 解除鎖定</button>
-                    <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
-                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-<h3>🚫 前台取消 / 修改訂單權限控制</h3>
-<p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
-    開啟時前台購物車允許員工自主取消與修改訂單；關閉時前台購物車將隱藏操作按鈕，禁止修改與取消。
-</p>
-<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-    <button class="btn btn-line" id="toggleCancelBtn" onclick="toggleAllowCancel()">🟢 取消訂單功能：已開放</button>
-    <span id="allowCancelDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;">[前台狀態：允許取消與修改]</span>
-</div>
+            <!-- 獨立卡片一：每日點餐截止 / 鎖定時間設定 -->
+        <div class="card card-accent">
+            <h3>⏰ 每日點餐截止 / 鎖定時間設定</h3>
+            <p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
+                設定每日截止點餐時間，系統時間到達後前台將自動停止接受新訂單。
+            </p>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <input type="time" id="lockTimeInput" value="10:30" style="width: auto;">
+                <button class="btn" onclick="saveLockTime()">💾 儲存時間</button>
+                <button class="btn btn-danger-light" onclick="unlockOrderTime()">🔓 解除鎖定</button>
+                <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
+            </div>
+        </div>
+
+        <!-- 獨立卡片二：前台取消 / 修改訂單權限控制 -->
+        <div class="card card-accent">
+            <h3>🚫 前台取消 / 修改訂單權限控制</h3>
+            <p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
+                開啟時前台購物車允許員工自主取消與修改訂單；關閉時前台購物車將隱藏操作按鈕，禁止修改與取消。
+            </p>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <button class="btn btn-line" id="toggleCancelBtn" onclick="toggleAllowCancel()">🟢 取消訂單功能：已開放</button>
+                <span id="allowCancelDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;">[前台狀態：允許取消與修改]</span>
+            </div>
+        </div>
                 </div>
             </div>
 
