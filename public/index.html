@@ -2784,81 +2784,104 @@ function goSelectedShop() {
         }
 
         async function fetchOrderHistory(cardId) {
-            const historyList = document.getElementById('history-list');
-            if (!historyList) return;
+    const historyList = document.getElementById('history-list');
+    if (!historyList) return;
 
-            let apiOrders = [];
-            let localOrders = [];
-            let isApiSuccess = false;
-
-            const localKey = `orders_${cardId}`;
-            try {
-                localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
-            } catch(e) { localOrders = []; }
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-                const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    apiOrders = await response.json();
-                    isApiSuccess = true;
-                }
-            } catch (error) {
-                console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
-            }
-
-            let merged = isApiSuccess ? apiOrders : localOrders;
-            
-            // 僅保留當日且卡號相符的點餐紀錄
-            let todayOrders = merged.filter(order => {
-                const isUserCard = String(order.cardId || '').trim().toLowerCase() === String(cardId).trim().toLowerCase();
-                return isTodayOrder(order) && isUserCard;
-            });
-
-            todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
-
-            if (todayOrders.length === 0) {
-                historyList.innerHTML = `<tr><td colspan="7" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
-                return;
-            }
-
-            const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
-
-            historyList.innerHTML = todayOrders.map(order => {
-                const rawTotal = Number(order.total);
-                let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
-
-                if (!totalAmount && order.note) {
-                    const match = String(order.note).match(/總計:\s*\$(\d+)/);
-                    if (match) totalAmount = parseInt(match[1], 10);
-                }
-
-                const fullMealText = order.meal || '';
-                const shopName = fullMealText.includes(':') ? fullMealText.split(':')[0].trim() : '';
-                const timeKey = order.timestamp || order.time || order.Time || '';
-                const orderId = order.orderId || order.order_id || order.id || '';
-                const safeShopName = shopName.replace(/'/g, "\\'");
-
-                return `
-                    <tr>
-                        <td>${order.cardId || cardId}</td>
-                        <td><span class="dept-badge">${userDept}</span></td>
-                        <td>${formatDisplayTime(order)}</td>
-                        <td>${fullMealText || '無品項內容'}</td>
-                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
-                        <td>${order.note || '-'}</td>
-                        <td style="text-align: center; white-space: nowrap;">
-                            <button class="order-action-btn btn-edit-order" onclick="editOrder('${orderId}', '${timeKey}', '${safeShopName}')">修改</button>
-                            <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${orderId}', '${timeKey}')">取消</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+    // 1. 帶時間戳與 no-store 強制向後端取得最新「取消/修改」開關狀態（防快取）
+    let isAllowCancel = true;
+    try {
+        const allowRes = await fetch(`/api/allow-cancel?_=${new Date().getTime()}`, { 
+            cache: 'no-store' 
+        });
+        if (allowRes.ok) {
+            const allowData = await allowRes.json();
+            // 嚴格判斷：必須為 true 或 'true' 才是開放，其餘一律視為關閉
+            isAllowCancel = (allowData.allowCancel === true || allowData.allowCancel === 'true');
         }
+    } catch(e) {
+        console.warn('⚠️ 無法讀取取消訂單開關，預設開放:', e);
+    }
+
+    let apiOrders = [];
+    let localOrders = [];
+    let isApiSuccess = false;
+
+    const localKey = `orders_${cardId}`;
+    try {
+        localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+    } catch(e) { localOrders = []; }
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+        const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}&_=${new Date().getTime()}`, { 
+            signal: controller.signal,
+            cache: 'no-store'
+        });
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+            apiOrders = await response.json();
+            isApiSuccess = true;
+        }
+    } catch (error) {
+        console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
+    }
+
+    let merged = isApiSuccess ? apiOrders : localOrders;
+    
+    // 僅保留當日且卡號相同的點餐紀錄
+    let todayOrders = merged.filter(order => {
+        const isUserCard = String(order.cardId || '').trim().toLowerCase() === String(cardId).trim().toLowerCase();
+        return isTodayOrder(order) && isUserCard;
+    });
+
+    todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+    if (todayOrders.length === 0) {
+        historyList.innerHTML = `<tr><td colspan="7" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
+        return;
+    }
+
+    const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
+
+    historyList.innerHTML = todayOrders.map(order => {
+        const rawTotal = Number(order.total);
+        let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
+
+        if (!totalAmount && order.note) {
+            const match = String(order.note).match(/總計:\s*\$(\d+)/);
+            if (match) totalAmount = parseInt(match[1], 10);
+        }
+
+        const fullMealText = order.meal || '';
+        const shopName = fullMealText.includes(':') ? fullMealText.split(':')[0].trim() : '';
+        const timeKey = order.timestamp || order.time || order.Time || '';
+        const orderId = order.orderId || order.order_id || order.id || '';
+        const safeShopName = shopName.replace(/'/g, "\\'");
+
+        // 🌟 核心：根據後端最新狀態決定渲染「操作按鈕」或「🚫 關閉取消」標籤
+        const actionHtml = isAllowCancel ? `
+            <button class="order-action-btn btn-edit-order" onclick="editOrder('${orderId}', '${timeKey}', '${safeShopName}')">修改</button>
+            <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${orderId}', '${timeKey}')">取消</button>
+        ` : `<span class="badge badge-unpaid" style="font-size:12px; padding:4px 8px; font-weight:bold;">🚫 關閉取消</span>`;
+
+        return `
+            <tr>
+                <td>${order.cardId || cardId}</td>
+                <td><span class="dept-badge">${userDept}</span></td>
+                <td>${formatDisplayTime(order)}</td>
+                <td>${fullMealText || '無品項內容'}</td>
+                <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
+                <td>${order.note || '-'}</td>
+                <td style="text-align: center; white-space: nowrap;">
+                    ${actionHtml}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
 
         // 取消訂單處理函數
         async function cancelOrder(orderId, timestamp) {
