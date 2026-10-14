@@ -393,6 +393,40 @@ body.login-mode .login-footer-copy {
     display: block;
 }
 
+        /* ==================== 購物車操作按鈕樣式 ==================== */
+.order-action-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+/* 修改按鈕：藍色系 */
+.btn-edit-order {
+    background-color: #e6f4ff;
+    color: #0958d9;
+    border: 1px solid #91caff;
+}
+.btn-edit-order:hover {
+    background-color: #0958d9;
+    color: #ffffff;
+}
+
+/* 取消按鈕：紅色系 */
+.btn-cancel-order {
+    background-color: #ffeef0;
+    color: #d9363e;
+    border: 1px solid #fca5a5;
+}
+.btn-cancel-order:hover {
+    background-color: #d9363e;
+    color: #ffffff;
+}
+
         /* ==================== 2. 點餐畫面區塊 ==================== */
         .order-container {
             width: 100%;
@@ -1903,38 +1937,39 @@ body.login-mode .login-footer-copy {
     </div>
 
     <!-- 購物車彈窗 (Modal) -->
-    <div id="cartModal" class="branch-modal-overlay hidden" onclick="closeCartModal(event)">
-        <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
-            <div class="branch-modal-header">
-                <h3>📋 我的購物車 (今日點餐)</h3>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
-                    <span class="close-btn" onclick="closeCartModal()">&times;</span>
-                </div>
+<div id="cartModal" class="branch-modal-overlay hidden" onclick="closeCartModal(event)">
+    <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
+        <div class="branch-modal-header">
+            <h3>📋 我的購物車 (今日點餐)</h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
+                <span class="close-btn" onclick="closeCartModal()">&times;</span>
             </div>
-            <div class="history-modal-body">
-                <div class="history-table-wrapper">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 15%">卡號 / 姓名</th>
-                                <th style="width: 15%">部門</th>
-                                <th style="width: 20%">日期時間</th>
-                                <th style="width: 25%">點餐店家 / 內容</th>
-                                <th style="width: 12%">金額</th>
-                                <th style="width: 13%">備註說明</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-list">
-                            <tr>
-                                <td colspan="6" class="no-record">載入紀錄中...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        </div>
+        <div class="history-modal-body">
+            <div class="history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 12%">卡號 / 姓名</th>
+                            <th style="width: 10%">部門</th>
+                            <th style="width: 18%">日期時間</th>
+                            <th style="width: 26%">點餐店家 / 內容</th>
+                            <th style="width: 10%">金額</th>
+                            <th style="width: 11%">備註說明</th>
+                            <th style="width: 13%; text-align: center;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-list">
+                        <tr>
+                            <td colspan="7" class="no-record">載入紀錄中...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
     <!-- 曾點過歷史紀錄彈窗 (Modal) -->
     <div id="historyModal" class="branch-modal-overlay hidden" onclick="closeHistoryModal(event)">
