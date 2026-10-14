@@ -1107,6 +1107,18 @@ body.login-mode .login-footer-copy {
             🍱 美味餐點
         </div>
         <div class="grid-container" id="food-container">
+            <div class="shop-card" onclick="redirectToShop('小妞魯味', this)">
+                <div class="shop-img-wrapper">
+                    <span class="badge smart">夜市小吃</span>
+                    <img src="https://images.unsplash.com/photo-1622643944007-450264a5f9a9?fm=jpg&q=70&w=800" alt="小妞魯味">
+                    <button class="img-overlay-btn">進入點餐 ➔</button>
+                </div>
+                <div class="shop-info">
+                    <h3 class="shop-name">小妞魯味</h3>
+                    <p class="shop-desc">菜色選擇豐富，從各式火鍋料、蔬菜、豆皮、米血到肉片應有盡有，也有像滷整顆雞蛋等特色品項。</p>
+                </div>
+            </div>
+            
             <div class="shop-card" onclick="redirectToShop('熱浪小島', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">南洋風味</span>
@@ -2104,7 +2116,8 @@ body.login-mode .login-footer-copy {
             '名家大餛飩': '名家大餛飩.html',
             '小宸義大利麵': '小宸義大利麵.html',
             '阿香師油飯': '阿香師油飯.html',
-            '熱浪小島': '熱浪小島.html'
+            '熱浪小島': '熱浪小島.html',
+            '小妞滷味': '小妞滷味.html'
         };
 
         // 1. 設定每個院區對應的主頁網址 (請替換為您實際的 HTML 檔名或 URL)
