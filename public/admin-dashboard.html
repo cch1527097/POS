@@ -679,6 +679,15 @@
                     <button class="btn" onclick="saveLockTime()">💾 儲存時間</button>
                     <button class="btn btn-danger-light" onclick="unlockOrderTime()">🔓 解除鎖定</button>
                     <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
+                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+<h3>🚫 前台取消 / 修改訂單權限控制</h3>
+<p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
+    開啟時前台購物車允許員工自主取消與修改訂單；關閉時前台購物車將隱藏操作按鈕，禁止修改與取消。
+</p>
+<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+    <button class="btn btn-line" id="toggleCancelBtn" onclick="toggleAllowCancel()">🟢 取消訂單功能：已開放</button>
+    <span id="allowCancelDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;">[前台狀態：允許取消與修改]</span>
+</div>
                 </div>
             </div>
 
@@ -1614,6 +1623,70 @@ ${openStores}
                 }
             });
         }
+
+        let currentAllowCancel = true;
+
+async function loadAllowCancelStatus() {
+    try {
+        const response = await fetch('/api/allow-cancel');
+        const data = await response.json();
+        if (data.success) {
+            updateCancelUI(data.allowCancel);
+        }
+    } catch (err) {
+        console.error('讀取取消訂單狀態失敗:', err);
+    }
+}
+
+function updateCancelUI(allow) {
+    currentAllowCancel = allow;
+    const btn = document.getElementById('toggleCancelBtn');
+    const display = document.getElementById('allowCancelDisplay');
+    if (!btn || !display) return;
+
+    if (allow) {
+        btn.className = 'btn btn-line';
+        btn.innerHTML = '🟢 取消訂單功能：已開放';
+        display.innerText = '[前台狀態：允許取消與修改]';
+        display.style.color = 'var(--primary)';
+    } else {
+        btn.className = 'btn btn-danger-light';
+        btn.innerHTML = '🔴 取消訂單功能：已關閉';
+        display.innerText = '[前台狀態：已關閉取消與修改]';
+        display.style.color = 'var(--danger)';
+    }
+}
+
+async function toggleAllowCancel() {
+    if (!checkPermission('change_status')) return; // RBAC 權限檢查
+
+    const nextState = !currentAllowCancel;
+    const actionText = nextState ? '【開放】' : '【關閉】';
+
+    showCustomModal({
+        title: '確認變更權限',
+        message: `確定要 ${actionText} 前台員工自主取消與修改訂單的權限嗎？`,
+        isConfirm: true,
+        onConfirm: async () => {
+            try {
+                const response = await fetch('/api/allow-cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ allowCancel: nextState })
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    updateCancelUI(nextState);
+                    showCustomModal({ message: result.message });
+                } else {
+                    showCustomModal({ message: result.message || '更新失敗！' });
+                }
+            } catch (e) {
+                showCustomModal({ message: '連線失敗！' });
+            }
+        }
+    });
+}
 
         async function loadOrders() {
             const statusSpan = document.getElementById('syncStatus');
