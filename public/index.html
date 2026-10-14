@@ -2779,7 +2779,10 @@ function goSelectedShop() {
             }
 
             let merged = isApiSuccess ? apiOrders : localOrders;
-            let todayOrders = merged.filter(order => isTodayOrder(order));
+let todayOrders = merged.filter(order => {
+    const isUserCard = String(order.cardId || '').trim().toLowerCase() === String(cardId).trim().toLowerCase();
+    return isTodayOrder(order) && isUserCard;
+});
 
             todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
 
@@ -2791,25 +2794,29 @@ function goSelectedShop() {
             const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
 
             historyList.innerHTML = todayOrders.map(order => {
-                const rawTotal = Number(order.total);
-                let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
+    const rawTotal = Number(order.total);
+    let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
 
-                if (!totalAmount && order.note) {
-                    const match = String(order.note).match(/總計:\s*\$(\d+)/);
-                    if (match) totalAmount = parseInt(match[1], 10);
-                }
+    if (!totalAmount && order.note) {
+        const match = String(order.note).match(/總計:\s*\$(\d+)/);
+        if (match) totalAmount = parseInt(match[1], 10);
+    }
 
-                return `
-                    <tr>
-                        <td>${order.cardId || cardId}</td>
-                        <td><span class="dept-badge">${userDept}</span></td>
-                        <td>${formatDisplayTime(order)}</td>
-                        <td>${order.meal || '無品項內容'}</td>
-                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
-                        <td>${order.note || '-'}</td>
-                    </tr>
-                `;
-            }).join('');
+    // 動態取得該卡號對應的部門，若無則顯示當前部門
+    const orderCard = order.cardId || cardId;
+    const itemDept = globalEmployeesMap[orderCard] ? globalEmployeesMap[orderCard].department : userDept;
+
+    return `
+        <tr>
+            <td>${orderCard}</td>
+            <td><span class="dept-badge">${itemDept}</span></td>
+            <td>${formatDisplayTime(order)}</td>
+            <td>${order.meal || '無品項內容'}</td>
+            <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
+            <td>${order.note || '-'}</td>
+        </tr>
+    `;
+}).join('');
         }
 
         async function fetchGlobalOrders(targetCardId) {
