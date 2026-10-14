@@ -270,6 +270,11 @@ async function initDatabase() {
 
 // ==================== 取消訂單 API ====================
 app.post('/api/orders/cancel', async (req, res) => {
+    // 檢查管理員是否關閉取消功能
+    const checkAllow = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
+    if (checkAllow.rows.length > 0 && checkAllow.rows[0].value === 'false') {
+        return res.status(403).json({ success: false, message: '管理員已關閉取消訂單功能！' });
+    }
     const { cardId, orderId, timestamp } = req.body;
     const cleanCardId = cardId ? String(cardId).trim() : '';
     const cleanOrderId = orderId ? String(orderId).trim() : '';
