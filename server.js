@@ -136,6 +136,12 @@ async function initDatabase() {
             ON CONFLICT (key) DO NOTHING;
         `);
 
+        await pool.query(`
+    INSERT INTO settings (key, value)
+    VALUES ('allow_order_cancel', 'true')
+    ON CONFLICT (key) DO NOTHING;
+`);
+
         const DEFAULT_STORES = [
             { id: 'store_1', name: '八方雲集', category: '美味餐點', isOpen: true },
             { id: 'store_2', name: '飯大廚', category: '美味餐點', isOpen: false },
@@ -302,6 +308,41 @@ app.post('/api/orders/cancel', async (req, res) => {
     } catch (error) {
         console.error('後端取消訂單失敗:', error);
         res.status(500).json({ success: false, message: '伺服器取消訂單發生錯誤。' });
+    }
+});
+
+// 取得前台取消訂單開關狀態
+app.get('/api/allow-cancel', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
+        const allowCancel = result.rows.length > 0 ? result.rows[0].value === 'true' : true;
+        res.json({ success: true, allowCancel });
+    } catch (err) {
+        console.error('讀取取消訂單開關失敗:', err.message);
+        res.status(500).json({ success: false, allowCancel: true });
+    }
+});
+
+// 設定前台取消訂單開關狀態
+app.post('/api/allow-cancel', async (req, res) => {
+    const { allowCancel } = req.body;
+    const valStr = (allowCancel === true || allowCancel === 'true') ? 'true' : 'false';
+
+    try {
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('allow_order_cancel', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [valStr]);
+
+        return res.json({ 
+            success: true, 
+            message: valStr === 'true' ? '已成功【開放】前台取消與修改訂單功能！' : '已成功【關閉】前台取消與修改訂單功能！',
+            allowCancel: valStr === 'true'
+        });
+    } catch (err) {
+        console.error('更新取消訂單開關失敗:', err.message);
+        res.status(500).json({ success: false, message: '設定取消訂單開關失敗' });
     }
 });
 
