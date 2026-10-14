@@ -262,6 +262,49 @@ async function initDatabase() {
     }
 }
 
+// ==================== 取消訂單 API ====================
+app.post('/api/orders/cancel', async (req, res) => {
+    const { cardId, orderId, timestamp } = req.body;
+    const cleanCardId = cardId ? String(cardId).trim() : '';
+    const cleanOrderId = orderId ? String(orderId).trim() : '';
+    const cleanTimestamp = timestamp ? String(timestamp).trim() : '';
+
+    if (!cleanCardId) {
+        return res.status(400).json({ success: false, message: '缺少員工卡號參數！' });
+    }
+
+    try {
+        let result;
+
+        // 1. 優先使用 order_id + card_id 進行精準刪除
+        if (cleanOrderId) {
+            result = await pool.query(
+                'DELETE FROM orders WHERE order_id = $1 AND card_id = $2 RETURNING *;',
+                [cleanOrderId, cleanCardId]
+            );
+        } 
+        // 2. 若未傳入 order_id，則備用 timestamp + card_id 比對刪除
+        else if (cleanTimestamp) {
+            result = await pool.query(
+                'DELETE FROM orders WHERE card_id = $1 AND timestamp = $2 RETURNING *;',
+                [cleanCardId, cleanTimestamp]
+            );
+        }
+
+        if (!result || result.rowCount === 0) {
+            return res.status(404).json({ success: false, message: '找不到對應訂單，或該訂單無權限刪除！' });
+        }
+
+        // 3. 刪除成功後，非同步更新 public/orders.json 快取檔
+        syncOrdersJsonFile().catch(() => {});
+
+        res.json({ success: true, message: '訂單已成功取消並刪除！' });
+    } catch (error) {
+        console.error('後端取消訂單失敗:', error);
+        res.status(500).json({ success: false, message: '伺服器取消訂單發生錯誤。' });
+    }
+});
+
 // ==================== API 路由 ====================
 
 app.get('/api/lock-time', async (req, res) => {
