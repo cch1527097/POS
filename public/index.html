@@ -2751,73 +2751,154 @@ function goSelectedShop() {
         }
 
         async function fetchOrderHistory(cardId) {
-            const historyList = document.getElementById('history-list');
-            if (!historyList) return;
+    const historyList = document.getElementById('history-list');
+    if (!historyList) return;
 
-            let apiOrders = [];
-            let localOrders = [];
-            let isApiSuccess = false;
+    let apiOrders = [];
+    let localOrders = [];
+    let isApiSuccess = false;
 
-            const localKey = `orders_${cardId}`;
-            try {
-                localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
-            } catch(e) { localOrders = []; }
+    const localKey = `orders_${cardId}`;
+    try {
+        localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+    } catch(e) { localOrders = []; }
 
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2500);
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-                const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    apiOrders = await response.json();
-                    isApiSuccess = true;
-                }
-            } catch (error) {
-                console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
-            }
-
-            let merged = isApiSuccess ? apiOrders : localOrders;
-let todayOrders = merged.filter(order => {
-    const isUserCard = String(order.cardId || '').trim().toLowerCase() === String(cardId).trim().toLowerCase();
-    return isTodayOrder(order) && isUserCard;
-});
-
-            todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
-
-            if (todayOrders.length === 0) {
-                historyList.innerHTML = `<tr><td colspan="6" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
-                return;
-            }
-
-            const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
-
-            historyList.innerHTML = todayOrders.map(order => {
-    const rawTotal = Number(order.total);
-    let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
-
-    if (!totalAmount && order.note) {
-        const match = String(order.note).match(/總計:\s*\$(\d+)/);
-        if (match) totalAmount = parseInt(match[1], 10);
+        const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+            apiOrders = await response.json();
+            isApiSuccess = true;
+        }
+    } catch (error) {
+        console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
     }
 
-    // 動態取得該卡號對應的部門，若無則顯示當前部門
-    const orderCard = order.cardId || cardId;
-    const itemDept = globalEmployeesMap[orderCard] ? globalEmployeesMap[orderCard].department : userDept;
+    let merged = isApiSuccess ? apiOrders : localOrders;
+    
+    // 僅保留當日且屬於該使用者卡號的訂單
+    let todayOrders = merged.filter(order => {
+        const isUserCard = String(order.cardId || '').trim().toLowerCase() === String(cardId).trim().toLowerCase();
+        return isTodayOrder(order) && isUserCard;
+    });
 
-    return `
-        <tr>
-            <td>${orderCard}</td>
-            <td><span class="dept-badge">${itemDept}</span></td>
-            <td>${formatDisplayTime(order)}</td>
-            <td>${order.meal || '無品項內容'}</td>
-            <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
-            <td>${order.note || '-'}</td>
-        </tr>
-    `;
-}).join('');
+    todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+    if (todayOrders.length === 0) {
+        historyList.innerHTML = `<tr><td colspan="7" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
+        return;
+    }
+
+    const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
+
+    historyList.innerHTML = todayOrders.map(order => {
+        const rawTotal = Number(order.total);
+        let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
+
+        if (!totalAmount && order.note) {
+            const match = String(order.note).match(/總計:\s*\$(\d+)/);
+            if (match) totalAmount = parseInt(match[1], 10);
         }
+
+        // 解析出店家名稱、訂單編號與時間戳
+        const fullMealText = order.meal || '';
+        const shopName = fullMealText.includes(':') ? fullMealText.split(':')[0].trim() : '';
+        const timeKey = order.timestamp || order.time || order.Time || '';
+        const orderId = order.orderId || order.order_id || order.id || '';
+
+        return `
+            <tr>
+                <td>${order.cardId || cardId}</td>
+                <td><span class="dept-badge">${userDept}</span></td>
+                <td>${formatDisplayTime(order)}</td>
+                <td>${fullMealText || '無品項內容'}</td>
+                <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
+                <td>${order.note || '-'}</td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <button class="order-action-btn btn-edit-order" onclick="editOrder('${orderId}', '${timeKey}', '${shopName.replace(/'/g, "\\'")}')">修改</button>
+                    <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${orderId}', '${timeKey}')">取消</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+        }
+
+        // 取消訂單處理
+async function cancelOrder(orderId, timestamp) {
+    callCustomAlert('確認取消', '❌ 確定要取消這筆點餐紀錄嗎？', async (confirmed) => {
+        if (!confirmed) return;
+        await executeCancelLogic(orderId, timestamp, true);
+    }, true);
+}
+
+// 修改訂單處理
+function editOrder(orderId, timestamp, shopName) {
+    const shopMsg = shopName ? `<strong>【${shopName}】</strong>` : '店家';
+    callCustomAlert('修改訂單', `✏️ 修改訂單將先刪除目前這筆紀錄，並帶您前往 ${shopMsg} 重新點餐，是否繼續？`, async (confirmed) => {
+        if (!confirmed) return;
+        
+        const success = await executeCancelLogic(orderId, timestamp, false);
+        if (success) {
+            closeCartModal();
+            if (shopName && shopUrlMap[shopName]) {
+                redirectToShop(shopName);
+            } else {
+                callCustomAlert('提示', '舊訂單已取消，請至首頁選擇店家重新點餐。', null, false);
+            }
+        }
+    }, true);
+}
+
+// 底層執行取消/刪除邏輯
+async function executeCancelLogic(orderId, timestamp, showAlert = true) {
+    const cardId = loggedInCardId;
+    let success = false;
+
+    // 1. 發送取消 API 至後端刪除 PostgreSQL 紀錄
+    try {
+        const response = await fetch('/api/orders/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cardId: cardId, orderId: orderId, timestamp: timestamp })
+        });
+        if (response.ok) {
+            const resData = await response.json();
+            if (resData.success) success = true;
+        }
+    } catch (e) {
+        console.warn('API 取消失敗，將嘗試清理本地快取');
+    }
+
+    // 2. 清除 LocalStorage 本地快取
+    const localKey = `orders_${cardId}`;
+    try {
+        let localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+        localOrders = localOrders.filter(o => {
+            const oTime = o.timestamp || o.time || o.Time || '';
+            const matchTime = timestamp && oTime === timestamp;
+            const matchId = orderId && (o.orderId === orderId || o.order_id === orderId || o.id === orderId);
+            return !(matchTime || matchId);
+        });
+        localStorage.setItem(localKey, JSON.stringify(localOrders));
+        success = true;
+    } catch(e) {
+        console.error('更新本地快取失敗', e);
+    }
+
+    if (success) {
+        if (showAlert) callCustomAlert('提示', '✅ 訂單已成功取消！', null, false);
+        fetchOrderHistory(cardId);
+        return true;
+    } else {
+        if (showAlert) callCustomAlert('提示', '⚠️ 取消訂單失敗，請稍後再試。', null, false);
+        return false;
+    }
+}
 
         async function fetchGlobalOrders(targetCardId) {
             const globalHistoryList = document.getElementById('global-history-list');
