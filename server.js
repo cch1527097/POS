@@ -54,7 +54,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：安全同步寫入非公開目錄 data/orders.json (避免 public 目錄資安外洩)
+// 輔助函式：安全同步寫入非公開目錄 data/orders.json (修復資安外洩漏洞)
 async function syncOrdersJsonFile() {
     try {
         const privateDataDir = path.join(__dirname, 'data');
@@ -90,11 +90,11 @@ async function syncOrdersJsonFile() {
     }
 }
 
-// 產生 JavaScript 安全整數範圍內的唯一 Order ID
+// 產生 JavaScript 安全整數範圍內的唯一 Order ID (< 9007199254740991)
 function generateSafeOrderId() {
     const timestamp = Date.now(); // 13 位數
     const randomSuffix = Math.floor(Math.random() * 900) + 100; // 3 位數
-    return Number(`${timestamp}${randomSuffix}`); // 16 位數整數
+    return Number(`${timestamp}${randomSuffix}`); // 16 位數整數，在安全範圍內
 }
 
 // 初始化資料庫
@@ -231,7 +231,7 @@ async function initDatabase() {
                 let existingStores = JSON.parse(currentStoreRes.rows[0].value) || [];
                 if (!Array.isArray(existingStores)) existingStores = [];
                 
-                // 保留所有現有店家與使用者修改，僅補足缺少的預設店家
+                // 保留所有現有店家設定，僅合併補充缺少的預設店家 (修復覆蓋 BUG)
                 const existingIds = new Set(existingStores.map(s => s && s.id).filter(Boolean));
                 const missingDefaults = DEFAULT_STORES.filter(def => !existingIds.has(def.id));
                 const syncedStores = [...existingStores, ...missingDefaults];
@@ -719,7 +719,7 @@ app.post('/api/order', async (req, res) => {
         const cleanSpicy = spicy ? String(spicy).trim().slice(0, 50) : "無";
         const cleanNote = note ? String(note).trim().slice(0, 300) : "無";
 
-        // 驗證金額：防止負數或無效金額
+        // 驗證金額：防止負數金額詐欺漏洞
         const numTotal = Number(total);
         if (isNaN(numTotal) || numTotal < 0) {
             return res.status(400).json({ success: false, message: '訂單金額格式無效或不可為負數！' });
@@ -756,7 +756,7 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 2. 鎖定時間比對 (修正 24 小時制解析)
+        // 2. 鎖定時間比對 (修復 24 小時制解析問題)
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
@@ -833,7 +833,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // 修正 SQL 時區，確保以台北時間當日算起
+        // 修復 SQL 時區查詢 BUG
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
