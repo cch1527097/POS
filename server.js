@@ -343,9 +343,9 @@ app.get('/api/allow-cancel', async (req, res) => {
     }
 });
 
-// 設定前台取消訂單開關狀態 (相容 allowCancel 與 allow_cancel)
+// 設定前台取消訂單開關狀態 (相容多種格式)
 app.post('/api/allow-cancel', async (req, res) => {
-    const rawVal = req.body.allowCancel ?? req.body.allow_cancel ?? req.body.enabled;
+    const rawVal = req.body.allowCancel ?? req.body.allow_cancel ?? req.body.allow_order_cancel ?? req.body.enabled;
     const valStr = (rawVal === true || rawVal === 'true' || rawVal === 1 || rawVal === '1') ? 'true' : 'false';
 
     try {
@@ -370,7 +370,7 @@ app.post('/api/allow-cancel', async (req, res) => {
     }
 });
 
-// ==================== API 路由 ====================
+// ==================== 其他 API 路由 ====================
 
 app.get('/api/lock-time', async (req, res) => {
     try {
