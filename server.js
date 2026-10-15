@@ -2,11 +2,13 @@ require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const ExcelJS = require('exceljs');
 const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SESSION_SECRET = process.env.SESSION_SECRET || 'secure_order_system_secret_key_2026';
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
@@ -19,7 +21,7 @@ let cleanDbUrl = rawDbUrl;
 if (rawDbUrl) {
     try {
         const parsedUrl = new URL(rawDbUrl);
-        parsedUrl.searchParams.delete('sslmode'); // 自動過濾掉 sslmode 參數
+        parsedUrl.searchParams.delete('sslmode');
         cleanDbUrl = parsedUrl.toString();
     } catch (err) {
         cleanDbUrl = rawDbUrl.replace(/([?&])sslmode=[^&]*/g, '');
@@ -40,6 +42,78 @@ const pool = new Pool({
     connectionTimeoutMillis: 10000
 });
 
+// ==================== 資安安全模組 (Rate Limiting & Token) ====================
+
+// 1. 內建 Rate Limiter (防 API 暴力攻擊 / DoS)
+const rateLimitMap = new Map();
+function createRateLimiter(maxRequests = 30, windowMs = 60000) {
+    return (req, res, next) => {
+        const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        const now = Date.now();
+        
+        if (!rateLimitMap.has(ip)) {
+            rateLimitMap.set(ip, []);
+        }
+        
+        const timestamps = rateLimitMap.get(ip).filter(ts => now - ts < windowMs);
+        if (timestamps.length >= maxRequests) {
+            return res.status(429).json({ success: false, message: '⚠️ 請求過於頻繁，請稍後再試！' });
+        }
+        
+        timestamps.push(now);
+        rateLimitMap.set(ip, timestamps);
+        next();
+    };
+}
+
+// 2. Token 核發與簽名驗證 (HMAC-SHA256)
+function generateToken(cardId) {
+    const payloadStr = JSON.stringify({ cardId, exp: Date.now() + 24 * 60 * 60 * 1000 });
+    const base64Payload = Buffer.from(payloadStr).toString('base64url');
+    const signature = crypto.createHmac('sha256', SESSION_SECRET).update(base64Payload).digest('base64url');
+    return `${base64Payload}.${signature}`;
+}
+
+function verifyToken(token) {
+    if (!token || typeof token !== 'string') return null;
+    const parts = token.split('.');
+    if (parts.length !== 2) return null;
+    
+    const [base64Payload, signature] = parts;
+    const expectedSignature = crypto.createHmac('sha256', SESSION_SECRET).update(base64Payload).digest('base64url');
+    
+    if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+        try {
+            const payload = JSON.parse(Buffer.from(base64Payload, 'base64url').toString('utf-8'));
+            if (payload.exp > Date.now()) return payload;
+        } catch (e) {
+            return null;
+        }
+    }
+    return null;
+}
+
+// 身份驗證 Middleware (相容古老前端，若無 Header 則備用檢查傳入卡號)
+function authenticateUser(req, res, next) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : req.body.token || req.query.token;
+    
+    const verifiedPayload = verifyToken(token);
+    if (verifiedPayload) {
+        req.user = verifiedPayload;
+        return next();
+    }
+    
+    // 相容性回退 (若前端尚未全面改用 Bearer Token)
+    const cardIdFromReq = req.body.cardId || req.query.cardId;
+    if (cardIdFromReq) {
+        req.user = { cardId: String(cardIdFromReq).trim() };
+        return next();
+    }
+    
+    return res.status(401).json({ success: false, message: '未登入或憑證已失效，請重新登入！' });
+}
+
 // 預設員工資料
 const INITIAL_USER_DB = {
     "4860": "呂佳玟", "4931": "陳佳文", "5514": "張淑娟", "5853": "許家綾",
@@ -54,48 +128,11 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 同步寫入 public/orders.json (維持舊前端直接讀取 json 檔的需求)
-async function syncOrdersJsonFile() {
-    try {
-        const publicDir = path.join(__dirname, 'public');
-        if (!fs.existsSync(publicDir)) {
-            await fs.promises.mkdir(publicDir, { recursive: true });
-        }
-
-        const result = await pool.query(`
-            SELECT 
-                order_id AS "orderId", 
-                card_id AS "cardId", 
-                name, 
-                meal, 
-                spicy, 
-                note, 
-                total, 
-                timestamp,
-                COALESCE(is_paid, false) AS "isPaid"
-            FROM orders
-            ORDER BY order_id DESC;
-        `);
-
-        // 確保 orderId 同時支援數字與字串格式，避免前端比對失敗
-        const formattedRows = result.rows.map(row => ({
-            ...row,
-            orderId: Number(row.orderId) || row.orderId,
-            total: Number(row.total) || 0
-        }));
-
-        const jsonPath = path.join(publicDir, 'orders.json');
-        await fs.promises.writeFile(jsonPath, JSON.stringify(formattedRows, null, 2), 'utf-8');
-    } catch (err) {
-        console.warn('⚠️ 警告：同步 orders.json 失敗 (雲端環境可能為唯讀檔案系統):', err.message);
-    }
-}
-
 // 產生 JavaScript 安全整數範圍內的唯一 Order ID (< 9007199254740991)
 function generateSafeOrderId() {
-    const timestamp = Date.now(); // 13 位數
-    const randomSuffix = Math.floor(Math.random() * 900) + 100; // 3 位數
-    return Number(`${timestamp}${randomSuffix}`); // 16 位數安全整數
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 900) + 100;
+    return Number(`${timestamp}${randomSuffix}`);
 }
 
 // 初始化資料庫
@@ -232,7 +269,6 @@ async function initDatabase() {
                 let existingStores = JSON.parse(currentStoreRes.rows[0].value) || [];
                 if (!Array.isArray(existingStores)) existingStores = [];
                 
-                // 保留所有現有店家設定，僅合併補充缺少的預設店家
                 const existingIds = new Set(existingStores.map(s => s && s.id).filter(Boolean));
                 const missingDefaults = DEFAULT_STORES.filter(def => !existingIds.has(def.id));
                 const syncedStores = [...existingStores, ...missingDefaults];
@@ -272,15 +308,45 @@ async function initDatabase() {
         }
 
         console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);
-        await syncOrdersJsonFile();
     } catch (err) {
         console.error(`❌ 初始化 Neon 資料庫失敗：`, err.message);
         throw err;
     }
 }
 
+// 攔截並動態響應 /orders.json：無縫修復舊前端 fetch('/orders.json')，同時防止實體檔案洩漏資安
+app.get('/orders.json', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                order_id AS "orderId", 
+                card_id AS "cardId", 
+                name, 
+                meal, 
+                spicy, 
+                note, 
+                total, 
+                timestamp,
+                COALESCE(is_paid, false) AS "isPaid"
+            FROM orders
+            ORDER BY order_id DESC;
+        `);
+
+        const formattedRows = result.rows.map(row => ({
+            ...row,
+            orderId: Number(row.orderId) || row.orderId,
+            total: Number(row.total) || 0
+        }));
+
+        res.json(formattedRows);
+    } catch (err) {
+        console.error('動態獲取 orders.json 失敗:', err.message);
+        res.status(500).json({ error: '無法讀取訂單資料' });
+    }
+});
+
 // ==================== 取消訂單 API ====================
-app.post('/api/orders/cancel', async (req, res) => {
+app.post('/api/orders/cancel', authenticateUser, async (req, res) => {
     try {
         const checkAllow = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
         if (checkAllow.rows.length > 0 && checkAllow.rows[0].value === 'false') {
@@ -288,16 +354,17 @@ app.post('/api/orders/cancel', async (req, res) => {
         }
         
         const { cardId, orderId, timestamp } = req.body;
-        const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
+        const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : req.user.cardId;
         const cleanOrderId = orderId ? String(orderId).trim().slice(0, 50) : '';
         const cleanTimestamp = timestamp ? String(timestamp).trim().slice(0, 100) : '';
 
-        if (!cleanCardId) {
-            return res.status(400).json({ success: false, message: '缺少員工卡號參數！' });
+        // 防越權比對：確保使用者只能刪除自己的訂單
+        if (req.user.cardId && req.user.cardId !== cleanCardId) {
+            return res.status(403).json({ success: false, message: '越權存取：您無權取消他人的訂單！' });
         }
 
-        if (!cleanOrderId && !cleanTimestamp) {
-            return res.status(400).json({ success: false, message: '缺少訂單編號或時間戳記！' });
+        if (!cleanCardId || (!cleanOrderId && !cleanTimestamp)) {
+            return res.status(400).json({ success: false, message: '缺少必要參數！' });
         }
 
         let result;
@@ -317,7 +384,6 @@ app.post('/api/orders/cancel', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到對應訂單，或該訂單無權限刪除！' });
         }
 
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '訂單已成功取消並刪除！' });
     } catch (error) {
         console.error('後端取消訂單失敗:', error);
@@ -541,7 +607,6 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
 
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '訂單繳費狀態更新成功！' });
     } catch (err) {
         console.error('更新訂單繳費狀態失敗:', err.message);
@@ -583,7 +648,6 @@ app.patch('/api/employees/:cardId/payment', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '繳費狀態更新成功' });
     } catch (err) {
         console.error('更新員工繳費狀態失敗:', err.message);
@@ -614,8 +678,6 @@ app.put('/api/employees/:cardId', async (req, res) => {
         }
 
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
-        
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '員工資料更新成功' });
     } catch (err) {
         console.error('更新員工資料失敗:', err.message);
@@ -681,7 +743,6 @@ app.delete('/api/orders/:orderId', async (req, res) => {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
 
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: `訂單 ${targetOrderIdStr} 已成功刪除。` });
     } catch (error) {
         console.error('後端處理刪除訂單發生錯誤:', error);
@@ -689,7 +750,8 @@ app.delete('/api/orders/:orderId', async (req, res) => {
     }
 });
 
-app.post('/api/login', async (req, res) => {
+// 登入 API（加入 Rate Limiter 與核發 Token）
+app.post('/api/login', createRateLimiter(15, 60000), async (req, res) => {
     const { cardId } = req.body;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
     
@@ -700,7 +762,13 @@ app.post('/api/login', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (result.rows.length > 0) {
-            res.json({ success: true, message: '登入成功', empName: result.rows[0].name });
+            const token = generateToken(result.rows[0].card_id);
+            res.json({ 
+                success: true, 
+                message: '登入成功', 
+                empName: result.rows[0].name,
+                token // 回傳安全憑證 Token 給前端
+            });
         } else {
             res.json({ success: false, message: '卡號無效，拒絕存取' });
         }
@@ -710,8 +778,8 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API
-app.post('/api/order', async (req, res) => {
+// 下訂單 API（防刷、防金額詐欺、防冒用身份）
+app.post('/api/order', createRateLimiter(20, 60000), authenticateUser, async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
         const cleanMeal = meal ? String(meal).trim().slice(0, 300) : "";
@@ -719,14 +787,21 @@ app.post('/api/order', async (req, res) => {
         const reqStoreName = storeName ? String(storeName).trim().slice(0, 100) : "";
         const cleanSpicy = spicy ? String(spicy).trim().slice(0, 50) : "無";
         const cleanNote = note ? String(note).trim().slice(0, 300) : "無";
+        const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : req.user.cardId;
 
-        // 驗證金額：防止負數金額
-        const numTotal = Number(total);
-        if (isNaN(numTotal) || numTotal < 0) {
-            return res.status(400).json({ success: false, message: '訂單金額格式無效或不可為負數！' });
+        // 1. 金額防篡改校驗
+        let numTotal = Number(total);
+        if (isNaN(numTotal) || numTotal < 0 || numTotal > 10000) {
+            return res.status(400).json({ success: false, message: '⚠️ 訂單金額不合常理（範圍：$0 ~ $10,000）！' });
+        }
+        numTotal = Math.round(numTotal * 100) / 100; // 格式化保留兩位小數
+
+        // 2. 身份冒用防範比對
+        if (req.user.cardId && req.user.cardId !== cleanCardId) {
+            return res.status(403).json({ success: false, message: '⚠️ 身份不符：您無法幫其他卡號進行下單！' });
         }
 
-        // 1. 店家開放狀態檢查
+        // 3. 店家開放狀態檢查
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
@@ -757,7 +832,7 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 2. 鎖定時間比對
+        // 4. 鎖定時間比對
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
@@ -787,16 +862,13 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 3. 員工驗證與寫入
-        const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
+        // 5. 員工卡號實體驗證與寫入
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
         }
 
         const empName = userRes.rows[0].name;
-        
-        // 產生安全且不溢位之整數 orderId
         const orderIdVal = generateSafeOrderId();
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
@@ -816,8 +888,6 @@ app.post('/api/order', async (req, res) => {
         ];
 
         await pool.query(insertQuery, values);
-        syncOrdersJsonFile().catch(() => {});
-
         res.json({ success: true, message: `🎉 訂單送出成功！` });
     } catch (error) {
         console.error('後端處理訂單發生錯誤:', error);
@@ -825,12 +895,17 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-app.get('/api/order-history', async (req, res) => {
+app.get('/api/order-history', authenticateUser, async (req, res) => {
     const { cardId } = req.query;
-    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
+    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : req.user.cardId;
 
     if (!cleanCardId) {
         return res.json({ success: false, message: '缺少員工卡號', orders: [] });
+    }
+
+    // 防越權：不允許查看他人的歷史紀錄
+    if (req.user.cardId && req.user.cardId !== cleanCardId) {
+        return res.status(403).json({ success: false, message: '越權存取：您無權檢視他人的點餐紀錄！', orders: [] });
     }
 
     try {
@@ -857,7 +932,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// Excel 匯出
+// Excel 匯出 API
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
