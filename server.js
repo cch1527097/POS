@@ -26,11 +26,13 @@ if (rawDbUrl) {
     }
 }
 
-// PostgreSQL (Neon) 連線設定
+// 判斷是否為本地連線以自動調整 SSL 設定
+const isLocalDb = cleanDbUrl && (cleanDbUrl.includes('localhost') || cleanDbUrl.includes('127.0.0.1'));
+
+// PostgreSQL (Neon / Local) 連線設定
 const pool = new Pool({
     connectionString: cleanDbUrl,
-    ssl: {
-        // 可透過環境變數設定，預設為 false (相容 Neon) 但限制非公開存取
+    ssl: isLocalDb ? false : {
         rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
     },
     max: 10,
@@ -74,18 +76,25 @@ async function syncOrdersJsonFile() {
             FROM orders
             ORDER BY order_id DESC;
         `);
+
+        const formattedRows = result.rows.map(row => ({
+            ...row,
+            orderId: String(row.orderId),
+            total: Number(row.total) || 0
+        }));
+
         const jsonPath = path.join(privateDataDir, 'orders.json');
-        await fs.promises.writeFile(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
+        await fs.promises.writeFile(jsonPath, JSON.stringify(formattedRows, null, 2), 'utf-8');
     } catch (err) {
         console.warn('⚠️ 警告：同步 orders.json 失敗 (雲端環境可能為唯讀檔案系統):', err.message);
     }
 }
 
-// 產生 JavaScript 安全整數範圍內的唯一 Order ID (< 9007199254740991)
+// 產生 JavaScript 安全整數範圍內的唯一 Order ID
 function generateSafeOrderId() {
     const timestamp = Date.now(); // 13 位數
     const randomSuffix = Math.floor(Math.random() * 900) + 100; // 3 位數
-    return Number(`${timestamp}${randomSuffix}`); // 總長 16 位，在 JS 安全整數內
+    return Number(`${timestamp}${randomSuffix}`); // 16 位數整數
 }
 
 // 初始化資料庫
@@ -222,13 +231,10 @@ async function initDatabase() {
                 let existingStores = JSON.parse(currentStoreRes.rows[0].value) || [];
                 if (!Array.isArray(existingStores)) existingStores = [];
                 
-                const syncedStores = DEFAULT_STORES.map(defStore => {
-                    const match = existingStores.find(s => s && s.id === defStore.id);
-                    return {
-                        ...defStore,
-                        isOpen: match ? Boolean(match.isOpen) : defStore.isOpen
-                    };
-                });
+                // 保留所有現有店家與使用者修改，僅補足缺少的預設店家
+                const existingIds = new Set(existingStores.map(s => s && s.id).filter(Boolean));
+                const missingDefaults = DEFAULT_STORES.filter(def => !existingIds.has(def.id));
+                const syncedStores = [...existingStores, ...missingDefaults];
 
                 await pool.query(`
                     INSERT INTO settings (key, value)
@@ -287,6 +293,10 @@ app.post('/api/orders/cancel', async (req, res) => {
 
         if (!cleanCardId) {
             return res.status(400).json({ success: false, message: '缺少員工卡號參數！' });
+        }
+
+        if (!cleanOrderId && !cleanTimestamp) {
+            return res.status(400).json({ success: false, message: '缺少訂單編號或時間戳記！' });
         }
 
         let result;
@@ -396,7 +406,9 @@ app.get('/api/stores', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         if (result.rows.length > 0) {
-            res.json({ success: true, stores: JSON.parse(result.rows[0].value) });
+            let stores = [];
+            try { stores = JSON.parse(result.rows[0].value); } catch(e) { stores = []; }
+            res.json({ success: true, stores });
         } else {
             res.json({ success: true, stores: [] });
         }
@@ -494,7 +506,14 @@ app.get('/api/orders', async (req, res) => {
             FROM orders
             ORDER BY order_id DESC;
         `);
-        res.json(result.rows);
+
+        const formattedRows = result.rows.map(row => ({
+            ...row,
+            orderId: String(row.orderId),
+            total: Number(row.total) || 0
+        }));
+
+        res.json(formattedRows);
     } catch (err) {
         console.error('獲取訂單失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得訂單資料' });
@@ -678,7 +697,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        const result = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
+        const result = await pool.query('SELECT card_id, name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (result.rows.length > 0) {
             res.json({ success: true, message: '登入成功', empName: result.rows[0].name });
         } else {
@@ -700,7 +719,7 @@ app.post('/api/order', async (req, res) => {
         const cleanSpicy = spicy ? String(spicy).trim().slice(0, 50) : "無";
         const cleanNote = note ? String(note).trim().slice(0, 300) : "無";
 
-        // 驗證金額：防止負數或無效金額欺騙漏洞
+        // 驗證金額：防止負數或無效金額
         const numTotal = Number(total);
         if (isNaN(numTotal) || numTotal < 0) {
             return res.status(400).json({ success: false, message: '訂單金額格式無效或不可為負數！' });
@@ -710,7 +729,8 @@ app.post('/api/order', async (req, res) => {
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
-            const stores = JSON.parse(storeListRes.rows[0].value) || [];
+            let stores = [];
+            try { stores = JSON.parse(storeListRes.rows[0].value) || []; } catch(e) { stores = []; }
             let matchedStore = null;
 
             if (reqStoreId) {
@@ -736,7 +756,7 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 2. 鎖定時間比對
+        // 2. 鎖定時間比對 (修正 24 小時制解析)
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
@@ -746,11 +766,13 @@ app.post('/api/order', async (req, res) => {
                 timeZone: 'Asia/Taipei',
                 hour: '2-digit',
                 minute: '2-digit',
-                hour12: false
+                hourCycle: 'h23'
             });
             const parts = taipeiFormatter.formatToParts(now);
-            const currentH = Number(parts.find(p => p.type === 'hour').value);
-            const currentM = Number(parts.find(p => p.type === 'minute').value);
+            const hourPart = parts.find(p => p.type === 'hour');
+            const minutePart = parts.find(p => p.type === 'minute');
+            const currentH = hourPart ? Number(hourPart.value) : now.getHours();
+            const currentM = minutePart ? Number(minutePart.value) : now.getMinutes();
             const currentTotalMinutes = currentH * 60 + currentM;
 
             const [lockH, lockM] = orderLockTime.split(':').map(Number);
@@ -811,12 +833,13 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
+        // 修正 SQL 時區，確保以台北時間當日算起
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND created_at >= ((CURRENT_DATE AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
-               AND created_at < (((CURRENT_DATE + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')::timestamp AT TIME ZONE 'Asia/Taipei')
+               AND created_at >= (date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') AT TIME ZONE 'Asia/Taipei')
+               AND created_at < ((date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
              ORDER BY order_id DESC;`,
             [cleanCardId]
         );
