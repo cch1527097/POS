@@ -325,22 +325,28 @@ app.post('/api/orders/cancel', async (req, res) => {
     }
 });
 
-// 取得前台取消訂單開關狀態
+// 取得前台取消訂單開關狀態 (同時回傳 camelCase 與 snake_case 確保前端相容)
 app.get('/api/allow-cancel', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
         const allowCancel = result.rows.length > 0 ? result.rows[0].value === 'true' : true;
-        res.json({ success: true, allowCancel });
+        
+        console.log(`[查詢狀態] 前台取消訂單開關為: ${allowCancel ? '開放中' : '已關閉'}`);
+        res.json({ 
+            success: true, 
+            allowCancel: allowCancel,
+            allow_cancel: allowCancel 
+        });
     } catch (err) {
         console.error('讀取取消訂單開關失敗:', err.message);
-        res.status(500).json({ success: false, allowCancel: true });
+        res.status(500).json({ success: false, allowCancel: true, allow_cancel: true });
     }
 });
 
-// 設定前台取消訂單開關狀態
+// 設定前台取消訂單開關狀態 (相容 allowCancel 與 allow_cancel)
 app.post('/api/allow-cancel', async (req, res) => {
-    const { allowCancel } = req.body;
-    const valStr = (allowCancel === true || allowCancel === 'true') ? 'true' : 'false';
+    const rawVal = req.body.allowCancel ?? req.body.allow_cancel ?? req.body.enabled;
+    const valStr = (rawVal === true || rawVal === 'true' || rawVal === 1 || rawVal === '1') ? 'true' : 'false';
 
     try {
         await pool.query(`
@@ -349,10 +355,14 @@ app.post('/api/allow-cancel', async (req, res) => {
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [valStr]);
 
+        const isAllowed = valStr === 'true';
+        console.log(`[設定更新] 已將 allow_order_cancel 更新為: ${valStr}`);
+
         return res.json({ 
             success: true, 
-            message: valStr === 'true' ? '已成功【開放】前台取消與修改訂單功能！' : '已成功【關閉】前台取消與修改訂單功能！',
-            allowCancel: valStr === 'true'
+            message: isAllowed ? '已成功【開放】前台取消與修改訂單功能！' : '已成功【關閉】前台取消與修改訂單功能！',
+            allowCancel: isAllowed,
+            allow_cancel: isAllowed
         });
     } catch (err) {
         console.error('更新取消訂單開關失敗:', err.message);
