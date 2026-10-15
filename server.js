@@ -54,12 +54,12 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：安全同步寫入非公開目錄 data/orders.json (修復資安外洩漏洞)
+// 同步寫入 public/orders.json (維持舊前端直接讀取 json 檔的需求)
 async function syncOrdersJsonFile() {
     try {
-        const privateDataDir = path.join(__dirname, 'data');
-        if (!fs.existsSync(privateDataDir)) {
-            await fs.promises.mkdir(privateDataDir, { recursive: true });
+        const publicDir = path.join(__dirname, 'public');
+        if (!fs.existsSync(publicDir)) {
+            await fs.promises.mkdir(publicDir, { recursive: true });
         }
 
         const result = await pool.query(`
@@ -77,13 +77,14 @@ async function syncOrdersJsonFile() {
             ORDER BY order_id DESC;
         `);
 
+        // 確保 orderId 同時支援數字與字串格式，避免前端比對失敗
         const formattedRows = result.rows.map(row => ({
             ...row,
-            orderId: String(row.orderId),
+            orderId: Number(row.orderId) || row.orderId,
             total: Number(row.total) || 0
         }));
 
-        const jsonPath = path.join(privateDataDir, 'orders.json');
+        const jsonPath = path.join(publicDir, 'orders.json');
         await fs.promises.writeFile(jsonPath, JSON.stringify(formattedRows, null, 2), 'utf-8');
     } catch (err) {
         console.warn('⚠️ 警告：同步 orders.json 失敗 (雲端環境可能為唯讀檔案系統):', err.message);
@@ -94,7 +95,7 @@ async function syncOrdersJsonFile() {
 function generateSafeOrderId() {
     const timestamp = Date.now(); // 13 位數
     const randomSuffix = Math.floor(Math.random() * 900) + 100; // 3 位數
-    return Number(`${timestamp}${randomSuffix}`); // 16 位數整數，在安全範圍內
+    return Number(`${timestamp}${randomSuffix}`); // 16 位數安全整數
 }
 
 // 初始化資料庫
@@ -231,7 +232,7 @@ async function initDatabase() {
                 let existingStores = JSON.parse(currentStoreRes.rows[0].value) || [];
                 if (!Array.isArray(existingStores)) existingStores = [];
                 
-                // 保留所有現有店家設定，僅合併補充缺少的預設店家 (修復覆蓋 BUG)
+                // 保留所有現有店家設定，僅合併補充缺少的預設店家
                 const existingIds = new Set(existingStores.map(s => s && s.id).filter(Boolean));
                 const missingDefaults = DEFAULT_STORES.filter(def => !existingIds.has(def.id));
                 const syncedStores = [...existingStores, ...missingDefaults];
@@ -509,7 +510,7 @@ app.get('/api/orders', async (req, res) => {
 
         const formattedRows = result.rows.map(row => ({
             ...row,
-            orderId: String(row.orderId),
+            orderId: Number(row.orderId) || row.orderId,
             total: Number(row.total) || 0
         }));
 
@@ -719,7 +720,7 @@ app.post('/api/order', async (req, res) => {
         const cleanSpicy = spicy ? String(spicy).trim().slice(0, 50) : "無";
         const cleanNote = note ? String(note).trim().slice(0, 300) : "無";
 
-        // 驗證金額：防止負數金額詐欺漏洞
+        // 驗證金額：防止負數金額
         const numTotal = Number(total);
         if (isNaN(numTotal) || numTotal < 0) {
             return res.status(400).json({ success: false, message: '訂單金額格式無效或不可為負數！' });
@@ -756,7 +757,7 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 2. 鎖定時間比對 (修復 24 小時制解析問題)
+        // 2. 鎖定時間比對
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
@@ -833,7 +834,6 @@ app.get('/api/order-history', async (req, res) => {
     }
 
     try {
-        // 修復 SQL 時區查詢 BUG
         const result = await pool.query(
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
