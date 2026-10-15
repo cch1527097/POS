@@ -3,10 +3,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
-const { Pool, types } = require('pg');
-
-// 自動將 PostgreSQL BIGINT (OID 20) 解析為 JavaScript Number
-types.setTypeParser(20, val => parseInt(val, 10));
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,7 +30,8 @@ if (rawDbUrl) {
 const pool = new Pool({
     connectionString: cleanDbUrl,
     ssl: {
-        rejectUnauthorized: false // Neon 強制使用 SSL
+        // 可透過環境變數設定，預設為 false (相容 Neon) 但限制非公開存取
+        rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
     },
     max: 10,
     idleTimeoutMillis: 30000,
@@ -54,12 +52,12 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 輔助函式：同步寫入 public/orders.json (改為讀取 orders 表的 is_paid)
+// 輔助函式：安全同步寫入非公開目錄 data/orders.json (避免 public 目錄資安外洩)
 async function syncOrdersJsonFile() {
     try {
-        const publicDir = path.join(__dirname, 'public');
-        if (!fs.existsSync(publicDir)) {
-            await fs.promises.mkdir(publicDir, { recursive: true });
+        const privateDataDir = path.join(__dirname, 'data');
+        if (!fs.existsSync(privateDataDir)) {
+            await fs.promises.mkdir(privateDataDir, { recursive: true });
         }
 
         const result = await pool.query(`
@@ -76,17 +74,23 @@ async function syncOrdersJsonFile() {
             FROM orders
             ORDER BY order_id DESC;
         `);
-        const jsonPath = path.join(publicDir, 'orders.json');
+        const jsonPath = path.join(privateDataDir, 'orders.json');
         await fs.promises.writeFile(jsonPath, JSON.stringify(result.rows, null, 2), 'utf-8');
     } catch (err) {
         console.warn('⚠️ 警告：同步 orders.json 失敗 (雲端環境可能為唯讀檔案系統):', err.message);
     }
 }
 
+// 產生 JavaScript 安全整數範圍內的唯一 Order ID (< 9007199254740991)
+function generateSafeOrderId() {
+    const timestamp = Date.now(); // 13 位數
+    const randomSuffix = Math.floor(Math.random() * 900) + 100; // 3 位數
+    return Number(`${timestamp}${randomSuffix}`); // 總長 16 位，在 JS 安全整數內
+}
+
 // 初始化資料庫
 async function initDatabase() {
     try {
-        // 在 orders 資料表建立時直接包含 is_paid
         await pool.query(`
             CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
@@ -103,7 +107,6 @@ async function initDatabase() {
             );
         `);
 
-        // 自動補建舊 orders 資料表可能缺少的 is_paid 欄位
         await pool.query(`
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
         `);
@@ -137,10 +140,10 @@ async function initDatabase() {
         `);
 
         await pool.query(`
-    INSERT INTO settings (key, value)
-    VALUES ('allow_order_cancel', 'true')
-    ON CONFLICT (key) DO NOTHING;
-`);
+            INSERT INTO settings (key, value)
+            VALUES ('allow_order_cancel', 'true')
+            ON CONFLICT (key) DO NOTHING;
+        `);
 
         const DEFAULT_STORES = [
             { id: 'store_1', name: '八方雲集', category: '美味餐點', isOpen: true },
@@ -271,32 +274,28 @@ async function initDatabase() {
 
 // ==================== 取消訂單 API ====================
 app.post('/api/orders/cancel', async (req, res) => {
-    // 檢查管理員是否關閉取消功能
-    const checkAllow = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
-    if (checkAllow.rows.length > 0 && checkAllow.rows[0].value === 'false') {
-        return res.status(403).json({ success: false, message: '管理員已關閉取消訂單功能！' });
-    }
-    const { cardId, orderId, timestamp } = req.body;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
-    const cleanOrderId = orderId ? String(orderId).trim() : '';
-    const cleanTimestamp = timestamp ? String(timestamp).trim() : '';
-
-    if (!cleanCardId) {
-        return res.status(400).json({ success: false, message: '缺少員工卡號參數！' });
-    }
-
     try {
-        let result;
+        const checkAllow = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
+        if (checkAllow.rows.length > 0 && checkAllow.rows[0].value === 'false') {
+            return res.status(403).json({ success: false, message: '管理員已關閉取消訂單功能！' });
+        }
+        
+        const { cardId, orderId, timestamp } = req.body;
+        const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
+        const cleanOrderId = orderId ? String(orderId).trim().slice(0, 50) : '';
+        const cleanTimestamp = timestamp ? String(timestamp).trim().slice(0, 100) : '';
 
-        // 1. 優先使用 order_id + card_id 進行精準刪除
+        if (!cleanCardId) {
+            return res.status(400).json({ success: false, message: '缺少員工卡號參數！' });
+        }
+
+        let result;
         if (cleanOrderId) {
             result = await pool.query(
                 'DELETE FROM orders WHERE order_id = $1 AND card_id = $2 RETURNING *;',
                 [cleanOrderId, cleanCardId]
             );
-        } 
-        // 2. 若未傳入 order_id，則備用 timestamp + card_id 比對刪除
-        else if (cleanTimestamp) {
+        } else if (cleanTimestamp) {
             result = await pool.query(
                 'DELETE FROM orders WHERE card_id = $1 AND timestamp = $2 RETURNING *;',
                 [cleanCardId, cleanTimestamp]
@@ -307,9 +306,7 @@ app.post('/api/orders/cancel', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到對應訂單，或該訂單無權限刪除！' });
         }
 
-        // 3. 刪除成功後，非同步更新 public/orders.json 快取檔
         syncOrdersJsonFile().catch(() => {});
-
         res.json({ success: true, message: '訂單已成功取消並刪除！' });
     } catch (error) {
         console.error('後端取消訂單失敗:', error);
@@ -367,7 +364,7 @@ app.get('/api/lock-time', async (req, res) => {
 
 app.post('/api/lock-time', async (req, res) => {
     const { lockTime } = req.body;
-    const newLockTime = lockTime ? String(lockTime).trim() : "";
+    const newLockTime = lockTime ? String(lockTime).trim().slice(0, 10) : "";
 
     try {
         await pool.query(`
@@ -425,7 +422,8 @@ app.post('/api/stores', async (req, res) => {
 
         const activeStores = stores.filter(s => s && s.isOpen);
         const activeStoreNames = activeStores
-            .map(s => s.name.replace(/\s*\([^)]*\)/g, '').trim())
+            .map(s => String(s.name || '').replace(/\s*\([^)]*\)/g, '').trim())
+            .filter(Boolean)
             .join('、');
 
         await pool.query(`
@@ -459,7 +457,7 @@ app.get('/api/active-store', async (req, res) => {
 
 app.post('/api/active-store', async (req, res) => {
     const { activeStore } = req.body;
-    const storeName = activeStore ? String(activeStore).trim() : "";
+    const storeName = activeStore ? String(activeStore).trim().slice(0, 100) : "";
     const cleanStoreName = storeName.replace(/\s*\([^)]*\)/g, '').trim();
 
     try {
@@ -480,7 +478,6 @@ app.post('/api/active-store', async (req, res) => {
     }
 });
 
-// 獲取所有訂單（改為直接讀取 orders.is_paid）
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -504,11 +501,10 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 切換特定「訂單」的繳費狀態（直接修改 orders 表）
 app.patch('/api/orders/:orderId/payment', async (req, res) => {
     const { orderId } = req.params;
     const { isPaid } = req.body;
-    const targetOrderIdStr = orderId ? String(orderId).trim() : '';
+    const targetOrderIdStr = orderId ? String(orderId).trim().slice(0, 50) : '';
     const paidBool = isPaid === true || isPaid === 'true';
 
     if (!targetOrderIdStr) {
@@ -526,7 +522,6 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
         }
 
         syncOrdersJsonFile().catch(() => {});
-
         res.json({ success: true, message: '訂單繳費狀態更新成功！' });
     } catch (err) {
         console.error('更新訂單繳費狀態失敗:', err.message);
@@ -555,7 +550,7 @@ app.get('/api/employees', async (req, res) => {
 app.patch('/api/employees/:cardId/payment', async (req, res) => {
     const { cardId } = req.params;
     const { isPaid } = req.body;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
+    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
     const paidBool = isPaid === true || isPaid === 'true';
 
     try {
@@ -580,9 +575,9 @@ app.put('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
     const { name, department } = req.body;
     
-    const cleanCardId = cardId ? String(cardId).trim() : '';
-    const cleanName = name ? String(name).trim() : '';
-    const cleanDept = department ? String(department).trim() : '未劃分';
+    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
+    const cleanName = name ? String(name).trim().slice(0, 100) : '';
+    const cleanDept = department ? String(department).trim().slice(0, 100) : '未劃分';
 
     if (!cleanCardId || !cleanName) {
         return res.status(400).json({ success: false, message: '員工卡號與姓名不可為空！' });
@@ -610,9 +605,9 @@ app.put('/api/employees/:cardId', async (req, res) => {
 
 app.post('/api/employees', async (req, res) => {
     const { cardId, name, department, isPaid } = req.body;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
-    const cleanName = name ? String(name).trim() : '';
-    const cleanDept = department ? String(department).trim() : '未劃分';
+    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
+    const cleanName = name ? String(name).trim().slice(0, 100) : '';
+    const cleanDept = department ? String(department).trim().slice(0, 100) : '未劃分';
     const paidBool = isPaid === true || isPaid === 'true';
 
     if (!cleanCardId || !cleanName) {
@@ -638,7 +633,7 @@ app.post('/api/employees', async (req, res) => {
 
 app.delete('/api/employees/:cardId', async (req, res) => {
     const { cardId } = req.params;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
+    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
 
     try {
         const result = await pool.query('DELETE FROM users WHERE card_id = $1 RETURNING *;', [cleanCardId]);
@@ -654,7 +649,7 @@ app.delete('/api/employees/:cardId', async (req, res) => {
 
 app.delete('/api/orders/:orderId', async (req, res) => {
     const { orderId } = req.params;
-    const targetOrderIdStr = orderId ? String(orderId).trim() : '';
+    const targetOrderIdStr = orderId ? String(orderId).trim().slice(0, 50) : '';
 
     if (!targetOrderIdStr) {
         return res.status(400).json({ success: false, message: '無效的訂單編號！' });
@@ -676,8 +671,12 @@ app.delete('/api/orders/:orderId', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
     const { cardId } = req.body;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
+    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
     
+    if (!cleanCardId) {
+        return res.status(400).json({ success: false, message: '請提供卡號' });
+    }
+
     try {
         const result = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (result.rows.length > 0) {
@@ -691,13 +690,21 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API：預設 is_paid 為 false (未繳費)
+// 下訂單 API
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
-        const cleanMeal = meal ? String(meal).trim() : "";
-        const reqStoreId = storeId ? String(storeId).trim() : "";
-        const reqStoreName = storeName ? String(storeName).trim() : "";
+        const cleanMeal = meal ? String(meal).trim().slice(0, 300) : "";
+        const reqStoreId = storeId ? String(storeId).trim().slice(0, 50) : "";
+        const reqStoreName = storeName ? String(storeName).trim().slice(0, 100) : "";
+        const cleanSpicy = spicy ? String(spicy).trim().slice(0, 50) : "無";
+        const cleanNote = note ? String(note).trim().slice(0, 300) : "無";
+
+        // 驗證金額：防止負數或無效金額欺騙漏洞
+        const numTotal = Number(total);
+        if (isNaN(numTotal) || numTotal < 0) {
+            return res.status(400).json({ success: false, message: '訂單金額格式無效或不可為負數！' });
+        }
 
         // 1. 店家開放狀態檢查
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
@@ -758,20 +765,18 @@ app.post('/api/order', async (req, res) => {
         }
 
         // 3. 員工驗證與寫入
-        const cleanCardId = cardId ? String(cardId).trim() : '';
+        const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
         }
 
         const empName = userRes.rows[0].name;
-        const numTotal = Number(total);
         
-        // 解決高併發碰撞：時間戳毫秒 + 4位隨機數
-        const orderIdVal = parseInt(`${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`, 10);
+        // 產生安全且不溢位之整數 orderId
+        const orderIdVal = generateSafeOrderId();
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
-        // 新增訂單預設將 is_paid 設為 false
         const insertQuery = `
             INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp, is_paid)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, false);
@@ -781,9 +786,9 @@ app.post('/api/order', async (req, res) => {
             cleanCardId,
             empName,
             cleanMeal || "未知餐點",
-            spicy ? String(spicy).trim() : "無",
-            note ? String(note).trim() : "無",
-            !isNaN(numTotal) ? numTotal : 0,
+            cleanSpicy,
+            cleanNote,
+            numTotal,
             timestampStr
         ];
 
@@ -799,7 +804,7 @@ app.post('/api/order', async (req, res) => {
 
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
-    const cleanCardId = cardId ? String(cardId).trim() : '';
+    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
 
     if (!cleanCardId) {
         return res.json({ success: false, message: '缺少員工卡號', orders: [] });
@@ -829,7 +834,7 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// Excel 匯出（直接讀取 orders.is_paid）
+// Excel 匯出
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
@@ -841,7 +846,7 @@ app.get('/api/export-excel', async (req, res) => {
         `);
         
         const orders = result.rows.map(row => ({
-            orderId: Number(row.order_id),
+            orderId: String(row.order_id),
             timestamp: row.timestamp,
             cardId: row.card_id,
             name: row.name,
