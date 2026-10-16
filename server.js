@@ -261,7 +261,7 @@ async function initDatabase() {
             { id: 'store_60', name: '小宸義大利麵', category: '美味餐點', isOpen: false },
             { id: 'store_61', name: '阿香師油飯', category: '美味餐點', isOpen: false },
             { id: 'store_62', name: '熱浪小島', category: '美味餐點', isOpen: false },
-            { id: 'store_63', name: '小妞魯味', category: '美味餐點', isOpen: false }
+            { id: 'store_63', name: '小妞滷味', category: '美味餐點', isOpen: false }
         ];
 
         const currentStoreRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
@@ -325,7 +325,6 @@ async function initDatabase() {
 
 app.post('/api/orders/cancel', async (req, res) => {
     try {
-        // 💡 檢查是否已過截止時間或手動關閉
         const cancelCheck = await checkIsCancelAllowed();
         if (!cancelCheck.allowed) {
             return res.status(403).json({ success: false, message: cancelCheck.message });
@@ -351,9 +350,10 @@ app.post('/api/orders/cancel', async (req, res) => {
                 [cleanOrderId, cleanCardId]
             );
         } else if (cleanTimestamp) {
+            // ✅ 修復：修正 $1 與 $2 參數位置顛倒問題
             result = await pool.query(
                 'DELETE FROM orders WHERE card_id = $1 AND timestamp = $2 RETURNING *;',
-                [cleanTimestamp, cleanCardId]
+                [cleanCardId, cleanTimestamp]
             );
         }
 
@@ -433,6 +433,41 @@ const handleAllowCancelUpdate = async (req, res) => {
 app.post('/api/allow-cancel', handleAllowCancelUpdate);
 app.put('/api/allow-cancel', handleAllowCancelUpdate);
 
+// 💡 補全前台相容 API：/api/cutoff-time 取得/更新截止時間
+app.get('/api/cutoff-time', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
+        const cutoffTime = result.rows.length > 0 ? result.rows[0].value : "09:30";
+        res.json({ success: true, cutoffTime, time: cutoffTime, lockTime: cutoffTime });
+    } catch (err) {
+        console.error('讀取截止時間失敗:', err.message);
+        res.status(500).json({ success: false, message: '無法取得截止時間' });
+    }
+});
+
+app.post('/api/cutoff-time', async (req, res) => {
+    const { cutoffTime, lockTime, time } = req.body;
+    const newTime = (cutoffTime || lockTime || time || "").trim().slice(0, 10);
+
+    try {
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('order_lock_time', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [newTime]);
+
+        return res.json({ 
+            success: true, 
+            message: `已成功將點餐截止時間設定為 ${newTime}`,
+            cutoffTime: newTime,
+            lockTime: newTime
+        });
+    } catch (err) {
+        console.error('更新截止時間失敗:', err.message);
+        res.status(500).json({ success: false, message: '設定截止時間失敗' });
+    }
+});
+
 // 通用 Settings API
 app.get('/api/settings', async (req, res) => {
     try {
@@ -444,6 +479,7 @@ app.get('/api/settings', async (req, res) => {
 
         const cancelCheck = await checkIsCancelAllowed();
         const allowCancel = cancelCheck.allowed;
+        const lockTimeVal = settingsMap['order_lock_time'] || '09:30';
 
         res.json({
             success: true,
@@ -451,7 +487,8 @@ app.get('/api/settings', async (req, res) => {
             allowCancel: allowCancel,
             allowOrderCancel: allowCancel,
             allow_cancel: allowCancel,
-            order_lock_time: settingsMap['order_lock_time'] || '',
+            order_lock_time: lockTimeVal,
+            cutoffTime: lockTimeVal,
             active_store: settingsMap['active_store'] || '',
             settings: settingsMap,
             data: settingsMap
@@ -476,8 +513,8 @@ const handleSettingsUpdate = async (req, res) => {
             `, [valStr]);
         }
 
-        if (body.lockTime !== undefined || body.order_lock_time !== undefined) {
-            const lockTimeVal = body.lockTime ?? body.order_lock_time;
+        if (body.lockTime !== undefined || body.order_lock_time !== undefined || body.cutoffTime !== undefined) {
+            const lockTimeVal = body.lockTime ?? body.order_lock_time ?? body.cutoffTime;
             await pool.query(`
                 INSERT INTO settings (key, value) 
                 VALUES ('order_lock_time', $1)
@@ -501,7 +538,7 @@ app.get('/api/lock-time', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const lockTime = result.rows.length > 0 ? result.rows[0].value : "";
-        res.json({ success: true, lockTime });
+        res.json({ success: true, lockTime, cutoffTime: lockTime });
     } catch (err) {
         console.error('讀取鎖定時間失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得鎖定時間' });
@@ -509,8 +546,9 @@ app.get('/api/lock-time', async (req, res) => {
 });
 
 app.post('/api/lock-time', async (req, res) => {
-    const { lockTime } = req.body;
-    const newLockTime = lockTime ? String(lockTime).trim().slice(0, 10) : "";
+    const { lockTime, cutoffTime } = req.body;
+    const targetTime = lockTime || cutoffTime;
+    const newLockTime = targetTime ? String(targetTime).trim().slice(0, 10) : "";
 
     try {
         await pool.query(`
@@ -530,7 +568,8 @@ app.post('/api/lock-time', async (req, res) => {
         return res.json({ 
             success: true, 
             message: `已成功將點餐截止時間設定為 ${newLockTime}`,
-            lockTime: newLockTime
+            lockTime: newLockTime,
+            cutoffTime: newLockTime
         });
     } catch (err) {
         console.error('更新鎖定時間失敗:', err.message);
@@ -835,7 +874,6 @@ app.post('/api/login', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (result.rows.length > 0) {
-            // 💡 登入時動態比對當前時間是否已過截止時間
             const cancelCheck = await checkIsCancelAllowed();
             const allowCancel = cancelCheck.allowed;
 
