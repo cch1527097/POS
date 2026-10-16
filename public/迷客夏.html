@@ -117,14 +117,43 @@
         .store-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--text-muted); }
         .store-meta span { display: flex; align-items: center; gap: 4px; }
 
+        /* 低消橫幅美化樣式 */
+        .promo-banner {
+            background: #fff7ed;
+            color: #c2410c;
+            padding: 10px 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #ffedd5;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+        .promo-badge {
+            background: #ea580c;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+        .promo-text {
+            font-size: 14px;
+            color: #9a3412;
+        }
+
         .info-banner { 
             background: #e0f2fe; 
             color: #0369a1; 
             padding: 12px 16px; 
-            border-radius: 8px; 
+            border-radius: 10px; 
             margin-bottom: 24px; 
-            font-size: 13px; 
+            font-size: 14px; 
             border-left: 5px solid #0284c7; 
+            transition: all 0.3s ease;
         }
 
         .main-layout { display: flex; gap: 20px; align-items: flex-start; }
@@ -598,10 +627,12 @@ window.onload = function() {
         statusDiv.innerHTML = `💳 目前感應卡號：<b>${currentCardId}</b>`;
         statusDiv.style.background = "#e8f5e9";
         statusDiv.style.color = "#2e6f40";
+        statusDiv.style.borderLeftColor = "#4b6b32";
     } else {
         statusDiv.innerHTML = `⚠️ 未偵測到卡號！請確認是透過感應卡開單。`;
         statusDiv.style.background = "#fee2e2";
         statusDiv.style.color = "#991b1b";
+        statusDiv.style.borderLeftColor = "#ef4444";
     }
 
     renderMenu(menuItems);
