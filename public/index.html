@@ -2247,28 +2247,31 @@
             });
         });
 
-        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (即時同步修正版) ==================== */
+        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (強效同步修正版) ==================== */
 
-// 1. 跨分頁感應：同瀏覽器在「後台」修改時間時，前台分頁能即時收到通知並更新
+// 1. 跨頁面即時監聽：同瀏覽器在「後台 admin.html」點擊儲存時，前台不用重整就會立刻更新
 window.addEventListener('storage', (e) => {
-    if (e.key === 'cutoffTime' || e.key === 'dailyCutoffTime' || e.key === 'cutoff_time') {
-        startCutoffCountdown();
+    if (['cutoffTime', 'dailyCutoffTime', 'cutoff_time', 'targetCutoffStr'].includes(e.key)) {
+        if (e.newValue) {
+            targetCutoffStr = e.newValue;
+            updateCountdownUI();
+        }
     }
 });
 
 async function startCutoffCountdown() {
     if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
     
-    // 載入時立即抓取一次最新時間
+    // 立即同步一次最新時間
     await fetchCutoffSetting();
     updateCountdownUI();
     
-    // 2. 每秒更新倒數 UI，且每 10 秒自動重新請求一次 API (實現跨裝置/未重載頁面時的即時同步)
+    // 每秒更新倒數，且每 3 秒自動向後台/快取重新同步最新時間
     let pollCounter = 0;
     cutoffTimerInterval = setInterval(async () => {
         updateCountdownUI();
         pollCounter++;
-        if (pollCounter >= 10) { 
+        if (pollCounter >= 3) {
             pollCounter = 0;
             await fetchCutoffSetting();
         }
@@ -2278,7 +2281,7 @@ async function startCutoffCountdown() {
 async function fetchCutoffSetting() {
     let latestTime = null;
 
-    // A. 優先向伺服器 API 請求最新後台時間 (解決跨裝置同步問題)
+    // A. 優先嘗試向後端 API 抓取最新時間
     try {
         const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
         if (response.ok) {
@@ -2286,20 +2289,27 @@ async function fetchCutoffSetting() {
             latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
         }
     } catch (e) {
-        console.warn('⚠️ API 請求失敗，將改用 LocalStorage 快取時間');
+        // 若 API 離線，嘗試讀取靜態設定檔 cutoff.json (若有)
+        try {
+            const jsonRes = await fetch(`cutoff.json?_=${new Date().getTime()}`, { cache: 'no-store' });
+            if (jsonRes.ok) {
+                const data = await jsonRes.json();
+                latestTime = data.cutoffTime || data.time || data.cutoff_time;
+            }
+        } catch (err) {}
     }
 
-    // B. 若 API 無回應或離線，退回讀取 LocalStorage 本機快取
-    if (!latestTime) {
-        latestTime = localStorage.getItem('cutoffTime') || 
-                     localStorage.getItem('dailyCutoffTime') || 
-                     localStorage.getItem('cutoff_time');
-    }
+    // B. 讀取 LocalStorage（後台若儲存在瀏覽器快取中）
+    const localCutoff = localStorage.getItem('cutoffTime') || 
+                        localStorage.getItem('dailyCutoffTime') || 
+                        localStorage.getItem('cutoff_time');
 
-    // C. 更新變數與快取 (若完全沒設定，預設為 09:30)
+    // C. 優先採納 API/JSON 最新設定；若無則讀取 LocalStorage
     if (latestTime) {
         targetCutoffStr = latestTime;
-        localStorage.setItem('cutoffTime', latestTime);
+        localStorage.setItem('cutoffTime', latestTime); // 同步更新本機
+    } else if (localCutoff) {
+        targetCutoffStr = localCutoff;
     }
 }
 
