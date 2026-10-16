@@ -2247,76 +2247,98 @@
             });
         });
 
-        /* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
-        async function startCutoffCountdown() {
-            if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
+        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (即時同步修正版) ==================== */
+
+// 1. 跨分頁感應：同瀏覽器在「後台」修改時間時，前台分頁能即時收到通知並更新
+window.addEventListener('storage', (e) => {
+    if (e.key === 'cutoffTime' || e.key === 'dailyCutoffTime' || e.key === 'cutoff_time') {
+        startCutoffCountdown();
+    }
+});
+
+async function startCutoffCountdown() {
+    if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
+    
+    // 載入時立即抓取一次最新時間
+    await fetchCutoffSetting();
+    updateCountdownUI();
+    
+    // 2. 每秒更新倒數 UI，且每 10 秒自動重新請求一次 API (實現跨裝置/未重載頁面時的即時同步)
+    let pollCounter = 0;
+    cutoffTimerInterval = setInterval(async () => {
+        updateCountdownUI();
+        pollCounter++;
+        if (pollCounter >= 10) { 
+            pollCounter = 0;
             await fetchCutoffSetting();
-            updateCountdownUI();
-            cutoffTimerInterval = setInterval(updateCountdownUI, 1000);
         }
+    }, 1000);
+}
 
-        async function fetchCutoffSetting() {
-            // 1. 優先讀取 LocalStorage（後台儲存的時間）
-            const localCutoff = localStorage.getItem('cutoffTime') || 
-                                localStorage.getItem('dailyCutoffTime') || 
-                                localStorage.getItem('cutoff_time');
-            
-            if (localCutoff) {
-                targetCutoffStr = localCutoff;
-            }
+async function fetchCutoffSetting() {
+    let latestTime = null;
 
-            // 2. 嘗試呼叫 API 獲取後台最新時間
-            try {
-                const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
-                if (response.ok) {
-                    const data = await response.json();
-                    const apiTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
-                    if (apiTime) {
-                        targetCutoffStr = apiTime;
-                        localStorage.setItem('cutoffTime', apiTime);
-                    }
-                }
-            } catch (e) {
-                console.warn('API 離線，已使用 LocalStorage 快取時間：', targetCutoffStr);
-            }
+    // A. 優先向伺服器 API 請求最新後台時間 (解決跨裝置同步問題)
+    try {
+        const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (response.ok) {
+            const data = await response.json();
+            latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
         }
+    } catch (e) {
+        console.warn('⚠️ API 請求失敗，將改用 LocalStorage 快取時間');
+    }
 
-        function updateCountdownUI() {
-            const timeDisplay = document.getElementById('cutoffTimeDisplay');
-            const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
-            if (!timeDisplay || !countdownDisplay) return;
+    // B. 若 API 無回應或離線，退回讀取 LocalStorage 本機快取
+    if (!latestTime) {
+        latestTime = localStorage.getItem('cutoffTime') || 
+                     localStorage.getItem('dailyCutoffTime') || 
+                     localStorage.getItem('cutoff_time');
+    }
 
-            timeDisplay.textContent = targetCutoffStr;
+    // C. 更新變數與快取 (若完全沒設定，預設為 09:30)
+    if (latestTime) {
+        targetCutoffStr = latestTime;
+        localStorage.setItem('cutoffTime', latestTime);
+    }
+}
 
-            const now = new Date();
-            const timeParts = targetCutoffStr.split(':').map(Number);
-            const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
-            const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
-            const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
+function updateCountdownUI() {
+    const timeDisplay = document.getElementById('cutoffTimeDisplay');
+    const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
+    if (!timeDisplay || !countdownDisplay) return;
 
-            const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
-            const diffMs = targetTime - now;
+    timeDisplay.textContent = targetCutoffStr;
 
-            if (diffMs <= 0) {
-                countdownDisplay.textContent = '已截止點餐';
-                countdownDisplay.classList.add('expired');
-            } else {
-                countdownDisplay.classList.remove('expired');
-                const hrs = Math.floor(diffMs / (1000 * 60 * 60));
-                const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                const secs = Math.floor((diffMs % (1000 * 60)) / 1000);
+    const now = new Date();
+    const timeParts = targetCutoffStr.split(':').map(Number);
+    const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
+    const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
+    const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
 
-                const hh = String(hrs).padStart(2, '0');
-                const mm = String(mins).padStart(2, '0');
-                const ss = String(secs).padStart(2, '0');
+    const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
+    const diffMs = targetTime - now;
 
-                if (hrs > 0) {
-                    countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
-                } else {
-                    countdownDisplay.textContent = `${mm}:${ss}`;
-                }
-            }
+    if (diffMs <= 0) {
+        countdownDisplay.textContent = '已截止點餐';
+        countdownDisplay.classList.add('expired');
+    } else {
+        countdownDisplay.classList.remove('expired');
+        const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+        const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+        const hh = String(hrs).padStart(2, '0');
+        const mm = String(mins).padStart(2, '0');
+        const ss = String(secs).padStart(2, '0');
+
+        if (hrs > 0) {
+            countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
+        } else {
+            countdownDisplay.textContent = `${mm}:${ss}`;
         }
+    }
+}
 
         /* ==================== 🎲 店家轉盤功能邏輯 ==================== */
         let wheelShops = [];
