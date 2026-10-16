@@ -669,31 +669,19 @@
                 <button class="btn" onclick="window.open('index.html', '_blank')">前台點餐連結 ➔</button>
             </div>
 
-            <!-- 獨立卡片一：每日點餐截止 / 鎖定時間設定 -->
-        <div class="card card-accent">
-            <h3>⏰ 每日點餐截止 / 鎖定時間設定</h3>
-            <p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
-                設定每日截止點餐時間，系統時間到達後前台將自動停止接受新訂單。
-            </p>
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <input type="time" id="lockTimeInput" value="10:30" style="width: auto;">
-                <button class="btn" onclick="saveLockTime()">💾 儲存時間</button>
-                <button class="btn btn-danger-light" onclick="unlockOrderTime()">🔓 解除鎖定</button>
-                <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
+            <!-- 獨立卡片：每日點餐截止 / 鎖定時間設定 -->
+            <div class="card card-accent">
+                <h3>⏰ 每日點餐截止 / 鎖定時間設定</h3>
+                <p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
+                    設定每日截止點餐時間，系統時間到達後前台將自動停止接受新訂單。
+                </p>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <input type="time" id="lockTimeInput" value="10:30" style="width: auto;">
+                    <button class="btn" onclick="saveLockTime()">💾 儲存時間</button>
+                    <button class="btn btn-danger-light" onclick="unlockOrderTime()">🔓 解除鎖定</button>
+                    <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
+                </div>
             </div>
-        </div>
-
-        <!-- 獨立卡片二：前台取消 / 修改訂單權限控制 -->
-        <div class="card card-accent">
-            <h3>🚫 前台取消 / 修改訂單權限控制</h3>
-            <p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
-                開啟時前台購物車允許員工自主取消與修改訂單；關閉時前台購物車將隱藏操作按鈕，禁止修改與取消。
-            </p>
-            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <button class="btn btn-line" id="toggleCancelBtn" onclick="toggleAllowCancel()">🟢 取消訂單功能：已開放</button>
-                <span id="allowCancelDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;">[前台狀態：允許取消與修改]</span>
-            </div>
-        </div>
 
             <div class="summary-container">
                 <div class="summary-box">
@@ -1154,7 +1142,7 @@ ${openStores}
         }
 
         async function openStore(storeId) {
-            if (!checkPermission('manage_store')) return; // 👈 權限檢查
+            if (!checkPermission('manage_store')) return;
 
             const targetStore = storeList.find(s => s.id === storeId);
             if (!targetStore) return;
@@ -1182,7 +1170,7 @@ ${openStores}
         }
 
         async function closeStore(storeId) {
-            if (!checkPermission('manage_store')) return; // 👈 權限檢查
+            if (!checkPermission('manage_store')) return;
 
             const store = storeList.find(s => s.id === storeId);
             if (!store) return;
@@ -1228,7 +1216,7 @@ ${openStores}
         }
 
         async function saveLockTime() {
-            if (!checkPermission('change_status')) return; // 👈 權限檢查
+            if (!checkPermission('change_status')) return;
 
             const lockTime = document.getElementById('lockTimeInput').value;
             if (!lockTime) {
@@ -1256,7 +1244,7 @@ ${openStores}
         }
 
         async function unlockOrderTime() {
-            if (!checkPermission('change_status')) return; // 👈 權限檢查
+            if (!checkPermission('change_status')) return;
 
             showCustomModal({
                 title: '確認解除鎖定',
@@ -1345,7 +1333,7 @@ ${openStores}
         }
 
         function switchTab(tabId, menuItem) {
-            if (tabId === 'employee-mgr' && !checkPermission('edit_emp')) return; // 👈 權限檢查
+            if (tabId === 'employee-mgr' && !checkPermission('edit_emp')) return;
 
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.querySelectorAll('.sidebar .menu-item').forEach(item => item.classList.remove('active'));
@@ -1497,7 +1485,7 @@ ${openStores}
         }
 
         function openEditEmployeeModal(cardId) {
-            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
+            if (!checkPermission('edit_emp')) return;
 
             let currentName = '', currentDept = '';
             if (Array.isArray(USER_DB_PREVIEW)) {
@@ -1536,7 +1524,7 @@ ${openStores}
         }
 
         async function saveEmployeeEdit(cardId, name, department) {
-            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
+            if (!checkPermission('edit_emp')) return;
 
             try {
                 const response = await fetch(`/api/employees/${cardId}`, {
@@ -1554,7 +1542,7 @@ ${openStores}
         }
 
         async function toggleOrderPaymentStatus(orderId, newStatus) {
-            if (!checkPermission('change_status')) return; // 👈 權限檢查
+            if (!checkPermission('change_status')) return;
 
             try {
                 const response = await fetch(`/api/orders/${orderId}/payment`, {
@@ -1578,7 +1566,7 @@ ${openStores}
         }
 
         async function addNewEmployee() {
-            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
+            if (!checkPermission('edit_emp')) return;
 
             const cardId = document.getElementById('newCardId').value.trim();
             const name = document.getElementById('newEmpName').value.trim();
@@ -1609,7 +1597,7 @@ ${openStores}
         }
 
         async function deleteEmployee(cardId) {
-            if (!checkPermission('edit_emp')) return; // 👈 權限檢查
+            if (!checkPermission('edit_emp')) return;
 
             showCustomModal({
                 title: '確認刪除',
@@ -1628,70 +1616,6 @@ ${openStores}
                 }
             });
         }
-
-        let currentAllowCancel = true;
-
-async function loadAllowCancelStatus() {
-    try {
-        const response = await fetch('/api/allow-cancel');
-        const data = await response.json();
-        if (data.success) {
-            updateCancelUI(data.allowCancel);
-        }
-    } catch (err) {
-        console.error('讀取取消訂單狀態失敗:', err);
-    }
-}
-
-function updateCancelUI(allow) {
-    currentAllowCancel = allow;
-    const btn = document.getElementById('toggleCancelBtn');
-    const display = document.getElementById('allowCancelDisplay');
-    if (!btn || !display) return;
-
-    if (allow) {
-        btn.className = 'btn btn-line';
-        btn.innerHTML = '🟢 取消訂單功能：已開放';
-        display.innerText = '[前台狀態：允許取消與修改]';
-        display.style.color = 'var(--primary)';
-    } else {
-        btn.className = 'btn btn-danger-light';
-        btn.innerHTML = '🔴 取消訂單功能：已關閉';
-        display.innerText = '[前台狀態：已關閉取消與修改]';
-        display.style.color = 'var(--danger)';
-    }
-}
-
-async function toggleAllowCancel() {
-    if (!checkPermission('change_status')) return; // RBAC 權限檢查
-
-    const nextState = !currentAllowCancel;
-    const actionText = nextState ? '【開放】' : '【關閉】';
-
-    showCustomModal({
-        title: '確認變更權限',
-        message: `確定要 ${actionText} 前台員工自主取消與修改訂單的權限嗎？`,
-        isConfirm: true,
-        onConfirm: async () => {
-            try {
-                const response = await fetch('/api/allow-cancel', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ allowCancel: nextState })
-                });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    updateCancelUI(nextState);
-                    showCustomModal({ message: result.message });
-                } else {
-                    showCustomModal({ message: result.message || '更新失敗！' });
-                }
-            } catch (e) {
-                showCustomModal({ message: '連線失敗！' });
-            }
-        }
-    });
-}
 
         async function loadOrders() {
             const statusSpan = document.getElementById('syncStatus');
@@ -1799,7 +1723,7 @@ async function toggleAllowCancel() {
 
         async function deleteOrder(orderId) {
             if (!orderId) return;
-            if (!checkPermission('delete')) return; // 👈 權限檢查
+            if (!checkPermission('delete')) return;
 
             showCustomModal({
                 title: '確認刪除',
