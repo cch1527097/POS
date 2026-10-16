@@ -343,9 +343,17 @@ app.get('/api/allow-cancel', async (req, res) => {
     }
 });
 
-// 設定前台取消訂單開關狀態 (相容多種格式)
+// 設定前台取消訂單開關狀態 (相容更多前端 Key 格式)
 app.post('/api/allow-cancel', async (req, res) => {
-    const rawVal = req.body.allowCancel ?? req.body.allow_cancel ?? req.body.allow_order_cancel ?? req.body.enabled;
+    // 擴充相容前端可能傳送的各種欄位名稱
+    const rawVal = req.body.allowCancel ?? 
+                   req.body.allow_cancel ?? 
+                   req.body.allow_order_cancel ?? 
+                   req.body.enabled ?? 
+                   req.body.allow ?? 
+                   req.body.status ?? 
+                   req.body.value;
+
     const valStr = (rawVal === true || rawVal === 'true' || rawVal === 1 || rawVal === '1') ? 'true' : 'false';
 
     try {
@@ -710,7 +718,17 @@ app.post('/api/login', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (result.rows.length > 0) {
-            res.json({ success: true, message: '登入成功', empName: result.rows[0].name });
+            // 💡 登入成功時，同步查詢目前的「取消訂單開關」狀態
+            const cancelRes = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
+            const allowCancel = cancelRes.rows.length > 0 ? cancelRes.rows[0].value === 'true' : true;
+
+            res.json({ 
+                success: true, 
+                message: '登入成功', 
+                empName: result.rows[0].name,
+                allowCancel: allowCancel,    // 回傳 camelCase 格式
+                allow_cancel: allowCancel    // 回傳 snake_case 格式相容前端
+            });
         } else {
             res.json({ success: false, message: '卡號無效，拒絕存取' });
         }
