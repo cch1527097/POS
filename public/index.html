@@ -2247,132 +2247,122 @@
             });
         });
 
-        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (全 Key 自動掃描 + 舊 Key 清理版) ==================== */
+        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (強效同步 + 智能掃描版) ==================== */
 
-// 1. 跨頁面監聽：後台 (admin.html) 一儲存，前台立刻自動更新
-window.addEventListener('storage', (e) => {
-    console.log('🔄 偵測到後台 LocalStorage 變更：', e.key, '=>', e.newValue);
-    fetchCutoffSetting();
-    updateCountdownUI();
-});
+        window.addEventListener('storage', (e) => {
+            console.log('🔄 偵測到後台 LocalStorage 變更：', e.key, '=>', e.newValue);
+            fetchCutoffSetting();
+            updateCountdownUI();
+        });
 
-async function startCutoffCountdown() {
-    if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
-    await fetchCutoffSetting();
-    updateCountdownUI();
-    
-    // 每秒更新倒數，每 2 秒自動同步一次最新時間
-    let pollCounter = 0;
-    cutoffTimerInterval = setInterval(async () => {
-        updateCountdownUI();
-        pollCounter++;
-        if (pollCounter >= 2) {
-            pollCounter = 0;
+        async function startCutoffCountdown() {
+            if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
             await fetchCutoffSetting();
+            updateCountdownUI();
+            
+            let pollCounter = 0;
+            cutoffTimerInterval = setInterval(async () => {
+                updateCountdownUI();
+                pollCounter++;
+                if (pollCounter >= 2) {
+                    pollCounter = 0;
+                    await fetchCutoffSetting();
+                }
+            }, 1000);
         }
-    }, 1000);
-}
 
-async function fetchCutoffSetting() {
-    let latestTime = null;
+        async function fetchCutoffSetting() {
+            let latestTime = null;
 
-    // A. 優先嘗試向後端 API/JSON 請求
-    try {
-        const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
-        if (response.ok) {
-            const data = await response.json();
-            latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
-        }
-    } catch (e) {
-        try {
-            const jsonRes = await fetch(`cutoff.json?_=${new Date().getTime()}`, { cache: 'no-store' });
-            if (jsonRes.ok) {
-                const data = await jsonRes.json();
-                latestTime = data.cutoffTime || data.time || data.cutoff_time;
-            }
-        } catch (err) {}
-    }
-
-    // B. 自動印出瀏覽器 LocalStorage 全部內容，方便除錯
-    console.log('🔍 目前 LocalStorage 所有紀錄：', { ...localStorage });
-
-    // C. 掃描 LocalStorage 所有 Key，支援 JSON 物件與純字串格式
-    if (!latestTime) {
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            const rawVal = localStorage.getItem(key);
-            if (!rawVal) continue;
-
-            // 1. 若寫入的是 JSON 物件，嘗試解析取出時間
-            if (rawVal.startsWith('{')) {
+            try {
+                const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
+                if (response.ok) {
+                    const data = await response.json();
+                    latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
+                }
+            } catch (e) {
                 try {
-                    const parsed = JSON.parse(rawVal);
-                    const t = parsed.cutoffTime || parsed.time || parsed.cutoff;
-                    if (t && typeof t === 'string' && t.includes(':')) {
-                        latestTime = t;
-                        break;
+                    const jsonRes = await fetch(`cutoff.json?_=${new Date().getTime()}`, { cache: 'no-store' });
+                    if (jsonRes.ok) {
+                        const data = await jsonRes.json();
+                        latestTime = data.cutoffTime || data.time || data.cutoff_time;
                     }
-                } catch(e) {}
+                } catch (err) {}
             }
 
-            // 2. 若寫入的是純時間字串 (如 "10:30" 或 "10:30:00")
-            if (rawVal.includes(':') && rawVal.length <= 10) {
-                // 排除日期時間格式，只抓純時間 HH:MM
-                const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
-                if (match) {
-                    latestTime = match[0];
-                    break;
+            if (!latestTime) {
+                const targetKeys = ['cutoffTimeSetting', 'adminCutoffTime', 'cutoffTime', 'dailyCutoffTime', 'cutoff_time', 'targetCutoffStr'];
+                
+                for (const key of targetKeys) {
+                    const rawVal = localStorage.getItem(key);
+                    if (!rawVal) continue;
+
+                    if (rawVal.startsWith('{')) {
+                        try {
+                            const parsed = JSON.parse(rawVal);
+                            const t = parsed.cutoffTime || parsed.time || parsed.cutoff || parsed.value;
+                            if (t && typeof t === 'string' && t.includes(':')) {
+                                latestTime = t;
+                                break;
+                            }
+                        } catch (e) {}
+                    }
+
+                    if (rawVal.includes(':')) {
+                        const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
+                        if (match) {
+                            latestTime = match[0];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (latestTime) {
+                const cleanTime = latestTime.replace(/[^0-9:]/g, '');
+                if (cleanTime && cleanTime !== targetCutoffStr) {
+                    targetCutoffStr = cleanTime;
+                    console.log('✅ 前台時間已成功同步為：', targetCutoffStr);
                 }
             }
         }
-    }
 
-    // D. 套用最新時間並即時同步 UI
-    if (latestTime) {
-        const cleanTime = latestTime.replace(/[^0-9:]/g, '');
-        if (cleanTime && cleanTime !== targetCutoffStr) {
-            targetCutoffStr = cleanTime;
-            console.log('✅ 前台時間已成功同步更新為：', targetCutoffStr);
+        function updateCountdownUI() {
+            const timeDisplay = document.getElementById('cutoffTimeDisplay');
+            const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
+            if (!timeDisplay || !countdownDisplay) return;
+
+            timeDisplay.textContent = targetCutoffStr;
+
+            const now = new Date();
+            const timeParts = targetCutoffStr.split(':').map(Number);
+            const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
+            const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
+            const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
+
+            const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
+            const diffMs = targetTime - now;
+
+            if (diffMs <= 0) {
+                countdownDisplay.textContent = '已截止點餐';
+                countdownDisplay.classList.add('expired');
+            } else {
+                countdownDisplay.classList.remove('expired');
+                const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+                const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+                const hh = String(hrs).padStart(2, '0');
+                const mm = String(mins).padStart(2, '0');
+                const ss = String(secs).padStart(2, '0');
+
+                if (hrs > 0) {
+                    countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
+                } else {
+                    countdownDisplay.textContent = `${mm}:${ss}`;
+                }
+            }
         }
-    }
-}
-
-function updateCountdownUI() {
-    const timeDisplay = document.getElementById('cutoffTimeDisplay');
-    const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
-    if (!timeDisplay || !countdownDisplay) return;
-
-    timeDisplay.textContent = targetCutoffStr;
-
-    const now = new Date();
-    const timeParts = targetCutoffStr.split(':').map(Number);
-    const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
-    const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
-    const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
-
-    const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
-    const diffMs = targetTime - now;
-
-    if (diffMs <= 0) {
-        countdownDisplay.textContent = '已截止點餐';
-        countdownDisplay.classList.add('expired');
-    } else {
-        countdownDisplay.classList.remove('expired');
-        const hrs = Math.floor(diffMs / (1000 * 60 * 60));
-        const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((diffMs % (1000 * 60)) / 1000);
-
-        const hh = String(hrs).padStart(2, '0');
-        const mm = String(mins).padStart(2, '0');
-        const ss = String(secs).padStart(2, '0');
-
-        if (hrs > 0) {
-            countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
-        } else {
-            countdownDisplay.textContent = `${mm}:${ss}`;
-        }
-    }
-}
 
         /* ==================== 🎲 店家轉盤功能邏輯 ==================== */
         let wheelShops = [];
