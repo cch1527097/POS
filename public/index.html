@@ -639,6 +639,62 @@
             box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
         }
 
+        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
+        .cutoff-float-badge {
+            position: fixed;
+            bottom: 145px;
+            right: 25px;
+            background: #ffffff;
+            border: 2px solid #4e803c;
+            border-radius: 14px;
+            padding: 10px 14px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+            text-align: center;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .cutoff-title {
+            font-size: 12px;
+            color: #2b4c23;
+            font-weight: bold;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .cutoff-time-text {
+            font-size: 14px;
+            font-weight: 800;
+            color: #2b4c23;
+            margin-bottom: 4px;
+        }
+
+        .cutoff-timer {
+            font-size: 14px;
+            font-weight: 800;
+            color: #d9363e;
+            background: #ffeef0;
+            padding: 3px 10px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+            width: 100%;
+            border: 1px solid #fca5a5;
+        }
+
+        .cutoff-timer.expired {
+            color: #666666;
+            background: #f0f0f0;
+            border-color: #d0d0d0;
+        }
+
         .order-action-btn {
             padding: 5px 10px;
             border-radius: 6px;
@@ -933,6 +989,13 @@
             .footer-info-row {
                 flex-direction: column;
                 gap: 6px;
+            }
+
+            .cutoff-float-badge {
+                right: 15px;
+                bottom: 140px;
+                padding: 8px 10px;
+                min-width: 120px;
             }
         }
 
@@ -1816,7 +1879,7 @@
                 </div>
                 <div class="shop-info">
                     <h3 class="shop-name">樂法</h3>
-                    <p class="shop-desc">樂法主打「天然、健康、純粹」的理念，以白色與原木色打造簡約明亮的空間，並堅持使用新鮮水果與優質茶葉。</p>
+                    <p class="shop-desc">樂法主打「天然、健康、純粹」的理念，以白色與原木色打造簡約明亮的時間，並堅持使用新鮮水果與優質茶葉。</p>
                 </div>
             </div>
 
@@ -1844,6 +1907,15 @@
                 Copyright ©2026 本網站內容為「秀傳醫療財團法人彰濱秀傳紀念醫院」所有 未經授權．禁止轉載
             </div>
         </footer>
+
+        <!-- ⏱️ 右下角截止時間與倒數計時懸浮元件 -->
+        <div id="cutoffBadge" class="cutoff-float-badge">
+            <div class="cutoff-title">
+                ⏱️ 今日點餐截止
+            </div>
+            <div class="cutoff-time-text" id="cutoffTimeDisplay">10:30</div>
+            <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
+        </div>
 
         <button class="cart-float-btn" title="查看購物車" aria-label="購物車" onclick="openCartModal()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2037,6 +2109,8 @@
         let customAlertCallback = null;
         let globalEmployeesMap = {}; 
         let currentCategoryView = 'food'; 
+        let cutoffTimerInterval = null;
+        let targetCutoffStr = '10:30';
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -2146,6 +2220,7 @@
             }
 
             await fetchEmployeeList();
+            startCutoffCountdown();
 
             const cardInput = document.getElementById('cardId');
             if (cardInput) {
@@ -2171,6 +2246,65 @@
                 }
             });
         });
+
+        /* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
+        async function startCutoffCountdown() {
+            if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
+            await fetchCutoffSetting();
+            updateCountdownUI();
+            cutoffTimerInterval = setInterval(updateCountdownUI, 1000);
+        }
+
+        async function fetchCutoffSetting() {
+            try {
+                const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.cutoffTime || data.time) {
+                        targetCutoffStr = data.cutoffTime || data.time;
+                    }
+                }
+            } catch (e) {
+                console.warn('無法從 API 獲取截止時間，將啟用預設截止時間 10:30');
+            }
+        }
+
+        function updateCountdownUI() {
+            const timeDisplay = document.getElementById('cutoffTimeDisplay');
+            const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
+            if (!timeDisplay || !countdownDisplay) return;
+
+            timeDisplay.textContent = targetCutoffStr;
+
+            const now = new Date();
+            const timeParts = targetCutoffStr.split(':').map(Number);
+            const targetHours = timeParts[0] || 10;
+            const targetMinutes = timeParts[1] || 30;
+            const targetSeconds = timeParts[2] || 0;
+
+            const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
+            const diffMs = targetTime - now;
+
+            if (diffMs <= 0) {
+                countdownDisplay.textContent = '已截止點餐';
+                countdownDisplay.classList.add('expired');
+            } else {
+                countdownDisplay.classList.remove('expired');
+                const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+                const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+                const hh = String(hrs).padStart(2, '0');
+                const mm = String(mins).padStart(2, '0');
+                const ss = String(secs).padStart(2, '0');
+
+                if (hrs > 0) {
+                    countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
+                } else {
+                    countdownDisplay.textContent = `${mm}:${ss}`;
+                }
+            }
+        }
 
         /* ==================== 🎲 店家轉盤功能邏輯 ==================== */
         let wheelShops = [];
@@ -2602,6 +2736,7 @@
             restoreSelectedCategory();
             fetchOrderHistory(cardId);
             fetchGlobalOrders(cardId);
+            startCutoffCountdown();
         }
 
         function showLoginSection() {
