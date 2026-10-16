@@ -552,27 +552,6 @@
         }
 
         /* ==================== 3. 表格通用樣式 ==================== */
-        .clear-local-btn {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .clear-local-btn:hover {
-            background-color: #fca8a8;
-            color: #a01010;
-            border-color: #f5c2be;
-            transform: scale(1.02);
-        }
-
         .history-table-wrapper {
             overflow-x: auto;
         }
@@ -963,7 +942,6 @@
             .subtitle { font-size: 12px; margin-bottom: 30px; letter-spacing: 2px; }
             .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
             .login-btn { width: 100%; max-width: 280px; }
-            .clear-local-btn { width: 100%; justify-content: center; }
             .history-modal-content, .cart-modal-content { width: 95vw !important; }
         }
     </style>
@@ -1949,10 +1927,7 @@
         <div class="branch-modal-content cart-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
                 <h3>📋 我的購物車 (今日點餐)</h3>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="clear-local-btn" onclick="clearLocalTodayOrders()">🧹 清除紀錄</button>
-                    <span class="close-btn" onclick="closeCartModal()">&times;</span>
-                </div>
+                <span class="close-btn" onclick="closeCartModal()">&times;</span>
             </div>
             <div class="history-modal-body">
                 <div class="history-table-wrapper">
@@ -2726,17 +2701,6 @@
             return '-';
         }
 
-        function clearLocalTodayOrders() {
-            if (!loggedInCardId) return;
-            callCustomAlert('提示', '🧹 確定要清除這台裝置上的今日點餐暫存紀錄嗎？<br><small style="color:#888;">(此操作不會影響全系統 orders.json 資料庫)</small>', (confirmed) => {
-                if (confirmed) {
-                    const localKey = `orders_${loggedInCardId}`;
-                    localStorage.removeItem(localKey);
-                    fetchOrderHistory(loggedInCardId);
-                }
-            }, true);
-        }
-
         async function fetchOrderHistory(cardId) {
             const historyList = document.getElementById('history-list');
             if (!historyList) return;
@@ -2808,7 +2772,6 @@
 
                 const fullMealText = order.meal || '';
                 
-                // 💡 修正：支援全形冒號 `：`、半形冒號 `:` 及中括號 `[...]` 多重精準提取店家名稱
                 let shopName = order.storeName || order.store || order.shopName || '';
                 if (!shopName && fullMealText) {
                     if (fullMealText.includes('：')) {
