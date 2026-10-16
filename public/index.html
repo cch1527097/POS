@@ -2247,31 +2247,26 @@
             });
         });
 
-        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (強效同步修正版) ==================== */
+        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (全 Key 自動掃描版) ==================== */
 
-// 1. 跨頁面即時監聽：同瀏覽器在「後台 admin.html」點擊儲存時，前台不用重整就會立刻更新
+// 1. 跨頁面監聽：後台 (admin.html) 一儲存，前台立刻自動更新
 window.addEventListener('storage', (e) => {
-    if (['cutoffTime', 'dailyCutoffTime', 'cutoff_time', 'targetCutoffStr'].includes(e.key)) {
-        if (e.newValue) {
-            targetCutoffStr = e.newValue;
-            updateCountdownUI();
-        }
-    }
+    console.log('🔄 偵測到後台設定變更：', e.key, '=>', e.newValue);
+    fetchCutoffSetting();
+    updateCountdownUI();
 });
 
 async function startCutoffCountdown() {
     if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
-    
-    // 立即同步一次最新時間
     await fetchCutoffSetting();
     updateCountdownUI();
     
-    // 每秒更新倒數，且每 3 秒自動向後台/快取重新同步最新時間
+    // 每秒更新倒數，每 2 秒自動同步一次本機/後台時間
     let pollCounter = 0;
     cutoffTimerInterval = setInterval(async () => {
         updateCountdownUI();
         pollCounter++;
-        if (pollCounter >= 3) {
+        if (pollCounter >= 2) {
             pollCounter = 0;
             await fetchCutoffSetting();
         }
@@ -2281,7 +2276,7 @@ async function startCutoffCountdown() {
 async function fetchCutoffSetting() {
     let latestTime = null;
 
-    // A. 優先嘗試向後端 API 抓取最新時間
+    // A. 優先嘗試向後端 API/JSON 請求
     try {
         const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
         if (response.ok) {
@@ -2289,7 +2284,6 @@ async function fetchCutoffSetting() {
             latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
         }
     } catch (e) {
-        // 若 API 離線，嘗試讀取靜態設定檔 cutoff.json (若有)
         try {
             const jsonRes = await fetch(`cutoff.json?_=${new Date().getTime()}`, { cache: 'no-store' });
             if (jsonRes.ok) {
@@ -2299,17 +2293,30 @@ async function fetchCutoffSetting() {
         } catch (err) {}
     }
 
-    // B. 讀取 LocalStorage（後台若儲存在瀏覽器快取中）
-    const localCutoff = localStorage.getItem('cutoffTime') || 
-                        localStorage.getItem('dailyCutoffTime') || 
-                        localStorage.getItem('cutoff_time');
+    // B. 若沒有伺服器 API，自動掃描 LocalStorage 中所有可能的 Key 名稱
+    if (!latestTime) {
+        const possibleKeys = [
+            'cutoffTime', 'dailyCutoffTime', 'cutoff_time', 'cutoff', 
+            'cutoffSetting', 'adminCutoffTime', 'targetCutoffStr', 'cutoffTimeSetting', 'daily_cutoff'
+        ];
+        
+        for (const key of possibleKeys) {
+            const val = localStorage.getItem(key);
+            if (val && val.includes(':')) {
+                latestTime = val;
+                break;
+            }
+        }
+    }
 
-    // C. 優先採納 API/JSON 最新設定；若無則讀取 LocalStorage
+    // C. 套用最新時間並更新 UI
     if (latestTime) {
-        targetCutoffStr = latestTime;
-        localStorage.setItem('cutoffTime', latestTime); // 同步更新本機
-    } else if (localCutoff) {
-        targetCutoffStr = localCutoff;
+        // 清理字串，只保留 HH:MM 格式
+        const cleanTime = latestTime.replace(/[^0-9:]/g, '');
+        if (cleanTime && cleanTime !== targetCutoffStr) {
+            targetCutoffStr = cleanTime;
+            console.log('✅ 前台時間已同步更新為：', targetCutoffStr);
+        }
     }
 }
 
