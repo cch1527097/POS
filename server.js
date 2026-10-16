@@ -54,7 +54,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 同步寫入 public/orders.json (維持舊前端直接讀取 json 檔的需求)
+// 同步寫入 public/orders.json
 async function syncOrdersJsonFile() {
     try {
         const publicDir = path.join(__dirname, 'public');
@@ -77,7 +77,6 @@ async function syncOrdersJsonFile() {
             ORDER BY order_id DESC;
         `);
 
-        // 確保 orderId 同時支援數字與字串格式，避免前端比對失敗
         const formattedRows = result.rows.map(row => ({
             ...row,
             orderId: Number(row.orderId) || row.orderId,
@@ -87,15 +86,15 @@ async function syncOrdersJsonFile() {
         const jsonPath = path.join(publicDir, 'orders.json');
         await fs.promises.writeFile(jsonPath, JSON.stringify(formattedRows, null, 2), 'utf-8');
     } catch (err) {
-        console.warn('⚠️ 警告：同步 orders.json 失敗 (雲端環境可能為唯讀檔案系統):', err.message);
+        console.warn('⚠️ 警告：同步 orders.json 失敗:', err.message);
     }
 }
 
-// 產生 JavaScript 安全整數範圍內的唯一 Order ID (< 9007199254740991)
+// 產生 JavaScript 安全整數範圍內的唯一 Order ID
 function generateSafeOrderId() {
-    const timestamp = Date.now(); // 13 位數
-    const randomSuffix = Math.floor(Math.random() * 900) + 100; // 3 位數
-    return Number(`${timestamp}${randomSuffix}`); // 16 位數安全整數
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 900) + 100;
+    return Number(`${timestamp}${randomSuffix}`);
 }
 
 // 初始化資料庫
@@ -117,9 +116,7 @@ async function initDatabase() {
             );
         `);
 
-        await pool.query(`
-            ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
-        `);
+        await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;`);
 
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -232,7 +229,6 @@ async function initDatabase() {
                 let existingStores = JSON.parse(currentStoreRes.rows[0].value) || [];
                 if (!Array.isArray(existingStores)) existingStores = [];
                 
-                // 保留所有現有店家設定，僅合併補充缺少的預設店家
                 const existingIds = new Set(existingStores.map(s => s && s.id).filter(Boolean));
                 const missingDefaults = DEFAULT_STORES.filter(def => !existingIds.has(def.id));
                 const syncedStores = [...existingStores, ...missingDefaults];
@@ -279,7 +275,8 @@ async function initDatabase() {
     }
 }
 
-// ==================== 取消訂單 API ====================
+// ==================== 取消訂單功能 API ====================
+
 app.post('/api/orders/cancel', async (req, res) => {
     try {
         const checkAllow = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
@@ -309,7 +306,7 @@ app.post('/api/orders/cancel', async (req, res) => {
         } else if (cleanTimestamp) {
             result = await pool.query(
                 'DELETE FROM orders WHERE card_id = $1 AND timestamp = $2 RETURNING *;',
-                [cleanCardId, cleanTimestamp]
+                [cleanTimestamp, cleanCardId]
             );
         }
 
@@ -325,7 +322,7 @@ app.post('/api/orders/cancel', async (req, res) => {
     }
 });
 
-// 取得前台取消訂單開關狀態 (同時回傳 camelCase 與 snake_case 確保前端相容)
+// 取得前台取消訂單開關狀態 (相容多種格式)
 app.get('/api/allow-cancel', async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
@@ -335,7 +332,15 @@ app.get('/api/allow-cancel', async (req, res) => {
         res.json({ 
             success: true, 
             allowCancel: allowCancel,
-            allow_cancel: allowCancel 
+            allow_cancel: allowCancel,
+            allowOrderCancel: allowCancel,
+            allow_order_cancel: allowCancel,
+            data: {
+                allowCancel: allowCancel,
+                allow_cancel: allowCancel,
+                allowOrderCancel: allowCancel,
+                allow_order_cancel: allowCancel
+            }
         });
     } catch (err) {
         console.error('讀取取消訂單開關失敗:', err.message);
@@ -343,12 +348,12 @@ app.get('/api/allow-cancel', async (req, res) => {
     }
 });
 
-// 設定前台取消訂單開關狀態 (相容更多前端 Key 格式)
-app.post('/api/allow-cancel', async (req, res) => {
-    // 擴充相容前端可能傳送的各種欄位名稱
+// 設定前台取消訂單開關處理常式
+const handleAllowCancelUpdate = async (req, res) => {
     const rawVal = req.body.allowCancel ?? 
                    req.body.allow_cancel ?? 
                    req.body.allow_order_cancel ?? 
+                   req.body.allowOrderCancel ??
                    req.body.enabled ?? 
                    req.body.allow ?? 
                    req.body.status ?? 
@@ -370,13 +375,86 @@ app.post('/api/allow-cancel', async (req, res) => {
             success: true, 
             message: isAllowed ? '已成功【開放】前台取消與修改訂單功能！' : '已成功【關閉】前台取消與修改訂單功能！',
             allowCancel: isAllowed,
-            allow_cancel: isAllowed
+            allow_cancel: isAllowed,
+            allowOrderCancel: isAllowed,
+            allow_order_cancel: isAllowed,
+            data: {
+                allowCancel: isAllowed,
+                allow_cancel: isAllowed,
+                allowOrderCancel: isAllowed,
+                allow_order_cancel: isAllowed
+            }
         });
     } catch (err) {
         console.error('更新取消訂單開關失敗:', err.message);
         res.status(500).json({ success: false, message: '設定取消訂單開關失敗' });
     }
+};
+
+// 同時支援 POST 與 PUT 方法
+app.post('/api/allow-cancel', handleAllowCancelUpdate);
+app.put('/api/allow-cancel', handleAllowCancelUpdate);
+
+// 通用 Settings API (支援全域設定讀取與更新)
+app.get('/api/settings', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT key, value FROM settings;');
+        const settingsMap = {};
+        result.rows.forEach(row => {
+            settingsMap[row.key] = row.value;
+        });
+        const allowCancel = settingsMap['allow_order_cancel'] === 'true';
+
+        res.json({
+            success: true,
+            allow_order_cancel: allowCancel,
+            allowCancel: allowCancel,
+            allowOrderCancel: allowCancel,
+            allow_cancel: allowCancel,
+            order_lock_time: settingsMap['order_lock_time'] || '',
+            active_store: settingsMap['active_store'] || '',
+            settings: settingsMap,
+            data: settingsMap
+        });
+    } catch (err) {
+        console.error('讀取 settings 失敗:', err.message);
+        res.status(500).json({ success: false, message: '無法取得系統設定' });
+    }
 });
+
+const handleSettingsUpdate = async (req, res) => {
+    try {
+        const body = req.body || {};
+        const rawCancel = body.allowCancel ?? body.allow_cancel ?? body.allow_order_cancel ?? body.allowOrderCancel;
+        
+        if (rawCancel !== undefined) {
+            const valStr = (rawCancel === true || rawCancel === 'true' || rawCancel === 1 || rawCancel === '1') ? 'true' : 'false';
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('allow_order_cancel', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [valStr]);
+            console.log(`[Settings API 更新] 已將 allow_order_cancel 更新為: ${valStr}`);
+        }
+
+        if (body.lockTime !== undefined || body.order_lock_time !== undefined) {
+            const lockTimeVal = body.lockTime ?? body.order_lock_time;
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_time', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [String(lockTimeVal)]);
+        }
+
+        res.json({ success: true, message: '系統設定已成功更新！' });
+    } catch (err) {
+        console.error('更新 settings 失敗:', err.message);
+        res.status(500).json({ success: false, message: '更新設定失敗' });
+    }
+};
+
+app.post('/api/settings', handleSettingsUpdate);
+app.put('/api/settings', handleSettingsUpdate);
 
 // ==================== 其他 API 路由 ====================
 
@@ -718,7 +796,6 @@ app.post('/api/login', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (result.rows.length > 0) {
-            // 💡 登入成功時，同步查詢目前的「取消訂單開關」狀態
             const cancelRes = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
             const allowCancel = cancelRes.rows.length > 0 ? cancelRes.rows[0].value === 'true' : true;
 
@@ -726,8 +803,16 @@ app.post('/api/login', async (req, res) => {
                 success: true, 
                 message: '登入成功', 
                 empName: result.rows[0].name,
-                allowCancel: allowCancel,    // 回傳 camelCase 格式
-                allow_cancel: allowCancel    // 回傳 snake_case 格式相容前端
+                allowCancel: allowCancel,
+                allow_cancel: allowCancel,
+                allowOrderCancel: allowCancel,
+                allow_order_cancel: allowCancel,
+                data: {
+                    allowCancel: allowCancel,
+                    allow_cancel: allowCancel,
+                    allowOrderCancel: allowCancel,
+                    allow_order_cancel: allowCancel
+                }
             });
         } else {
             res.json({ success: false, message: '卡號無效，拒絕存取' });
@@ -748,13 +833,11 @@ app.post('/api/order', async (req, res) => {
         const cleanSpicy = spicy ? String(spicy).trim().slice(0, 50) : "無";
         const cleanNote = note ? String(note).trim().slice(0, 300) : "無";
 
-        // 驗證金額：防止負數金額
         const numTotal = Number(total);
         if (isNaN(numTotal) || numTotal < 0) {
             return res.status(400).json({ success: false, message: '訂單金額格式無效或不可為負數！' });
         }
 
-        // 1. 店家開放狀態檢查
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
@@ -785,7 +868,6 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 2. 鎖定時間比對
         const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
         const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
 
@@ -815,7 +897,6 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 3. 員工驗證與寫入
         const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
         const userRes = await pool.query('SELECT name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (!cleanCardId || userRes.rows.length === 0) {
@@ -823,8 +904,6 @@ app.post('/api/order', async (req, res) => {
         }
 
         const empName = userRes.rows[0].name;
-        
-        // 產生安全且不溢位之整數 orderId
         const orderIdVal = generateSafeOrderId();
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
