@@ -22,20 +22,19 @@
 
         /* ==================== 登入版面全螢幕背景與裝飾 ==================== */
         body.login-mode {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #f8fcf7;
-    position: fixed; /* 將 relative 改為 fixed，讓登入畫面固定在螢幕視窗中間 */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    min-height: 100vh;
-    overflow: hidden;
-}
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8fcf7;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            min-height: 100vh;
+            overflow: hidden;
+        }
 
-        /* 左上角與右下角的流線波浪背景裝飾 */
         body.login-mode::before,
         body.login-mode::after {
             content: "";
@@ -80,7 +79,6 @@
             z-index: 1000;         
         }
 
-        /* 第一層：頂部工具列 */
         .nidin-top-bar {
             max-width: 1200px;
             margin: 0 auto;
@@ -99,7 +97,6 @@
             min-width: 0;
         }
 
-        /* Logo 樣式 */
         .nidin-logo {
             font-size: 26px;
             font-weight: 800;
@@ -123,7 +120,6 @@
             flex-shrink: 0;
         }
 
-        /* 定位下拉按鈕 */
         .nidin-location-btn {
             display: flex;
             align-items: center;
@@ -143,7 +139,6 @@
             background-color: #f5f5f5;
         }
 
-        /* 搜尋框 */
         .nidin-search-box {
             display: flex;
             align-items: center;
@@ -168,7 +163,6 @@
             color: #333;
         }
 
-        /* 右側員工資訊區塊 */
         .nidin-top-right {
             display: flex;
             align-items: center;
@@ -197,7 +191,6 @@
             color: #0091ff;
         }
 
-        /* 部門膠囊標籤樣式 */
         .dept-badge {
             background-color: #e8f4fd;
             color: #1e88e5;
@@ -209,7 +202,6 @@
             display: inline-block;
         }
 
-        /* 第二層：導覽選單 */
         .nidin-nav-bar {
             max-width: 1200px;
             margin: 0 auto;
@@ -276,7 +268,6 @@
             border: 1px solid rgba(220, 235, 218, 0.5);
         }
 
-        /* 登入頁 Logo 樣式 */
         .login-logo {
             width: 80px;
             height: auto;
@@ -356,42 +347,41 @@
         .login-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
         
         .login-admin-link {
-    background-color: #f0f0f0;  /* 淺灰底色 */
-    color: #0f805a;             /* 深綠色字樣 */
-    font-size: 15px;
-    font-weight: 600;
-    margin-top: 25px;
-    padding: 12px 20px;         /* 上下左右內邊距 */
-    border: none;
-    border-radius: 12px;        /* 圓角邊框 */
-    width: 320px;               /* 寬度與登入按鈕一致 */
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    text-align: center;
-    box-sizing: border-border-box;
-}
+            background-color: #f0f0f0;
+            color: #0f805a;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 25px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            width: 320px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            text-align: center;
+            box-sizing: border-box;
+        }
 
-.login-admin-link:hover {
-    background-color: #e4e4e4;  /* 滑鼠懸停時微調底色 */
-    color: #0a5c41;
-}
+        .login-admin-link:hover {
+            background-color: #e4e4e4;
+            color: #0a5c41;
+        }
 
         .login-footer-copy {
-    display: none; /* Hidden by default */
-    position: absolute;
-    bottom: 20px;
-    width: 100%;
-    text-align: center;
-    font-size: 13.5px;
-    color: #668062;
-    z-index: 10;
-}
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 13.5px;
+            color: #668062;
+            z-index: 10;
+        }
 
-/* Only show when body is in login mode */
-body.login-mode .login-footer-copy {
-    display: block;
-}
+        body.login-mode .login-footer-copy {
+            display: block;
+        }
 
         /* ==================== 2. 點餐畫面區塊 ==================== */
         .order-container {
@@ -402,7 +392,6 @@ body.login-mode .login-footer-copy {
             align-items: center;
         }
 
-        /* 區塊標題樣式 */
         .category-header {
             max-width: 1200px;
             width: 100%;
@@ -620,101 +609,99 @@ body.login-mode .login-footer-copy {
         }
 
         .logout-btn {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background-color: #a01010; 
-    color: white;
-    border: none;
-    border-radius: 50%; /* 改為正圓形 */
-    width: 48px;        /* 固定寬高 */
-    height: 48px;
-    padding: 0;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(160, 16, 16, 0.3);
-    transition: all 0.2s ease;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: #a01010; 
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(160, 16, 16, 0.3);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.logout-btn:hover {
-    background-color: #bd1616;
-    transform: scale(1.1); /* Hover 時微放大效果 */
-    box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
-}
+        .logout-btn:hover {
+            background-color: #bd1616;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
+        }
 
-.cart-float-btn {
-    position: fixed;
-    bottom: 85px; /* 位於登出按鈕 (bottom: 25px) 的上方 */
-    right: 25px;
-    background-color: #2e7d32; /* 主題綠色，亦可自行調整 */
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    padding: 0;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
-    transition: all 0.2s ease;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+        .cart-float-btn {
+            position: fixed;
+            bottom: 85px;
+            right: 25px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.cart-float-btn:hover {
-    background-color: #1b5e20;
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
-}
+        .cart-float-btn:hover {
+            background-color: #1b5e20;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+        }
 
-        /* ==================== 購物車操作按鈕樣式 ==================== */
-.order-action-btn {
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s ease;
-    margin: 2px;
-}
+        .order-action-btn {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            margin: 2px;
+        }
 
-.btn-edit-order {
-    background-color: #e6f4ff;
-    color: #0958d9;
-    border: 1px solid #91caff;
-}
-.btn-edit-order:hover {
-    background-color: #0958d9;
-    color: #ffffff;
-}
+        .btn-edit-order {
+            background-color: #e6f4ff;
+            color: #0958d9;
+            border: 1px solid #91caff;
+        }
+        .btn-edit-order:hover {
+            background-color: #0958d9;
+            color: #ffffff;
+        }
 
-.btn-cancel-order {
-    background-color: #ffeef0;
-    color: #d9363e;
-    border: 1px solid #fca5a5;
-}
-.btn-cancel-order:hover {
-    background-color: #d9363e;
-    color: #ffffff;
-}
+        .btn-cancel-order {
+            background-color: #ffeef0;
+            color: #d9363e;
+            border: 1px solid #fca5a5;
+        }
+        .btn-cancel-order:hover {
+            background-color: #d9363e;
+            color: #ffffff;
+        }
 
-        /* 購物車欄位專用：關閉取消標籤樣式 (使用靜態定位，避免漂移至頁面左上角) */
-.cart-cancel-disabled {
-    display: inline-block;
-    background-color: #ffeef0;
-    color: #d9363e;
-    border: 1px solid #fca5a5;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: bold;
-    white-space: nowrap;
-}
+        .cart-cancel-disabled {
+            display: inline-block;
+            background-color: #ffeef0;
+            color: #d9363e;
+            border: 1px solid #fca5a5;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
 
         /* ==================== 4. Modal 彈窗樣式 ==================== */
         .branch-modal-overlay {
@@ -1068,7 +1055,6 @@ body.login-mode .login-footer-copy {
                     <span>回首頁</span>
                 </a>
 
-                <!-- 🌟 動態切換美味餐點與喝涼涼的按鈕 -->
                 <a class="nidin-nav-item" id="nav-toggle-btn" href="javascript:void(0);" onclick="toggleFoodDrinkView()">
                     <div class="nidin-nav-icon" id="nav-toggle-icon">
                         <svg viewBox="0 0 24 24">
@@ -1089,16 +1075,15 @@ body.login-mode .login-footer-copy {
                     <span>曾點過</span>
                 </a>
 
-                <!-- 🎲 新增店家轉盤按鈕 -->
-<a class="nidin-nav-item" href="javascript:void(0);" onclick="openWheelModal()">
-    <div class="nidin-nav-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
-        </svg>
-    </div>
-    <span>吃啥轉盤</span>
-</a>
+                <a class="nidin-nav-item" href="javascript:void(0);" onclick="openWheelModal()">
+                    <div class="nidin-nav-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+                        </svg>
+                    </div>
+                    <span>吃啥轉盤</span>
+                </a>
             </nav>
         </header>
 
@@ -1426,7 +1411,7 @@ body.login-mode .login-footer-copy {
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
-                    <h3 class="shop-name">滿座烧肉丼飯屋</h3>
+                    <h3 class="shop-name">滿座燒肉丼飯屋</h3>
                     <p class="shop-desc">燒肉丼飯與咖喱飯料理集結了新鮮食材和精心熬煮的醬汁。</p>
                 </div>
             </div>
@@ -1551,7 +1536,7 @@ body.login-mode .login-footer-copy {
                 </div>
             </div>
 
-             <div class="shop-card" onclick="redirectToShop('名家大餛飩', this)">
+            <div class="shop-card" onclick="redirectToShop('名家大餛飩', this)">
                 <div class="shop-img-wrapper">
                     <span class="badge main">廣州風味</span>
                     <img src="https://images.unsplash.com/photo-1747628857853-770ab2f13166?auto=format&fit=crop&w=1170&q=75&fm=webp" alt="名家大餛飩">
@@ -1588,7 +1573,7 @@ body.login-mode .login-footer-copy {
             </div>
         </div>
 
-        <!-- 🌟 第二區塊：喝涼涼 -->
+        <!-- 第二區塊：喝涼涼 -->
         <div class="category-header hidden" id="drink-section">
             🥤 喝涼涼
         </div>
@@ -1883,20 +1868,20 @@ body.login-mode .login-footer-copy {
         </footer>
 
         <button class="cart-float-btn" title="查看購物車" aria-label="購物車" onclick="openCartModal()">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="9" cy="21" r="1"></circle>
-        <circle cx="20" cy="21" r="1"></circle>
-        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-    </svg>
-</button>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+        </button>
 
         <button class="logout-btn" title="登出系統" aria-label="登出系統" onclick="executeLogout()">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-    </svg>
-</button>
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+        </button>
     </div>
 
     <!-- 選擇院區彈窗 (Modal) -->
@@ -1907,31 +1892,31 @@ body.login-mode .login-footer-copy {
                 <span class="close-btn" onclick="closeBranchModal()">&times;</span>
             </div>
             <div class="branch-list">
-    <div class="branch-item active" onclick="switchBranch('彰濱秀傳紀念醫院')">
-        <span>彰濱秀傳紀念醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('彰化秀傳紀念醫院')">
-        <span>彰化秀傳紀念醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('高雄秀傳紀念醫院')">
-        <span>高雄秀傳紀念醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('竹山秀傳醫院')">
-        <span>竹山秀傳醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('台南市立醫院')">
-        <span>台南市立醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-    <div class="branch-item" onclick="switchBranch('高雄市立岡山醫院')">
-        <span>高雄市立岡山醫院</span>
-        <span class="check-icon">✓</span>
-    </div>
-</div>
+                <div class="branch-item active" onclick="switchBranch('彰濱秀傳紀念醫院')">
+                    <span>彰濱秀傳紀念醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="switchBranch('彰化秀傳紀念醫院')">
+                    <span>彰化秀傳紀念醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="switchBranch('高雄秀傳紀念醫院')">
+                    <span>高雄秀傳紀念醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="switchBranch('竹山秀傳醫院')">
+                    <span>竹山秀傳醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="switchBranch('台南市立醫院')">
+                    <span>台南市立醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+                <div class="branch-item" onclick="switchBranch('高雄市立岡山醫院')">
+                    <span>高雄市立岡山醫院</span>
+                    <span class="check-icon">✓</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2047,12 +2032,36 @@ body.login-mode .login-footer-copy {
         </div>
     </div>
 
+    <!-- 店家轉盤彈窗 (Modal) -->
+    <div id="wheelModal" class="branch-modal-overlay hidden" onclick="closeWheelModal(event)">
+        <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 440px; text-align: center;">
+            <div class="branch-modal-header">
+                <h3>🎲 今天吃什麼~命運轉盤</h3>
+                <span class="close-btn" onclick="closeWheelModal()">&times;</span>
+            </div>
+            <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; position: relative;">
+                <div style="position: absolute; top: 12px; z-index: 10; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid #ff4d4f; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></div>
+                
+                <canvas id="wheelCanvas" width="300" height="300" style="max-width: 100%; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-top: 10px;"></canvas>
+                
+                <div id="wheelResult" style="margin-top: 16px; font-size: 18px; font-weight: bold; color: #2b4c23; min-height: 28px;">
+                    點擊下方按鈕開始抽籤！
+                </div>
+
+                <div style="margin-top: 16px; display: flex; gap: 12px;">
+                    <button id="spinWheelBtn" class="login-btn" style="width: 130px; padding: 10px 0; font-size: 16px;" onclick="spinWheel()">開始旋轉</button>
+                    <button id="wheelGoShopBtn" class="login-btn hidden" style="width: 130px; padding: 10px 0; font-size: 16px; background-color: #0091ff;" onclick="goSelectedShop()">進入點餐 ➔</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let loggedInCardId = ''; 
         let isSubmitting = false;
         let customAlertCallback = null;
-        let globalEmployeesMap = {}; // 快取員工對照表 (含部門資訊)
-        let currentCategoryView = 'food'; // 🌟 紀錄當前版面狀態：'food' 或 'drink'
+        let globalEmployeesMap = {}; 
+        let currentCategoryView = 'food'; 
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -2120,66 +2129,34 @@ body.login-mode .login-footer-copy {
             '小妞滷味': '小妞滷味.html'
         };
 
-        // 1. 設定每個院區對應的主頁網址 (請替換為您實際的 HTML 檔名或 URL)
-const branchUrls = {
-    '彰濱秀傳紀念醫院': 'index.html', 
-    '彰化秀傳紀念醫院': 'changhua.html',
-    '高雄秀傳紀念醫院': 'kaohsiung.html',
-    '竹山秀傳醫院': 'zhushan.html',
-    '台南市立醫院': 'tainan.html',
-    '高雄市立岡山醫院': 'gangshan.html'
-};
+        const branchUrls = {
+            '彰濱秀傳紀念醫院': 'index.html', 
+            '彰化秀傳紀念醫院': 'changhua.html',
+            '高雄秀傳紀念醫院': 'kaohsiung.html',
+            '竹山秀傳醫院': 'zhushan.html',
+            '台南市立醫院': 'tainan.html',
+            '高雄市立岡山醫院': 'gangshan.html'
+        };
 
-// 2. 切換院區的執行函式
-function switchBranch(branchName) {
-    const targetUrl = branchUrls[branchName];
+        function switchBranch(branchName) {
+            const targetUrl = branchUrls[branchName];
+            if (!targetUrl) {
+                alert('尚未設定該院區的主頁網址！');
+                return;
+            }
 
-    if (!targetUrl) {
-        alert('尚未設定該院區的主頁網址！');
-        return;
-    }
+            localStorage.setItem('selectedBranch', branchName);
+            const branchText = document.getElementById('current-branch-text');
+            if (branchText) {
+                branchText.textContent = branchName;
+            }
 
-    // 儲存使用者的選擇到瀏覽器本地，這樣跳轉後新頁面能知道當前院區
-    localStorage.setItem('selectedBranch', branchName);
+            if (typeof closeBranchModal === 'function') {
+                closeBranchModal();
+            }
 
-    // 視覺回饋：在跳轉前先更新畫面上的文字
-    const branchText = document.getElementById('current-branch-text');
-    if (branchText) {
-        branchText.textContent = branchName;
-    }
-
-    // 關閉 Modal (假設您原始碼中有 closeBranchModal 函式)
-    if (typeof closeBranchModal === 'function') {
-        closeBranchModal();
-    }
-
-    // 執行頁面跳轉
-    window.location.href = targetUrl;
-}
-
-// 網頁載入完成後執行
-document.addEventListener('DOMContentLoaded', function() {
-    // 從 localStorage 讀取儲存的院區，若無則預設為彰濱
-    const savedBranch = localStorage.getItem('selectedBranch') || '彰濱秀傳紀念醫院';
-    
-    // 更新頂部的院區文字
-    const currentBranchEl = document.getElementById('current-branch-text');
-    if (currentBranchEl) {
-        currentBranchEl.textContent = savedBranch;
-    }
-
-    // 更新 Modal 內的打勾狀態 (移除所有 active，加在相符的選項上)
-    const branchItems = document.querySelectorAll('.branch-item');
-    branchItems.forEach(item => {
-        // 先移除原本的 active
-        item.classList.remove('active');
-        
-        // 若文字相符，加上 active 讓打勾圖示顯示出來
-        if (item.innerText.includes(savedBranch)) {
-            item.classList.add('active');
+            window.location.href = targetUrl;
         }
-    });
-});
 
         window.addEventListener('DOMContentLoaded', async () => {
             const savedCardId = localStorage.getItem('currentCardId');
@@ -2205,152 +2182,155 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
 
-            const savedBranch = localStorage.getItem('selectedBranch');
-            if (savedBranch) {
-                updateBranchDisplay(savedBranch);
+            const savedBranch = localStorage.getItem('selectedBranch') || '彰濱秀傳紀念醫院';
+            const currentBranchEl = document.getElementById('current-branch-text');
+            if (currentBranchEl) {
+                currentBranchEl.textContent = savedBranch;
             }
+
+            const branchItems = document.querySelectorAll('.branch-item');
+            branchItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.innerText.includes(savedBranch)) {
+                    item.classList.add('active');
+                }
+            });
         });
 
         /* ==================== 🎲 店家轉盤功能邏輯 ==================== */
-let wheelShops = [];
-let currentWheelAngle = 0;
-let isWheelSpinning = false;
-let selectedWheelShop = '';
+        let wheelShops = [];
+        let currentWheelAngle = 0;
+        let isWheelSpinning = false;
+        let selectedWheelShop = '';
 
-// 色彩庫 (輪流作為轉盤扇形顏色)
-const wheelColors = ['#ffd1dc', '#d1e7dd', '#fff3cd', '#cff4fc', '#e2e3e5', '#f3d9fa', '#ffe8cc', '#d3f9d8', '#e0f2fe', '#fef08a'];
+        const wheelColors = ['#ffd1dc', '#d1e7dd', '#fff3cd', '#cff4fc', '#e2e3e5', '#f3d9fa', '#ffe8cc', '#d3f9d8', '#e0f2fe', '#fef08a'];
 
-// 抓取當前分頁（美味餐點或喝涼涼）可抽籤的店家清單
-function getActiveShops() {
-    const activeContainerId = currentCategoryView === 'food' ? 'food-container' : 'drink-container';
-    const container = document.getElementById(activeContainerId);
-    if (!container) return [];
-    
-    const cards = container.querySelectorAll('.shop-card');
-    const list = [];
-    cards.forEach(card => {
-        if (card.style.display !== 'none') {
-            const name = card.querySelector('.shop-name')?.textContent.trim();
-            if (name) list.push(name);
+        function getActiveShops() {
+            const activeContainerId = currentCategoryView === 'food' ? 'food-container' : 'drink-container';
+            const container = document.getElementById(activeContainerId);
+            if (!container) return [];
+            
+            const cards = container.querySelectorAll('.shop-card');
+            const list = [];
+            cards.forEach(card => {
+                if (card.style.display !== 'none') {
+                    const name = card.querySelector('.shop-name')?.textContent.trim();
+                    if (name) list.push(name);
+                }
+            });
+            return list;
         }
-    });
-    return list;
-}
 
-function openWheelModal() {
-    wheelShops = getActiveShops();
-    if (wheelShops.length === 0) {
-        callCustomAlert('提示', '目前畫面上沒有可供抽籤的店家。', null, false);
-        return;
-    }
+        function openWheelModal() {
+            wheelShops = getActiveShops();
+            if (wheelShops.length === 0) {
+                callCustomAlert('提示', '目前畫面上沒有可供抽籤的店家。', null, false);
+                return;
+            }
 
-    selectedWheelShop = '';
-    document.getElementById('wheelResult').textContent = '點擊下方按鈕開始抽籤！';
-    document.getElementById('wheelGoShopBtn').classList.add('hidden');
-    
-    drawWheel();
-    document.getElementById('wheelModal').classList.remove('hidden');
-}
-
-function closeWheelModal(event) {
-    if (isWheelSpinning) return;
-    const modal = document.getElementById('wheelModal');
-    if (modal) modal.classList.add('hidden');
-}
-
-function drawWheel() {
-    const canvas = document.getElementById('wheelCanvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const numOptions = wheelShops.length;
-    const arcSize = (2 * Math.PI) / numOptions;
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    const radius = cx - 8;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < numOptions; i++) {
-        const angle = currentWheelAngle + i * arcSize;
-        ctx.beginPath();
-        ctx.fillStyle = wheelColors[i % wheelColors.length];
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, radius, angle, angle + arcSize);
-        ctx.lineTo(cx, cy);
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // 繪製店家文字
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(angle + arcSize / 2);
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#2b4c23';
-        ctx.font = 'bold 12px "Microsoft JhengHei", sans-serif';
-        
-        let name = wheelShops[i];
-        if (name.length > 7) name = name.substring(0, 6) + '..';
-        ctx.fillText(name, radius - 12, 4);
-        ctx.restore();
-    }
-}
-
-function spinWheel() {
-    if (isWheelSpinning || wheelShops.length === 0) return;
-    
-    isWheelSpinning = true;
-    document.getElementById('spinWheelBtn').disabled = true;
-    document.getElementById('wheelGoShopBtn').classList.add('hidden');
-    document.getElementById('wheelResult').textContent = '命運轉盤旋轉中...';
-
-    // 隨機旋轉 4~6 圈 + 隨機角度
-    const spinAngle = Math.floor(Math.random() * 360) + 1440;
-    const startAngle = currentWheelAngle;
-    const duration = 3200; // 動畫時間 3.2 秒
-    const startTime = performance.now();
-
-    function animate(currentTime) {
-        const elapsed = currentTime - startTime;
-        if (elapsed < duration) {
-            const progress = elapsed / duration;
-            // 減速動畫 cubic ease-out
-            const easeOut = 1 - Math.pow(1 - progress, 3);
-            currentWheelAngle = startAngle + (spinAngle * Math.PI / 180) * easeOut;
+            selectedWheelShop = '';
+            document.getElementById('wheelResult').textContent = '點擊下方按鈕開始抽籤！';
+            document.getElementById('wheelGoShopBtn').classList.add('hidden');
+            
             drawWheel();
+            document.getElementById('wheelModal').classList.remove('hidden');
+        }
+
+        function closeWheelModal(event) {
+            if (isWheelSpinning) return;
+            const modal = document.getElementById('wheelModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function drawWheel() {
+            const canvas = document.getElementById('wheelCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const numOptions = wheelShops.length;
+            const arcSize = (2 * Math.PI) / numOptions;
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const radius = cx - 8;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < numOptions; i++) {
+                const angle = currentWheelAngle + i * arcSize;
+                ctx.beginPath();
+                ctx.fillStyle = wheelColors[i % wheelColors.length];
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, radius, angle, angle + arcSize);
+                ctx.lineTo(cx, cy);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle + arcSize / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#2b4c23';
+                ctx.font = 'bold 12px "Microsoft JhengHei", sans-serif';
+                
+                let name = wheelShops[i];
+                if (name.length > 7) name = name.substring(0, 6) + '..';
+                ctx.fillText(name, radius - 12, 4);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            if (isWheelSpinning || wheelShops.length === 0) return;
+            
+            isWheelSpinning = true;
+            document.getElementById('spinWheelBtn').disabled = true;
+            document.getElementById('wheelGoShopBtn').classList.add('hidden');
+            document.getElementById('wheelResult').textContent = '命運轉盤旋轉中...';
+
+            const spinAngle = Math.floor(Math.random() * 360) + 1440;
+            const startAngle = currentWheelAngle;
+            const duration = 3200;
+            const startTime = performance.now();
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                if (elapsed < duration) {
+                    const progress = elapsed / duration;
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    currentWheelAngle = startAngle + (spinAngle * Math.PI / 180) * easeOut;
+                    drawWheel();
+                    requestAnimationFrame(animate);
+                } else {
+                    currentWheelAngle = startAngle + (spinAngle * Math.PI / 180);
+                    drawWheel();
+                    isWheelSpinning = false;
+                    document.getElementById('spinWheelBtn').disabled = false;
+                    calculateWheelWinner();
+                }
+            }
             requestAnimationFrame(animate);
-        } else {
-            currentWheelAngle = startAngle + (spinAngle * Math.PI / 180);
-            drawWheel();
-            isWheelSpinning = false;
-            document.getElementById('spinWheelBtn').disabled = false;
-            calculateWheelWinner();
         }
-    }
-    requestAnimationFrame(animate);
-}
 
-function calculateWheelWinner() {
-    const numOptions = wheelShops.length;
-    const arcSize = (2 * Math.PI) / numOptions;
-    
-    // 正上方 12 點鐘方向的角度 (1.5 * Math.PI)
-    let normalizedAngle = (currentWheelAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-    let pointerAngle = (1.5 * Math.PI - normalizedAngle + 2 * Math.PI) % (2 * Math.PI);
-    let winningIndex = Math.floor(pointerAngle / arcSize) % numOptions;
+        function calculateWheelWinner() {
+            const numOptions = wheelShops.length;
+            const arcSize = (2 * Math.PI) / numOptions;
+            
+            let normalizedAngle = (currentWheelAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+            let pointerAngle = (1.5 * Math.PI - normalizedAngle + 2 * Math.PI) % (2 * Math.PI);
+            let winningIndex = Math.floor(pointerAngle / arcSize) % numOptions;
 
-    selectedWheelShop = wheelShops[winningIndex];
-    document.getElementById('wheelResult').innerHTML = `今天就吃：<span style="color: #0091ff;">${selectedWheelShop}</span>！`;
-    document.getElementById('wheelGoShopBtn').classList.remove('hidden');
-}
+            selectedWheelShop = wheelShops[winningIndex];
+            document.getElementById('wheelResult').innerHTML = `今天就吃：<span style="color: #0091ff;">${selectedWheelShop}</span>！`;
+            document.getElementById('wheelGoShopBtn').classList.remove('hidden');
+        }
 
-function goSelectedShop() {
-    if (selectedWheelShop) {
-        closeWheelModal();
-        redirectToShop(selectedWheelShop);
-    }
-}
+        function goSelectedShop() {
+            if (selectedWheelShop) {
+                closeWheelModal();
+                redirectToShop(selectedWheelShop);
+            }
+        }
 
         async function fetchEmployeeList() {
             try {
@@ -2432,35 +2412,6 @@ function goSelectedShop() {
             if (modal) modal.classList.add('hidden');
         }
 
-        function selectBranch(branchName, element) {
-            updateBranchDisplay(branchName);
-            localStorage.setItem('selectedBranch', branchName);
-
-            const items = document.querySelectorAll('.branch-item');
-            items.forEach(item => item.classList.remove('active'));
-            if (element) {
-                element.classList.add('active');
-            }
-
-            closeBranchModal();
-        }
-
-        function updateBranchDisplay(branchName) {
-            const currentBranchText = document.getElementById('current-branch-text');
-            if (currentBranchText) {
-                currentBranchText.textContent = branchName;
-            }
-
-            const items = document.querySelectorAll('.branch-item');
-            items.forEach(item => {
-                if (item.textContent.includes(branchName)) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-        }
-
         function filterShops() {
             const searchInput = document.getElementById('shopSearchInput');
             if (!searchInput) return;
@@ -2477,7 +2428,6 @@ function goSelectedShop() {
                 card.style.display = isMatch ? '' : 'none';
             });
 
-            // 根據過濾結果動態隱藏/顯示分類標題
             document.querySelectorAll('.category-header').forEach(header => {
                 const container = header.nextElementSibling;
                 if (container && container.classList.contains('grid-container')) {
@@ -2494,7 +2444,6 @@ function goSelectedShop() {
             }
         }
 
-        /* 🌟 版面切換控制：美味餐點 ↔ 喝涼涼 切換核心函數 */
         function toggleFoodDrinkView() {
             if (currentCategoryView === 'food') {
                 showDrinkOnly();
@@ -2503,18 +2452,15 @@ function goSelectedShop() {
             }
         }
 
-        /* 🌟 切換至「喝涼涼」版面 */
         function showDrinkOnly() {
             currentCategoryView = 'drink';
-            localStorage.setItem('selectedCategory', 'drink'); // 💾 記住目前在喝涼涼
+            localStorage.setItem('selectedCategory', 'drink');
 
-            // 隱藏美味餐點，顯示喝涼涼
             document.getElementById('food-section')?.classList.add('hidden');
             document.getElementById('food-container')?.classList.add('hidden');
             document.getElementById('drink-section')?.classList.remove('hidden');
             document.getElementById('drink-container')?.classList.remove('hidden');
 
-            // 頂部按鈕自動更換成「美味餐點」文字與圖示
             document.getElementById('nav-toggle-text').textContent = '美味餐點';
             document.getElementById('nav-toggle-icon').innerHTML = `
                 <svg viewBox="0 0 24 24">
@@ -2529,18 +2475,15 @@ function goSelectedShop() {
             resetSearch();
         }
 
-        /* 🌟 切換至「美味餐點」版面 */
         function showFoodOnly() {
             currentCategoryView = 'food';
-            localStorage.setItem('selectedCategory', 'food'); // 💾 記住目前在美味餐點
+            localStorage.setItem('selectedCategory', 'food');
 
-            // 顯示美味餐點，隱藏喝涼涼
             document.getElementById('food-section')?.classList.remove('hidden');
             document.getElementById('food-container')?.classList.remove('hidden');
             document.getElementById('drink-section')?.classList.add('hidden');
             document.getElementById('drink-container')?.classList.add('hidden');
 
-            // 頂部按鈕自動更換成「喝涼涼」文字與圖示
             document.getElementById('nav-toggle-text').textContent = '喝涼涼';
             document.getElementById('nav-toggle-icon').innerHTML = `
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2555,7 +2498,6 @@ function goSelectedShop() {
             resetSearch();
         }
 
-        /* 重置搜尋框與滾動至頂部 */
         function resetSearch() {
             const searchInput = document.getElementById('shopSearchInput');
             if (searchInput) {
@@ -2565,7 +2507,6 @@ function goSelectedShop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        /* 🌟 版面切換控制：還原上次觀看的分類 */
         function restoreSelectedCategory() {
             const savedCat = localStorage.getItem('selectedCategory');
             if (savedCat === 'drink') {
@@ -2577,17 +2518,6 @@ function goSelectedShop() {
 
         function showAllCategories() {
             restoreSelectedCategory();
-        }
-
-        function goHome() {
-            showAllCategories();
-        }
-
-        function scrollToCategory(id) {
-            const el = document.getElementById(id);
-            if (el) {
-                el.scrollIntoView({ behavior: 'smooth' });
-            }
         }
 
         async function executeLogin() {
@@ -2644,14 +2574,13 @@ function goSelectedShop() {
             }
         }
 
-        function redirectToShop(shopName, element) {
+        function redirectToShop(shopName) {
             const url = shopUrlMap[shopName];
             if (!url) {
                 callCustomAlert('提示', `⚠️ 尚未設定 <strong>${shopName}</strong> 的對應點餐網頁。`, null, false);
                 return;
             }
             
-            // 💾 在前往店家點餐前，紀錄目前所在分類狀態
             localStorage.setItem('selectedCategory', currentCategoryView);
 
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
@@ -2695,7 +2624,6 @@ function goSelectedShop() {
             document.body.classList.remove('login-mode');
             document.body.classList.add('order-mode');
             
-            // 🌟 登入後還原上次離開時選擇的分類（美食 / 飲料）
             restoreSelectedCategory();
             fetchOrderHistory(cardId);
             fetchGlobalOrders(cardId);
@@ -2810,110 +2738,120 @@ function goSelectedShop() {
         }
 
         async function fetchOrderHistory(cardId) {
-    const historyList = document.getElementById('history-list');
-    if (!historyList) return;
+            const historyList = document.getElementById('history-list');
+            if (!historyList) return;
 
-    let isAllowCancel = true;
-    try {
-        const allowRes = await fetch(`/api/allow-cancel?_=${new Date().getTime()}`, { 
-            cache: 'no-store' 
-        });
-        if (allowRes.ok) {
-            const allowData = await allowRes.json();
-            isAllowCancel = (allowData.allowCancel === true || allowData.allowCancel === 'true');
+            let isAllowCancel = true;
+            try {
+                const allowRes = await fetch(`/api/allow-cancel?_=${new Date().getTime()}`, { 
+                    cache: 'no-store' 
+                });
+                if (allowRes.ok) {
+                    const allowData = await allowRes.json();
+                    isAllowCancel = (allowData.allowCancel === true || allowData.allowCancel === 'true');
+                }
+            } catch(e) {
+                console.warn('⚠️ 無法讀取取消訂單開關，預設開放:', e);
+            }
+
+            let apiOrders = [];
+            let localOrders = [];
+            let isApiSuccess = false;
+
+            const localKey = `orders_${cardId}`;
+            try {
+                localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+            } catch(e) { localOrders = []; }
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+                const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}&_=${new Date().getTime()}`, { 
+                    signal: controller.signal,
+                    cache: 'no-store'
+                });
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    apiOrders = await response.json();
+                    isApiSuccess = true;
+                }
+            } catch (error) {
+                console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
+            }
+
+            let merged = isApiSuccess ? apiOrders : localOrders;
+            
+            let todayOrders = merged.filter(order => {
+                const isUserCard = String(order.cardId || '').trim().toLowerCase() === String(cardId).trim().toLowerCase();
+                return isTodayOrder(order) && isUserCard;
+            });
+
+            todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+            if (todayOrders.length === 0) {
+                historyList.innerHTML = `<tr><td colspan="7" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
+                return;
+            }
+
+            const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
+
+            historyList.innerHTML = todayOrders.map(order => {
+                const rawTotal = Number(order.total);
+                let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
+
+                if (!totalAmount && order.note) {
+                    const match = String(order.note).match(/總計:\s*\$(\d+)/);
+                    if (match) totalAmount = parseInt(match[1], 10);
+                }
+
+                const fullMealText = order.meal || '';
+                
+                // 💡 修正：支援全形冒號 `：`、半形冒號 `:` 及中括號 `[...]` 多重精準提取店家名稱
+                let shopName = order.storeName || order.store || order.shopName || '';
+                if (!shopName && fullMealText) {
+                    if (fullMealText.includes('：')) {
+                        shopName = fullMealText.split('：')[0].trim();
+                    } else if (fullMealText.includes(':')) {
+                        shopName = fullMealText.split(':')[0].trim();
+                    } else if (fullMealText.includes('[') && fullMealText.includes(']')) {
+                        shopName = fullMealText.substring(fullMealText.indexOf('[') + 1, fullMealText.indexOf(']')).trim();
+                    }
+                }
+
+                const timeKey = order.timestamp || order.time || order.Time || '';
+                const orderId = order.orderId || order.order_id || order.id || '';
+                const safeShopName = shopName.replace(/'/g, "\\'");
+
+                const actionHtml = isAllowCancel ? `
+                    <button class="order-action-btn btn-edit-order" onclick="editOrder('${orderId}', '${timeKey}', '${safeShopName}')">修改</button>
+                    <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${orderId}', '${timeKey}')">取消</button>
+                ` : `<span class="cart-cancel-disabled">🚫 關閉取消</span>`;
+
+                return `
+                    <tr>
+                        <td>${order.cardId || cardId}</td>
+                        <td><span class="dept-badge">${userDept}</span></td>
+                        <td>${formatDisplayTime(order)}</td>
+                        <td>${fullMealText || '無品項內容'}</td>
+                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
+                        <td>${order.note || '-'}</td>
+                        <td style="text-align: center; white-space: nowrap;">
+                            ${actionHtml}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
-    } catch(e) {
-        console.warn('⚠️ 無法讀取取消訂單開關，預設開放:', e);
-    }
 
-    let apiOrders = [];
-    let localOrders = [];
-    let isApiSuccess = false;
-
-    const localKey = `orders_${cardId}`;
-    try {
-        localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
-    } catch(e) { localOrders = []; }
-
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-        const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}&_=${new Date().getTime()}`, { 
-            signal: controller.signal,
-            cache: 'no-store'
-        });
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
-            apiOrders = await response.json();
-            isApiSuccess = true;
-        }
-    } catch (error) {
-        console.warn("🌐 讀取今日紀錄 API 失敗，切換為本機快取顯示。");
-    }
-
-    let merged = isApiSuccess ? apiOrders : localOrders;
-    
-    let todayOrders = merged.filter(order => {
-        const isUserCard = String(order.cardId || '').trim().toLowerCase() === String(cardId).trim().toLowerCase();
-        return isTodayOrder(order) && isUserCard;
-    });
-
-    todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
-
-    if (todayOrders.length === 0) {
-        historyList.innerHTML = `<tr><td colspan="7" class="no-record">嗨！您今天尚無點餐紀錄。</td></tr>`;
-        return;
-    }
-
-    const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
-
-    historyList.innerHTML = todayOrders.map(order => {
-        const rawTotal = Number(order.total);
-        let totalAmount = !isNaN(rawTotal) && rawTotal > 0 ? rawTotal : 0;
-
-        if (!totalAmount && order.note) {
-            const match = String(order.note).match(/總計:\s*\$(\d+)/);
-            if (match) totalAmount = parseInt(match[1], 10);
-        }
-
-        const fullMealText = order.meal || '';
-        const shopName = fullMealText.includes(':') ? fullMealText.split(':')[0].trim() : '';
-        const timeKey = order.timestamp || order.time || order.Time || '';
-        const orderId = order.orderId || order.order_id || order.id || '';
-        const safeShopName = shopName.replace(/'/g, "\\'");
-
-        const actionHtml = isAllowCancel ? `
-            <button class="order-action-btn btn-edit-order" onclick="editOrder('${orderId}', '${timeKey}', '${safeShopName}')">修改</button>
-            <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${orderId}', '${timeKey}')">取消</button>
-        ` : `<span class="cart-cancel-disabled">🚫 關閉取消</span>`;
-
-        return `
-            <tr>
-                <td>${order.cardId || cardId}</td>
-                <td><span class="dept-badge">${userDept}</span></td>
-                <td>${formatDisplayTime(order)}</td>
-                <td>${fullMealText || '無品項內容'}</td>
-                <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
-                <td>${order.note || '-'}</td>
-                <td style="text-align: center; white-space: nowrap;">
-                    ${actionHtml}
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-        // 取消訂單處理函數
-        async function cancelOrder(orderId, timestamp) {
+        function cancelOrder(orderId, timestamp) {
             callCustomAlert('確認取消', '❌ 確定要取消這筆點餐紀錄嗎？', async (confirmed) => {
                 if (!confirmed) return;
                 await executeCancelLogic(orderId, timestamp, true);
             }, true);
         }
 
-        // 修改訂單處理函數
         function editOrder(orderId, timestamp, shopName) {
             const shopMsg = shopName ? `<strong>【${shopName}】</strong>` : '店家';
             callCustomAlert('修改訂單', `✏️ 修改訂單將先刪除目前這筆紀錄，並帶您前往 ${shopMsg} 重新點餐，是否繼續？`, async (confirmed) => {
@@ -2931,7 +2869,6 @@ function goSelectedShop() {
             }, true);
         }
 
-        // 執行取消底層邏輯
         async function executeCancelLogic(orderId, timestamp, showAlert = true) {
             const cardId = loggedInCardId;
             let success = false;
@@ -2974,51 +2911,6 @@ function goSelectedShop() {
                 return false;
             }
         }
-// 底層執行取消/刪除邏輯
-async function executeCancelLogic(orderId, timestamp, showAlert = true) {
-    const cardId = loggedInCardId;
-    let success = false;
-
-    // 1. 發送取消 API 至後端刪除 PostgreSQL 紀錄
-    try {
-        const response = await fetch('/api/orders/cancel', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cardId: cardId, orderId: orderId, timestamp: timestamp })
-        });
-        if (response.ok) {
-            const resData = await response.json();
-            if (resData.success) success = true;
-        }
-    } catch (e) {
-        console.warn('API 取消失敗，將嘗試清理本地快取');
-    }
-
-    // 2. 清除 LocalStorage 本地快取
-    const localKey = `orders_${cardId}`;
-    try {
-        let localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
-        localOrders = localOrders.filter(o => {
-            const oTime = o.timestamp || o.time || o.Time || '';
-            const matchTime = timestamp && oTime === timestamp;
-            const matchId = orderId && (o.orderId === orderId || o.order_id === orderId || o.id === orderId);
-            return !(matchTime || matchId);
-        });
-        localStorage.setItem(localKey, JSON.stringify(localOrders));
-        success = true;
-    } catch(e) {
-        console.error('更新本地快取失敗', e);
-    }
-
-    if (success) {
-        if (showAlert) callCustomAlert('提示', '✅ 訂單已成功取消！', null, false);
-        fetchOrderHistory(cardId);
-        return true;
-    } else {
-        if (showAlert) callCustomAlert('提示', '⚠️ 取消訂單失敗，請稍後再試。', null, false);
-        return false;
-    }
-}
 
         async function fetchGlobalOrders(targetCardId) {
             const globalHistoryList = document.getElementById('global-history-list');
@@ -3085,30 +2977,5 @@ async function executeCancelLogic(orderId, timestamp, showAlert = true) {
             }
         }
     </script>
-
-<!-- 🎲 店家轉盤彈窗 (Modal) -->
-<div id="wheelModal" class="branch-modal-overlay hidden" onclick="closeWheelModal(event)">
-    <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 440px; text-align: center;">
-        <div class="branch-modal-header">
-            <h3>🎲 今天吃什麼~命運轉盤</h3>
-            <span class="close-btn" onclick="closeWheelModal()">&times;</span>
-        </div>
-        <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; position: relative;">
-            <!-- 轉盤頂部指標 -->
-            <div style="position: absolute; top: 12px; z-index: 10; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid #ff4d4f; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></div>
-            
-            <canvas id="wheelCanvas" width="300" height="300" style="max-width: 100%; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-top: 10px;"></canvas>
-            
-            <div id="wheelResult" style="margin-top: 16px; font-size: 18px; font-weight: bold; color: #2b4c23; min-height: 28px;">
-                點擊下方按鈕開始抽籤！
-            </div>
-
-            <div style="margin-top: 16px; display: flex; gap: 12px;">
-                <button id="spinWheelBtn" class="login-btn" style="width: 130px; padding: 10px 0; font-size: 16px;" onclick="spinWheel()">開始旋轉</button>
-                <button id="wheelGoShopBtn" class="login-btn hidden" style="width: 130px; padding: 10px 0; font-size: 16px; background-color: #0091ff;" onclick="goSelectedShop()">進入點餐 ➔</button>
-            </div>
-        </div>
-    </div>
-</div>
 </body>
 </html>
