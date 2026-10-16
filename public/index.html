@@ -1913,7 +1913,7 @@
             <div class="cutoff-title">
                 ⏱️ 今日點餐截止
             </div>
-            <div class="cutoff-time-text" id="cutoffTimeDisplay">10:30</div>
+            <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
             <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
         </div>
 
@@ -2110,7 +2110,7 @@
         let globalEmployeesMap = {}; 
         let currentCategoryView = 'food'; 
         let cutoffTimerInterval = null;
-        let targetCutoffStr = '10:30';
+        let targetCutoffStr = '09:30';
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -2256,16 +2256,28 @@
         }
 
         async function fetchCutoffSetting() {
+            // 1. 優先讀取 LocalStorage（後台儲存的時間）
+            const localCutoff = localStorage.getItem('cutoffTime') || 
+                                localStorage.getItem('dailyCutoffTime') || 
+                                localStorage.getItem('cutoff_time');
+            
+            if (localCutoff) {
+                targetCutoffStr = localCutoff;
+            }
+
+            // 2. 嘗試呼叫 API 獲取後台最新時間
             try {
                 const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.cutoffTime || data.time) {
-                        targetCutoffStr = data.cutoffTime || data.time;
+                    const apiTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
+                    if (apiTime) {
+                        targetCutoffStr = apiTime;
+                        localStorage.setItem('cutoffTime', apiTime);
                     }
                 }
             } catch (e) {
-                console.warn('無法從 API 獲取截止時間，將啟用預設截止時間 10:30');
+                console.warn('API 離線，已使用 LocalStorage 快取時間：', targetCutoffStr);
             }
         }
 
@@ -2278,9 +2290,9 @@
 
             const now = new Date();
             const timeParts = targetCutoffStr.split(':').map(Number);
-            const targetHours = timeParts[0] || 10;
-            const targetMinutes = timeParts[1] || 30;
-            const targetSeconds = timeParts[2] || 0;
+            const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
+            const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
+            const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
 
             const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
             const diffMs = targetTime - now;
