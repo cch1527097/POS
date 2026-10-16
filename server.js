@@ -54,6 +54,52 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
+// 💡 核心輔助函式：檢查取消/修改訂單功能是否開放 (結合手動開關與每日截止時間)
+async function checkIsCancelAllowed() {
+    try {
+        // 1. 檢查管理員手動開關設定
+        const checkAllow = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
+        if (checkAllow.rows.length > 0 && checkAllow.rows[0].value === 'false') {
+            return { allowed: false, message: '管理員已關閉取消與修改訂單功能！' };
+        }
+
+        // 2. 檢查是否已過每日點餐截止時間
+        const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
+        const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
+
+        if (orderLockTime && orderLockTime.includes(':')) {
+            const now = new Date();
+            const taipeiFormatter = new Intl.DateTimeFormat('zh-TW', {
+                timeZone: 'Asia/Taipei',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            });
+            const parts = taipeiFormatter.formatToParts(now);
+            const hourPart = parts.find(p => p.type === 'hour');
+            const minutePart = parts.find(p => p.type === 'minute');
+            const currentH = hourPart ? Number(hourPart.value) : now.getHours();
+            const currentM = minutePart ? Number(minutePart.value) : now.getMinutes();
+            const currentTotalMinutes = currentH * 60 + currentM;
+
+            const [lockH, lockM] = orderLockTime.split(':').map(Number);
+            const lockTotalMinutes = lockH * 60 + lockM;
+
+            if (currentTotalMinutes >= lockTotalMinutes) {
+                return { 
+                    allowed: false, 
+                    message: `⏰ 已過今日點餐截止時間 (${orderLockTime})，前台已自動鎖定禁止取消與修改訂單！` 
+                };
+            }
+        }
+
+        return { allowed: true, message: '' };
+    } catch (err) {
+        console.error('檢查取消權限狀態失敗:', err);
+        return { allowed: true, message: '' };
+    }
+}
+
 // 同步寫入 public/orders.json
 async function syncOrdersJsonFile() {
     try {
@@ -275,13 +321,14 @@ async function initDatabase() {
     }
 }
 
-// ==================== 取消訂單功能 API ====================
+// ==================== 取消訂單 API ====================
 
 app.post('/api/orders/cancel', async (req, res) => {
     try {
-        const checkAllow = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
-        if (checkAllow.rows.length > 0 && checkAllow.rows[0].value === 'false') {
-            return res.status(403).json({ success: false, message: '管理員已關閉取消訂單功能！' });
+        // 💡 檢查是否已過截止時間或手動關閉
+        const cancelCheck = await checkIsCancelAllowed();
+        if (!cancelCheck.allowed) {
+            return res.status(403).json({ success: false, message: cancelCheck.message });
         }
         
         const { cardId, orderId, timestamp } = req.body;
@@ -322,13 +369,13 @@ app.post('/api/orders/cancel', async (req, res) => {
     }
 });
 
-// 取得前台取消訂單開關狀態 (相容多種格式)
+// 💡 取得前台取消訂單開關狀態 (動態比對當前時間)
 app.get('/api/allow-cancel', async (req, res) => {
     try {
-        const result = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
-        const allowCancel = result.rows.length > 0 ? result.rows[0].value === 'true' : true;
+        const cancelCheck = await checkIsCancelAllowed();
+        const allowCancel = cancelCheck.allowed;
         
-        console.log(`[查詢狀態] 前台取消訂單開關為: ${allowCancel ? '開放中' : '已關閉'}`);
+        console.log(`[查詢狀態] 前台取消訂單狀態為: ${allowCancel ? '開放中' : '已鎖定/關閉'}`);
         res.json({ 
             success: true, 
             allowCancel: allowCancel,
@@ -344,7 +391,7 @@ app.get('/api/allow-cancel', async (req, res) => {
         });
     } catch (err) {
         console.error('讀取取消訂單開關失敗:', err.message);
-        res.status(500).json({ success: false, allowCancel: true, allow_cancel: true });
+        res.status(500).json({ success: false, allowCancel: false, allow_cancel: false });
     }
 });
 
@@ -368,22 +415,14 @@ const handleAllowCancelUpdate = async (req, res) => {
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [valStr]);
 
-        const isAllowed = valStr === 'true';
-        console.log(`[設定更新] 已將 allow_order_cancel 更新為: ${valStr}`);
+        const cancelCheck = await checkIsCancelAllowed();
+        const isAllowed = cancelCheck.allowed;
 
         return res.json({ 
             success: true, 
-            message: isAllowed ? '已成功【開放】前台取消與修改訂單功能！' : '已成功【關閉】前台取消與修改訂單功能！',
+            message: isAllowed ? '已成功【開放】前台取消與修改訂單功能！' : '已設定變更（若已過點餐截止時間將自動維持鎖定）！',
             allowCancel: isAllowed,
-            allow_cancel: isAllowed,
-            allowOrderCancel: isAllowed,
-            allow_order_cancel: isAllowed,
-            data: {
-                allowCancel: isAllowed,
-                allow_cancel: isAllowed,
-                allowOrderCancel: isAllowed,
-                allow_order_cancel: isAllowed
-            }
+            allow_cancel: isAllowed
         });
     } catch (err) {
         console.error('更新取消訂單開關失敗:', err.message);
@@ -391,11 +430,10 @@ const handleAllowCancelUpdate = async (req, res) => {
     }
 };
 
-// 同時支援 POST 與 PUT 方法
 app.post('/api/allow-cancel', handleAllowCancelUpdate);
 app.put('/api/allow-cancel', handleAllowCancelUpdate);
 
-// 通用 Settings API (支援全域設定讀取與更新)
+// 通用 Settings API
 app.get('/api/settings', async (req, res) => {
     try {
         const result = await pool.query('SELECT key, value FROM settings;');
@@ -403,7 +441,9 @@ app.get('/api/settings', async (req, res) => {
         result.rows.forEach(row => {
             settingsMap[row.key] = row.value;
         });
-        const allowCancel = settingsMap['allow_order_cancel'] === 'true';
+
+        const cancelCheck = await checkIsCancelAllowed();
+        const allowCancel = cancelCheck.allowed;
 
         res.json({
             success: true,
@@ -434,7 +474,6 @@ const handleSettingsUpdate = async (req, res) => {
                 VALUES ('allow_order_cancel', $1)
                 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
             `, [valStr]);
-            console.log(`[Settings API 更新] 已將 allow_order_cancel 更新為: ${valStr}`);
         }
 
         if (body.lockTime !== undefined || body.order_lock_time !== undefined) {
@@ -796,8 +835,9 @@ app.post('/api/login', async (req, res) => {
     try {
         const result = await pool.query('SELECT card_id, name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (result.rows.length > 0) {
-            const cancelRes = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
-            const allowCancel = cancelRes.rows.length > 0 ? cancelRes.rows[0].value === 'true' : true;
+            // 💡 登入時動態比對當前時間是否已過截止時間
+            const cancelCheck = await checkIsCancelAllowed();
+            const allowCancel = cancelCheck.allowed;
 
             res.json({ 
                 success: true, 
