@@ -2247,11 +2247,11 @@
             });
         });
 
-        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (全 Key 自動掃描版) ==================== */
+        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (全 Key 自動掃描 + 舊 Key 清理版) ==================== */
 
 // 1. 跨頁面監聽：後台 (admin.html) 一儲存，前台立刻自動更新
 window.addEventListener('storage', (e) => {
-    console.log('🔄 偵測到後台設定變更：', e.key, '=>', e.newValue);
+    console.log('🔄 偵測到後台 LocalStorage 變更：', e.key, '=>', e.newValue);
     fetchCutoffSetting();
     updateCountdownUI();
 });
@@ -2261,7 +2261,7 @@ async function startCutoffCountdown() {
     await fetchCutoffSetting();
     updateCountdownUI();
     
-    // 每秒更新倒數，每 2 秒自動同步一次本機/後台時間
+    // 每秒更新倒數，每 2 秒自動同步一次最新時間
     let pollCounter = 0;
     cutoffTimerInterval = setInterval(async () => {
         updateCountdownUI();
@@ -2293,29 +2293,46 @@ async function fetchCutoffSetting() {
         } catch (err) {}
     }
 
-    // B. 若沒有伺服器 API，自動掃描 LocalStorage 中所有可能的 Key 名稱
+    // B. 自動印出瀏覽器 LocalStorage 全部內容，方便除錯
+    console.log('🔍 目前 LocalStorage 所有紀錄：', { ...localStorage });
+
+    // C. 掃描 LocalStorage 所有 Key，支援 JSON 物件與純字串格式
     if (!latestTime) {
-        const possibleKeys = [
-            'cutoffTime', 'dailyCutoffTime', 'cutoff_time', 'cutoff', 
-            'cutoffSetting', 'adminCutoffTime', 'targetCutoffStr', 'cutoffTimeSetting', 'daily_cutoff'
-        ];
-        
-        for (const key of possibleKeys) {
-            const val = localStorage.getItem(key);
-            if (val && val.includes(':')) {
-                latestTime = val;
-                break;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const rawVal = localStorage.getItem(key);
+            if (!rawVal) continue;
+
+            // 1. 若寫入的是 JSON 物件，嘗試解析取出時間
+            if (rawVal.startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(rawVal);
+                    const t = parsed.cutoffTime || parsed.time || parsed.cutoff;
+                    if (t && typeof t === 'string' && t.includes(':')) {
+                        latestTime = t;
+                        break;
+                    }
+                } catch(e) {}
+            }
+
+            // 2. 若寫入的是純時間字串 (如 "10:30" 或 "10:30:00")
+            if (rawVal.includes(':') && rawVal.length <= 10) {
+                // 排除日期時間格式，只抓純時間 HH:MM
+                const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
+                if (match) {
+                    latestTime = match[0];
+                    break;
+                }
             }
         }
     }
 
-    // C. 套用最新時間並更新 UI
+    // D. 套用最新時間並即時同步 UI
     if (latestTime) {
-        // 清理字串，只保留 HH:MM 格式
         const cleanTime = latestTime.replace(/[^0-9:]/g, '');
         if (cleanTime && cleanTime !== targetCutoffStr) {
             targetCutoffStr = cleanTime;
-            console.log('✅ 前台時間已同步更新為：', targetCutoffStr);
+            console.log('✅ 前台時間已成功同步更新為：', targetCutoffStr);
         }
     }
 }
