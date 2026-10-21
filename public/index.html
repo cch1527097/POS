@@ -2336,9 +2336,9 @@
 
             const now = new Date();
             const timeParts = targetCutoffStr.split(':').map(Number);
-            const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
-            const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
-            const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
+            const targetHours = timeParts[0] !== undefined ? timeParts[0] : -;
+            const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : -;
+            const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : -;
 
             const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
             const diffMs = targetTime - now;
