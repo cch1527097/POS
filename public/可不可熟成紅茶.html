@@ -542,7 +542,6 @@ const menuItems = [
     {name: "熟成紅茶", priceM: 30, priceL: 35, category: "乎乾 好茶", icon: "🍂"},
     {name: "麗春紅茶", priceM: 30, priceL: 35, category: "乎乾 好茶", icon: "🍂"},
     {name: "春芽綠茶", priceM: 30, priceL: 35, category: "乎乾 好茶", icon: "🍃"},
-    {name: "半熟烏龍", priceM: 35, priceL: 40, category: "乎乾 好茶", icon: "☕"},
     {name: "胭脂紅茶", priceM: 40, priceL: 45, category: "乎乾 好茶", icon: "🌸"},
     {name: "茶花輕焙烏龍", priceM: 40, priceL: 45, category: "乎乾 好茶", icon: "🌼"},
 
@@ -550,8 +549,8 @@ const menuItems = [
     {name: "熟檸紅茶", priceM: 40, priceL: 50, category: "乎乾 手作", icon: "🍋"},
     {name: "春檸綠茶", priceM: 40, priceL: 50, category: "乎乾 手作", icon: "🍋"},
     {name: "春梅冰茶", priceM: 45, priceL: 55, category: "乎乾 手作", icon: "🍑"},
-    {name: "太妃熟成", priceM: 45, priceL: 50, category: "乎乾 手作", icon: "🍬"},
     {name: "金蜜熟成", priceM: 48, priceL: 58, category: "乎乾 手作", icon: "🍯"},
+    {name: "金蜜檸檬", priceM: 48, priceL: 58, category: "乎乾 手作", icon: "🍯"},
     {name: "胭脂多多", priceM: 50, priceL: 60, category: "乎乾 手作", icon: "🥤"},
     {name: "茶花烏龍多多", priceM: 50, priceL: 60, category: "乎乾 手作", icon: "🥤"},
     {name: "茶花烏龍梅", priceM: 50, priceL: 60, category: "乎乾 手作", icon: "🍑"},
@@ -560,7 +559,6 @@ const menuItems = [
     {name: "蘋果茶花烏龍", priceM: 65, priceL: 75, category: "乎乾 手作", icon: "🍎"},
 
     // === 乎乾 好眠 (無咖啡因) ===
-    {name: "輕纖穀奈茶", priceM: 35, priceL: 45, category: "乎乾 好眠", icon: "🌾"},
     {name: "穀奈冷露", priceM: 40, priceL: 50, category: "乎乾 好眠", icon: "🌾"},
     {name: "穀奈歐蕾", priceM: 59, priceL: 69, category: "乎乾 好眠", icon: "🥛"},
     {name: "金蜜檸檸", priceM: 48, priceL: 58, category: "乎乾 好眠", icon: "🍋"},
@@ -569,12 +567,8 @@ const menuItems = [
     {name: "熟成歐蕾", priceM: 55, priceL: 65, category: "乎乾 鮮奶茶", icon: "🥛"},
     {name: "冷露歐蕾", priceM: 55, priceL: 65, category: "乎乾 鮮奶茶", icon: "🥛"},
     {name: "胭脂歐蕾", priceM: 59, priceL: 69, category: "乎乾 鮮奶茶", icon: "🥛"},
-    {name: "半熟烏龍歐蕾", priceM: 59, priceL: 69, category: "乎乾 鮮奶茶", icon: "🥛"},
     {name: "金蜜歐蕾", priceM: 60, priceL: 70, category: "乎乾 鮮奶茶", icon: "🥛"},
     {name: "白玉歐蕾", priceM: 60, priceL: 70, category: "乎乾 鮮奶茶", icon: "🧋"},
-    {name: "鴛鴦歐蕾", priceM: 60, priceL: 70, category: "乎乾 鮮奶茶", icon: "☕"},
-    {name: "熟成榛果歐蕾", priceM: 60, priceL: 70, category: "乎乾 鮮奶茶", icon: "🌰"},
-    {name: "墨玉鴛鴦歐蕾", priceM: 70, priceL: 80, category: "乎乾 鮮奶茶", icon: "☕"},
 
     // === 乎乾 奶茶 ===
     {name: "熟成奶茶", priceM: 45, priceL: 55, category: "乎乾 奶茶", icon: "🧋"},
@@ -583,16 +577,13 @@ const menuItems = [
     {name: "白玉奶茶", priceM: 50, priceL: 60, category: "乎乾 奶茶", icon: "🧋"},
 
     // === 乎乾 厚乳 ===
-    {name: "半熟烏龍厚乳", priceM: 59, priceL: 69, category: "乎乾 厚乳", icon: "🥛"},
     {name: "茶花烏龍厚乳", priceM: 59, priceL: 69, category: "乎乾 厚乳", icon: "🥛"},
-    {name: "生茶烏龍厚乳", priceM: 69, priceL: 79, category: "乎乾 厚乳", icon: "🥛"},
     {name: "蘋果春芽厚乳", priceM: 69, priceL: null, category: "乎乾 厚乳", icon: "🍎"},
 
     // === 乎乾 冬瓜 ===
     {name: "雪花冷露", priceM: 30, priceL: 35, category: "乎乾 冬瓜", icon: "🧊"},
     {name: "熟成冷露", priceM: 35, priceL: 40, category: "乎乾 冬瓜", icon: "🧊"},
     {name: "春芽冷露", priceM: 35, priceL: 40, category: "乎乾 冬瓜", icon: "🧊"},
-    {name: "半熟烏龍冷露", priceM: 40, priceL: 45, category: "乎乾 冬瓜", icon: "🧊"},
     {name: "胭脂冷露", priceM: 40, priceL: 45, category: "乎乾 冬瓜", icon: "🧊"},
     {name: "檸檬冷露", priceM: 45, priceL: 55, category: "乎乾 冬瓜", icon: "🍋"},
 
