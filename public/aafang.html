@@ -846,12 +846,38 @@ function selectOpt(group, val, el) {
     el.classList.add('active');
 }
 
-// 點擊新增按鈕：彈出【圖形卡片化】客製化選擇視窗
+// 點擊新增按鈕：判斷類別決定直接加入或彈出客製化選單
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 重置預設選擇
+    // 不需要選擇辣度/加飯/加蛋選項的類別
+    const directAddCategories = ["炒烏龍麵系列", "國際線升級套餐", "湯品與小菜單點"];
+
+    // 若屬於上述類別，直接加入購物車
+    if (directAddCategories.includes(item.category)) {
+        const customKey = `${item.name}|不辣|不加飯|不加蛋`;
+
+        if (cart[customKey]) {
+            cart[customKey].qty += 1;
+        } else {
+            cart[customKey] = {
+                key: customKey,
+                baseName: item.name,
+                price: item.price,
+                qty: 1,
+                spicy: '不辣',
+                rice: '不加飯',
+                egg: '不加蛋'
+            };
+        }
+
+        renderCart();
+        renderMenu(currentFilteredItems);
+        return;
+    }
+
+    // 其它餐點（如炒飯、蛋包飯）維持彈窗選擇邏輯
     currentOptions = { spicy: '不辣', rice: '不加飯', egg: '不加蛋' };
 
     let bodyHtml = `
@@ -898,11 +924,10 @@ function clickAddItem(name) {
             const rice = currentOptions.rice;
             const egg = currentOptions.egg;
 
-            const isEggAdded = egg.includes("加蛋(+15元)");
+            const isEggAdded = egg !== '不加蛋';
             const extraEggFee = isEggAdded ? 15 : 0;
             const unitPrice = item.price + extraEggFee;
 
-            // 建立客製化識別 Key
             const customKey = `${item.name}|${spicy}|${rice}|${egg}`;
 
             if (cart[customKey]) {
@@ -925,7 +950,6 @@ function clickAddItem(name) {
         }
     });
 }
-
 // 主頁面上點擊減號：移除最後加入該品項的客製化項目
 function removeOneBaseItem(baseName) {
     const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
