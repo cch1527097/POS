@@ -587,7 +587,7 @@
     <!-- 藍色按鈕: 查看感應卡歷史訂單 / 狀態 -->
     <button class="fab-btn fab-blue" onclick="openHistoryModal()" title="查看卡號訂單紀錄">
         <svg viewBox="0 0 24 24">
-            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
         </svg>
     </button>
     <!-- 綠色按鈕: 購物車 -->
@@ -649,9 +649,10 @@
 </div>
 
 <script>
-// 設定訂餐截止時間 (預設 10:00)
-const CUTOFF_HOUR = 10;
-const CUTOFF_MINUTE = 0;
+// 動態截止時間預設變數 (預設 10:00)
+let cutoffHour = 10;
+let cutoffMinute = 0;
+let cutoffTimeStr = "10:00";
 
 function goBack() {
     window.location.href = 'index.html'; 
@@ -813,7 +814,7 @@ let searchDebounceTimer = null;
 let finalTotal = 0;
 let finalSummary = "";
 
-window.onload = function() {
+window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
 
@@ -828,27 +829,72 @@ window.onload = function() {
         statusDiv.style.color = "#991b1b";
     }
 
-    // 初始化點餐截止狀態檢查
-    updateCutoffStatus();
+    // 從後台同步最新點餐截止時間
+    await fetchCutoffTime();
 
     renderMenu(menuItems);
     renderCart();
 };
 
-// 檢查並更新訂餐截止時間狀態
+// 自動從後台 API 或 LocalStorage 獲取最新截止時間
+async function fetchCutoffTime() {
+    // 1. 優先查看 LocalStorage 快取
+    const localCutoff = localStorage.getItem('cutoffTime') || localStorage.getItem('cutoff_time');
+    if (localCutoff) {
+        applyCutoffTime(localCutoff);
+    }
+
+    // 2. 向後端 API 取得最新設定
+    try {
+        const res = await fetch("/api/settings");
+        if (res.ok) {
+            const data = await res.json();
+            const apiTime = data.cutoffTime || data.cutoff_time || data.orderCutoffTime || (data.data && data.data.cutoffTime);
+            if (apiTime) {
+                applyCutoffTime(apiTime);
+                localStorage.setItem('cutoffTime', apiTime);
+            }
+        }
+    } catch (err) {
+        console.log("從 API 讀取截止時間，目前以本地時間判定:", err);
+    }
+}
+
+// 應用並更新時間與 UI 介面
+function applyCutoffTime(timeStr) {
+    if (!timeStr) return;
+    const parts = timeStr.split(":");
+    if (parts.length === 2) {
+        cutoffHour = parseInt(parts[0], 10);
+        cutoffMinute = parseInt(parts[1], 10);
+        cutoffTimeStr = `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+        
+        const displayEl = document.getElementById("cutoff-time-display");
+        if (displayEl) {
+            displayEl.innerText = cutoffTimeStr;
+        }
+        
+        updateCutoffStatus();
+    }
+}
+
+// 檢查是否已過截止時間
 function isOrderingCutoff() {
     const now = new Date();
     const curHour = now.getHours();
     const curMin = now.getMinutes();
 
-    if (curHour > CUTOFF_HOUR || (curHour === CUTOFF_HOUR && curMin >= CUTOFF_MINUTE)) {
+    if (curHour > cutoffHour || (curHour === cutoffHour && curMin >= cutoffMinute)) {
         return true;
     }
     return false;
 }
 
+// 更新右下角截止卡片按鈕狀態
 function updateCutoffStatus() {
     const btn = document.getElementById("cutoff-status-btn");
+    if (!btn) return;
+
     if (isOrderingCutoff()) {
         btn.innerText = "已截止點餐";
         btn.className = "cutoff-btn closed";
@@ -962,7 +1008,7 @@ function clickAddItem(name) {
     if (isOrderingCutoff()) {
         return showCustomModal({
             title: "點餐提示",
-            bodyHtml: `<p style="text-align:center; color:#e74c3c; font-weight:bold;">⚠️ 今日點餐已於 ${CUTOFF_HOUR}:00 截止，無法再新增餐點。</p>`,
+            bodyHtml: `<p style="text-align:center; color:#e74c3c; font-weight:bold;">⚠️ 今日點餐已於 ${cutoffTimeStr} 截止，無法再新增餐點。</p>`,
             confirmText: "我知道了",
             showCancel: false
         });
@@ -997,7 +1043,7 @@ function clickAddItem(name) {
         return;
     }
 
-    // 其它餐點（如炒飯、蛋包飯）維持彈窗選擇邏輯
+    // 其它餐點（如炒飯、蛋包飯）維護彈窗選擇邏輯
     currentOptions = { spicy: '不辣', rice: '不加飯', egg: '不加蛋' };
 
     let bodyHtml = `
@@ -1277,7 +1323,7 @@ async function submitOrderToServer() {
     if (isOrderingCutoff()) {
         return showCustomModal({
             title: "點餐提示",
-            bodyHtml: `<p style="text-align:center; color:#e74c3c; font-weight:bold;">⚠️ 今日點餐已於 ${CUTOFF_HOUR}:00 截止，無法送出訂單！</p>`,
+            bodyHtml: `<p style="text-align:center; color:#e74c3c; font-weight:bold;">⚠️ 今日點餐已於 ${cutoffTimeStr} 截止，無法送出訂單！</p>`,
             confirmText: "我知道了",
             showCancel: false
         });
