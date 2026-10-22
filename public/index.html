@@ -639,10 +639,37 @@
             box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
         }
 
+        /* 👥 新增：其他人點了什麼 懸浮按鈕樣式 */
+        .others-float-btn {
+            position: fixed;
+            bottom: 145px;
+            right: 25px;
+            background-color: #0091ff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 145, 255, 0.3);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .others-float-btn:hover {
+            background-color: #0073e6;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 145, 255, 0.4);
+        }
+
         /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
         .cutoff-float-badge {
             position: fixed;
-            bottom: 145px;
+            bottom: 205px;
             right: 25px;
             background: #ffffff;
             border: 2px solid #4e803c;
@@ -993,9 +1020,24 @@
 
             .cutoff-float-badge {
                 right: 15px;
-                bottom: 140px;
+                bottom: 200px;
                 padding: 8px 10px;
                 min-width: 120px;
+            }
+
+            .others-float-btn {
+                right: 15px;
+                bottom: 140px;
+            }
+
+            .cart-float-btn {
+                right: 15px;
+                bottom: 85px;
+            }
+
+            .logout-btn {
+                right: 15px;
+                bottom: 25px;
             }
         }
 
@@ -1917,6 +1959,16 @@
             <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
         </div>
 
+        <!-- 👥 新增：購物車按鈕上面的「其他人點了什麼」懸浮按鈕 -->
+        <button class="others-float-btn" title="其他人點了什麼" aria-label="其他人點了什麼" onclick="openOthersModal()">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        </button>
+
         <button class="cart-float-btn" title="查看購物車" aria-label="購物車" onclick="openCartModal()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="9" cy="21" r="1"></circle>
@@ -1989,6 +2041,38 @@
                 <div class="payment-item">
                     <span class="payment-title">3. 電子支付</span>
                     <span class="payment-detail">現場支援 iPass money 掃碼支付</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 👥 新增：其他人點了什麼彈窗 (Modal) -->
+    <div id="othersModal" class="branch-modal-overlay hidden" onclick="closeOthersModal(event)">
+        <div class="branch-modal-content history-modal-content" onclick="event.stopPropagation()">
+            <div class="branch-modal-header">
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    👥 今日其他人點了什麼 (全院即時點餐動態)
+                </h3>
+                <span class="close-btn" onclick="closeOthersModal()">&times;</span>
+            </div>
+            <div class="history-modal-body">
+                <div class="history-table-wrapper">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 18%; background-color: #e8f4fd;">卡號 / 姓名</th>
+                                <th style="width: 15%; background-color: #e8f4fd;">部門</th>
+                                <th style="width: 22%; background-color: #e8f4fd;">時間</th>
+                                <th style="width: 33%; background-color: #e8f4fd;">點餐店家 / 內容</th>
+                                <th style="width: 12%; background-color: #e8f4fd;">金額</th>
+                            </tr>
+                        </thead>
+                        <tbody id="others-list">
+                            <tr>
+                                <td colspan="5" class="no-record">載入今日所有人點餐資料中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -2551,6 +2635,76 @@
         function closePaymentModal(event) {
             const modal = document.getElementById('paymentModal');
             if (modal) modal.classList.add('hidden');
+        }
+
+        /* 👥 新增：開啟/關閉「其他人點了什麼」彈窗與載入資料邏輯 */
+        function openOthersModal() {
+            fetchOthersOrders();
+            const modal = document.getElementById('othersModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeOthersModal(event) {
+            const modal = document.getElementById('othersModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        async function fetchOthersOrders() {
+            const othersList = document.getElementById('others-list');
+            if (!othersList) return;
+
+            othersList.innerHTML = `<tr><td colspan="5" class="no-record">載入今日所有人點餐資料中...</td></tr>`;
+
+            let orders = [];
+            try {
+                const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
+                if (res.ok) {
+                    orders = await res.json();
+                }
+            } catch (e) {}
+
+            if (!orders || orders.length === 0) {
+                try {
+                    const res = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        orders = Array.isArray(data) ? data : (data.orders || []);
+                    }
+                } catch (e) {}
+            }
+
+            let todayOrders = orders.filter(order => isTodayOrder(order));
+            todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+            if (todayOrders.length === 0) {
+                othersList.innerHTML = `<tr><td colspan="5" class="no-record">今日目前尚無其他人點餐紀錄。</td></tr>`;
+                return;
+            }
+
+            othersList.innerHTML = todayOrders.map(order => {
+                const cardId = order.cardId || order.card_id || '';
+                const empName = order.empName || order.name || order.emp_name || '';
+                const nameDisplay = (cardId || empName) ? `${cardId} ${empName}`.trim() : '匿名同仁';
+                const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : (order.department || '未劃分');
+                
+                let mealText = order.meal || order.note || '無品項內容';
+                let totalAmount = Number(order.total || order.amount || 0);
+
+                if (!totalAmount && order.note) {
+                    const match = String(order.note).match(/總計:\s*\$(\d+)/);
+                    if (match) totalAmount = parseInt(match[1], 10);
+                }
+
+                return `
+                    <tr>
+                        <td>${nameDisplay}</td>
+                        <td><span class="dept-badge">${dept}</span></td>
+                        <td>${formatDisplayTime(order)}</td>
+                        <td style="font-weight: bold; color: #2b4c23;">${mealText}</td>
+                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function openCartModal() {
