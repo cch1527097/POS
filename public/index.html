@@ -2194,7 +2194,7 @@
         let globalEmployeesMap = {}; 
         let currentCategoryView = 'food'; 
         let cutoffTimerInterval = null;
-        let targetCutoffStr = '09:30';
+        let targetCutoffStr = null;
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -2356,97 +2356,109 @@
         }
 
         async function fetchCutoffSetting() {
-            let latestTime = null;
+    let latestTime = null;
 
-            try {
-                const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
-                if (response.ok) {
-                    const data = await response.json();
-                    latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
-                }
-            } catch (e) {
+    try {
+        const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (response.ok) {
+            const data = await response.json();
+            latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
+        }
+    } catch (e) {
+        try {
+            const jsonRes = await fetch(`cutoff.json?_=${new Date().getTime()}`, { cache: 'no-store' });
+            if (jsonRes.ok) {
+                const data = await jsonRes.json();
+                latestTime = data.cutoffTime || data.time || data.cutoff_time;
+            }
+        } catch (err) {}
+    }
+
+    if (!latestTime) {
+        const targetKeys = ['cutoffTimeSetting', 'adminCutoffTime', 'cutoffTime', 'dailyCutoffTime', 'cutoff_time', 'targetCutoffStr'];
+        
+        for (const key of targetKeys) {
+            const rawVal = localStorage.getItem(key);
+            if (!rawVal) continue;
+
+            if (rawVal.startsWith('{')) {
                 try {
-                    const jsonRes = await fetch(`cutoff.json?_=${new Date().getTime()}`, { cache: 'no-store' });
-                    if (jsonRes.ok) {
-                        const data = await jsonRes.json();
-                        latestTime = data.cutoffTime || data.time || data.cutoff_time;
+                    const parsed = JSON.parse(rawVal);
+                    const t = parsed.cutoffTime || parsed.time || parsed.cutoff || parsed.value;
+                    if (t && typeof t === 'string' && t.includes(':')) {
+                        latestTime = t;
+                        break;
                     }
-                } catch (err) {}
+                } catch (e) {}
             }
 
-            if (!latestTime) {
-                const targetKeys = ['cutoffTimeSetting', 'adminCutoffTime', 'cutoffTime', 'dailyCutoffTime', 'cutoff_time', 'targetCutoffStr'];
-                
-                for (const key of targetKeys) {
-                    const rawVal = localStorage.getItem(key);
-                    if (!rawVal) continue;
-
-                    if (rawVal.startsWith('{')) {
-                        try {
-                            const parsed = JSON.parse(rawVal);
-                            const t = parsed.cutoffTime || parsed.time || parsed.cutoff || parsed.value;
-                            if (t && typeof t === 'string' && t.includes(':')) {
-                                latestTime = t;
-                                break;
-                            }
-                        } catch (e) {}
-                    }
-
-                    if (rawVal.includes(':')) {
-                        const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
-                        if (match) {
-                            latestTime = match[0];
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (latestTime) {
-                const cleanTime = latestTime.replace(/[^0-9:]/g, '');
-                if (cleanTime && cleanTime !== targetCutoffStr) {
-                    targetCutoffStr = cleanTime;
-                    console.log('✅ 前台時間已成功同步為：', targetCutoffStr);
+            if (rawVal.includes(':')) {
+                const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
+                if (match) {
+                    latestTime = match[0];
+                    break;
                 }
             }
         }
+    }
+
+    if (latestTime) {
+        const cleanTime = latestTime.replace(/[^0-9:]/g, '');
+        if (cleanTime && cleanTime.includes(':')) {
+            targetCutoffStr = cleanTime;
+            console.log('✅ 前台時間已成功同步為：', targetCutoffStr);
+        } else {
+            targetCutoffStr = null;
+        }
+    } else {
+        targetCutoffStr = null;
+    }
+}
 
         function updateCountdownUI() {
-            const timeDisplay = document.getElementById('cutoffTimeDisplay');
-            const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
-            if (!timeDisplay || !countdownDisplay) return;
+    const timeDisplay = document.getElementById('cutoffTimeDisplay');
+    const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
+    if (!timeDisplay || !countdownDisplay) return;
 
-            timeDisplay.textContent = targetCutoffStr;
+    // 💡 若未設定時間，顯示預設提示訊息
+    if (!targetCutoffStr) {
+        timeDisplay.textContent = '--:--';
+        countdownDisplay.textContent = '尚未設定點餐截止';
+        countdownDisplay.classList.remove('expired');
+        return;
+    }
 
-            const now = new Date();
-            const timeParts = targetCutoffStr.split(':').map(Number);
-            const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
-            const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
-            const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
+    timeDisplay.textContent = targetCutoffStr;
 
-            const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
-            const diffMs = targetTime - now;
+    const now = new Date();
+    const timeParts = targetCutoffStr.split(':').map(Number);
+    const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
+    const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
+    const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
 
-            if (diffMs <= 0) {
-                countdownDisplay.textContent = '已截止點餐';
-                countdownDisplay.classList.add('expired');
-            } else {
-                countdownDisplay.classList.remove('expired');
-                const hrs = Math.floor(diffMs / (1000 * 60 * 60));
-                const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                const secs = Math.floor((diffMs % (1000 * 60)) / 1000);
+    const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
+    const diffMs = targetTime - now;
 
-                const hh = String(hrs).padStart(2, '0');
-                const mm = String(mins).padStart(2, '0');
-                const ss = String(secs).padStart(2, '0');
+    if (diffMs <= 0) {
+        countdownDisplay.textContent = '已截止點餐';
+        countdownDisplay.classList.add('expired');
+    } else {
+        countdownDisplay.classList.remove('expired');
+        const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+        const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diffMs % (1000 * 60)) / 1000);
 
-                if (hrs > 0) {
-                    countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
-                } else {
-                    countdownDisplay.textContent = `${mm}:${ss}`;
-                }
-            }
+        const hh = String(hrs).padStart(2, '0');
+        const mm = String(mins).padStart(2, '0');
+        const ss = String(secs).padStart(2, '0');
+
+        if (hrs > 0) {
+            countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
+        } else {
+            countdownDisplay.textContent = `${mm}:${ss}`;
         }
+    }
+}
 
         /* ==================== 🎲 店家轉盤功能邏輯 ==================== */
         let wheelShops = [];
