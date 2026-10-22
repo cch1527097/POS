@@ -362,7 +362,7 @@
             fill: #ffffff;
         }
 
-        /* 藍色卡號/個人資訊按鈕 */
+        /* 藍色按鈕：今日其他人點了什麼 */
         .fab-blue {
             background-color: #0088ff;
         }
@@ -584,8 +584,8 @@
 
 <!-- 懸浮按鈕群 (FAB) -->
 <div class="fab-container">
-    <!-- 藍色按鈕: 查看感應卡歷史訂單 / 狀態 -->
-    <button class="fab-btn fab-blue" onclick="openHistoryModal()" title="查看卡號訂單紀錄">
+    <!-- 藍色按鈕: 今日其他人點了什麼 -->
+    <button class="fab-btn fab-blue" onclick="openTodayOrdersModal()" title="今日其他人點了什麼">
         <svg viewBox="0 0 24 24">
             <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
         </svg>
@@ -838,13 +838,11 @@ window.onload = async function() {
 
 // 自動從後台 API 或 LocalStorage 獲取最新截止時間
 async function fetchCutoffTime() {
-    // 1. 優先查看 LocalStorage 快取
     const localCutoff = localStorage.getItem('cutoffTime') || localStorage.getItem('cutoff_time');
     if (localCutoff) {
         applyCutoffTime(localCutoff);
     }
 
-    // 2. 向後端 API 取得最新設定
     try {
         const res = await fetch("/api/settings");
         if (res.ok) {
@@ -860,7 +858,6 @@ async function fetchCutoffTime() {
     }
 }
 
-// 應用並更新時間與 UI 介面
 function applyCutoffTime(timeStr) {
     if (!timeStr) return;
     const parts = timeStr.split(":");
@@ -878,7 +875,6 @@ function applyCutoffTime(timeStr) {
     }
 }
 
-// 檢查是否已過截止時間
 function isOrderingCutoff() {
     const now = new Date();
     const curHour = now.getHours();
@@ -890,7 +886,6 @@ function isOrderingCutoff() {
     return false;
 }
 
-// 更新右下角截止卡片按鈕狀態
 function updateCutoffStatus() {
     const btn = document.getElementById("cutoff-status-btn");
     if (!btn) return;
@@ -941,7 +936,6 @@ function renderMenu(items) {
             const card = document.createElement("div");
             card.className = "item-card";
             
-            // 計算該品項在購物車中的總數量
             let currentQty = 0;
             Object.keys(cart).forEach(key => {
                 if (cart[key].baseName === item.name) {
@@ -992,7 +986,6 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 暫存彈窗選擇狀態
 let currentOptions = { spicy: '不辣', rice: '不加飯', egg: '不加蛋' };
 
 function selectOpt(group, val, el) {
@@ -1002,9 +995,7 @@ function selectOpt(group, val, el) {
     el.classList.add('active');
 }
 
-// 點擊新增按鈕：判斷類別決定直接加入或彈出客製化選單
 function clickAddItem(name) {
-    // 時間檢查：若已過截止時間則提醒
     if (isOrderingCutoff()) {
         return showCustomModal({
             title: "點餐提示",
@@ -1017,10 +1008,8 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 不需要選擇辣度/加飯/加蛋選項的類別
     const directAddCategories = ["炒烏龍麵系列", "國際線升級套餐", "湯品與小菜單點"];
 
-    // 若屬於上述類別，直接加入購物車
     if (directAddCategories.includes(item.category)) {
         const customKey = `${item.name}|不辣|不加飯|不加蛋`;
 
@@ -1043,7 +1032,6 @@ function clickAddItem(name) {
         return;
     }
 
-    // 其它餐點（如炒飯、蛋包飯）維護彈窗選擇邏輯
     currentOptions = { spicy: '不辣', rice: '不加飯', egg: '不加蛋' };
 
     let bodyHtml = `
@@ -1117,7 +1105,6 @@ function clickAddItem(name) {
     });
 }
 
-// 主頁面上點擊減號：移除最後加入該品項的客製化項目
 function removeOneBaseItem(baseName) {
     const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
     if (keys.length === 0) return;
@@ -1146,7 +1133,6 @@ function renderCart() {
         finalSummary += `${item.baseName}(${item.spicy}/${item.rice}/${item.egg})*${item.qty} `;
     });
 
-    // 即時更新懸浮購物車按鈕上的 Badge 數字
     const badgeEl = document.getElementById("cart-badge");
     if (badgeEl) {
         if (totalCount > 0) {
@@ -1158,39 +1144,97 @@ function renderCart() {
     }
 }
 
-// 開啟藍色按鈕 (查看個人/感應卡歷史訂單)
-function openHistoryModal() {
-    const localKey = `orders_${currentCardId}`;
-    const orders = JSON.parse(localStorage.getItem(localKey) || "[]");
+// 開啟藍色按鈕：查看今日其他人點了什麼
+async function openTodayOrdersModal() {
+    let allOrders = [];
 
-    let historyHtml = `<div style="margin-bottom:12px; font-size:14px; color:#64748b;">💳 感應卡號：<b>${currentCardId}</b></div>`;
+    // 1. 嘗試向後端 API 獲取今日所有人的訂單
+    try {
+        const res = await fetch("/api/orders/today");
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.orders)) {
+                allOrders = data.orders;
+            }
+        }
+    } catch (err) {
+        console.log("從 API 讀取今日訂單失敗，將自動彙整本地端紀錄:", err);
+    }
 
-    if (orders.length === 0) {
-        historyHtml += `<p style="text-align:center; color:#94a3b8; margin:20px 0;">尚無已送出的訂單紀錄喔！</p>`;
+    // 2. 若 API 無回應或無數據，自動從 LocalStorage 彙整所有人今天送出的訂單
+    if (allOrders.length === 0) {
+        const todayStr = new Date().toDateString();
+        const aggregated = [];
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith("orders_") || key === "all_orders_today") {
+                try {
+                    const list = JSON.parse(localStorage.getItem(key) || "[]");
+                    if (Array.isArray(list)) {
+                        list.forEach(item => {
+                            if (item.timestamp) {
+                                const d = new Date(item.timestamp);
+                                if (d.toDateString() === todayStr) {
+                                    aggregated.push(item);
+                                }
+                            } else {
+                                aggregated.push(item);
+                            }
+                        });
+                    }
+                } catch(e) {}
+            }
+        }
+
+        // 去重複項目
+        const uniqueMap = new Map();
+        aggregated.forEach(ord => {
+            const uniqueId = ord.id || `${ord.cardId}_${ord.timestamp}_${ord.meal}`;
+            if (!uniqueMap.has(uniqueId)) {
+                uniqueMap.set(uniqueId, ord);
+            }
+        });
+        allOrders = Array.from(uniqueMap.values());
+    }
+
+    // 3. 渲染至 Modal 彈窗
+    let html = `<div style="margin-bottom:12px; font-size:13px; color:#64748b;">📢 看看今天大家點了哪些熱門美食：</div>`;
+
+    if (allOrders.length === 0) {
+        html += `<p style="text-align:center; color:#94a3b8; margin:24px 0; font-size:14px;">今日目前還沒有其他人點餐喔！</p>`;
     } else {
-        historyHtml += `<div style="max-height: 280px; overflow-y: auto;">`;
-        orders.reverse().forEach((ord, index) => {
-            const timeStr = ord.timestamp ? new Date(ord.timestamp).toLocaleString() : '最近一次點餐';
-            historyHtml += `
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:10px;">
-                    <div style="font-size:12px; color:#64748b; margin-bottom:4px;">🕒 ${timeStr}</div>
-                    <div style="font-size:14px; font-weight:bold; color:#1e293b;">${ord.meal}</div>
-                    <div style="font-size:14px; font-weight:700; color:var(--accent); text-align:right; margin-top:4px;">小計: $${ord.total}</div>
+        html += `<div style="max-height: 320px; overflow-y: auto; padding-right: 4px;">`;
+        // 按時間倒序排列
+        allOrders.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+
+        allOrders.forEach((ord) => {
+            const timeStr = ord.timestamp ? new Date(ord.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '今天';
+            const cardTag = ord.cardId ? `💳 卡號：<b>${ord.cardId}</b>` : '💳 顧客';
+            const isSelf = ord.cardId === currentCardId ? ' <span style="background:#0088ff; color:white; font-size:11px; padding:1px 6px; border-radius:10px; font-weight:normal;">你自己</span>' : '';
+
+            html += `
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+                    <div style="display:flex; justify-content:space-between; font-size:13px; color:#64748b; margin-bottom:6px;">
+                        <span>${cardTag}${isSelf}</span>
+                        <span>🕒 ${timeStr}</span>
+                    </div>
+                    <div style="font-size:14px; font-weight:bold; color:#1e293b; line-height:1.4;">${ord.meal}</div>
+                    <div style="font-size:14px; font-weight:700; color:var(--accent); text-align:right; margin-top:6px;">總計: $${ord.total}</div>
                 </div>
             `;
         });
-        historyHtml += `</div>`;
+        html += `</div>`;
     }
 
     showCustomModal({
-        title: "👥 本卡號訂單紀錄",
-        bodyHtml: historyHtml,
+        title: "👥 今日其他人點了什麼",
+        bodyHtml: html,
         confirmText: "關閉",
         showCancel: false
     });
 }
 
-// 開啟購物車 Modal 視窗
 function openCartModal() {
     const keys = Object.keys(cart);
     
@@ -1362,21 +1406,22 @@ async function submitOrderToServer() {
             btn.disabled = true;
             btn.innerText = "正在送出...";
 
-            const payload = {
+            const orderItem = {
                 cardId: currentCardId,
                 category: "food",
                 type: "food",
                 meal: `飯大廚：${finalSummary.trim()}`,
                 spicy: "依餐點選擇",
                 total: finalTotal,
-                note: `總計：$${finalTotal}`
+                note: `總計：$${finalTotal}`,
+                timestamp: new Date().toISOString()
             };
 
             try {
                 const response = await fetch("/api/order", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(orderItem)
                 });
 
                 const resData = await response.json();
@@ -1389,10 +1434,16 @@ async function submitOrderToServer() {
                         showCancel: false
                     });
                     
+                    // 同步寫入個人卡號紀錄與今日全域紀錄
                     const localKey = `orders_${currentCardId}`;
                     const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
-                    existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
+                    existingOrders.push(orderItem);
                     localStorage.setItem(localKey, JSON.stringify(existingOrders));
+
+                    const allTodayKey = "all_orders_today";
+                    const allTodayOrders = JSON.parse(localStorage.getItem(allTodayKey) || "[]");
+                    allTodayOrders.push(orderItem);
+                    localStorage.setItem(allTodayKey, JSON.stringify(allTodayOrders));
                     
                     cart = {};
                     renderCart();
