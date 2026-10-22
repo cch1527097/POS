@@ -271,6 +271,56 @@
             color: var(--primary);
         }
 
+        /* ==================== 訂餐截止提示卡片 (Cutoff Card) ==================== */
+        .cutoff-card {
+            position: fixed;
+            bottom: 220px;
+            right: 20px;
+            z-index: 9998;
+            background: #ffffff;
+            border: 2px solid #2e7d32;
+            border-radius: 14px;
+            padding: 10px 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+            text-align: center;
+            min-width: 125px;
+            box-sizing: border-box;
+        }
+        .cutoff-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 2px;
+        }
+        .cutoff-time {
+            font-size: 16px;
+            font-weight: 800;
+            color: #2e7d32;
+            margin-bottom: 6px;
+        }
+        .cutoff-btn {
+            width: 100%;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: default;
+            transition: all 0.2s ease;
+        }
+        .cutoff-btn.closed {
+            background-color: #e2e8f0;
+            color: #64748b;
+        }
+        .cutoff-btn.open {
+            background-color: #2e7d32;
+            color: #ffffff;
+        }
+
         /* ==================== 懸浮圓形按鈕群 (Floating Action Buttons) ==================== */
         .fab-container {
             position: fixed;
@@ -310,6 +360,11 @@
             width: 26px;
             height: 26px;
             fill: #ffffff;
+        }
+
+        /* 藍色卡號/個人資訊按鈕 */
+        .fab-blue {
+            background-color: #0088ff;
         }
 
         .fab-cart {
@@ -504,6 +559,8 @@
             .menu-grid { grid-template-columns: 1fr; }
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
+            .cutoff-card { bottom: 220px; right: 16px; }
+            .fab-container { right: 16px; }
         }
     </style>
 </head>
@@ -516,13 +573,31 @@
     </div>
 </div>
 
+<!-- 今日訂餐截止卡片 -->
+<div class="cutoff-card">
+    <div class="cutoff-title">
+        <span>⏱️</span> 今日點餐截止
+    </div>
+    <div class="cutoff-time" id="cutoff-time-display">10:00</div>
+    <button class="cutoff-btn closed" id="cutoff-status-btn">已截止點餐</button>
+</div>
+
+<!-- 懸浮按鈕群 (FAB) -->
 <div class="fab-container">
+    <!-- 藍色按鈕: 查看感應卡歷史訂單 / 狀態 -->
+    <button class="fab-btn fab-blue" onclick="openHistoryModal()" title="查看卡號訂單紀錄">
+        <svg viewBox="0 0 24 24">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+        </svg>
+    </button>
+    <!-- 綠色按鈕: 購物車 -->
     <button class="fab-btn fab-cart" onclick="openCartModal()" title="開啟購物車">
         <svg viewBox="0 0 24 24">
             <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
         </svg>
         <span id="cart-badge" class="cart-badge" style="display: none;">0</span>
     </button>
+    <!-- 紅色按鈕: 離開點餐 -->
     <button class="fab-btn fab-exit" onclick="goBack()" title="離開點餐">
         <svg viewBox="0 0 24 24">
             <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
@@ -574,6 +649,10 @@
 </div>
 
 <script>
+// 設定訂餐截止時間 (預設 10:00)
+const CUTOFF_HOUR = 10;
+const CUTOFF_MINUTE = 0;
+
 function goBack() {
     window.location.href = 'index.html'; 
 }
@@ -749,9 +828,35 @@ window.onload = function() {
         statusDiv.style.color = "#991b1b";
     }
 
+    // 初始化點餐截止狀態檢查
+    updateCutoffStatus();
+
     renderMenu(menuItems);
     renderCart();
 };
+
+// 檢查並更新訂餐截止時間狀態
+function isOrderingCutoff() {
+    const now = new Date();
+    const curHour = now.getHours();
+    const curMin = now.getMinutes();
+
+    if (curHour > CUTOFF_HOUR || (curHour === CUTOFF_HOUR && curMin >= CUTOFF_MINUTE)) {
+        return true;
+    }
+    return false;
+}
+
+function updateCutoffStatus() {
+    const btn = document.getElementById("cutoff-status-btn");
+    if (isOrderingCutoff()) {
+        btn.innerText = "已截止點餐";
+        btn.className = "cutoff-btn closed";
+    } else {
+        btn.innerText = "開放點餐中";
+        btn.className = "cutoff-btn open";
+    }
+}
 
 function renderMenu(items) {
     const categories = [...new Set(items.map(i => i.category))];
@@ -853,6 +958,16 @@ function selectOpt(group, val, el) {
 
 // 點擊新增按鈕：判斷類別決定直接加入或彈出客製化選單
 function clickAddItem(name) {
+    // 時間檢查：若已過截止時間則提醒
+    if (isOrderingCutoff()) {
+        return showCustomModal({
+            title: "點餐提示",
+            bodyHtml: `<p style="text-align:center; color:#e74c3c; font-weight:bold;">⚠️ 今日點餐已於 ${CUTOFF_HOUR}:00 截止，無法再新增餐點。</p>`,
+            confirmText: "我知道了",
+            showCancel: false
+        });
+    }
+
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
@@ -955,6 +1070,7 @@ function clickAddItem(name) {
         }
     });
 }
+
 // 主頁面上點擊減號：移除最後加入該品項的客製化項目
 function removeOneBaseItem(baseName) {
     const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
@@ -994,6 +1110,38 @@ function renderCart() {
             badgeEl.style.display = "none";
         }
     }
+}
+
+// 開啟藍色按鈕 (查看個人/感應卡歷史訂單)
+function openHistoryModal() {
+    const localKey = `orders_${currentCardId}`;
+    const orders = JSON.parse(localStorage.getItem(localKey) || "[]");
+
+    let historyHtml = `<div style="margin-bottom:12px; font-size:14px; color:#64748b;">💳 感應卡號：<b>${currentCardId}</b></div>`;
+
+    if (orders.length === 0) {
+        historyHtml += `<p style="text-align:center; color:#94a3b8; margin:20px 0;">尚無已送出的訂單紀錄喔！</p>`;
+    } else {
+        historyHtml += `<div style="max-height: 280px; overflow-y: auto;">`;
+        orders.reverse().forEach((ord, index) => {
+            const timeStr = ord.timestamp ? new Date(ord.timestamp).toLocaleString() : '最近一次點餐';
+            historyHtml += `
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:10px;">
+                    <div style="font-size:12px; color:#64748b; margin-bottom:4px;">🕒 ${timeStr}</div>
+                    <div style="font-size:14px; font-weight:bold; color:#1e293b;">${ord.meal}</div>
+                    <div style="font-size:14px; font-weight:700; color:var(--accent); text-align:right; margin-top:4px;">小計: $${ord.total}</div>
+                </div>
+            `;
+        });
+        historyHtml += `</div>`;
+    }
+
+    showCustomModal({
+        title: "👥 本卡號訂單紀錄",
+        bodyHtml: historyHtml,
+        confirmText: "關閉",
+        showCancel: false
+    });
 }
 
 // 開啟購物車 Modal 視窗
@@ -1126,6 +1274,15 @@ function closeModal() {
 }
 
 async function submitOrderToServer() {
+    if (isOrderingCutoff()) {
+        return showCustomModal({
+            title: "點餐提示",
+            bodyHtml: `<p style="text-align:center; color:#e74c3c; font-weight:bold;">⚠️ 今日點餐已於 ${CUTOFF_HOUR}:00 截止，無法送出訂單！</p>`,
+            confirmText: "我知道了",
+            showCancel: false
+        });
+    }
+
     if (!currentCardId) {
         return showCustomModal({
             title: "提示",
