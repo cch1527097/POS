@@ -510,6 +510,10 @@ app.post('/api/cutoff-time', async (req, res) => {
     const newTime = (cutoffTime || lockTime || time || "").trim().slice(0, 10);
     const newDate = (lockDate || "").trim().slice(0, 20);
 
+    if (!newTime || !newDate) {
+        return res.status(400).json({ success: false, message: '請選擇有效的截止日期與時間！' });
+    }
+
     try {
         await pool.query(`
             INSERT INTO settings (key, value) 
@@ -525,7 +529,7 @@ app.post('/api/cutoff-time', async (req, res) => {
 
         return res.json({ 
             success: true, 
-            message: `已成功將點餐截止時間設定為 ${newDate ? newDate + ' ' : ''}${newTime}`,
+            message: `已成功將點餐截止時間設定為 ${newDate} ${newTime}`,
             cutoffTime: newTime,
             lockTime: newTime,
             lockDate: newDate
@@ -635,6 +639,14 @@ app.post('/api/lock-time', async (req, res) => {
     const newLockTime = targetTime ? String(targetTime).trim().slice(0, 10) : "";
     const newLockDate = lockDate ? String(lockDate).trim().slice(0, 20) : "";
 
+    // 💡 優化：嚴格檢查必填參數
+    if (!newLockTime || !newLockDate) {
+        return res.status(400).json({ 
+            success: false, 
+            message: '請提供有效的截止日期與時間！' 
+        });
+    }
+
     try {
         await pool.query(`
             INSERT INTO settings (key, value) 
@@ -648,16 +660,7 @@ app.post('/api/lock-time', async (req, res) => {
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [newLockDate]);
 
-        if (!newLockTime && !newLockDate) {
-            return res.json({ 
-                success: true, 
-                message: '已成功解除點餐限制！目前系統無時間限制，隨時可進行下單。',
-                lockTime: "",
-                lockDate: ""
-            });
-        }
-
-        const displayStr = (newLockDate && newLockTime) ? `${newLockDate} ${newLockTime}` : (newLockTime || newLockDate);
+        const displayStr = `${newLockDate} ${newLockTime}`;
 
         return res.json({ 
             success: true, 
