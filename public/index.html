@@ -899,6 +899,114 @@
             color: #555;
         }
 
+        /* ==================== 🎰 拉霸機 (Slot Machine) 專用樣式 ==================== */
+        .slot-machine-body {
+            background: linear-gradient(145deg, #1e3a1e, #2b4c23);
+            border: 4px solid #d4af37;
+            border-radius: 16px;
+            padding: 16px 12px;
+            width: 100%;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.25);
+            position: relative;
+        }
+
+        .slot-machine-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #111;
+            padding: 6px 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #d4af37;
+        }
+
+        .slot-title {
+            color: #ffd700;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        }
+
+        .slot-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .slot-light.red { background-color: #ff4d4f; color: #ff4d4f; }
+        .slot-light.gold { background-color: #ffd700; color: #ffd700; }
+
+        .slot-reels-container {
+            display: flex;
+            gap: 8px;
+            background: #000;
+            padding: 8px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            height: 120px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+        }
+
+        .slot-window-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 5;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.7) 0%,
+                rgba(0,0,0,0) 25%,
+                rgba(0,0,0,0) 75%,
+                rgba(0,0,0,0.7) 100%
+            );
+            border-radius: 8px;
+        }
+
+        .slot-reel {
+            flex: 1;
+            background: #ffffff;
+            border-radius: 6px;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #ddd;
+        }
+
+        .slot-strip {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transition: transform 0.1s linear;
+        }
+
+        .slot-item {
+            height: 104px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 4px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #2b4c23;
+            text-align: center;
+            word-break: break-word;
+            line-height: 1.25;
+            box-sizing: border-box;
+            border-bottom: 1px dashed #eee;
+            background: #fff;
+        }
+
         /* ==================== 5. 自訂對話框樣式 ==================== */
         .custom-alert-box {
             max-width: 420px !important;
@@ -1211,11 +1319,11 @@
                 <a class="nidin-nav-item" href="javascript:void(0);" onclick="openWheelModal()">
                     <div class="nidin-nav-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="9"/>
-                            <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="M6 8v8M12 8v8M18 8v8"></path>
                         </svg>
                     </div>
-                    <span>吃啥轉盤</span>
+                    <span>吃啥拉霸機</span>
                 </a>
             </nav>
         </header>
@@ -1947,7 +2055,7 @@
                 </div>
                 <div class="shop-info">
                     <h3 class="shop-name">麻古茶坊</h3>
-                    <p class="shop-desc">品牌堅持現點、現切、現榨的鮮果茶飲理念，結合契作小農的天然果物與優質原葉茶，打造出兼具視覺與口感的創新飲品。</p>
+                    <p class="shop-desc">品牌堅持現點、現切、現榨的鮮果茶飲理念，結合契作小農的天然果物與優質原頁茶，打造出兼具視覺與口感的創新飲品。</p>
                 </div>
             </div>
 
@@ -2213,25 +2321,45 @@
         </div>
     </div>
 
-    <!-- 店家轉盤彈窗 (Modal) -->
+    <!-- 🎰 店家拉霸機彈窗 (Modal) -->
     <div id="wheelModal" class="branch-modal-overlay hidden" onclick="closeWheelModal(event)">
-        <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 440px; text-align: center;">
+        <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 460px; text-align: center;">
             <div class="branch-modal-header">
-                <h3>🎰 今天吃什麼~命運轉盤</h3>
+                <h3>🎰 今天吃什麼~吃啥拉霸機</h3>
                 <span class="close-btn" onclick="closeWheelModal()">&times;</span>
             </div>
-            <div style="padding: 20px; display: flex; flex-direction: column; align-items: center; position: relative;">
-                <div style="position: absolute; top: 12px; z-index: 10; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid #ff4d4f; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></div>
+            <div style="padding: 20px 16px; display: flex; flex-direction: column; align-items: center; position: relative;">
                 
-                <canvas id="wheelCanvas" width="300" height="300" style="max-width: 100%; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.15); margin-top: 10px;"></canvas>
-                
-                <div id="wheelResult" style="margin-top: 16px; font-size: 18px; font-weight: bold; color: #2b4c23; min-height: 28px;">
-                    點擊下方按鈕開始抽籤！
+                <!-- 拉霸機機身外框 -->
+                <div class="slot-machine-body">
+                    <div class="slot-machine-header">
+                        <span class="slot-light red"></span>
+                        <span class="slot-title">LUCKY EAT</span>
+                        <span class="slot-light gold"></span>
+                    </div>
+                    
+                    <!-- 3個獨立滾輪區域 -->
+                    <div class="slot-reels-container">
+                        <div class="slot-window-overlay"></div>
+                        <div class="slot-reel" id="reel-1">
+                            <div class="slot-strip" id="strip-1"></div>
+                        </div>
+                        <div class="slot-reel" id="reel-2">
+                            <div class="slot-strip" id="strip-2"></div>
+                        </div>
+                        <div class="slot-reel" id="reel-3">
+                            <div class="slot-strip" id="strip-3"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="margin-top: 16px; display: flex; gap: 12px;">
-                    <button id="spinWheelBtn" class="login-btn" style="width: 130px; padding: 10px 0; font-size: 16px;" onclick="spinWheel()">開始旋轉</button>
-                    <button id="wheelGoShopBtn" class="login-btn hidden" style="width: 130px; padding: 10px 0; font-size: 16px; background-color: #0091ff;" onclick="goSelectedShop()">進入點餐 ➔</button>
+                <div id="wheelResult" style="margin-top: 18px; font-size: 18px; font-weight: bold; color: #2b4c23; min-height: 28px;">
+                    點擊下方按鈕啟動拉霸機！
+                </div>
+
+                <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center; width: 100%;">
+                    <button id="spinWheelBtn" class="login-btn" style="width: 140px; padding: 10px 0; font-size: 16px; background-color: #e65100;" onclick="spinWheel()">🎰 啟動拉霸</button>
+                    <button id="wheelGoShopBtn" class="login-btn hidden" style="width: 140px; padding: 10px 0; font-size: 16px; background-color: #0091ff;" onclick="goSelectedShop()">進入點餐 ➔</button>
                 </div>
             </div>
         </div>
@@ -2546,13 +2674,11 @@
             }
         }
 
-        /* ==================== 🎲 店家轉盤功能邏輯 ==================== */
+        /* ==================== 🎰 店家拉霸機功能邏輯 ==================== */
         let wheelShops = [];
-        let currentWheelAngle = 0;
         let isWheelSpinning = false;
         let selectedWheelShop = '';
-
-        const wheelColors = ['#ffd1dc', '#d1e7dd', '#fff3cd', '#cff4fc', '#e2e3e5', '#f3d9fa', '#ffe8cc', '#d3f9d8', '#e0f2fe', '#fef08a'];
+        const ITEM_HEIGHT = 104; // 與 CSS .slot-item 高度完全吻合
 
         function getActiveShops() {
             const activeContainerId = currentCategoryView === 'food' ? 'food-container' : 'drink-container';
@@ -2581,7 +2707,7 @@
             document.getElementById('wheelResult').textContent = '點擊下方按鈕開始抽籤！';
             document.getElementById('wheelGoShopBtn').classList.add('hidden');
             
-            drawWheel();
+            initSlotStrips();
             document.getElementById('wheelModal').classList.remove('hidden');
         }
 
@@ -2591,41 +2717,16 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        function drawWheel() {
-            const canvas = document.getElementById('wheelCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const numOptions = wheelShops.length;
-            const arcSize = (2 * Math.PI) / numOptions;
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2;
-            const radius = cx - 8;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            for (let i = 0; i < numOptions; i++) {
-                const angle = currentWheelAngle + i * arcSize;
-                ctx.beginPath();
-                ctx.fillStyle = wheelColors[i % wheelColors.length];
-                ctx.moveTo(cx, cy);
-                ctx.arc(cx, cy, radius, angle, angle + arcSize);
-                ctx.lineTo(cx, cy);
-                ctx.fill();
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                ctx.save();
-                ctx.translate(cx, cy);
-                ctx.rotate(angle + arcSize / 2);
-                ctx.textAlign = 'right';
-                ctx.fillStyle = '#2b4c23';
-                ctx.font = 'bold 12px "Microsoft JhengHei", sans-serif';
+        // 初始化三個滾輪視窗的預設狀態
+        function initSlotStrips() {
+            for (let r = 1; r <= 3; r++) {
+                const strip = document.getElementById(`strip-${r}`);
+                if (!strip) continue;
                 
-                let name = wheelShops[i];
-                if (name.length > 7) name = name.substring(0, 6) + '..';
-                ctx.fillText(name, radius - 12, 4);
-                ctx.restore();
+                const randomInitial = wheelShops[Math.floor(Math.random() * wheelShops.length)];
+                strip.style.transition = 'none';
+                strip.style.transform = 'translateY(0px)';
+                strip.innerHTML = `<div class="slot-item">${randomInitial}</div>`;
             }
         }
 
@@ -2635,43 +2736,61 @@
             isWheelSpinning = true;
             document.getElementById('spinWheelBtn').disabled = true;
             document.getElementById('wheelGoShopBtn').classList.add('hidden');
-            document.getElementById('wheelResult').textContent = '命運轉盤旋轉中...';
+            document.getElementById('wheelResult').textContent = '🎰 命運拉霸轉動中...';
 
-            const spinAngle = Math.floor(Math.random() * 360) + 1440;
-            const startAngle = currentWheelAngle;
-            const duration = 3200;
-            const startTime = performance.now();
-
-            function animate(currentTime) {
-                const elapsed = currentTime - startTime;
-                if (elapsed < duration) {
-                    const progress = elapsed / duration;
-                    const easeOut = 1 - Math.pow(1 - progress, 3);
-                    currentWheelAngle = startAngle + (spinAngle * Math.PI / 180) * easeOut;
-                    drawWheel();
-                    requestAnimationFrame(animate);
-                } else {
-                    currentWheelAngle = startAngle + (spinAngle * Math.PI / 180);
-                    drawWheel();
-                    isWheelSpinning = false;
-                    document.getElementById('spinWheelBtn').disabled = false;
-                    calculateWheelWinner();
-                }
-            }
-            requestAnimationFrame(animate);
-        }
-
-        function calculateWheelWinner() {
-            const numOptions = wheelShops.length;
-            const arcSize = (2 * Math.PI) / numOptions;
-            
-            let normalizedAngle = (currentWheelAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-            let pointerAngle = (1.5 * Math.PI - normalizedAngle + 2 * Math.PI) % (2 * Math.PI);
-            let winningIndex = Math.floor(pointerAngle / arcSize) % numOptions;
-
+            // 隨機選定本次中獎店家
+            const winningIndex = Math.floor(Math.random() * wheelShops.length);
             selectedWheelShop = wheelShops[winningIndex];
-            document.getElementById('wheelResult').innerHTML = `今天就吃：<span style="color: #0091ff;">${selectedWheelShop}</span>！`;
-            document.getElementById('wheelGoShopBtn').classList.remove('hidden');
+
+            // 3個滾輪各自停下的時間 (毫秒)
+            const reelDelays = [1500, 2200, 2900];
+
+            for (let r = 1; r <= 3; r++) {
+                const strip = document.getElementById(`strip-${r}`);
+                if (!strip) continue;
+
+                // 構建滾動鏈條 (每個滾輪滾動 20~30 個節點)
+                const stripLength = 20 + r * 6;
+                let stripHtml = '';
+                
+                // 保持第一個節點為目前的舊名稱（避免瞬間切換閃爍）
+                const currentItemText = strip.querySelector('.slot-item')?.textContent || wheelShops[0];
+                stripHtml += `<div class="slot-item">${currentItemText}</div>`;
+
+                // 中間充填隨機店家名單
+                for (let i = 1; i < stripLength - 1; i++) {
+                    const randShop = wheelShops[Math.floor(Math.random() * wheelShops.length)];
+                    stripHtml += `<div class="slot-item">${randShop}</div>`;
+                }
+
+                // 最後一個節點精準填入中獎店家
+                stripHtml += `<div class="slot-item">${selectedWheelShop}</div>`;
+
+                strip.innerHTML = stripHtml;
+
+                // 重置位置
+                strip.style.transition = 'none';
+                strip.style.transform = 'translateY(0px)';
+
+                // 強制瀏覽器 Reflow 觸發動畫
+                void strip.offsetHeight;
+
+                // 啟動高速滾動與減速煞車動畫
+                const targetY = -(stripLength - 1) * ITEM_HEIGHT;
+                const duration = reelDelays[r - 1];
+
+                strip.style.transition = `transform ${duration}ms cubic-bezier(0.15, 0.85, 0.35, 1)`;
+                strip.style.transform = `translateY(${targetY}px)`;
+            }
+
+            // 最後一個滾輪停止後顯示結果
+            setTimeout(() => {
+                isWheelSpinning = false;
+                document.getElementById('spinWheelBtn').disabled = false;
+                
+                document.getElementById('wheelResult').innerHTML = `🎯 命運大成功！今天就吃：<span style="color: #0091ff; font-size: 20px;">${selectedWheelShop}</span>！`;
+                document.getElementById('wheelGoShopBtn').classList.remove('hidden');
+            }, reelDelays[2] + 100);
         }
 
         function goSelectedShop() {
