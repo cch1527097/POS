@@ -567,7 +567,6 @@
         body.role-viewer #lockDateInput,
         body.role-viewer #lockTimeInput,
         body.role-viewer button[onclick*="saveLockTime"],
-        body.role-viewer button[onclick*="unlockOrderTime"],
         body.role-viewer button[onclick*="openStore"],
         body.role-viewer button[onclick*="closeStore"],
         body.role-viewer button[onclick*="addNewEmployee"],
@@ -684,7 +683,6 @@
                     <input type="time" id="lockTimeInput" value="10:30" style="width: auto;">
                     
                     <button class="btn" onclick="saveLockTime()">💾 儲存時間</button>
-                    <button class="btn btn-danger-light" onclick="unlockOrderTime()">🔓 解除鎖定</button>
                     <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
                 </div>
             </div>
@@ -1264,37 +1262,6 @@ ${openStores}
             } catch (error) {
                 showCustomModal({ message: '網路連線失敗，無法更新鎖定時間！' });
             }
-        }
-
-        async function unlockOrderTime() {
-            if (!checkPermission('change_status')) return;
-
-            showCustomModal({
-                title: '確認解除鎖定',
-                message: '確定要解除點餐時間限制嗎？解除後前台將全天開放下單。',
-                isConfirm: true,
-                onConfirm: async () => {
-                    try {
-                        const response = await fetch('/api/lock-time', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ lockDate: "", lockTime: "" })
-                        });
-                        const result = await response.json();
-
-                        if (response.ok && result.success) {
-                            document.getElementById('lockDateInput').value = '';
-                            document.getElementById('lockTimeInput').value = '';
-                            document.getElementById('lockTimeDisplay').innerText = `[目前狀態：無限制]`;
-                            showCustomModal({ message: result.message });
-                        } else {
-                            showCustomModal({ message: `解除失敗：${result.message || '未知錯誤'}` });
-                        }
-                    } catch (error) {
-                        showCustomModal({ message: '網路連線失敗，無法解除鎖定！' });
-                    }
-                }
-            });
         }
 
         function isDrinkOrder(order) {
