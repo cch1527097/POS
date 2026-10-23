@@ -564,6 +564,7 @@
         body.role-viewer .btn-delete,
         body.role-viewer .btn-edit,
         body.role-viewer .btn-status,
+        body.role-viewer #lockDateInput,
         body.role-viewer #lockTimeInput,
         body.role-viewer button[onclick*="saveLockTime"],
         body.role-viewer button[onclick*="unlockOrderTime"],
@@ -673,10 +674,15 @@
             <div class="card card-accent">
                 <h3>⏰ 每日點餐截止 / 鎖定時間設定</h3>
                 <p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
-                    設定每日截止點餐時間，系統時間到達後前台將自動停止接受新訂單。
+                    設定指定日期的截止點餐時間，系統時間到達後前台將自動停止接受該日期的新訂單。
                 </p>
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <label for="lockDateInput" style="font-size:13px; font-weight:600;">截止日期：</label>
+                    <input type="date" id="lockDateInput" style="width: auto;">
+                    
+                    <label for="lockTimeInput" style="font-size:13px; font-weight:600;">截止時間：</label>
                     <input type="time" id="lockTimeInput" value="10:30" style="width: auto;">
+                    
                     <button class="btn" onclick="saveLockTime()">💾 儲存時間</button>
                     <button class="btn btn-danger-light" onclick="unlockOrderTime()">🔓 解除鎖定</button>
                     <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
@@ -1066,7 +1072,10 @@
                 return;
             }
 
-            const lockTime = document.getElementById('lockTimeInput').value || '未設定';
+            const lockDate = document.getElementById('lockDateInput').value;
+            const lockTime = document.getElementById('lockTimeInput').value;
+            const lockDisplay = (lockDate && lockTime) ? `${lockDate} ${lockTime}` : (lockTime || '未設定');
+
             const frontendUrl = `${window.location.protocol}//${window.location.host}/index.html`;
 
             const announcementMsg = 
@@ -1075,7 +1084,7 @@
 今日開放點餐店家：
 ${openStores}
 
-⏰ 點餐截止時間：${lockTime}
+⏰ 點餐截止時間：${lockDisplay}
 🔗 前台點餐連結：${frontendUrl}
 
 請大家務必於截止時間前完成下單，謝謝！`;
@@ -1197,16 +1206,28 @@ ${openStores}
             }
         }
 
+        function setDefaultLockDate() {
+            const dateInput = document.getElementById('lockDateInput');
+            if (dateInput && !dateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+            }
+        }
+
         async function loadLockTime() {
+            setDefaultLockDate();
             try {
                 const response = await fetch('/api/lock-time');
                 const data = await response.json();
                 if (data.success) {
-                    if (data.lockTime) {
-                        document.getElementById('lockTimeInput').value = data.lockTime;
-                        document.getElementById('lockTimeDisplay').innerText = `[目前截止：${data.lockTime}]`;
+                    if (data.lockDate) document.getElementById('lockDateInput').value = data.lockDate;
+                    if (data.lockTime) document.getElementById('lockTimeInput').value = data.lockTime;
+
+                    if (data.lockDate && data.lockTime) {
+                        document.getElementById('lockTimeDisplay').innerText = `[目前截止：${data.lockDate} ${data.lockTime}]`;
+                    } else if (data.lockTime) {
+                        document.getElementById('lockTimeDisplay').innerText = `[目前截止：每日 ${data.lockTime}]`;
                     } else {
-                        document.getElementById('lockTimeInput').value = '';
                         document.getElementById('lockTimeDisplay').innerText = `[目前狀態：無限制]`;
                     }
                 }
@@ -1218,9 +1239,11 @@ ${openStores}
         async function saveLockTime() {
             if (!checkPermission('change_status')) return;
 
+            const lockDate = document.getElementById('lockDateInput').value;
             const lockTime = document.getElementById('lockTimeInput').value;
-            if (!lockTime) {
-                showCustomModal({ message: '請選擇有效的時間！' });
+
+            if (!lockDate || !lockTime) {
+                showCustomModal({ message: '請選擇有效的日期與時間！' });
                 return;
             }
 
@@ -1228,13 +1251,13 @@ ${openStores}
                 const response = await fetch('/api/lock-time', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lockTime })
+                    body: JSON.stringify({ lockDate, lockTime })
                 });
                 const result = await response.json();
 
                 if (response.ok && result.success) {
                     showCustomModal({ message: result.message });
-                    document.getElementById('lockTimeDisplay').innerText = `[目前截止：${lockTime}]`;
+                    document.getElementById('lockTimeDisplay').innerText = `[目前截止：${lockDate} ${lockTime}]`;
                 } else {
                     showCustomModal({ message: `設定失敗：${result.message || '未知錯誤'}` });
                 }
@@ -1255,11 +1278,12 @@ ${openStores}
                         const response = await fetch('/api/lock-time', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ lockTime: "" })
+                            body: JSON.stringify({ lockDate: "", lockTime: "" })
                         });
                         const result = await response.json();
 
                         if (response.ok && result.success) {
+                            document.getElementById('lockDateInput').value = '';
                             document.getElementById('lockTimeInput').value = '';
                             document.getElementById('lockTimeDisplay').innerText = `[目前狀態：無限制]`;
                             showCustomModal({ message: result.message });
