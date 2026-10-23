@@ -2,13 +2,14 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>美食訂餐系統</title>
     <style>
         /* ==================== 全局與基礎樣式 ==================== */
         * { 
             box-sizing: border-box; 
             font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -98,7 +99,7 @@
         }
 
         .nidin-logo {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
             color: #0091ff;
             letter-spacing: -0.5px;
@@ -157,7 +158,7 @@
             border: none;
             background: transparent;
             outline: none;
-            font-size: 14px;
+            font-size: 16px; /* 防止 iOS 縮放 */
             margin-left: 8px;
             width: 100%;
             color: #333;
@@ -175,16 +176,10 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             color: #333;
             white-space: nowrap;
-        }
-
-        .nidin-user-info span {
-            font-family: inherit;
-            font-weight: inherit;
-            font-size: inherit;
         }
 
         #user-name {
@@ -197,7 +192,7 @@
             border: 1px solid #bbdefb;
             padding: 2px 10px;
             border-radius: 12px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             display: inline-block;
         }
@@ -205,18 +200,20 @@
         .nidin-nav-bar {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 10px 20px 14px 20px;
+            padding: 8px 20px 12px 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 28px;
+            gap: 24px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .nidin-nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             text-decoration: none;
             color: #222;
             font-size: 13px;
@@ -225,22 +222,21 @@
             cursor: pointer;
             flex-shrink: 0;
             user-select: none;
-            -webkit-user-select: none;
         }
         .nidin-nav-item:hover {
             color: #0091ff;
             transform: translateY(-1px);
         }
         .nidin-nav-icon {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .nidin-nav-icon svg {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             stroke: #333;
             fill: none;
             stroke-width: 1.8;
@@ -395,7 +391,7 @@
         .category-header {
             max-width: 1200px;
             width: 100%;
-            margin: 30px auto 0 auto;
+            margin: 24px auto 0 auto;
             padding: 0 20px 8px 20px;
             font-size: 22px;
             font-weight: bold;
@@ -411,8 +407,8 @@
             width: 100%;
             padding: 20px 20px 30px 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
         }
 
         .shop-card {
@@ -435,7 +431,7 @@
         .shop-img-wrapper {
             position: relative;
             width: 100%;
-            height: 190px;
+            height: 180px;
             background-color: #f2f5f1;
             overflow: hidden;
         }
@@ -492,16 +488,16 @@
         }
 
         .shop-info {
-            padding: 18px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             flex: 1;
             background: #ffffff;
         }
 
         .shop-name {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: bold;
             color: #2b4c23; 
             margin: 0;
@@ -509,7 +505,7 @@
         }
 
         .shop-desc {
-            font-size: 14px;
+            font-size: 13px;
             color: #556b52; 
             line-height: 1.5;
             margin: 0;
@@ -525,7 +521,7 @@
             background-color: #ffffff;
             border-top: 1px solid #e0e0e0;
             padding: 20px 15px;
-            font-size: 14px;
+            font-size: 13px;
             color: #555555;
             text-align: center;
             margin-top: 40px;
@@ -548,19 +544,20 @@
 
         .footer-copyright {
             color: #666666;
-            font-size: 13.5px;
+            font-size: 12.5px;
         }
 
         /* ==================== 3. 表格通用樣式 ==================== */
         .history-table-wrapper {
             overflow-x: auto;
+            border-radius: 8px;
         }
 
         .history-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 16px;
+            font-size: 15px;
             min-width: 550px;
         }
 
@@ -568,14 +565,16 @@
             background-color: #f4faf3;
             color: #2b4c23;
             font-weight: bold;
-            padding: 14px 16px;
+            padding: 12px 14px;
             border-bottom: 2px solid #d6ebd3;
+            white-space: nowrap;
         }
 
         .history-table td {
-            padding: 14px 16px;
+            padding: 12px 14px;
             border-bottom: 1px solid #f0f7f0;
             color: #445941;
+            vertical-align: middle;
         }
 
         .history-table tr:hover { background-color: #fafdfa; }
@@ -587,19 +586,20 @@
             font-style: italic;
         }
 
+        /* 懸浮按鈕群組 */
         .logout-btn {
             position: fixed;
             bottom: 25px;
-            right: 25px;
+            right: 20px;
             background-color: #a01010; 
             color: white;
             border: none;
             border-radius: 50%;
-            width: 48px;
-            height: 48px;
+            width: 46px;
+            height: 46px;
             padding: 0;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(160, 16, 16, 0.3);
+            box-shadow: 0 4px 12px rgba(160, 16, 16, 0.3);
             transition: all 0.2s ease;
             z-index: 1000;
             display: flex;
@@ -609,23 +609,22 @@
 
         .logout-btn:hover {
             background-color: #bd1616;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(160, 16, 16, 0.4);
+            transform: scale(1.08);
         }
 
         .cart-float-btn {
             position: fixed;
-            bottom: 85px;
-            right: 25px;
+            bottom: 80px;
+            right: 20px;
             background-color: #2e7d32;
             color: white;
             border: none;
             border-radius: 50%;
-            width: 48px;
-            height: 48px;
+            width: 46px;
+            height: 46px;
             padding: 0;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
             transition: all 0.2s ease;
             z-index: 1000;
             display: flex;
@@ -635,24 +634,22 @@
 
         .cart-float-btn:hover {
             background-color: #1b5e20;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
+            transform: scale(1.08);
         }
 
-        /* 👥 新增：其他人點了什麼 懸浮按鈕樣式 */
         .others-float-btn {
             position: fixed;
-            bottom: 145px;
-            right: 25px;
+            bottom: 135px;
+            right: 20px;
             background-color: #0091ff;
             color: white;
             border: none;
             border-radius: 50%;
-            width: 48px;
-            height: 48px;
+            width: 46px;
+            height: 46px;
             padding: 0;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 145, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 145, 255, 0.3);
             transition: all 0.2s ease;
             z-index: 1000;
             display: flex;
@@ -662,33 +659,31 @@
 
         .others-float-btn:hover {
             background-color: #0073e6;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0, 145, 255, 0.4);
+            transform: scale(1.08);
         }
 
-        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
         .cutoff-float-badge {
             position: fixed;
-            bottom: 205px;
-            right: 25px;
+            bottom: 190px;
+            right: 20px;
             background: #ffffff;
             border: 2px solid #4e803c;
-            border-radius: 14px;
-            padding: 10px 14px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            border-radius: 12px;
+            padding: 8px 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
             z-index: 1000;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 140px;
+            min-width: 130px;
             text-align: center;
             transition: all 0.2s ease;
             user-select: none;
         }
 
         .cutoff-title {
-            font-size: 12px;
+            font-size: 11px;
             color: #2b4c23;
             font-weight: bold;
             margin-bottom: 2px;
@@ -698,20 +693,20 @@
         }
 
         .cutoff-time-text {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 800;
             color: #2b4c23;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             line-height: 1.2;
         }
 
         .cutoff-timer {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: #d9363e;
             background: #ffeef0;
-            padding: 3px 10px;
-            border-radius: 10px;
+            padding: 2px 8px;
+            border-radius: 8px;
             letter-spacing: 0.5px;
             width: 100%;
             border: 1px solid #fca5a5;
@@ -724,14 +719,15 @@
         }
 
         .order-action-btn {
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             border: none;
             transition: all 0.2s ease;
             margin: 2px;
+            min-height: 32px;
         }
 
         .btn-edit-order {
@@ -761,7 +757,7 @@
             border: 1px solid #fca5a5;
             padding: 4px 10px;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             white-space: nowrap;
         }
@@ -779,11 +775,12 @@
             align-items: center;
             z-index: 2000;
             backdrop-filter: blur(3px);
+            padding: 12px;
         }
 
         .branch-modal-content {
             background-color: #ffffff;
-            width: 90%;
+            width: 100%;
             max-width: 420px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -793,15 +790,15 @@
 
         .cart-modal-content,
         .history-modal-content {
-            width: 92vw !important;
-            max-width: 1300px !important;
-            max-height: 85vh !important;
+            width: 95vw !important;
+            max-width: 1100px !important;
+            max-height: 88vh !important;
             display: flex !important;
             flex-direction: column !important;
         }
 
         .history-modal-body {
-            padding: 24px !important;
+            padding: 18px !important;
             overflow-y: auto !important;
             flex: 1 !important;
         }
@@ -846,7 +843,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 16px;
+            font-size: 15px;
             color: #333;
             cursor: pointer;
             transition: background 0.2s;
@@ -892,7 +889,7 @@
         }
 
         .payment-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             color: #2b4c23;
         }
@@ -902,17 +899,17 @@
             color: #555;
         }
 
-        /* ==================== 5. 自訂精美提示/確認對話框樣式 ==================== */
+        /* ==================== 5. 自訂對話框樣式 ==================== */
         .custom-alert-box {
-            max-width: 440px !important;
+            max-width: 420px !important;
         }
         .custom-alert-header {
             background-color: #ffffff !important;
-            padding: 18px 24px !important;
+            padding: 16px 20px !important;
             border-bottom: 1px solid #edf2f7 !important;
         }
         .custom-alert-header h3 {
-            font-size: 18px !important;
+            font-size: 17px !important;
             color: #2d3748 !important;
             font-weight: bold !important;
         }
@@ -920,55 +917,46 @@
             color: #a0aec0 !important;
             font-size: 20px !important;
         }
-        .custom-alert-header .close-btn:hover {
-            color: #718096 !important;
-        }
         .custom-alert-body {
-            padding: 30px 24px !important;
-            font-size: 16px !important;
+            padding: 24px 20px !important;
+            font-size: 15px !important;
             color: #4a5568 !important;
             line-height: 1.6 !important;
             background-color: #ffffff !important;
         }
         .custom-alert-footer {
-            padding: 12px 24px 20px 24px !important;
+            padding: 12px 20px 18px 20px !important;
             display: flex !important;
             justify-content: flex-end !important;
-            gap: 12px !important;
+            gap: 10px !important;
             background-color: #ffffff !important;
         }
         .custom-btn-action {
-            padding: 10px 26px !important;
+            padding: 8px 22px !important;
             border-radius: 8px !important;
-            font-size: 15px !important;
+            font-size: 14px !important;
             font-weight: bold !important;
             cursor: pointer !important;
             border: none !important;
-            transition: background 0.2s, transform 0.1s !important;
+            min-height: 38px;
         }
         .custom-btn-confirm-red {
             background-color: #8b1a1a !important;
             color: white !important;
         }
-        .custom-btn-confirm-red:hover {
-            background-color: #721616 !important;
-        }
         .custom-btn-cancel-gray {
             background-color: #edf2f7 !important;
             color: #4a5568 !important;
         }
-        .custom-btn-cancel-gray:hover {
-            background-color: #e2e8f0 !important;
-        }
 
-        /* 📱 手機版 RWD 適應 */
+        /* 📱 手機版 RWD 適應優化 */
         @media (max-width: 768px) {
             .nidin-top-bar {
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                padding: 12px 15px;
-                gap: 12px;
+                padding: 10px 14px;
+                gap: 10px;
             }
 
             .nidin-top-left {
@@ -976,7 +964,7 @@
                 align-items: center;
                 justify-content: center;
                 width: 100%;
-                gap: 10px;
+                gap: 8px;
             }
 
             .nidin-top-right {
@@ -995,12 +983,10 @@
             }
 
             .nidin-search-box {
-                order: 3;
                 width: 100%;
                 max-width: 100%;
                 margin-top: 2px;
                 box-sizing: border-box;
-                justify-content: center;
             }
 
             .nidin-search-box input {
@@ -1008,10 +994,15 @@
             }
 
             .nidin-nav-bar {
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 15px;
-                padding: 10px 15px 15px 15px;
+                justify-content: flex-start;
+                gap: 18px;
+                padding: 8px 14px 12px 14px;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+                padding: 14px 14px 24px 14px;
+                gap: 14px;
             }
 
             .footer-info-row {
@@ -1019,36 +1010,94 @@
                 gap: 6px;
             }
 
+            /* 手機版：懸浮按鈕調整排列 */
             .cutoff-float-badge {
-                right: 15px;
-                bottom: 200px;
-                padding: 8px 10px;
-                min-width: 120px;
+                right: 14px;
+                bottom: 180px;
+                padding: 6px 10px;
+                min-width: 115px;
             }
 
             .others-float-btn {
-                right: 15px;
-                bottom: 140px;
+                right: 14px;
+                bottom: 126px;
+                width: 42px;
+                height: 42px;
             }
 
             .cart-float-btn {
-                right: 15px;
-                bottom: 85px;
+                right: 14px;
+                bottom: 76px;
+                width: 42px;
+                height: 42px;
             }
 
             .logout-btn {
-                right: 15px;
-                bottom: 25px;
+                right: 14px;
+                bottom: 24px;
+                width: 42px;
+                height: 42px;
+            }
+
+            /* 手機版：彈窗表格轉卡片式渲染 */
+            .history-table-wrapper {
+                overflow-x: visible;
+            }
+
+            .history-table, 
+            .history-table tbody, 
+            .history-table tr, 
+            .history-table td {
+                display: block;
+                width: 100% !important;
+                min-width: 100% !important;
+            }
+
+            .history-table thead { display: none; }
+
+            .history-table tr {
+                background: #ffffff;
+                border: 1px solid #d6ebd3;
+                border-radius: 12px;
+                padding: 12px 14px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            }
+
+            .history-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px dashed #eef7ed;
+                font-size: 14px;
+                white-space: normal !important;
+                word-break: break-word;
+            }
+
+            .history-table td:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-top: 4px;
+            }
+
+            .history-table td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                color: #2b4c23;
+                font-size: 13px;
+                margin-right: 12px;
+                flex-shrink: 0;
             }
         }
 
         @media (max-width: 480px) {
-            .login-card { width: 90%; height: auto; padding: 40px 20px; border-radius: 16px; }
-            .title { font-size: 26px; margin-bottom: 2px; }
-            .subtitle { font-size: 12px; margin-bottom: 30px; letter-spacing: 2px; }
+            .login-card { width: 92%; height: auto; padding: 36px 18px; border-radius: 16px; }
+            .title { font-size: 24px; margin-bottom: 2px; }
+            .subtitle { font-size: 12px; margin-bottom: 24px; letter-spacing: 2px; }
             .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
             .login-btn { width: 100%; max-width: 280px; }
-            .history-modal-content, .cart-modal-content { width: 95vw !important; }
+            .history-modal-body { padding: 12px !important; }
         }
     </style>
 </head>
@@ -2333,7 +2382,7 @@
             });
         });
 
-        /* ==================== ⏱️ 截止時間與倒數計時邏輯 (支援日期+時間) ==================== */
+        /* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 
         window.addEventListener('storage', (e) => {
             console.log('🔄 偵測到後台 LocalStorage 變更：', e.key, '=>', e.newValue);
@@ -2433,7 +2482,6 @@
             const cutoffTitle = document.querySelector('.cutoff-title');
             if (!timeDisplay || !countdownDisplay) return;
 
-            // 💡 若未設定時間，顯示預設提示訊息
             if (!targetCutoffStr) {
                 timeDisplay.textContent = '--:--';
                 countdownDisplay.textContent = '尚未設定點餐截止';
@@ -2441,7 +2489,6 @@
                 return;
             }
 
-            // 動態更新時間文字 display
             if (targetCutoffDateStr) {
                 timeDisplay.textContent = `${targetCutoffDateStr} ${targetCutoffStr}`;
                 if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 點餐截止時間';
@@ -2460,7 +2507,6 @@
             let month = now.getMonth();
             let day = now.getDate();
 
-            // 💡 關鍵修正：若有設定特定日期，採用設定的年月日 (月為 0-indexed)
             if (targetCutoffDateStr && targetCutoffDateStr.includes('-')) {
                 const dateParts = targetCutoffDateStr.split('-').map(Number);
                 if (dateParts.length === 3 && !dateParts.some(isNaN)) {
@@ -2689,7 +2735,7 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        /* 👥 新增：開啟/關閉「其他人點了什麼」彈窗與載入資料邏輯 */
+        /* 👥 開啟/關閉「其他人點了什麼」彈窗與載入資料邏輯 */
         function openOthersModal() {
             fetchOthersOrders();
             const modal = document.getElementById('othersModal');
@@ -2749,11 +2795,11 @@
 
                 return `
                     <tr>
-                        <td>${nameDisplay}</td>
-                        <td><span class="dept-badge">${dept}</span></td>
-                        <td>${formatDisplayTime(order)}</td>
-                        <td style="font-weight: bold; color: #2b4c23;">${mealText}</td>
-                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount || '-'}</td>
+                        <td data-label="卡號/姓名">${nameDisplay}</td>
+                        <td data-label="部門"><span class="dept-badge">${dept}</span></td>
+                        <td data-label="時間">${formatDisplayTime(order)}</td>
+                        <td data-label="點餐店家/內容" style="font-weight: bold; color: #2b4c23;">${mealText}</td>
+                        <td data-label="金額" style="color: #2b4c23; font-weight: bold;">$${totalAmount || '-'}</td>
                     </tr>
                 `;
             }).join('');
@@ -3193,13 +3239,13 @@
 
                 return `
                     <tr>
-                        <td>${order.cardId || cardId}</td>
-                        <td><span class="dept-badge">${userDept}</span></td>
-                        <td>${formatDisplayTime(order)}</td>
-                        <td>${fullMealText || '無品項內容'}</td>
-                        <td style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
-                        <td>${order.note || '-'}</td>
-                        <td style="text-align: center; white-space: nowrap;">
+                        <td data-label="卡號/姓名">${order.cardId || cardId}</td>
+                        <td data-label="部門"><span class="dept-badge">${userDept}</span></td>
+                        <td data-label="日期時間">${formatDisplayTime(order)}</td>
+                        <td data-label="點餐店家/內容">${fullMealText || '無品項內容'}</td>
+                        <td data-label="金額" style="color: #2b4c23; font-weight: bold;">$${totalAmount}</td>
+                        <td data-label="備註說明">${order.note || '-'}</td>
+                        <td data-label="控制操作" style="text-align: center; white-space: nowrap;">
                             ${actionHtml}
                         </td>
                     </tr>
@@ -3306,23 +3352,29 @@
                     const tr = document.createElement('tr');
                     
                     const tdUser = document.createElement('td');
+                    tdUser.setAttribute('data-label', '卡號/姓名');
                     tdUser.textContent = `${order.cardId || ''} ${order.empName || order.name || ''}`;
 
                     const tdDept = document.createElement('td');
+                    tdDept.setAttribute('data-label', '部門');
                     tdDept.innerHTML = `<span class="dept-badge">${userDept}</span>`;
                     
                     const tdTime = document.createElement('td');
+                    tdTime.setAttribute('data-label', '日期時間');
                     tdTime.textContent = formatDisplayTime(order);
                     
                     const tdMeal = document.createElement('td');
+                    tdMeal.setAttribute('data-label', '點餐店家/內容');
                     tdMeal.style.fontWeight = 'bold';
                     tdMeal.textContent = order.meal || '-';
                     
                     const rawPrice = order.total ?? order.Total ?? order.price ?? order.Price ?? order.totalPrice ?? order.amount ?? null;
                     const tdPrice = document.createElement('td');
+                    tdPrice.setAttribute('data-label', '金額');
                     tdPrice.textContent = (rawPrice !== null && rawPrice !== '') ? `$${rawPrice}` : '-';
                     
                     const tdNote = document.createElement('td');
+                    tdNote.setAttribute('data-label', '備註說明');
                     tdNote.textContent = order.note || '-';
                     
                     tr.appendChild(tdUser);
