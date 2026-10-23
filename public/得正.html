@@ -258,7 +258,7 @@
             box-shadow: inset 0 0 0 1px var(--primary);
         }
 
-        /* 懸浮購物車按鈕 */
+        /* 懸浮購物車按鈕 & 截止時間懸浮元件 */
         .fab-container {
             position: fixed;
             bottom: 24px;
@@ -292,6 +292,73 @@
         .fab-cart { background-color: var(--primary); position: relative; }
         .fab-exit { background-color: #555; }
         .fab-btn svg { width: 26px; height: 26px; fill: #ffffff; }
+
+        /* 👥 新增：其他人點了什麼 懸浮按鈕樣式 */
+        .others-float-btn {
+            background-color: #0091ff;
+            color: white;
+        }
+        .others-float-btn:hover {
+            background-color: #0073e6;
+        }
+
+        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
+        .cutoff-float-badge {
+            position: fixed;
+            bottom: 220px;
+            right: 20px;
+            background: #ffffff;
+            border: 2px solid var(--primary);
+            border-radius: 14px;
+            padding: 10px 14px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+            text-align: center;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .cutoff-title {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .cutoff-time-text {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .cutoff-timer {
+            font-size: 14px;
+            font-weight: 800;
+            color: #d9363e;
+            background: #ffeef0;
+            padding: 3px 10px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+            width: 100%;
+            border: 1px solid #fca5a5;
+            box-sizing: border-box;
+        }
+
+        .cutoff-timer.expired {
+            color: #666666;
+            background: #f0f0f0;
+            border-color: #d0d0d0;
+        }
 
         .cart-badge {
             position: absolute;
@@ -416,6 +483,57 @@
             margin-top: 2px;
         }
 
+        /* 👥 「其他人點了什麼」表格專用樣式 */
+        .history-modal-content {
+            width: 92vw !important;
+            max-width: 1000px !important;
+            max-height: 85vh !important;
+        }
+
+        .history-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 15px;
+            min-width: 550px;
+        }
+
+        .history-table th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: bold;
+            padding: 12px 14px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .history-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #eef4fb;
+            color: #1e293b;
+        }
+
+        .dept-badge {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .no-record {
+            text-align: center;
+            color: #64748b;
+            padding: 30px !important;
+            font-style: italic;
+        }
+
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
@@ -460,25 +578,47 @@
             .menu-grid { grid-template-columns: 1fr; }
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
+            .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
         }
     </style>
 </head>
 <body>
 
 <div class="navbar">
-    <a href="#" class="navbar-brand">智慧點餐系統</a>
+    <a href="index.html" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
         <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋飲品（例如：春烏龍、奶蓋、焙烏龍...）" oninput="debounceFilterMenu()">
     </div>
 </div>
 
+<!-- ⏱️ 右下角截止時間與倒數計時懸浮元件 -->
+<div id="cutoffBadge" class="cutoff-float-badge">
+    <div class="cutoff-title">
+        ⏱️ 點餐截止時間
+    </div>
+    <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
+    <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
+</div>
+
+<!-- 懸浮按鈕群 -->
 <div class="fab-container">
+    <!-- 👥 新增：其他人點了什麼懸浮按鈕 -->
+    <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+    </button>
+
     <button class="fab-btn fab-cart" onclick="openCartModal()" title="開啟購物車">
         <svg viewBox="0 0 24 24">
             <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
         </svg>
         <span id="cart-badge" class="cart-badge" style="display: none;">0</span>
     </button>
+
     <button class="fab-btn fab-exit" onclick="goBack()" title="離開點餐">
         <svg viewBox="0 0 24 24">
             <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
@@ -516,6 +656,7 @@
     </div>
 </div>
 
+<!-- 客製化 / 購物車 Modal 彈窗 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -526,6 +667,38 @@
         <div class="modal-footer" id="modal-footer">
             <button class="btn-modal-cancel" id="btn-modal-cancel" onclick="closeModal()">取消</button>
             <button class="btn-modal-confirm" id="btn-modal-confirm">確定</button>
+        </div>
+    </div>
+</div>
+
+<!-- 👥 新增：今日其他人點了什麼彈窗 (Modal) -->
+<div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
+    <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+                👥 今日其他人點了什麼 (全院即時點餐動態)
+            </h3>
+            <button class="modal-close" onclick="closeOthersModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+            <div class="history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">卡號 / 姓名</th>
+                            <th style="width: 15%;">部門</th>
+                            <th style="width: 22%;">時間</th>
+                            <th style="width: 33%;">點餐店家 / 內容</th>
+                            <th style="width: 12%;">金額</th>
+                        </tr>
+                    </thead>
+                    <tbody id="others-list">
+                        <tr>
+                            <td colspan="5" class="no-record">載入今日所有人點餐資料中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -581,8 +754,14 @@ let selectedSpecs = { size: 'L', sugar: '半糖(5分)', ice: '少冰', topping: 
 
 let finalTotal = 0;
 let finalSummary = "";
+let globalEmployeesMap = {};
 
-window.onload = function() {
+// ⏱️ 倒數計時變數
+let cutoffTimerInterval = null;
+let targetCutoffStr = null;
+let targetCutoffDateStr = null;
+
+window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
 
@@ -599,8 +778,319 @@ window.onload = function() {
 
     renderMenu(menuItems);
     renderCart();
+
+    // 啟動倒數計時與全院員工清單載入
+    fetchEmployeeList();
+    startCutoffCountdown();
 };
 
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+window.addEventListener('storage', (e) => {
+    fetchCutoffSetting();
+    updateCountdownUI();
+});
+
+async function startCutoffCountdown() {
+    if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
+    await fetchCutoffSetting();
+    updateCountdownUI();
+    
+    let pollCounter = 0;
+    cutoffTimerInterval = setInterval(async () => {
+        updateCountdownUI();
+        pollCounter++;
+        if (pollCounter >= 2) {
+            pollCounter = 0;
+            await fetchCutoffSetting();
+        }
+    }, 1000);
+}
+
+async function fetchCutoffSetting() {
+    let latestTime = null;
+    let latestDate = null;
+
+    try {
+        const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (response.ok) {
+            const data = await response.json();
+            latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff || data.lockTime;
+            latestDate = data.lockDate || data.cutoffDate || data.order_lock_date || null;
+        }
+    } catch (e) {
+        try {
+            const jsonRes = await fetch(`cutoff.json?_=${new Date().getTime()}`, { cache: 'no-store' });
+            if (jsonRes.ok) {
+                const data = await jsonRes.json();
+                latestTime = data.cutoffTime || data.time || data.cutoff_time || data.lockTime;
+                latestDate = data.lockDate || data.cutoffDate || null;
+            }
+        } catch (err) {}
+    }
+
+    if (!latestTime) {
+        const targetKeys = ['cutoffTimeSetting', 'adminCutoffTime', 'cutoffTime', 'dailyCutoffTime', 'cutoff_time', 'targetCutoffStr'];
+        for (const key of targetKeys) {
+            const rawVal = localStorage.getItem(key);
+            if (!rawVal) continue;
+
+            if (rawVal.startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(rawVal);
+                    const t = parsed.cutoffTime || parsed.time || parsed.cutoff || parsed.value || parsed.lockTime;
+                    const d = parsed.lockDate || parsed.cutoffDate || parsed.date;
+                    if (t && typeof t === 'string' && t.includes(':')) {
+                        latestTime = t;
+                        if (d) latestDate = d;
+                        break;
+                    }
+                } catch (e) {}
+            }
+
+            if (rawVal.includes(':')) {
+                const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
+                if (match) {
+                    latestTime = match[0];
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!latestDate) {
+        latestDate = localStorage.getItem('lockDate') || localStorage.getItem('cutoffDate') || null;
+    }
+
+    if (latestTime) {
+        const cleanTime = latestTime.replace(/[^0-9:]/g, '');
+        targetCutoffStr = (cleanTime && cleanTime.includes(':')) ? cleanTime : null;
+    } else {
+        targetCutoffStr = null;
+    }
+
+    if (latestDate && typeof latestDate === 'string' && latestDate.includes('-')) {
+        targetCutoffDateStr = latestDate.trim();
+    } else {
+        targetCutoffDateStr = null;
+    }
+}
+
+function updateCountdownUI() {
+    const timeDisplay = document.getElementById('cutoffTimeDisplay');
+    const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
+    const cutoffTitle = document.querySelector('.cutoff-title');
+    if (!timeDisplay || !countdownDisplay) return;
+
+    if (!targetCutoffStr) {
+        timeDisplay.textContent = '--:--';
+        countdownDisplay.textContent = '尚未設定點餐截止';
+        countdownDisplay.classList.remove('expired');
+        return;
+    }
+
+    if (targetCutoffDateStr) {
+        timeDisplay.textContent = `${targetCutoffDateStr} ${targetCutoffStr}`;
+        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 點餐截止時間';
+    } else {
+        timeDisplay.textContent = targetCutoffStr;
+        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 今日點餐截止';
+    }
+
+    const now = new Date();
+    const timeParts = targetCutoffStr.split(':').map(Number);
+    const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
+    const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
+    const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
+
+    let year = now.getFullYear();
+    let month = now.getMonth();
+    let day = now.getDate();
+
+    if (targetCutoffDateStr && targetCutoffDateStr.includes('-')) {
+        const dateParts = targetCutoffDateStr.split('-').map(Number);
+        if (dateParts.length === 3 && !dateParts.some(isNaN)) {
+            year = dateParts[0];
+            month = dateParts[1] - 1;
+            day = dateParts[2];
+        }
+    }
+
+    const targetTime = new Date(year, month, day, targetHours, targetMinutes, targetSeconds);
+    const diffMs = targetTime - now;
+
+    if (diffMs <= 0) {
+        countdownDisplay.textContent = '已截止點餐';
+        countdownDisplay.classList.add('expired');
+    } else {
+        countdownDisplay.classList.remove('expired');
+        const totalSecs = Math.floor(diffMs / 1000);
+        const hrs = Math.floor(totalSecs / 3600);
+        const mins = Math.floor((totalSecs % 3600) / 60);
+        const secs = totalSecs % 60;
+
+        const hh = String(hrs).padStart(2, '0');
+        const mm = String(mins).padStart(2, '0');
+        const ss = String(secs).padStart(2, '0');
+
+        if (hrs >= 24) {
+            const days = Math.floor(hrs / 24);
+            const remainHrs = hrs % 24;
+            const rh = String(remainHrs).padStart(2, '0');
+            countdownDisplay.textContent = `${days}天 ${rh}:${mm}:${ss}`;
+        } else if (hrs > 0) {
+            countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
+        } else {
+            countdownDisplay.textContent = `${mm}:${ss}`;
+        }
+    }
+}
+
+/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
+async function fetchEmployeeList() {
+    try {
+        const response = await fetch('/api/employees');
+        if (response.ok) {
+            globalEmployeesMap = await response.json();
+        }
+    } catch (err) {
+        console.warn('⚠️ 無法載入員工部門清單:', err);
+    }
+}
+
+function openOthersModal() {
+    fetchOthersOrders();
+    const modal = document.getElementById('othersModal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeOthersModal(event) {
+    const modal = document.getElementById('othersModal');
+    if (modal) modal.classList.remove('active');
+}
+
+async function fetchOthersOrders() {
+    const othersList = document.getElementById('others-list');
+    if (!othersList) return;
+
+    othersList.innerHTML = `<tr><td colspan="5" class="no-record">載入今日所有人點餐資料中...</td></tr>`;
+
+    let orders = [];
+    try {
+        const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (res.ok) {
+            orders = await res.json();
+        }
+    } catch (e) {}
+
+    if (!orders || orders.length === 0) {
+        try {
+            const res = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
+            if (res.ok) {
+                const data = await res.json();
+                orders = Array.isArray(data) ? data : (data.orders || []);
+            }
+        } catch (e) {}
+    }
+
+    let todayOrders = orders.filter(order => isTodayOrder(order));
+    todayOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+    if (todayOrders.length === 0) {
+        othersList.innerHTML = `<tr><td colspan="5" class="no-record">今日目前尚無其他人點餐紀錄。</td></tr>`;
+        return;
+    }
+
+    othersList.innerHTML = todayOrders.map(order => {
+        const cardId = order.cardId || order.card_id || '';
+        const empName = order.empName || order.name || order.emp_name || '';
+        const nameDisplay = (cardId || empName) ? `${cardId} ${empName}`.trim() : '匿名同仁';
+        const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : (order.department || '未劃分');
+        
+        let mealText = order.meal || order.note || '無品項內容';
+        let totalAmount = Number(order.total || order.amount || 0);
+
+        if (!totalAmount && order.note) {
+            const match = String(order.note).match(/總計:\s*\$(\d+)/);
+            if (match) totalAmount = parseInt(match[1], 10);
+        }
+
+        return `
+            <tr>
+                <td>${nameDisplay}</td>
+                <td><span class="dept-badge">${dept}</span></td>
+                <td>${formatDisplayTime(order)}</td>
+                <td style="font-weight: bold; color: var(--primary);">${mealText}</td>
+                <td style="color: var(--primary); font-weight: bold;">$${totalAmount || '-'}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function getMilliTimestamp(obj) {
+    if (!obj) return 0;
+    
+    let rawTime = obj.time || obj.Time || obj.date || obj.datetime || obj.timestamp || '';
+    rawTime = String(rawTime).trim();
+    if (!rawTime) return 0;
+
+    if (/^\d+$/.test(rawTime)) {
+        const ts = Number(rawTime);
+        return ts < 9999999999 ? ts * 1000 : ts;
+    }
+
+    if (rawTime.includes('上午') || rawTime.includes('下午')) {
+        try {
+            const isPM = rawTime.includes('下午');
+            let cleanStr = rawTime.replace(/[上下]午/, ' ').replace(/\s+/g, ' ');
+            
+            let [datePart, timePart] = cleanStr.trim().split(' ');
+            if (datePart && timePart) {
+                let [hrs, mins, secs] = timePart.split(':').map(Number);
+                
+                if (isPM && hrs < 12) hrs += 12;
+                if (!isPM && hrs === 12) hrs = 0;
+                
+                const standardStr = `${datePart.replace(/\//g, '-')} ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
+                const parsed = Date.parse(standardStr);
+                if (!isNaN(parsed)) return parsed;
+            }
+        } catch (e) {}
+    }
+
+    const parsedStr = Date.parse(rawTime.replace(/ /g, 'T').replace(/\//g, '-'));
+    return !isNaN(parsedStr) ? parsedStr : 0;
+}
+
+function isTodayOrder(orderObj) {
+    const orderTs = getMilliTimestamp(orderObj);
+    if (orderTs === 0) return false;
+
+    const orderDate = new Date(orderTs);
+    const today = new Date();
+
+    return orderDate.getFullYear() === today.getFullYear() &&
+           orderDate.getMonth() === today.getMonth() &&
+           orderDate.getDate() === today.getDate();
+}
+
+function formatDisplayTime(obj) {
+    if (!obj) return '-';
+    const rawTime = obj.time || obj.Time || obj.date || obj.datetime || '';
+    if (rawTime) return rawTime; 
+
+    if (obj.timestamp) {
+        const ts = Number(obj.timestamp);
+        if (!isNaN(ts) && ts > 0) {
+            const finalTs = ts < 9999999999 ? ts * 1000 : ts;
+            const d = new Date(finalTs);
+            return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+        }
+        return obj.timestamp;
+    }
+    return '-';
+}
+
+/* ==================== 菜單與點餐邏輯 ==================== */
 function renderMenu(items) {
     const categories = [...new Set(items.map(i => i.category))];
     
