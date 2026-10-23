@@ -925,18 +925,19 @@
                 </div>
 
                 <div class="action-row">
-                    <div class="search-group">
-                        <input type="text" id="orderSearchInput" placeholder="搜尋姓名、卡號或餐點..." oninput="filterOrders('today')">
-                    </div>
-                    <div class="action-btn-group">
-                        <span id="syncStatus" style="color: var(--text-sub); font-size: 12px; width: 100%; text-align: right; display: block;"></span>
-                        <button class="btn btn-line" onclick="sendLineAnnouncement()">💬 LINE 訂餐公告</button>
-                        <button class="btn btn-secondary" onclick="showStoreSummaryModal()">📊 店家統計</button>
-                        <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('today', 'drink')">🥤 匯出飲料 CSV</button>
-                        <button class="btn btn-excel-food" onclick="exportCategoryToCSV('today', 'food')">🍱 匯出餐點 CSV</button>
-                        <button class="btn btn-secondary" onclick="loadOrders()">🔄 刷新</button>
-                    </div>
-                </div>
+    <div class="search-group">
+        <input type="text" id="orderSearchInput" placeholder="搜尋姓名、卡號或餐點..." oninput="filterOrders('today')">
+    </div>
+    <div class="action-btn-group">
+        <button class="btn btn-line" onclick="sendLineAnnouncement()">💬 LINE 訂餐公告</button>
+        <button class="btn btn-secondary" onclick="showStoreSummaryModal()">📊 店家統計</button>
+        <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('today', 'drink')">🥤 匯出飲料 CSV</button>
+        <button class="btn btn-excel-food" onclick="exportCategoryToCSV('today', 'food')">🍱 美味餐點 CSV</button>
+        <button class="btn btn-secondary" onclick="loadOrders()">🔄 刷新</button>
+        <!-- 修正後的最後同步時間標籤：並排顯示於按鈕列右側 -->
+        <span id="syncStatus" style="color: var(--text-sub); font-size: 13px; font-weight: 500; white-space: nowrap; margin-left: 6px; align-self: center;"></span>
+    </div>
+</div>
 
                 <div class="table-responsive">
                     <table>
