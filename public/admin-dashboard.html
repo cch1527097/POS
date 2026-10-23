@@ -1787,25 +1787,26 @@ ${openStores}
             }
         }
 
-        // 💡 匯出 CSV，僅保留「部門、點餐人、餐點、總金額」4 個欄位
         function generateCSV(data, fileName) {
             if (!data || data.length === 0) {
                 showCustomModal({ message: '無可匯出的訂餐資料！' });
                 return;
             }
 
-            const headers = ["部門", "點餐人", "餐點", "總金額"];
-            const rows = data.map(order => {
-                const cardId = order.cardId || '';
-                const dept = order.department || (USER_DB_PREVIEW[cardId] ? (USER_DB_PREVIEW[cardId].department || USER_DB_PREVIEW[cardId]) : '未劃分');
-
-                return [
-                    `"${(dept || '未劃分').toString().replace(/"/g, '""')}"`,
-                    `"${(order.name || '未知').toString().replace(/"/g, '""')}"`,
-                    `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
-                    `"${order.total || 0}"`
-                ];
-            });
+            const headers = ["訂單編號", "類別", "部門", "點餐人", "員工卡號", "時間", "餐點", "甜度辣度", "備註", "金額", "繳費狀態"];
+            const rows = data.map(order => [
+                `"${(order.orderId || '').toString().replace(/"/g, '""')}"`,
+                `"${isDrinkOrder(order) ? '喝涼涼' : '美味餐點'}"`,
+                `"${(order.department || '未劃分').toString().replace(/"/g, '""')}"`,
+                `"${(order.name || '未知').toString().replace(/"/g, '""')}"`,
+                `"${(order.cardId || '').toString().replace(/"/g, '""')}"`,
+                `"${(order.timestamp || '').toString().replace(/"/g, '""')}"`,
+                `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
+                `"${(order.spicy || '無').toString().replace(/"/g, '""')}"`,
+                `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
+                `"${order.total || 0}"`,
+                `"${(order.isPaid === true || order.isPaid === 'true') ? '已繳費' : '未繳費'}"`
+            ]);
 
             const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
             const link = document.createElement("a");
