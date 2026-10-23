@@ -16,11 +16,13 @@
             --primary-light: #e8f5e9;
             --accent: #2d6a4f;
             --text-main: #1d2d24;
-            --text-sub: #6c757d;
+            --text-sub: #5c6760;
             --border-color: #e2e8f0;
             --card-bg: #ffffff;
             --danger: #e63946;
             --danger-light: #ffebee;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
             --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
             --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
             --radius-sm: 8px;
@@ -112,19 +114,23 @@
             margin: 0 0 12px 0;
             color: var(--primary);
             letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .sidebar .user-info {
             background-color: var(--primary-light);
             color: var(--primary);
-            padding: 8px 14px;
+            padding: 10px 14px;
             border-radius: var(--radius-sm);
             font-size: 13px;
             font-weight: 600;
             margin-bottom: 24px;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 6px;
+            border: 1px solid rgba(27, 67, 50, 0.15);
         }
 
         .sidebar hr {
@@ -136,7 +142,7 @@
         .sidebar .menu-container {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
             flex: 1;
         }
 
@@ -263,30 +269,28 @@
         .lock-input-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
             flex-wrap: wrap;
             width: 100%;
         }
 
         .lock-input-group label {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             white-space: nowrap;
         }
 
         /* 數據指標卡片 */
         .summary-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
-            flex-wrap: wrap;
         }
 
         .summary-box {
-            flex: 1;
-            min-width: 180px;
             background: var(--card-bg);
-            padding: 20px 24px;
+            padding: 20px 22px;
             border-radius: var(--radius-md);
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border-color);
@@ -294,6 +298,12 @@
             flex-direction: column;
             position: relative;
             overflow: hidden;
+            transition: var(--transition-fast);
+        }
+
+        .summary-box:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
         .summary-box::after {
@@ -303,21 +313,23 @@
             background-color: var(--primary);
         }
 
-        .summary-box:nth-child(2)::after { background-color: var(--accent); }
+        .summary-box.box-money::after { background-color: var(--accent); }
+        .summary-box.box-unpaid::after { background-color: var(--danger); }
+        .summary-box.box-store::after { background-color: var(--warning); }
 
         .summary-box .title {
             color: var(--text-sub);
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .summary-box .value {
             color: var(--text-main);
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 26px;
+            font-weight: 800;
             letter-spacing: -0.5px;
         }
 
@@ -423,7 +435,7 @@
             border: 1px solid var(--border-color);
             background-color: #f8faf9;
             border-radius: var(--radius-sm);
-            font-size: 16px; /* 設為 16px 防止 iOS Safari 自動放大畫面 */
+            font-size: 16px; /* 16px 防止 iOS Safari 自動放大 */
             outline: none;
             transition: var(--transition-fast);
             color: var(--text-main);
@@ -666,6 +678,7 @@
         body.role-viewer button[onclick*="saveLockTime"],
         body.role-viewer button[onclick*="openStore"],
         body.role-viewer button[onclick*="closeStore"],
+        body.role-viewer button[onclick*="toggleAllStores"],
         body.role-viewer button[onclick*="addNewEmployee"],
         body.role-viewer .sidebar .menu-item[onclick*="employee-mgr"] {
             display: none !important;
@@ -833,7 +846,7 @@
 
     <!-- 側邊欄選單 -->
     <div class="sidebar" id="sidebar">
-        <h2>後台管理系統</h2>
+        <h2>⚙️ 後台管理系統</h2>
         <div class="user-info" id="adminDisplayInfo">☁️ 管理員: [加載中...]</div>
         <hr>
         <div class="menu-container">
@@ -879,14 +892,23 @@
                 </div>
             </div>
 
+            <!-- 4 大營運數據指標 -->
             <div class="summary-container">
                 <div class="summary-box">
                     <span class="title">今日總訂單數</span>
                     <span class="value" id="summaryCount">0 筆</span>
                 </div>
-                <div class="summary-box">
+                <div class="summary-box box-money">
                     <span class="title">今日總營業額</span>
                     <span class="value" id="summaryAmount">$0</span>
+                </div>
+                <div class="summary-box box-unpaid">
+                    <span class="title">未繳費訂單</span>
+                    <span class="value" id="summaryUnpaid">0 筆</span>
+                </div>
+                <div class="summary-box box-store">
+                    <span class="title">開放中店家</span>
+                    <span class="value" id="summaryActiveStores">0 家</span>
                 </div>
             </div>
 
@@ -953,7 +975,13 @@
             
             <div id="subtab-food" class="store-subtab-content" style="display: block;">
                 <div class="card">
-                    <h3>🍱 美味餐點 - 開放店家設定</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="margin: 0;">🍱 美味餐點 - 開放店家設定</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" style="font-size: 12px; min-height: 34px; padding: 6px 12px;" onclick="toggleAllStores('美味餐點', true)">🔓 全選開放</button>
+                            <button class="btn btn-danger-light" style="font-size: 12px; min-height: 34px; padding: 6px 12px;" onclick="toggleAllStores('美味餐點', false)">🔒 全選關閉</button>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -975,7 +1003,13 @@
 
             <div id="subtab-drink" class="store-subtab-content" style="display: none;">
                 <div class="card">
-                    <h3>🥤 喝涼涼 - 開放店家設定</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="margin: 0;">🥤 喝涼涼 - 開放店家設定</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" style="font-size: 12px; min-height: 34px; padding: 6px 12px;" onclick="toggleAllStores('喝涼涼', true)">🔓 全選開放</button>
+                            <button class="btn btn-danger-light" style="font-size: 12px; min-height: 34px; padding: 6px 12px;" onclick="toggleAllStores('喝涼涼', false)">🔒 全選關閉</button>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -1063,7 +1097,7 @@
         <!-- 分頁五：員工管理 -->
         <div id="employee-mgr" class="tab-content">
             <div class="header">
-                <h1>員工卡號管理</h1>
+                <h1>🪪 員工卡號管理</h1>
             </div>
 
             <div class="card">
@@ -1322,6 +1356,11 @@ ${openStores}
             const foodStores = storeList.filter(s => s.category === '美味餐點');
             const drinkStores = storeList.filter(s => s.category === '喝涼涼');
 
+            // 更新儀表板開放店家數
+            const activeCount = storeList.filter(s => s.isOpen).length;
+            const activeStoreElem = document.getElementById('summaryActiveStores');
+            if (activeStoreElem) activeStoreElem.innerText = `${activeCount} 家`;
+
             const buildRows = (list) => {
                 if (list.length === 0) {
                     return `<tr><td colspan="5" style="text-align:center; color:#999;">尚無店家資料</td></tr>`;
@@ -1411,6 +1450,30 @@ ${openStores}
             } catch (e) {
                 showCustomModal({ message: `已關閉「<b>${store.name}</b>」（本地暫存）。` });
             }
+        }
+
+        async function toggleAllStores(category, openStatus) {
+            if (!checkPermission('manage_store')) return;
+
+            storeList.forEach(s => {
+                if (s.category === category) {
+                    s.isOpen = openStatus;
+                }
+            });
+
+            renderStoreTable();
+            localStorage.setItem('active_store_config', JSON.stringify(storeList));
+
+            try {
+                await fetch('/api/stores', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stores: storeList })
+                });
+            } catch (e) {}
+
+            const actionText = openStatus ? '全選開放' : '全選關閉';
+            showCustomModal({ message: `已成功將「${category}」全部店家設為：<b>${actionText}</b>` });
         }
 
         function setDefaultLockDate() {
@@ -1949,8 +2012,11 @@ ${openStores}
         function updateSummary(orders) {
             const totalCount = orders.length;
             const totalAmount = orders.reduce((sum, order) => sum + (Number(order.total) || 0), 0);
+            const unpaidCount = orders.filter(o => !(o.isPaid === true || o.isPaid === 'true')).length;
+
             document.getElementById('summaryCount').innerText = `${totalCount} 筆`;
             document.getElementById('summaryAmount').innerText = `$${totalAmount}`;
+            document.getElementById('summaryUnpaid').innerText = `${unpaidCount} 筆`;
         }
 
         function filterOrders(type) {
