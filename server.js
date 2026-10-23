@@ -54,7 +54,78 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 💡 核心輔助函式：檢查取消/修改訂單功能是否開放 (結合手動開關與每日截止時間)
+// 💡 核心輔助函式：檢查目前是否處於點餐鎖定狀態 (日期 + 時間判斷)
+async function getLockStatus() {
+    try {
+        const lockRes = await pool.query("SELECT key, value FROM settings WHERE key IN ('order_lock_time', 'order_lock_date');");
+        let lockTime = "";
+        let lockDate = "";
+
+        lockRes.rows.forEach(row => {
+            if (row.key === 'order_lock_time') lockTime = row.value || "";
+            if (row.key === 'order_lock_date') lockDate = row.value || "";
+        });
+
+        if (!lockTime && !lockDate) {
+            return { isLocked: false, lockDate: "", lockTime: "", lockDisplay: "" };
+        }
+
+        // 取得台灣時間現況
+        const now = new Date();
+        const taipeiFormatter = new Intl.DateTimeFormat('zh-TW', {
+            timeZone: 'Asia/Taipei',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hourCycle: 'h23'
+        });
+        const parts = taipeiFormatter.formatToParts(now);
+        const year = parts.find(p => p.type === 'year').value;
+        const month = parts.find(p => p.type === 'month').value;
+        const day = parts.find(p => p.type === 'day').value;
+        const currentDateStr = `${year}-${month}-${day}`;
+
+        const hourPart = parts.find(p => p.type === 'hour');
+        const minutePart = parts.find(p => p.type === 'minute');
+        const currentH = hourPart ? Number(hourPart.value) : now.getHours();
+        const currentM = minutePart ? Number(minutePart.value) : now.getMinutes();
+        const currentTotalMinutes = currentH * 60 + currentM;
+
+        let lockTotalMinutes = 24 * 60; // 若未設定時間預設全天鎖定
+        if (lockTime && lockTime.includes(':')) {
+            const [lockH, lockM] = lockTime.split(':').map(Number);
+            lockTotalMinutes = lockH * 60 + lockM;
+        }
+
+        let isLocked = false;
+
+        if (lockDate) {
+            if (currentDateStr > lockDate) {
+                isLocked = true; // 超過設定日期 -> 已鎖定
+            } else if (currentDateStr === lockDate) {
+                if (currentTotalMinutes >= lockTotalMinutes) {
+                    isLocked = true; // 同一天且超過設定時間 -> 已鎖定
+                }
+            }
+        } else if (lockTime) {
+            // 只有設定時間（每日重複鎖定）
+            if (currentTotalMinutes >= lockTotalMinutes) {
+                isLocked = true;
+            }
+        }
+
+        const lockDisplay = (lockDate && lockTime) ? `${lockDate} ${lockTime}` : (lockTime || lockDate);
+
+        return { isLocked, lockDate, lockTime, lockDisplay };
+    } catch (err) {
+        console.error('判斷鎖定狀態失敗:', err);
+        return { isLocked: false, lockDate: "", lockTime: "", lockDisplay: "" };
+    }
+}
+
+// 💡 核心輔助函式：檢查取消/修改訂單功能是否開放 (結合手動開關與每日/指定日期截止時間)
 async function checkIsCancelAllowed() {
     try {
         // 1. 檢查管理員手動開關設定
@@ -63,34 +134,13 @@ async function checkIsCancelAllowed() {
             return { allowed: false, message: '管理員已關閉取消與修改訂單功能！' };
         }
 
-        // 2. 檢查是否已過每日點餐截止時間
-        const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
-        const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
-
-        if (orderLockTime && orderLockTime.includes(':')) {
-            const now = new Date();
-            const taipeiFormatter = new Intl.DateTimeFormat('zh-TW', {
-                timeZone: 'Asia/Taipei',
-                hour: '2-digit',
-                minute: '2-digit',
-                hourCycle: 'h23'
-            });
-            const parts = taipeiFormatter.formatToParts(now);
-            const hourPart = parts.find(p => p.type === 'hour');
-            const minutePart = parts.find(p => p.type === 'minute');
-            const currentH = hourPart ? Number(hourPart.value) : now.getHours();
-            const currentM = minutePart ? Number(minutePart.value) : now.getMinutes();
-            const currentTotalMinutes = currentH * 60 + currentM;
-
-            const [lockH, lockM] = orderLockTime.split(':').map(Number);
-            const lockTotalMinutes = lockH * 60 + lockM;
-
-            if (currentTotalMinutes >= lockTotalMinutes) {
-                return { 
-                    allowed: false, 
-                    message: `⏰ 已過今日點餐截止時間 (${orderLockTime})，前台已自動鎖定禁止取消與修改訂單！` 
-                };
-            }
+        // 2. 檢查是否已過截止時間
+        const lockStatus = await getLockStatus();
+        if (lockStatus.isLocked) {
+            return { 
+                allowed: false, 
+                message: `⏰ 已過點餐截止時間 (${lockStatus.lockDisplay})，前台已自動鎖定禁止取消與修改訂單！` 
+            };
         }
 
         return { allowed: true, message: '' };
@@ -183,6 +233,12 @@ async function initDatabase() {
         await pool.query(`
             INSERT INTO settings (key, value)
             VALUES ('order_lock_time', '10:30')
+            ON CONFLICT (key) DO NOTHING;
+        `);
+
+        await pool.query(`
+            INSERT INTO settings (key, value)
+            VALUES ('order_lock_date', '')
             ON CONFLICT (key) DO NOTHING;
         `);
 
@@ -350,7 +406,6 @@ app.post('/api/orders/cancel', async (req, res) => {
                 [cleanOrderId, cleanCardId]
             );
         } else if (cleanTimestamp) {
-            // ✅ 修復：修正 $1 與 $2 參數位置顛倒問題
             result = await pool.query(
                 'DELETE FROM orders WHERE card_id = $1 AND timestamp = $2 RETURNING *;',
                 [cleanCardId, cleanTimestamp]
@@ -436,9 +491,14 @@ app.put('/api/allow-cancel', handleAllowCancelUpdate);
 // 💡 補全前台相容 API：/api/cutoff-time 取得/更新截止時間
 app.get('/api/cutoff-time', async (req, res) => {
     try {
-        const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
-        const cutoffTime = result.rows.length > 0 ? result.rows[0].value : "09:30";
-        res.json({ success: true, cutoffTime, time: cutoffTime, lockTime: cutoffTime });
+        const lockStatus = await getLockStatus();
+        res.json({ 
+            success: true, 
+            cutoffTime: lockStatus.lockTime, 
+            time: lockStatus.lockTime, 
+            lockTime: lockStatus.lockTime,
+            lockDate: lockStatus.lockDate
+        });
     } catch (err) {
         console.error('讀取截止時間失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得截止時間' });
@@ -446,8 +506,9 @@ app.get('/api/cutoff-time', async (req, res) => {
 });
 
 app.post('/api/cutoff-time', async (req, res) => {
-    const { cutoffTime, lockTime, time } = req.body;
+    const { cutoffTime, lockTime, time, lockDate } = req.body;
     const newTime = (cutoffTime || lockTime || time || "").trim().slice(0, 10);
+    const newDate = (lockDate || "").trim().slice(0, 20);
 
     try {
         await pool.query(`
@@ -456,11 +517,18 @@ app.post('/api/cutoff-time', async (req, res) => {
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [newTime]);
 
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('order_lock_date', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [newDate]);
+
         return res.json({ 
             success: true, 
-            message: `已成功將點餐截止時間設定為 ${newTime}`,
+            message: `已成功將點餐截止時間設定為 ${newDate ? newDate + ' ' : ''}${newTime}`,
             cutoffTime: newTime,
-            lockTime: newTime
+            lockTime: newTime,
+            lockDate: newDate
         });
     } catch (err) {
         console.error('更新截止時間失敗:', err.message);
@@ -479,7 +547,8 @@ app.get('/api/settings', async (req, res) => {
 
         const cancelCheck = await checkIsCancelAllowed();
         const allowCancel = cancelCheck.allowed;
-        const lockTimeVal = settingsMap['order_lock_time'] || '09:30';
+        const lockTimeVal = settingsMap['order_lock_time'] || '10:30';
+        const lockDateVal = settingsMap['order_lock_date'] || '';
 
         res.json({
             success: true,
@@ -488,7 +557,9 @@ app.get('/api/settings', async (req, res) => {
             allowOrderCancel: allowCancel,
             allow_cancel: allowCancel,
             order_lock_time: lockTimeVal,
+            order_lock_date: lockDateVal,
             cutoffTime: lockTimeVal,
+            lockDate: lockDateVal,
             active_store: settingsMap['active_store'] || '',
             settings: settingsMap,
             data: settingsMap
@@ -522,6 +593,15 @@ const handleSettingsUpdate = async (req, res) => {
             `, [String(lockTimeVal)]);
         }
 
+        if (body.lockDate !== undefined || body.order_lock_date !== undefined) {
+            const lockDateVal = body.lockDate ?? body.order_lock_date;
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_date', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [String(lockDateVal)]);
+        }
+
         res.json({ success: true, message: '系統設定已成功更新！' });
     } catch (err) {
         console.error('更新 settings 失敗:', err.message);
@@ -532,13 +612,17 @@ const handleSettingsUpdate = async (req, res) => {
 app.post('/api/settings', handleSettingsUpdate);
 app.put('/api/settings', handleSettingsUpdate);
 
-// ==================== 其他 API 路由 ====================
+// ==================== 鎖定時間 API ====================
 
 app.get('/api/lock-time', async (req, res) => {
     try {
-        const result = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
-        const lockTime = result.rows.length > 0 ? result.rows[0].value : "";
-        res.json({ success: true, lockTime, cutoffTime: lockTime });
+        const lockStatus = await getLockStatus();
+        res.json({ 
+            success: true, 
+            lockTime: lockStatus.lockTime, 
+            cutoffTime: lockStatus.lockTime,
+            lockDate: lockStatus.lockDate
+        });
     } catch (err) {
         console.error('讀取鎖定時間失敗:', err.message);
         res.status(500).json({ success: false, message: '無法取得鎖定時間' });
@@ -546,9 +630,10 @@ app.get('/api/lock-time', async (req, res) => {
 });
 
 app.post('/api/lock-time', async (req, res) => {
-    const { lockTime, cutoffTime } = req.body;
+    const { lockTime, cutoffTime, lockDate } = req.body;
     const targetTime = lockTime || cutoffTime;
     const newLockTime = targetTime ? String(targetTime).trim().slice(0, 10) : "";
+    const newLockDate = lockDate ? String(lockDate).trim().slice(0, 20) : "";
 
     try {
         await pool.query(`
@@ -557,19 +642,29 @@ app.post('/api/lock-time', async (req, res) => {
             ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
         `, [newLockTime]);
 
-        if (!newLockTime) {
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('order_lock_date', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [newLockDate]);
+
+        if (!newLockTime && !newLockDate) {
             return res.json({ 
                 success: true, 
                 message: '已成功解除點餐限制！目前系統無時間限制，隨時可進行下單。',
-                lockTime: "" 
+                lockTime: "",
+                lockDate: ""
             });
         }
 
+        const displayStr = (newLockDate && newLockTime) ? `${newLockDate} ${newLockTime}` : (newLockTime || newLockDate);
+
         return res.json({ 
             success: true, 
-            message: `已成功將點餐截止時間設定為 ${newLockTime}`,
+            message: `已成功將點餐截止時間設定為 ${displayStr}`,
             lockTime: newLockTime,
-            cutoffTime: newLockTime
+            cutoffTime: newLockTime,
+            lockDate: newLockDate
         });
     } catch (err) {
         console.error('更新鎖定時間失敗:', err.message);
@@ -946,33 +1041,13 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        const lockRes = await pool.query("SELECT value FROM settings WHERE key = 'order_lock_time';");
-        const orderLockTime = lockRes.rows.length > 0 ? lockRes.rows[0].value : "";
-
-        if (orderLockTime && orderLockTime.includes(':')) {
-            const now = new Date();
-            const taipeiFormatter = new Intl.DateTimeFormat('zh-TW', {
-                timeZone: 'Asia/Taipei',
-                hour: '2-digit',
-                minute: '2-digit',
-                hourCycle: 'h23'
+        // 檢查是否已達到截止鎖定狀態 (日期 + 時間)
+        const lockStatus = await getLockStatus();
+        if (lockStatus.isLocked) {
+            return res.status(403).json({
+                success: false,
+                message: `⏰ 點餐已截止！點餐時間限制至 ${lockStatus.lockDisplay}，系統目前已鎖定無法再下單。`
             });
-            const parts = taipeiFormatter.formatToParts(now);
-            const hourPart = parts.find(p => p.type === 'hour');
-            const minutePart = parts.find(p => p.type === 'minute');
-            const currentH = hourPart ? Number(hourPart.value) : now.getHours();
-            const currentM = minutePart ? Number(minutePart.value) : now.getMinutes();
-            const currentTotalMinutes = currentH * 60 + currentM;
-
-            const [lockH, lockM] = orderLockTime.split(':').map(Number);
-            const lockTotalMinutes = lockH * 60 + lockM;
-
-            if (currentTotalMinutes >= lockTotalMinutes) {
-                return res.status(403).json({
-                    success: false,
-                    message: `⏰ 點餐已截止！今日點餐時間限制至 ${orderLockTime}，系統目前已鎖定無法再下單。`
-                });
-            }
         }
 
         const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
