@@ -312,10 +312,11 @@
         }
 
         .cutoff-time-text {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: #2b4c23;
             margin-bottom: 4px;
+            line-height: 1.2;
         }
 
         .cutoff-timer {
@@ -701,7 +702,7 @@
 <!-- ⏱️ 右下角截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
     <div class="cutoff-title">
-        ⏱️ 今日點餐截止
+        ⏱️ 點餐截止時間
     </div>
     <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
     <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
@@ -920,6 +921,7 @@ let selectedQty = 5; // 鍋貼水餃預設 5 顆
 // ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
+let targetCutoffDateStr = null;
 
 window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -944,7 +946,7 @@ window.onload = async function() {
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (同步自 index.html) ==================== */
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -968,19 +970,22 @@ async function startCutoffCountdown() {
 
 async function fetchCutoffSetting() {
     let latestTime = null;
+    let latestDate = null;
 
     try {
         const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
         if (response.ok) {
             const data = await response.json();
-            latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff;
+            latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff || data.lockTime;
+            latestDate = data.lockDate || data.cutoffDate || data.order_lock_date || null;
         }
     } catch (e) {
         try {
             const jsonRes = await fetch(`cutoff.json?_=${new Date().getTime()}`, { cache: 'no-store' });
             if (jsonRes.ok) {
                 const data = await jsonRes.json();
-                latestTime = data.cutoffTime || data.time || data.cutoff_time;
+                latestTime = data.cutoffTime || data.time || data.cutoff_time || data.lockTime;
+                latestDate = data.lockDate || data.cutoffDate || null;
             }
         } catch (err) {}
     }
@@ -994,9 +999,11 @@ async function fetchCutoffSetting() {
             if (rawVal.startsWith('{')) {
                 try {
                     const parsed = JSON.parse(rawVal);
-                    const t = parsed.cutoffTime || parsed.time || parsed.cutoff || parsed.value;
+                    const t = parsed.cutoffTime || parsed.time || parsed.cutoff || parsed.value || parsed.lockTime;
+                    const d = parsed.lockDate || parsed.cutoffDate || parsed.date;
                     if (t && typeof t === 'string' && t.includes(':')) {
                         latestTime = t;
+                        if (d) latestDate = d;
                         break;
                     }
                 } catch (e) {}
@@ -1012,21 +1019,28 @@ async function fetchCutoffSetting() {
         }
     }
 
+    if (!latestDate) {
+        latestDate = localStorage.getItem('lockDate') || localStorage.getItem('cutoffDate') || null;
+    }
+
     if (latestTime) {
         const cleanTime = latestTime.replace(/[^0-9:]/g, '');
-        if (cleanTime && cleanTime.includes(':')) {
-            targetCutoffStr = cleanTime;
-        } else {
-            targetCutoffStr = null;
-        }
+        targetCutoffStr = (cleanTime && cleanTime.includes(':')) ? cleanTime : null;
     } else {
         targetCutoffStr = null;
+    }
+
+    if (latestDate && typeof latestDate === 'string' && latestDate.includes('-')) {
+        targetCutoffDateStr = latestDate.trim();
+    } else {
+        targetCutoffDateStr = null;
     }
 }
 
 function updateCountdownUI() {
     const timeDisplay = document.getElementById('cutoffTimeDisplay');
     const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
+    const cutoffTitle = document.querySelector('.cutoff-title');
     if (!timeDisplay || !countdownDisplay) return;
 
     if (!targetCutoffStr) {
@@ -1036,7 +1050,13 @@ function updateCountdownUI() {
         return;
     }
 
-    timeDisplay.textContent = targetCutoffStr;
+    if (targetCutoffDateStr) {
+        timeDisplay.textContent = `${targetCutoffDateStr} ${targetCutoffStr}`;
+        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 點餐截止時間';
+    } else {
+        timeDisplay.textContent = targetCutoffStr;
+        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 今日點餐截止';
+    }
 
     const now = new Date();
     const timeParts = targetCutoffStr.split(':').map(Number);
@@ -1044,7 +1064,20 @@ function updateCountdownUI() {
     const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
     const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
 
-    const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHours, targetMinutes, targetSeconds);
+    let year = now.getFullYear();
+    let month = now.getMonth();
+    let day = now.getDate();
+
+    if (targetCutoffDateStr && targetCutoffDateStr.includes('-')) {
+        const dateParts = targetCutoffDateStr.split('-').map(Number);
+        if (dateParts.length === 3 && !dateParts.some(isNaN)) {
+            year = dateParts[0];
+            month = dateParts[1] - 1;
+            day = dateParts[2];
+        }
+    }
+
+    const targetTime = new Date(year, month, day, targetHours, targetMinutes, targetSeconds);
     const diffMs = targetTime - now;
 
     if (diffMs <= 0) {
@@ -1052,15 +1085,21 @@ function updateCountdownUI() {
         countdownDisplay.classList.add('expired');
     } else {
         countdownDisplay.classList.remove('expired');
-        const hrs = Math.floor(diffMs / (1000 * 60 * 60));
-        const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((diffMs % (1000 * 60)) / 1000);
+        const totalSecs = Math.floor(diffMs / 1000);
+        const hrs = Math.floor(totalSecs / 3600);
+        const mins = Math.floor((totalSecs % 3600) / 60);
+        const secs = totalSecs % 60;
 
         const hh = String(hrs).padStart(2, '0');
         const mm = String(mins).padStart(2, '0');
         const ss = String(secs).padStart(2, '0');
 
-        if (hrs > 0) {
+        if (hrs >= 24) {
+            const days = Math.floor(hrs / 24);
+            const remainHrs = hrs % 24;
+            const rh = String(remainHrs).padStart(2, '0');
+            countdownDisplay.textContent = `${days}天 ${rh}:${mm}:${ss}`;
+        } else if (hrs > 0) {
             countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
         } else {
             countdownDisplay.textContent = `${mm}:${ss}`;
