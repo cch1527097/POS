@@ -6,7 +6,7 @@ const ExcelJS = require('exceljs');
 const { Pool } = require('pg');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.process.env.PORT || 3000;
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
@@ -1120,98 +1120,63 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// Excel 匯出
+// 💡 Excel 匯出 API (當天訂單紀錄，僅匯出「部門、點餐人、餐點、總金額」4 個欄位)
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT 
-                order_id, timestamp, card_id, name, meal, spicy, note, total,
-                COALESCE(is_paid, false) AS is_paid
-            FROM orders
-            ORDER BY order_id ASC;
+                COALESCE(u.department, '未劃分') AS department,
+                o.name, 
+                o.meal, 
+                o.total
+            FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
+            WHERE o.created_at >= (date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') AT TIME ZONE 'Asia/Taipei')
+              AND o.created_at < ((date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
+            ORDER BY o.order_id ASC;
         `);
-        
-        const orders = result.rows.map(row => ({
-            orderId: String(row.order_id),
-            timestamp: row.timestamp,
-            cardId: row.card_id,
-            name: row.name,
-            meal: row.meal,
-            spicy: row.spicy,
-            note: row.note,
-            total: Number(row.total),
-            isPaid: row.is_paid ? '已繳費' : '未繳費'
-        }));
 
         const workbook = new ExcelJS.Workbook();
-        const sheet1 = workbook.addWorksheet('訂單明細');
-        sheet1.columns = [
-            { header: '訂單ID', key: 'orderId', width: 22 },
-            { header: '時間', key: 'timestamp', width: 25 },
-            { header: '員工卡號', key: 'cardId', width: 15 },
-            { header: '員工姓名', key: 'name', width: 15 }, 
-            { header: '點餐店家/品項', key: 'meal', width: 25 },
-            { header: '醬料辣度', key: 'spicy', width: 15 },
-            { header: '備註', key: 'note', width: 25 },
-            { header: '金額', key: 'total', width: 12 },
-            { header: '繳費狀態', key: 'isPaid', width: 12 }
-        ];
+        const sheet = workbook.addWorksheet('當天訂單紀錄');
         
-        const sheet2 = workbook.addWorksheet('店家點餐統計表');
-        sheet2.columns = [
-            { header: '店家/品項名稱', key: 'meal', width: 25 },
-            { header: '總點餐次數', key: 'count', width: 15 }
+        // 僅保留要求的 4 個欄位
+        sheet.columns = [
+            { header: '部門', key: 'department', width: 20 },
+            { header: '點餐人', key: 'name', width: 18 },
+            { header: '餐點', key: 'meal', width: 35 },
+            { header: '總金額', key: 'total', width: 15 }
         ];
 
-        orders.forEach(order => {
-            sheet1.addRow({
-                orderId: order.orderId,
-                timestamp: order.timestamp,
-                cardId: order.cardId,
-                name: order.name || '未知', 
-                meal: order.meal,
-                spicy: order.spicy || '無',
-                note: order.note || '無',
-                total: !isNaN(order.total) ? order.total : 0,
-                isPaid: order.isPaid
+        result.rows.forEach(row => {
+            sheet.addRow({
+                department: row.department || '未劃分',
+                name: row.name || '未知',
+                meal: row.meal || '',
+                total: Number(row.total) || 0
             });
         });
 
-        const statistics = {};
-        orders.forEach(order => {
-            if (order.meal) {
-                statistics[order.meal] = (statistics[order.meal] || 0) + 1;
-            }
-        });
-
-        Object.keys(statistics).forEach(meal => {
-            sheet2.addRow({
-                meal: meal,
-                count: statistics[meal]
+        // 表格樣式美化
+        const headerRow = sheet.getRow(1);
+        headerRow.height = 24;
+        headerRow.font = { bold: true, color: { argb: 'FFFFFF' }, size: 11 };
+        headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '2B4C23' } };
+        
+        sheet.eachRow((row) => {
+            row.eachCell(cell => {
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'DDDDDD' } },
+                    bottom: { style: 'thin', color: { argb: 'DDDDDD' } },
+                    left: { style: 'thin', color: { argb: 'DDDDDD' } },
+                    right: { style: 'thin', color: { argb: 'DDDDDD' } }
+                };
             });
         });
 
-        [sheet1, sheet2].forEach(sheet => {
-            const headerRow = sheet.getRow(1);
-            headerRow.height = 24;
-            headerRow.font = { bold: true, color: { argb: 'FFFFFF' }, size: 11 };
-            headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '2B4C23' } };
-            
-            sheet.eachRow((row) => {
-                row.eachCell(cell => {
-                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                    cell.border = {
-                        top: { style: 'thin', color: { argb: 'DDDDDD' } },
-                        bottom: { style: 'thin', color: { argb: 'DDDDDD' } },
-                        left: { style: 'thin', color: { argb: 'DDDDDD' } },
-                        right: { style: 'thin', color: { argb: 'DDDDDD' } }
-                    };
-                });
-            });
-        });
-
+        const todayStr = new Date().toISOString().split('T')[0];
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=orders_${Date.now()}.xlsx`);
+        res.setHeader('Content-Disposition', `attachment; filename=orders_today_${todayStr}.xlsx`);
 
         await workbook.xlsx.write(res);
         res.end();
