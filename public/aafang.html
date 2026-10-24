@@ -611,122 +611,129 @@
             .category-block { scroll-margin-top: 130px; }
         }
         
-        /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
-@media (max-width: 600px) {
-    /* 彈窗整體寬度與邊距優化 */
-    .history-modal-content {
-        width: 95vw !important;
-        max-height: 88vh !important;
-        border-radius: 16px !important;
-        margin: 0 auto;
-    }
+        @media (max-width: 600px) {
+            .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
+            .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
+            .container { padding: 16px 12px 80px 12px; }
+            .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
+            .store-info-left { gap: 12px; }
+            .store-logo { width: 60px; height: 60px; font-size: 24px; border-radius: 12px; }
+            .store-details h1 { font-size: 18px; }
+            .menu-grid { grid-template-columns: 1fr; }
+            .category-sidebar { top: 98px; }
+            .category-block { scroll-margin-top: 160px; }
+            .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
 
-    .history-modal-content .modal-body {
-        padding: 12px 14px !important;
-    }
+            /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
+            .history-modal-content {
+                width: 95vw !important;
+                max-height: 88vh !important;
+                border-radius: 16px !important;
+                margin: 0 auto;
+            }
 
-    /* 移除橫向滾動條，改為流式卡片 */
-    .history-table-wrapper {
-        overflow-x: visible !important;
-    }
+            .history-modal-content .modal-body {
+                padding: 12px 14px !important;
+            }
 
-    /* 將表格元素全數設為 display: block 以打破表格硬性寬度限制 */
-    .history-table, 
-    .history-table thead, 
-    .history-table tbody, 
-    .history-table th, 
-    .history-table td, 
-    .history-table tr {
-        display: block;
-        width: 100%;
-        box-sizing: border-box;
-    }
+            .history-table-wrapper {
+                overflow-x: visible !important;
+            }
 
-    .history-table {
-        min-width: 0 !important; /* 取消原先 550px 最小寬度限制 */
-    }
+            .history-table, 
+            .history-table thead, 
+            .history-table tbody, 
+            .history-table th, 
+            .history-table td, 
+            .history-table tr {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+            }
 
-    /* 隱藏電腦版表格標頭 (th) */
-    .history-table thead {
-        display: none;
-    }
+            .history-table {
+                min-width: 0 !important;
+            }
 
-    /* 每筆點餐紀錄轉為獨立卡片 */
-    .history-table tbody tr {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-    }
+            .history-table thead {
+                display: none;
+            }
 
-    .history-table td {
-        padding: 2px 0 !important;
-        border-bottom: none !important;
-    }
+            .history-table tbody tr {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 12px 14px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+            }
 
-    /* 1. 卡號/姓名 (左上) */
-    .history-table td:nth-child(1) {
-        font-size: 15px;
-        font-weight: 700;
-        color: #1e293b;
-        order: 1;
-    }
+            .history-table td {
+                padding: 2px 0 !important;
+                border-bottom: none !important;
+            }
 
-    /* 2. 部門標籤 (右上) */
-    .history-table td:nth-child(2) {
-        order: 2;
-        text-align: right;
-    }
+            /* 1. 卡號/姓名 (左上) */
+            .history-table td:nth-child(1) {
+                font-size: 15px;
+                font-weight: 700;
+                color: #1e293b;
+                order: 1;
+            }
 
-    /* 3. 時間 (第二列) */
-    .history-table td:nth-child(3) {
-        width: 100%;
-        order: 3;
-        font-size: 12px;
-        color: #64748b;
-        margin-top: 2px;
-        margin-bottom: 6px;
-    }
+            /* 2. 部門標籤 (右上) */
+            .history-table td:nth-child(2) {
+                order: 2;
+                text-align: right;
+            }
 
-    /* 4. 點餐內容 (第三列，突出框顯示) */
-    .history-table td:nth-child(4) {
-        width: 100%;
-        order: 4;
-        font-size: 14px;
-        background: #f8fafc;
-        border: 1px solid #f1f5f9;
-        border-radius: 8px;
-        padding: 8px 10px !important;
-        margin: 4px 0;
-        line-height: 1.4;
-    }
+            /* 3. 時間 (第二列) */
+            .history-table td:nth-child(3) {
+                width: 100%;
+                order: 3;
+                font-size: 12px;
+                color: #64748b;
+                margin-top: 2px;
+                margin-bottom: 6px;
+            }
 
-    /* 5. 金額 (第四列，靠右紅字顯示) */
-    .history-table td:nth-child(5) {
-        width: 100%;
-        order: 5;
-        text-align: right;
-        font-size: 15px;
-        font-weight: 800 !important;
-        color: #e74c3c !important;
-        margin-top: 4px;
-    }
+            /* 4. 點餐內容 (第三列，突出框顯示) */
+            .history-table td:nth-child(4) {
+                width: 100%;
+                order: 4;
+                font-size: 14px;
+                background: #f8fafc;
+                border: 1px solid #f1f5f9;
+                border-radius: 8px;
+                padding: 8px 10px !important;
+                margin: 4px 0;
+                line-height: 1.4;
+            }
 
-    /* 無紀錄時的呈現 */
-    .history-table td.no-record {
-        text-align: center !important;
-        background: transparent !important;
-        border: none !important;
-        padding: 30px 0 !important;
-        color: #88a085;
-    }
-}
+            /* 5. 金額 (第四列，靠右紅字顯示) */
+            .history-table td:nth-child(5) {
+                width: 100%;
+                order: 5;
+                text-align: right;
+                font-size: 15px;
+                font-weight: 800 !important;
+                color: #e74c3c !important;
+                margin-top: 4px;
+            }
+
+            /* 無紀錄時的呈現 */
+            .history-table td.no-record {
+                text-align: center !important;
+                background: transparent !important;
+                border: none !important;
+                padding: 30px 0 !important;
+                color: #88a085;
+            }
+        }
     </style>
 </head>
 <body>
