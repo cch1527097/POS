@@ -583,6 +583,115 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
             .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
+        /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
+            .history-modal-content {
+                width: 95vw !important;
+                max-height: 88vh !important;
+                border-radius: 16px !important;
+                margin: 0 auto;
+            }
+
+            .history-modal-content .modal-body {
+                padding: 12px 14px !important;
+            }
+
+            .history-table-wrapper {
+                overflow-x: visible !important;
+            }
+
+            .history-table, 
+            .history-table thead, 
+            .history-table tbody, 
+            .history-table th, 
+            .history-table td, 
+            .history-table tr {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .history-table {
+                min-width: 0 !important;
+            }
+
+            .history-table thead {
+                display: none;
+            }
+
+            .history-table tbody tr {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 12px 14px;
+                margin-bottom: 12px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .history-table td {
+                padding: 2px 0 !important;
+                border-bottom: none !important;
+            }
+
+            /* 1. 卡號/姓名 (左上) */
+            .history-table td:nth-child(1) {
+                font-size: 15px;
+                font-weight: 700;
+                color: #1e293b;
+                order: 1;
+            }
+
+            /* 2. 部門標籤 (右上) */
+            .history-table td:nth-child(2) {
+                order: 2;
+                text-align: right;
+            }
+
+            /* 3. 時間 (第二列) */
+            .history-table td:nth-child(3) {
+                width: 100%;
+                order: 3;
+                font-size: 12px;
+                color: #64748b;
+                margin-top: 2px;
+                margin-bottom: 6px;
+            }
+
+            /* 4. 點餐內容 (第三列，突出框顯示) */
+            .history-table td:nth-child(4) {
+                width: 100%;
+                order: 4;
+                font-size: 14px;
+                background: #f8fafc;
+                border: 1px solid #f1f5f9;
+                border-radius: 8px;
+                padding: 8px 10px !important;
+                margin: 4px 0;
+                line-height: 1.4;
+            }
+
+            /* 5. 金額 (第四列，靠右紅字顯示) */
+            .history-table td:nth-child(5) {
+                width: 100%;
+                order: 5;
+                text-align: right;
+                font-size: 15px;
+                font-weight: 800 !important;
+                color: #e74c3c !important;
+                margin-top: 4px;
+            }
+
+            /* 無紀錄時的呈現 */
+            .history-table td.no-record {
+                text-align: center !important;
+                background: transparent !important;
+                border: none !important;
+                padding: 30px 0 !important;
+                color: #88a085;
+            }
         }
     </style>
 </head>
@@ -680,7 +789,7 @@
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
             <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
-                👥 今日其他人點了什麼 (全院即時點餐動態)
+                👥 今日其他人點了什麼
             </h3>
             <button class="modal-close" onclick="closeOthersModal()">&times;</button>
         </div>
