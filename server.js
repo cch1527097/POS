@@ -684,7 +684,6 @@ app.post('/api/lock-time', async (req, res) => {
     const newLockTime = targetTime ? String(targetTime).trim().slice(0, 10) : "";
     const newLockDate = lockDate ? String(lockDate).trim().slice(0, 20) : "";
 
-    // 💡 優化：嚴格檢查必填參數
     if (!newLockTime || !newLockDate) {
         return res.status(400).json({ 
             success: false, 
@@ -1044,7 +1043,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API
+// 下訂單 API (採用嚴格白名單機制：必須匹配到開放店家才准下單)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
@@ -1065,29 +1064,20 @@ app.post('/api/order', async (req, res) => {
             let stores = [];
             try { stores = JSON.parse(storeListRes.rows[0].value) || []; } catch(e) { stores = []; }
             
-            // 1. 主要智慧比對
+            // 1. 進行店家智慧比對
             let matchedStore = findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal);
 
-            // 2. 💡 雙重防護機制：若主要比對沒抓到，針對「所有未開放店家」進行二次關鍵字與品牌比對，防止遺漏
-            if (!matchedStore && stores.length > 0) {
-                const checkText = `${reqStoreId} ${reqStoreName} ${cleanMeal}`;
-                const getBrandName = (str) => str.replace(/(牛排|專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|飲料|茶飲|食堂|丼飯|麵館|\s)/g, '').trim();
-
-                for (const store of stores) {
-                    if (store && !store.isOpen && store.name) {
-                        const cleanName = store.name.replace(/\s*\([^)]*\)/g, '').trim();
-                        const brand = getBrandName(cleanName);
-
-                        if ((cleanName && checkText.includes(cleanName)) || (brand && brand.length >= 2 && checkText.includes(brand))) {
-                            matchedStore = store;
-                            break;
-                        }
-                    }
-                }
+            // 2. 嚴格白名單阻擋邏輯：
+            // 若無法對應到資料庫中的任何店家 -> 視為非法/未授權點餐，直接阻擋
+            if (!matchedStore) {
+                return res.status(403).json({
+                    success: false,
+                    message: `⚠️ 下單失敗！系統無法辨識餐點所屬店家，或該店家目前未開放點餐。`
+                });
             }
 
-            // 3. 只要比對到未開放店家，一律傳回 403 阻擋下單
-            if (matchedStore && !matchedStore.isOpen) {
+            // 若對應到的店家 isOpen 為 false -> 一律回傳 403 阻擋下單
+            if (!matchedStore.isOpen) {
                 const displayStoreName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
                 return res.status(403).json({
                     success: false,
