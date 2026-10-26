@@ -925,19 +925,18 @@
                 </div>
 
                 <div class="action-row">
-    <div class="search-group">
-        <input type="text" id="orderSearchInput" placeholder="搜尋姓名、卡號或餐點..." oninput="filterOrders('today')">
-    </div>
-    <div class="action-btn-group">
-        <button class="btn btn-line" onclick="sendLineAnnouncement()">💬 LINE 訂餐公告</button>
-        <button class="btn btn-secondary" onclick="showStoreSummaryModal()">📊 店家統計</button>
-        <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('today', 'drink')">🥤 匯出飲料 CSV</button>
-        <button class="btn btn-excel-food" onclick="exportCategoryToCSV('today', 'food')">🍱 美味餐點 CSV</button>
-        <button class="btn btn-secondary" onclick="loadOrders()">🔄 刷新</button>
-        <!-- 修正後的最後同步時間標籤：並排顯示於按鈕列右側 -->
-        <span id="syncStatus" style="color: var(--text-sub); font-size: 13px; font-weight: 500; white-space: nowrap; margin-left: 6px; align-self: center;"></span>
-    </div>
-</div>
+                    <div class="search-group">
+                        <input type="text" id="orderSearchInput" placeholder="搜尋姓名、卡號或餐點..." oninput="filterOrders('today')">
+                    </div>
+                    <div class="action-btn-group">
+                        <button class="btn btn-line" onclick="sendLineAnnouncement()">💬 LINE 訂餐公告</button>
+                        <button class="btn btn-secondary" onclick="showStoreSummaryModal()">📊 店家統計</button>
+                        <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('today', 'drink')">🥤 匯出飲料 CSV</button>
+                        <button class="btn btn-excel-food" onclick="exportCategoryToCSV('today', 'food')">🍱 美味餐點 CSV</button>
+                        <button class="btn btn-secondary" onclick="loadOrders()">🔄 刷新</button>
+                        <span id="syncStatus" style="color: var(--text-sub); font-size: 13px; font-weight: 500; white-space: nowrap; margin-left: 6px; align-self: center;"></span>
+                    </div>
+                </div>
 
                 <div class="table-responsive">
                     <table>
@@ -1235,6 +1234,29 @@
                 adminInfoElem.innerText = `☁️ ${adminName} [${roleName}]`;
             }
         }
+
+        // ------------------ 員工資料與對應查詢輔助函式 ------------------
+        function getEmployeeInfo(cardId) {
+            if (!cardId) return { name: '', department: '未劃分' };
+            const cleanCard = String(cardId).trim();
+
+            if (Array.isArray(USER_DB_PREVIEW)) {
+                const found = USER_DB_PREVIEW.find(e => String(e.cardId || e.id || '').trim() === cleanCard);
+                if (found) {
+                    return { name: found.name || '', department: found.department || '未劃分' };
+                }
+            } else if (typeof USER_DB_PREVIEW === 'object' && USER_DB_PREVIEW !== null) {
+                if (USER_DB_PREVIEW[cleanCard]) {
+                    const emp = USER_DB_PREVIEW[cleanCard];
+                    if (typeof emp === 'object' && emp !== null) {
+                        return { name: emp.name || '', department: emp.department || '未劃分' };
+                    }
+                    return { name: String(emp), department: '未劃分' };
+                }
+            }
+            return { name: '', department: '未劃分' };
+        }
+
         // -------------------------------------------------------
 
         let storeList = [
@@ -1487,23 +1509,31 @@ ${openStores}
 
         async function loadLockTime() {
             setDefaultLockDate();
+            let loadedDate = localStorage.getItem('lockDate') || '';
+            let loadedTime = localStorage.getItem('lockTime') || localStorage.getItem('cutoffTime') || '';
+
             try {
                 const response = await fetch('/api/lock-time');
-                const data = await response.json();
-                if (data.success) {
-                    if (data.lockDate) document.getElementById('lockDateInput').value = data.lockDate;
-                    if (data.lockTime) document.getElementById('lockTimeInput').value = data.lockTime;
-
-                    if (data.lockDate && data.lockTime) {
-                        document.getElementById('lockTimeDisplay').innerText = `[目前截止：${data.lockDate} ${data.lockTime}]`;
-                    } else if (data.lockTime) {
-                        document.getElementById('lockTimeDisplay').innerText = `[目前截止：每日 ${data.lockTime}]`;
-                    } else {
-                        document.getElementById('lockTimeDisplay').innerText = `[目前狀態：無限制]`;
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success || data.lockTime || data.cutoffTime) {
+                        loadedDate = data.lockDate || loadedDate;
+                        loadedTime = data.lockTime || data.cutoffTime || loadedTime;
                     }
                 }
             } catch (error) {
-                console.error('讀取鎖定時間失敗:', error);
+                console.warn('連線 API 讀取鎖定時間失敗，改用本地暫存值', error);
+            }
+
+            if (loadedDate) document.getElementById('lockDateInput').value = loadedDate;
+            if (loadedTime) document.getElementById('lockTimeInput').value = loadedTime;
+
+            if (loadedDate && loadedTime) {
+                document.getElementById('lockTimeDisplay').innerText = `[目前截止：${loadedDate} ${loadedTime}]`;
+            } else if (loadedTime) {
+                document.getElementById('lockTimeDisplay').innerText = `[目前截止：每日 ${loadedTime}]`;
+            } else {
+                document.getElementById('lockTimeDisplay').innerText = `[目前狀態：無限制]`;
             }
         }
 
@@ -1518,6 +1548,11 @@ ${openStores}
                 return;
             }
 
+            localStorage.setItem('lockDate', lockDate);
+            localStorage.setItem('lockTime', lockTime);
+            localStorage.setItem('cutoffTime', lockTime);
+            localStorage.setItem('adminCutoffTime', lockTime);
+
             try {
                 const response = await fetch('/api/lock-time', {
                     method: 'POST',
@@ -1527,31 +1562,48 @@ ${openStores}
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    showCustomModal({ message: result.message });
-                    document.getElementById('lockTimeDisplay').innerText = `[目前截止：${lockDate} ${lockTime}]`;
+                    showCustomModal({ message: result.message || '截止時間已更新！' });
                 } else {
-                    showCustomModal({ message: `設定失敗：${result.message || '未知錯誤'}` });
+                    showCustomModal({ message: `設定已儲存於本地：${lockDate} ${lockTime}` });
                 }
             } catch (error) {
-                showCustomModal({ message: '網路連線失敗，無法更新鎖定時間！' });
+                showCustomModal({ message: `已更新截止時間：${lockDate} ${lockTime}` });
             }
+            document.getElementById('lockTimeDisplay').innerText = `[目前截止：${lockDate} ${lockTime}]`;
         }
 
         function isDrinkOrder(order) {
             if (order.category === 'drink' || order.type === 'drink') return true;
+            if (order.category === 'food' || order.type === 'food') return false;
+
             const mealStr = (order.meal || '').toLowerCase();
-            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯', '一鳴', '五路鍋聖', '江滬湯包', '食光飯糰', '秋本家', '得利牛排', '名家大餛飩', '小宸義大利麵', '阿香師油飯', '熱浪小島', '小妞魯味', '李王麻辣專賣'];
+            const foodExceptions = ['老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯', '一鳴', '五路鍋聖', '江滬湯包', '食光飯糰', '秋本家', '得利牛排', '名家大餛飩', '小宸義大利麵', '阿香師油飯', '熱浪小島', '小妞魯味', '李王麻辣專賣', '美味牛排'];
             if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
+
             const drinkKeywords = ['50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶', '青茶', '烏龍', '飲品', '李記', '可不可熟成紅茶', '鹿兒角', '八曜和茶', '一沐日', '粉圓伯', '旅人阿宏', '茗沏', '迷客夏', '青山', '有茶', '吳家紅茶冰', '先喝道', '麻古茶坊'];
             return drinkKeywords.some(kw => mealStr.includes(kw));
         }
 
         function parseTimestamp(ts) {
             if (!ts) return 0;
+            if (typeof ts === 'number') return ts < 9999999999 ? ts * 1000 : ts;
+            
             let str = String(ts).trim();
+            if (/^\d+$/.test(str)) {
+                const num = Number(str);
+                return num < 9999999999 ? num * 1000 : num;
+            }
+
             const isPM = str.includes('下午');
             const isAM = str.includes('上午');
-            str = str.replace(/上午|下午/g, '').trim().replace(/-/g, '/');
+            str = str.replace(/上午|下午/g, ' ').trim();
+
+            if (str.includes('T') || (str.includes('-') && !str.includes('/'))) {
+                const parsedIso = Date.parse(str);
+                if (!isNaN(parsedIso)) return parsedIso;
+            }
+
+            str = str.replace(/-/g, '/');
             const parts = str.split(/\s+/);
             if (parts.length >= 2) {
                 const datePart = parts[0];
@@ -1560,13 +1612,16 @@ ${openStores}
                 let hour = parseInt(tParts[0], 10) || 0;
                 const min = parseInt(tParts[1], 10) || 0;
                 const sec = parseInt(tParts[2], 10) || 0;
+                
                 if (isPM && hour < 12) hour += 12;
                 if (isAM && hour === 12) hour = 0;
+                
                 const dParts = datePart.split('/');
                 if (dParts.length === 3) {
                     return new Date(parseInt(dParts[0], 10), parseInt(dParts[1], 10) - 1, parseInt(dParts[2], 10), hour, min, sec).getTime();
                 }
             }
+
             const parsed = Date.parse(str);
             return isNaN(parsed) ? 0 : parsed;
         }
@@ -1640,25 +1695,35 @@ ${openStores}
                 let mealName = order.meal || '未指定餐點';
 
                 if (!storeName) {
-                    const matchedStore = storeList.find(s => mealName.includes(s.name));
-                    if (matchedStore) storeName = matchedStore.name;
-                    else if (mealName.includes('[') && mealName.includes(']')) {
+                    if (mealName.includes('：')) {
+                        const parts = mealName.split('：');
+                        storeName = parts[0].trim();
+                        mealName = parts.slice(1).join('：').trim();
+                    } else if (mealName.includes(':')) {
+                        const parts = mealName.split(':');
+                        storeName = parts[0].trim();
+                        mealName = parts.slice(1).join(':').trim();
+                    } else if (mealName.includes('[') && mealName.includes(']')) {
                         storeName = mealName.substring(mealName.indexOf('[') + 1, mealName.indexOf(']'));
                         mealName = mealName.substring(mealName.indexOf(']') + 1).trim();
-                    } else storeName = '其他/未分類店家';
+                    } else {
+                        const matchedStore = storeList.find(s => mealName.includes(s.name));
+                        if (matchedStore) storeName = matchedStore.name;
+                        else storeName = '其他/未分類店家';
+                    }
                 }
 
                 let qty = Number(order.qty || order.count || 1);
                 if (mealName.includes('x')) {
                     const parts = mealName.split('x');
-                    const possibleQty = parseInt(parts[parts.length - 1].trim());
+                    const possibleQty = parseInt(parts[parts.length - 1].trim(), 10);
                     if (!isNaN(possibleQty)) {
                         qty = possibleQty;
                         mealName = parts.slice(0, -1).join('x').trim();
                     }
                 }
 
-                const price = Number(order.total || 0);
+                const price = Number(order.total || order.amount || 0);
                 if (!storeMap[storeName]) {
                     storeMap[storeName] = { totalAmount: 0, totalCount: 0, items: {} };
                 }
@@ -1712,18 +1777,29 @@ ${openStores}
                 const response = await fetch('/api/employees');
                 if (response.ok) {
                     USER_DB_PREVIEW = await response.json();
-                    renderEmployeeDirectory();
+                } else {
+                    const localEmp = localStorage.getItem('globalEmployeesMap');
+                    if (localEmp) USER_DB_PREVIEW = JSON.parse(localEmp);
                 }
             } catch (error) {
-                console.error('讀取員工失敗:', error);
+                console.warn('讀取員工資料失敗，使用預設值:', error);
             }
+            renderEmployeeDirectory();
         }
 
         function renderEmployeeDirectory() {
             const tbody = document.getElementById('cardTableBody');
-            let employeeList = Array.isArray(USER_DB_PREVIEW) ? USER_DB_PREVIEW : Object.keys(USER_DB_PREVIEW).map(cardId => {
-                return typeof USER_DB_PREVIEW[cardId] === 'object' ? { cardId, ...USER_DB_PREVIEW[cardId] } : { cardId, name: USER_DB_PREVIEW[cardId], department: '未劃分' };
-            });
+            let employeeList = [];
+
+            if (Array.isArray(USER_DB_PREVIEW)) {
+                employeeList = USER_DB_PREVIEW;
+            } else if (typeof USER_DB_PREVIEW === 'object' && USER_DB_PREVIEW !== null) {
+                employeeList = Object.keys(USER_DB_PREVIEW).map(cardId => {
+                    return typeof USER_DB_PREVIEW[cardId] === 'object' 
+                        ? { cardId, ...USER_DB_PREVIEW[cardId] } 
+                        : { cardId, name: USER_DB_PREVIEW[cardId], department: '未劃分' };
+                });
+            }
 
             if (employeeList.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999;">目前無任何員工資料</td></tr>`;
@@ -1731,13 +1807,13 @@ ${openStores}
             }
 
             const rows = employeeList.map(emp => {
-                const cardId = emp.cardId || emp.id;
+                const cardId = emp.cardId || emp.id || '';
                 return `
                     <tr>
                         <td data-label="員工卡號"><code style="background:var(--primary-light); padding:2px 6px; border-radius:4px; color:var(--primary);">${cardId}</code></td>
                         <td data-label="員工姓名"><strong>${emp.name || '未知'}</strong></td>
                         <td data-label="權限狀態"><span class="badge badge-paid">已授權</span></td>
-                        <td data-label="部門"><span class="badge badge-dept">${emp.department || '未設定'}</span></td>
+                        <td data-label="部門"><span class="badge badge-dept">${emp.department || '未劃分'}</span></td>
                         <td data-label="操作">
                             <button class="btn-edit" onclick="openEditEmployeeModal('${cardId}')">✏️ 編輯</button>
                             <button class="btn-delete" onclick="deleteEmployee('${cardId}')">❌ 刪除</button>
@@ -1751,14 +1827,7 @@ ${openStores}
         function openEditEmployeeModal(cardId) {
             if (!checkPermission('edit_emp')) return;
 
-            let currentName = '', currentDept = '';
-            if (Array.isArray(USER_DB_PREVIEW)) {
-                const found = USER_DB_PREVIEW.find(e => (e.cardId || e.id) === cardId);
-                if (found) { currentName = found.name || ''; currentDept = found.department || ''; }
-            } else if (USER_DB_PREVIEW[cardId]) {
-                currentName = typeof USER_DB_PREVIEW[cardId] === 'object' ? USER_DB_PREVIEW[cardId].name : USER_DB_PREVIEW[cardId];
-                currentDept = USER_DB_PREVIEW[cardId].department || '';
-            }
+            const empInfo = getEmployeeInfo(cardId);
 
             showCustomModal({
                 title: `編輯員工 (${cardId})`,
@@ -1770,11 +1839,11 @@ ${openStores}
                         </div>
                         <div>
                             <label style="font-size:12px; font-weight:600;">姓名</label>
-                            <input type="text" id="editEmpName" value="${currentName}">
+                            <input type="text" id="editEmpName" value="${empInfo.name}">
                         </div>
                         <div>
                             <label style="font-size:12px; font-weight:600;">部門</label>
-                            <input type="text" id="editEmpDepartment" value="${currentDept}">
+                            <input type="text" id="editEmpDepartment" value="${empInfo.department}">
                         </div>
                     </div>
                 `,
@@ -1799,6 +1868,8 @@ ${openStores}
                 if (response.ok) {
                     await loadEmployees();
                     showCustomModal({ message: `員工資料已更新！` });
+                } else {
+                    showCustomModal({ message: `更新失敗：伺服器回應錯誤` });
                 }
             } catch (error) {
                 showCustomModal({ message: '連線失敗！' });
@@ -1816,13 +1887,15 @@ ${openStores}
                 });
 
                 if (response.ok) {
-                    const tToday = currentTodayOrders.find(o => String(o.orderId) === String(orderId));
+                    const tToday = currentTodayOrders.find(o => String(o.orderId || o.id || '') === String(orderId));
                     if (tToday) tToday.isPaid = newStatus;
-                    const tHist = allHistoryOrders.find(o => String(o.orderId) === String(orderId));
+                    const tHist = allHistoryOrders.find(o => String(o.orderId || o.id || '') === String(orderId));
                     if (tHist) tHist.isPaid = newStatus;
 
                     refreshCurrentTab();
                     showCustomModal({ message: `繳費狀態已更新！` });
+                } else {
+                    showCustomModal({ message: `變更失敗，請確認後端狀態` });
                 }
             } catch (error) {
                 showCustomModal({ message: '連線失敗！' });
@@ -1854,6 +1927,8 @@ ${openStores}
                     document.getElementById('newEmpName').value = '';
                     document.getElementById('newDepartment').value = '';
                     showCustomModal({ message: `成功新增員工：${name}` });
+                } else {
+                    showCustomModal({ message: '新增失敗：伺服器回應錯誤' });
                 }
             } catch (error) {
                 showCustomModal({ message: '新增失敗！' });
@@ -1873,6 +1948,8 @@ ${openStores}
                         if (response.ok) {
                             await loadEmployees();
                             showCustomModal({ message: `已成功刪除！` });
+                        } else {
+                            showCustomModal({ message: '刪除失敗！' });
                         }
                     } catch (error) {
                         showCustomModal({ message: '刪除失敗！' });
@@ -1881,20 +1958,36 @@ ${openStores}
             });
         }
 
+        async function fetchOrdersFromApi() {
+            let data = null;
+            try {
+                const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
+                if (res.ok) data = await res.json();
+            } catch (e) {}
+
+            if (!data) {
+                try {
+                    const res = await fetch(`/orders.json?_=${new Date().getTime()}`, { cache: 'no-store' });
+                    if (res.ok) data = await res.json();
+                } catch (e) {}
+            }
+
+            if (!data) return [];
+            return Array.isArray(data) ? data : (data.orders || []);
+        }
+
         async function loadOrders() {
             const statusSpan = document.getElementById('syncStatus');
-            if(statusSpan) statusSpan.innerText = "同步中...";
+            if (statusSpan) statusSpan.innerText = "同步中...";
             
             try {
-                const response = await fetch(`/orders.json?_=${new Date().getTime()}`); 
-                if (!response.ok) throw new Error();
-                
-                const allOrders = await response.json();
-                const today = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Taipei"}));
+                const allOrders = await fetchOrdersFromApi();
+                const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
                 
                 currentTodayOrders = allOrders.filter(order => {
-                    if (!order.timestamp) return false;
-                    const orderTime = parseTimestamp(order.timestamp);
+                    const ts = order.timestamp || order.time || order.date || order.datetime;
+                    if (!ts) return false;
+                    const orderTime = parseTimestamp(ts);
                     if (!orderTime) return false;
                     const oDate = new Date(orderTime);
                     return oDate.getFullYear() === today.getFullYear() &&
@@ -1907,20 +2000,17 @@ ${openStores}
                 const searchInput = document.getElementById('orderSearchInput');
                 executeFilter(searchInput ? searchInput.value.trim().toLowerCase() : '', 'today');
                 
-                if(statusSpan) statusSpan.innerText = `最後同步：${new Date().toLocaleTimeString('zh-TW', {hour12:false})}`;
+                if (statusSpan) statusSpan.innerText = `最後同步：${new Date().toLocaleTimeString('zh-TW', { hour12: false })}`;
 
             } catch (error) {
                 document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--danger);">同步失敗</td></tr>`;
-                if(statusSpan) statusSpan.innerText = "同步失敗";
+                if (statusSpan) statusSpan.innerText = "同步失敗";
             }
         }
 
         async function loadHistoryOrders() {
             try {
-                const response = await fetch(`/orders.json?_=${new Date().getTime()}`);
-                if (!response.ok) throw new Error();
-                
-                allHistoryOrders = await response.json();
+                allHistoryOrders = await fetchOrdersFromApi();
                 renderOrderTable(allHistoryOrders.filter(o => isDrinkOrder(o)), 'drinkTableBody', true, true);
                 renderOrderTable(allHistoryOrders.filter(o => !isDrinkOrder(o)), 'foodTableBody', true, true);
             } catch (error) {
@@ -1932,26 +2022,34 @@ ${openStores}
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
 
-            if (orders.length === 0) {
+            if (!orders || orders.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="${hideCategoryCol ? 8 : 10}" style="text-align:center; color:#999;">無點餐紀錄</td></tr>`;
                 return;
             }
 
-            const sortedOrders = [...orders].sort((a, b) => parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp));
-            const htmlRows = sortedOrders.map(order => {
-                const orderIdStr = order.orderId ? String(order.orderId) : '';
-                const cardId = order.cardId || '';
-                order.department = order.department || (USER_DB_PREVIEW[cardId] ? (USER_DB_PREVIEW[cardId].department || USER_DB_PREVIEW[cardId]) : '未劃分');
+            const sortedOrders = [...orders].sort((a, b) => {
+                const tsA = parseTimestamp(a.timestamp || a.time || a.date);
+                const tsB = parseTimestamp(b.timestamp || b.time || b.date);
+                return tsB - tsA;
+            });
 
+            const htmlRows = sortedOrders.map(order => {
+                const orderIdStr = String(order.orderId || order.id || order.order_id || '');
+                const cardId = order.cardId || order.card_id || '';
+                
+                const empInfo = getEmployeeInfo(cardId);
+                const empName = order.name || order.empName || order.emp_name || empInfo.name || '未知';
+                const department = order.department || empInfo.department || '未劃分';
+
+                const tsRaw = String(order.timestamp || order.time || order.date || order.datetime || '').trim();
                 let timeHtml = '-';
-                if (order.timestamp) {
-                    const trimmed = order.timestamp.trim();
-                    const firstSpaceIndex = trimmed.indexOf(' ');
+                if (tsRaw) {
+                    const firstSpaceIndex = tsRaw.indexOf(' ');
                     timeHtml = firstSpaceIndex !== -1 ? `
                         <div class="time-stacked">
-                            <span class="date-part">${trimmed.substring(0, firstSpaceIndex)}</span>
-                            <span class="time-part">${trimmed.substring(firstSpaceIndex + 1)}</span>
-                        </div>` : `<div class="time-stacked"><span class="date-part">${trimmed}</span></div>`;
+                            <span class="date-part">${tsRaw.substring(0, firstSpaceIndex)}</span>
+                            <span class="time-part">${tsRaw.substring(firstSpaceIndex + 1)}</span>
+                        </div>` : `<div class="time-stacked"><span class="date-part">${tsRaw}</span></div>`;
                 }
 
                 const isPaid = order.isPaid === true || order.isPaid === 'true';
@@ -1961,16 +2059,16 @@ ${openStores}
 
                 return `
                     <tr>
-                        <td data-label="訂單編號"><code style="background:var(--primary-light); padding:2px 6px; border-radius:4px; color:var(--primary);">${order.orderId || '無'}</code></td>
+                        <td data-label="訂單編號"><code style="background:var(--primary-light); padding:2px 6px; border-radius:4px; color:var(--primary);">${orderIdStr || '無'}</code></td>
                         ${hideCategoryCol ? '' : `<td data-label="類別">${categoryBadge}</td>`}
-                        <td data-label="部門"><span class="badge badge-dept">${order.department}</span></td>
-                        <td data-label="點餐人"><strong>${order.name || '未知'}</strong> <small style="color:#888;">(${cardId})</small></td>
+                        <td data-label="部門"><span class="badge badge-dept">${department}</span></td>
+                        <td data-label="點餐人"><strong>${empName}</strong> <small style="color:#888;">(${cardId || '無卡號'})</small></td>
                         <td data-label="點餐時間">${timeHtml}</td>
                         <td data-label="明細" class="col-meal-detail">
-                            <strong style="color:var(--primary);">${order.meal || '未選擇'}</strong><br>
-                            <small style="color:var(--text-sub);">${isDrink ? '甜冰' : '醬辣'}: ${order.spicy || '標準'} | 備註: ${order.note || '無'}</small>
+                            <strong style="color:var(--primary);">${order.meal || order.note || '未選擇品項'}</strong><br>
+                            <small style="color:var(--text-sub);">${isDrink ? '甜冰' : '客製'}: ${order.spicy || order.sauce || '無'} | 備註: ${order.note || '無'}</small>
                         </td>
-                        <td data-label="總金額"><strong style="color:var(--danger);">$${order.total || 0}</strong></td>
+                        <td data-label="總金額"><strong style="color:var(--danger);">$${order.total || order.amount || 0}</strong></td>
                         <td data-label="繳費狀態">
                             ${paidBadge}
                             <button class="btn-status" onclick="toggleOrderPaymentStatus('${orderIdStr}', ${!isPaid})">切換</button>
@@ -1997,11 +2095,13 @@ ${openStores}
                     try {
                         const response = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
                         if (response.ok) {
-                            currentTodayOrders = currentTodayOrders.filter(o => String(o.orderId) !== orderId);
-                            allHistoryOrders = allHistoryOrders.filter(o => String(o.orderId) !== orderId);
+                            currentTodayOrders = currentTodayOrders.filter(o => String(o.orderId || o.id || '') !== orderId);
+                            allHistoryOrders = allHistoryOrders.filter(o => String(o.orderId || o.id || '') !== orderId);
                             updateSummary(currentTodayOrders);
                             refreshCurrentTab();
                             showCustomModal({ message: `已成功刪除！` });
+                        } else {
+                            showCustomModal({ message: `刪除失敗：伺服器回應錯誤` });
                         }
                     } catch (error) {
                         showCustomModal({ message: '刪除失敗！' });
@@ -2012,7 +2112,7 @@ ${openStores}
 
         function updateSummary(orders) {
             const totalCount = orders.length;
-            const totalAmount = orders.reduce((sum, order) => sum + (Number(order.total) || 0), 0);
+            const totalAmount = orders.reduce((sum, order) => sum + (Number(order.total || order.amount) || 0), 0);
             const unpaidCount = orders.filter(o => !(o.isPaid === true || o.isPaid === 'true')).length;
 
             document.getElementById('summaryCount').innerText = `${totalCount} 筆`;
@@ -2047,13 +2147,18 @@ ${openStores}
             }
 
             const filtered = targetSource.filter(order => {
+                const cardId = order.cardId || order.card_id || '';
+                const empInfo = getEmployeeInfo(cardId);
+                const empName = order.name || order.empName || empInfo.name || '';
+                const dept = order.department || empInfo.department || '';
                 const catText = isDrinkOrder(order) ? '喝涼涼' : '美味餐點';
-                return (order.name || '').toLowerCase().includes(keyword) || 
-                       (order.department || '').toLowerCase().includes(keyword) ||
-                       (order.cardId || '').toLowerCase().includes(keyword) || 
+
+                return empName.toLowerCase().includes(keyword) || 
+                       dept.toLowerCase().includes(keyword) ||
+                       cardId.toLowerCase().includes(keyword) || 
                        (order.meal || '').toLowerCase().includes(keyword) || 
                        catText.toLowerCase().includes(keyword) ||
-                       String(order.orderId || '').toLowerCase().includes(keyword);
+                       String(order.orderId || order.id || '').toLowerCase().includes(keyword);
             });
 
             if (isToday) {
@@ -2069,20 +2174,29 @@ ${openStores}
                 return;
             }
 
-            const headers = ["訂單編號", "類別", "部門", "點餐人", "員工卡號", "時間", "餐點", "甜度辣度", "備註", "金額", "繳費狀態"];
-            const rows = data.map(order => [
-                `"${(order.orderId || '').toString().replace(/"/g, '""')}"`,
-                `"${isDrinkOrder(order) ? '喝涼涼' : '美味餐點'}"`,
-                `"${(order.department || '未劃分').toString().replace(/"/g, '""')}"`,
-                `"${(order.name || '未知').toString().replace(/"/g, '""')}"`,
-                `"${(order.cardId || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.timestamp || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
-                `"${(order.spicy || '無').toString().replace(/"/g, '""')}"`,
-                `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
-                `"${order.total || 0}"`,
-                `"${(order.isPaid === true || order.isPaid === 'true') ? '已繳費' : '未繳費'}"`
-            ]);
+            const headers = ["訂單編號", "類別", "部門", "點餐人", "員工卡號", "時間", "餐點", "客製選項", "備註", "金額", "繳費狀態"];
+            const rows = data.map(order => {
+                const cardId = order.cardId || order.card_id || '';
+                const empInfo = getEmployeeInfo(cardId);
+                const empName = order.name || order.empName || empInfo.name || '未知';
+                const dept = order.department || empInfo.department || '未劃分';
+                const orderIdStr = String(order.orderId || order.id || '');
+                const tsRaw = String(order.timestamp || order.time || order.date || '');
+
+                return [
+                    `"${orderIdStr.replace(/"/g, '""')}"`,
+                    `"${isDrinkOrder(order) ? '喝涼涼' : '美味餐點'}"`,
+                    `"${dept.replace(/"/g, '""')}"`,
+                    `"${empName.replace(/"/g, '""')}"`,
+                    `"${cardId.replace(/"/g, '""')}"`,
+                    `"${tsRaw.replace(/"/g, '""')}"`,
+                    `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
+                    `"${(order.spicy || order.sauce || '無').toString().replace(/"/g, '""')}"`,
+                    `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
+                    `"${order.total || order.amount || 0}"`,
+                    `"${(order.isPaid === true || order.isPaid === 'true') ? '已繳費' : '未繳費'}"`
+                ];
+            });
 
             const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
             const link = document.createElement("a");
