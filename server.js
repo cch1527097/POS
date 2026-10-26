@@ -178,7 +178,7 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     }
 
     // 3. 關鍵字去後綴模糊比對 (例如: 「李王麻辣鍋」與「李王麻辣專賣」皆能自動提煉出核心詞「李王麻辣」彙整)
-    const normalize = (str) => str.replace(/(專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|飲料|茶飲|\s)/g, '').trim();
+    const normalize = (str) => str.replace(/(專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|牛排|得利|飲料|茶飲|\s)/g, '').trim();
 
     for (const store of stores) {
         if (!store || !store.name) continue;
