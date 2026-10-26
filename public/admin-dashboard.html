@@ -580,9 +580,15 @@
             }
 
             .card {
-                padding: 16px;
+                padding: 14px;
                 border-radius: 14px;
                 margin-bottom: 16px;
+            }
+
+            /* 解除桌機最小寬度限制，確保手機卡片佈局貼合螢幕 */
+            .table-responsive table {
+                min-width: 0 !important;
+                width: 100% !important;
             }
 
             /* 手機版：表格轉卡片式渲染 (Mobile Card View) */
@@ -600,7 +606,7 @@
                 border: 1px solid var(--border-color);
                 border-radius: 14px;
                 margin-bottom: 12px;
-                padding: 14px 16px;
+                padding: 12px 14px;
                 background: #ffffff;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             }
@@ -613,6 +619,8 @@
                 align-items: center;
                 white-space: normal !important;
                 font-size: 14px !important;
+                gap: 8px;
+                text-align: right;
             }
 
             .table-responsive td:last-child { 
@@ -629,12 +637,14 @@
                 font-size: 13px !important;
                 min-width: 85px;
                 flex-shrink: 0;
+                text-align: left;
             }
 
             .table-responsive td.col-meal-detail {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 4px;
+                text-align: left;
             }
 
             .table-responsive td.col-meal-detail::before {
@@ -644,6 +654,13 @@
             .scrollable-table-container {
                 max-height: none;
                 border: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            /* 針對超小手機螢幕，將營運數據改為單欄 */
+            .grid-cols-2 {
+                grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
             }
         }
     </style>
@@ -1682,12 +1699,12 @@ ${openStores}
                             <span>🏪 ${store}</span>
                             <span class="text-xs text-slate-500 font-medium">共 ${storeData.totalCount} 份 | $${storeData.totalAmount}</span>
                         </div>
-                        <table style="min-width:100%; border-collapse:collapse; font-size:13px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed;">
                             <thead>
                                 <tr style="background:#f1f5f9; color:#64748b;">
-                                    <th style="padding:6px 8px; text-align:left;">餐點</th>
-                                    <th style="padding:6px 8px; text-align:center;">數量</th>
-                                    <th style="padding:6px 8px; text-align:right;">小計</th>
+                                    <th style="padding:6px 8px; text-align:left; width:55%;">餐點</th>
+                                    <th style="padding:6px 8px; text-align:center; width:20%;">數量</th>
+                                    <th style="padding:6px 8px; text-align:right; width:25%;">小計</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1696,7 +1713,7 @@ ${openStores}
                     const itemData = storeData.items[item];
                     htmlContent += `
                         <tr style="border-bottom:1px dashed #e2e8f0;">
-                            <td style="padding:6px 8px; font-weight:600;">${item}</td>
+                            <td style="padding:6px 8px; font-weight:600; word-break:break-all;">${item}</td>
                             <td style="padding:6px 8px; text-align:center; color:#047857; font-weight:700;">x${itemData.count}</td>
                             <td style="padding:6px 8px; text-align:right; font-weight:600;">$${itemData.amount}</td>
                         </tr>
@@ -2012,7 +2029,7 @@ ${openStores}
                         </td>
                         <td data-label="總金額"><strong class="text-rose-600 font-extrabold">$${order.total || order.amount || 0}</strong></td>
                         <td data-label="繳費狀態">
-                            <div class="flex items-center gap-1">
+                            <div class="flex items-center gap-1 justify-end">
                                 ${paidBadge}
                                 <button class="btn-status" onclick="toggleOrderPaymentStatus('${orderIdStr}', ${!isPaid})">切換</button>
                             </div>
