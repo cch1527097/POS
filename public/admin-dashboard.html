@@ -1257,7 +1257,7 @@
             return { name: '', department: '未劃分' };
         }
 
-        // -------------------------------------------------------
+        // ------------------ 店家資料清單 (權威版本) ------------------
 
         let storeList = [
             { id: 'store_1', name: '八方雲集', category: '美味餐點', isOpen: true },
@@ -1324,6 +1324,26 @@
             { id: 'store_62', name: '得利牛排', category: '美味餐點', isOpen: false },
             { id: 'store_63', name: '李王麻辣專賣', category: '美味餐點', isOpen: false }
         ];
+
+        /**
+         * 智慧型店家整合機制：
+         * 強制以 HTML 定義的最新店家名稱與類別為主，僅向外部/舊快取讀取 isOpen (開關狀態)。
+         * 避免舊區塊與過期數據（如青蔬寶蔬食滷味、凡凡滷味）覆蓋最新資料。
+         */
+        function mergeStoreStates(savedStores) {
+            if (!Array.isArray(savedStores)) return;
+            const stateMap = {};
+            savedStores.forEach(s => {
+                if (s && s.id) {
+                    stateMap[s.id] = s.isOpen;
+                }
+            });
+            storeList.forEach(s => {
+                if (stateMap[s.id] !== undefined) {
+                    s.isOpen = stateMap[s.id];
+                }
+            });
+        }
 
         async function sendLineAnnouncement() {
             const openStores = storeList
@@ -2217,23 +2237,30 @@ ${openStores}
         }
 
         window.onload = async function() {
-            // 1. 初始化套用 RBAC 權限 UI
+            // 1. 套用 RBAC 權限控管 UI
             applyRolePermissionsUI();
 
+            // 2. 智慧讀取並整合店家狀態（確保店家名稱永遠採用 HTML 最新定義）
             try {
                 const res = await fetch('/api/stores');
                 if (res.ok) {
                     const storeData = await res.json();
-                    if (storeData.stores && Array.isArray(storeData.stores)) storeList = storeData.stores;
+                    if (storeData.stores && Array.isArray(storeData.stores)) {
+                        mergeStoreStates(storeData.stores);
+                    }
                 } else {
                     const saved = localStorage.getItem('active_store_config');
-                    if (saved) storeList = JSON.parse(saved);
+                    if (saved) mergeStoreStates(JSON.parse(saved));
                 }
             } catch(e) {
                 const saved = localStorage.getItem('active_store_config');
-                if (saved) storeList = JSON.parse(saved);
+                if (saved) mergeStoreStates(JSON.parse(saved));
             }
 
+            // 3. 自動更新本地 LocalStorage 快取為修正後的最新架構
+            localStorage.setItem('active_store_config', JSON.stringify(storeList));
+
+            // 4. 渲染各模組資料
             renderStoreTable();
             await loadLockTime(); 
             await loadEmployees();
