@@ -180,7 +180,7 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     }
 
     // 3. 核心品牌關鍵字提煉比對 (例如: 「得利牛排」->「得利」、「李王麻辣專賣」->「李王」)
-    const getBrandName = (str) => str.replace(/(牛排|專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|飲料|茶飲|食堂|丼飯|麵館|炒飯|煲仔飯|\s)/g, '').trim();
+    const getBrandName = (str) => str.replace(/(牛排|專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|滷味|飲料|茶飲|食堂|丼飯|麵館|炒飯|煲仔飯|\s)/g, '').trim();
 
     for (const store of stores) {
         if (!store || !store.name) continue;
