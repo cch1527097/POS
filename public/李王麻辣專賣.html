@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>凡凡滷味 - 智慧點餐系統</title>
+    <title>李王麻辣專賣 - 智慧點餐系統</title>
     <style>
         html { scroll-behavior: smooth; }
 
@@ -604,7 +604,8 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
             .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
-        /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
+            
+            /* 手機版「今日其他人點了什麼」卡片化樣式 */
             .history-modal-content {
                 width: 95vw !important;
                 max-height: 88vh !important;
@@ -657,7 +658,6 @@
                 border-bottom: none !important;
             }
 
-            /* 1. 卡號/姓名 (左上) */
             .history-table td:nth-child(1) {
                 font-size: 15px;
                 font-weight: 700;
@@ -665,13 +665,11 @@
                 order: 1;
             }
 
-            /* 2. 部門標籤 (右上) */
             .history-table td:nth-child(2) {
                 order: 2;
                 text-align: right;
             }
 
-            /* 3. 時間 (第二列) */
             .history-table td:nth-child(3) {
                 width: 100%;
                 order: 3;
@@ -681,7 +679,6 @@
                 margin-bottom: 6px;
             }
 
-            /* 4. 點餐內容 (第三列，突出框顯示) */
             .history-table td:nth-child(4) {
                 width: 100%;
                 order: 4;
@@ -694,7 +691,6 @@
                 line-height: 1.4;
             }
 
-            /* 5. 金額 (第四列，靠右紅字顯示) */
             .history-table td:nth-child(5) {
                 width: 100%;
                 order: 5;
@@ -705,7 +701,6 @@
                 margin-top: 4px;
             }
 
-            /* 無紀錄時的呈現 */
             .history-table td.no-record {
                 text-align: center !important;
                 background: transparent !important;
@@ -721,7 +716,7 @@
 <div class="navbar">
     <a href="index.html" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋餐點 (例如：王子麵、豬肉片)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋餐點 (例如：招牌涼麵、麻辣鴨血湯)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -736,7 +731,6 @@
 
 <!-- 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 👥 新增：其他人點了什麼懸浮按鈕 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -763,14 +757,14 @@
 <div class="container">
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">凡凡<br>滷味</div>
+            <div class="store-logo">李王<br>麻辣</div>
             <div class="store-details">
-                <h1>凡凡滷味 鹿港店</h1>
+                <h1>李王麻辣專賣 鹿港店</h1>
                 <div class="store-meta">
-                    <span class="rating">⭐ 4.8 (63)</span>
-                    <span>🕒  11:00 ~ 13:30，17:00 ~ 21:00</span>
-                    <span>📍  505彰化縣鹿港鎮景福里萬壽路234號</span>
-                    <span>📞  0985-612-776</span>
+                    <span class="rating">⭐ 4.9 (74)</span>
+                    <span>🕒  09:30 ~ 14:00，16:00 ~ 20:00</span>
+                    <span>📍  505彰化縣鹿港鎮菜園里菜園路34-1號</span>
+                    <span>📞  04-777-2721</span>
                 </div>
             </div>
         </div>
@@ -779,7 +773,7 @@
     <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
-        <span class="promo-text">外送最低金額 <b>1000</b> 元</span>
+        <span class="promo-text">外送最低金額 <b>500</b> 元</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -805,7 +799,7 @@
     </div>
 </div>
 
-<!-- 👥 新增：今日其他人點了什麼彈窗 (Modal) -->
+<!-- 👥 今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -843,71 +837,65 @@ function goBack() {
 }
 
 const menuItems = [
-    // === 人氣套餐 ===
-    {name: "小資族套餐", price: 100, category: "人氣套餐", icon:"🍱"},
-    {name: "滷味拼盤", price: 120, category: "人氣套餐", icon:"🍱"},
-    {name: "今日吃菜 (方便素)", price: 110, category: "人氣套餐", icon:"🥗"},
-    {name: "肉肉派對 ⭐", price: 160, category: "人氣套餐", icon:"🥩"},
-    {name: "豬肉小火鍋", price: 130, category: "人氣套餐", icon:"🍲"},
+    // === 麻辣系列 ===
+    {name: "麻辣鴨血湯", price: 85, category: "麻辣系列", icon:"🍲"},
+    {name: "麻辣鴨血泡麵", price: 95, category: "麻辣系列", icon:"🍲"},
+    {name: "麻辣鴨血湯麵", price: 95, category: "麻辣系列", icon:"🍲"},
+    {name: "麻辣鴨血意麵", price: 95, category: "麻辣系列", icon:"🍲"},
+    {name: "麻辣鴨血冬粉", price: 95, category: "麻辣系列", icon:"🍲"},
+    {name: "麻辣鴨血泡飯", price: 95, category: "麻辣系列", icon:"🍲"},
+    {name: "麻辣鴨血烏龍麵", price: 110, category: "麻辣系列", icon:"🍲"},
+    {name: "麻辣三合一 (魚丸+貢丸+蛋)", price: 45, category: "麻辣系列", icon:"🍲"},
+    {name: "麻辣蛋花湯", price: 35, category: "麻辣系列", icon:"🍲"},
 
-    // === 麵食 ===
-    {name: "王子麵", price: 15, category: "麵食", icon:"🍜"},
-    {name: "鍋燒意麵", price: 15, category: "麵食", icon:"🍜"},
-    {name: "燕煮麵", price: 20, category: "麵食", icon:"🍜"},
-    {name: "韓國拉麵", price: 30, category: "麵食", icon:"🍜"},
-    {name: "冬粉", price: 15, category: "麵食", icon:"🍜"},
-    {name: "河粉", price: 15, category: "麵食", icon:"🍜"},
-    {name: "烏龍麵", price: 25, category: "麵食", icon:"🍜"},
+    // === 麻辣配料 ===
+    {name: "麻辣鍋底", price: 130, category: "麻辣配料", icon:"🥘"},
+    {name: "素食鍋底", price: 130, category: "麻辣配料", icon:"🥘"},
+    {name: "鴨血+豆腐", price: 75, category: "麻辣配料", icon:"🍲"},
+    {name: "豆皮", price: 35, category: "麻辣配料", icon:"🧆"},
+    {name: "老油條", price: 35, category: "麻辣配料", icon:"🥨"},
+    {name: "肉片", price: 50, category: "麻辣配料", icon:"🥩"},
 
-    // === 肉質擔當 ===
-    {name: "豬肉片 (6片)", price: 30, category: "肉質擔當", icon:"🥩"},
-    {name: "牛肉片 (6片)", price: 40, category: "肉質擔當", icon:"🥩"},
-    {name: "粉腸 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🥓"},
-    {name: "干連 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🥓"},
-    {name: "豬耳朵 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🐷"},
-    {name: "豬舌 (50元/秤重)", price: 50, category: "肉質擔當", icon:"👅"},
-    {name: "豬頭皮 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🐷"},
-    {name: "豬心 (50元/秤重)", price: 50, category: "肉質擔當", icon:"🫀"},
+    // === 涼麵 ===
+    {name: "招牌涼麵 (小)", price: 50, category: "涼麵", icon:"🍜"},
+    {name: "招牌涼麵 (大)", price: 65, category: "涼麵", icon:"🍜"},
+    {name: "招牌雞絲涼麵 (小)", price: 60, category: "涼麵", icon:"🍜"},
+    {name: "招牌雞絲涼麵 (大)", price: 75, category: "涼麵", icon:"🍜"},
+    {name: "和風涼麵 (小)", price: 55, category: "涼麵", icon:"🍜"},
+    {name: "和風涼麵 (大)", price: 70, category: "涼麵", icon:"🍜"},
+    {name: "和風雞絲涼麵 (小)", price: 65, category: "涼麵", icon:"🍜"},
+    {name: "和風雞絲涼麵 (大)", price: 80, category: "涼麵", icon:"🍜"},
+    {name: "素食涼麵 (小)", price: 50, category: "涼麵", icon:"🍜"},
+    {name: "素食涼麵 (大)", price: 65, category: "涼麵", icon:"🍜"},
+    {name: "兒童雞絲涼麵 (小)", price: 60, category: "涼麵", icon:"🍜"},
+    {name: "兒童雞絲涼麵 (大)", price: 75, category: "涼麵", icon:"🍜"},
+    {name: "乾麵", price: 35, category: "涼麵", icon:"🍜"},
 
-    // === 青菜 ===
-    {name: "豆芽菜", price: 15, category: "青菜", icon:"🥬"},
-    {name: "大陸妹", price: 25, category: "青菜", icon:"🥬"},
-    {name: "空心菜", price: 25, category: "青菜", icon:"🥬"},
-    {name: "水蓮", price: 25, category: "青菜", icon:"🥬"},
-    {name: "地瓜葉", price: 25, category: "青菜", icon:"🥬"},
-    {name: "高麗菜", price: 25, category: "青菜", icon:"🥬"},
-    {name: "花椰菜", price: 25, category: "青菜", icon:"🥦"},
-    {name: "娃娃菜", price: 40, category: "青菜", icon:"🥬"},
+    // === 飯食類 ===
+    {name: "雞肉絲飯", price: 45, category: "飯食類", icon:"🍚"},
+    {name: "滷肉飯", price: 35, category: "飯食類", icon:"🍚"},
+    {name: "白飯", price: 10, category: "飯食類", icon:"🍚"},
 
-    // === 單點小菜/菇/豆 ===
-    {name: "香菇", price: 15, category: "單點品項", icon:"🍄"},
-    {name: "金針菇", price: 15, category: "單點品項", icon:"🍄"},
-    {name: "杏鮑菇", price: 15, category: "單點品項", icon:"🍄"},
-    {name: "豆包", price: 15, category: "單點品項", icon:"🧆"},
-    {name: "豆皮 ⭐", price: 25, category: "單點品項", icon:"🧆"},
-    {name: "大豆干 ⭐", price: 20, category: "單點品項", icon:"🧆"},
-    {name: "百頁豆腐", price: 15, category: "單點品項", icon:"🧆"},
-    {name: "白蘿蔔", price: 10, category: "單點品項", icon:"🍢"},
-    {name: "鴨血", price: 10, category: "單點品項", icon:"🩸"},
-    {name: "米血 ⭐", price: 15, category: "單點品項", icon:"🍢"},
-    {name: "芋籤", price: 15, category: "單點品項", icon:"🍠"},
-    {name: "木耳", price: 15, category: "單點品項", icon:"🖤"},
-    {name: "秘製滷蛋 ⭐", price: 15, category: "單點品項", icon:"🥚"},
-    {name: "玉米筍", price: 20, category: "單點品項", icon:"🌽"},
-    {name: "蘭花干 ⭐", price: 25, category: "單點品項", icon:"🧆"},
-    {name: "德國香腸 ⭐", price: 25, category: "單點品項", icon:"🌭"},
-    {name: "黑輪餅", price: 25, category: "單點品項", icon:"🍢"},
-    {name: "水晶餃 (3個)", price: 20, category: "單點品項", icon:"🥟"},
-    {name: "魚餃 (3個)", price: 20, category: "單點品項", icon:"🥟"},
+    // === 湯品 ===
+    {name: "魚丸湯", price: 20, category: "湯品", icon:"🍲"},
+    {name: "魚丸湯 (加蛋)", price: 30, category: "湯品", icon:"🍲"},
+    {name: "貢丸湯", price: 20, category: "湯品", icon:"🍲"},
+    {name: "貢丸湯 (加蛋)", price: 30, category: "湯品", icon:"🍲"},
+    {name: "味噌湯", price: 25, category: "湯品", icon:"🍲"},
+    {name: "味噌湯 (加蛋)", price: 35, category: "湯品", icon:"🍲"},
+    {name: "蛋花湯", price: 20, category: "湯品", icon:"🍲"},
+    {name: "味噌三合一 (魚丸+貢丸+蛋)", price: 45, category: "湯品", icon:"🍲"},
 
-    // === 任選組合專區 ===
-    {name: "任選2樣20元 (海帶/黑輪/凍豆腐/甜不辣/五香豆干)", price: 20, category: "任選組合專區", icon:"✨"},
-    {name: "任選4樣20元 (鳥蛋/蒟蒻絲/鑫鑫腸/蟹肉棒/韓式年糕)", price: 20, category: "任選組合專區", icon:"✨"},
-    {name: "任選3樣30元 (貢丸/章魚丸/牛肉丸/北海貝/龍蝦沙拉/起司魚豆腐/九層塔花枝燒)", price: 30, category: "任選組合專區", icon:"✨"},
+    // === 其他美食 ===
+    {name: "辣蘿蔔乾", price: 100, category: "其他美食", icon:"🥒"},
+    {name: "燙青菜", price: 30, category: "其他美食", icon:"🥬"},
+    {name: "滷蛋", price: 10, category: "其他美食", icon:"🥚"},
+    {name: "烏梅汁", price: 40, category: "其他美食", icon:"🥤"},
 
-    // === 加購推薦 ===
-    {name: "酸菜加量", price: 10, category: "加購推薦", icon:"➕"},
-    {name: "另外加湯底一包", price: 30, category: "加購推薦", icon:"🍲"}
+    // === 加購專區 ===
+    {name: "加蛋", price: 10, category: "加購專區", icon:"➕🥚"},
+    {name: "加豆腐加鴨血", price: 20, category: "加購專區", icon:"➕🍲"},
+    {name: "加肉", price: 20, category: "加購專區", icon:"➕🥩"}
 ];
 
 let cart = {};
@@ -920,9 +908,7 @@ let finalSummary = "";
 let globalEmployeesMap = {};
 
 // 選擇暫存狀態
-let selectedSoup = "乾";
 let selectedSpicy = "不辣";
-let selectedSprout = "加豆芽菜";
 
 // ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
@@ -952,7 +938,7 @@ window.onload = async function() {
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -1016,7 +1002,7 @@ async function fetchCutoffSetting() {
             }
 
             if (rawVal.includes(':')) {
-                const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
+                const match = rawVal.match(/([01]?\d|2[0-3]):[0-5]\d/);
                 if (match) {
                     latestTime = match[0];
                     break;
@@ -1113,7 +1099,7 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
+/* ==================== 👥 其他人點了什麼邏輯 ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1347,15 +1333,9 @@ function filterMenu() {
 }
 
 function selectOptBtn(group, val, btn) {
-    if (group === 'soup') {
-        selectedSoup = val;
-        document.querySelectorAll('#soup-group .opt-btn').forEach(b => b.classList.remove('active'));
-    } else if (group === 'spicy') {
+    if (group === 'spicy') {
         selectedSpicy = val;
         document.querySelectorAll('#spicy-group .opt-btn').forEach(b => b.classList.remove('active'));
-    } else if (group === 'sprout') {
-        selectedSprout = val;
-        document.querySelectorAll('#sprout-group .opt-btn').forEach(b => b.classList.remove('active'));
     }
     btn.classList.add('active');
 }
@@ -1364,12 +1344,28 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    let isNoodle = item.category === "麵食";
-    
-    // 重設預設值
-    selectedSoup = "乾";
+    // 湯品、其他美食、單點（包含飯食類、加購專區等）無須詢問辣度，直接加入購物車
+    const noSpicyCategories = ["湯品", "其他美食", "單點", "飯食類", "加購專區"];
+
+    if (noSpicyCategories.includes(item.category)) {
+        const customKey = `${item.name}|-`;
+        if (cart[customKey]) {
+            cart[customKey].qty += 1;
+        } else {
+            cart[customKey] = {
+                key: customKey,
+                baseName: item.name,
+                price: item.price,
+                qty: 1,
+                spicy: "-"
+            };
+        }
+        renderCart();
+        renderMenu(currentFilteredItems);
+        return;
+    }
+
     selectedSpicy = "不辣";
-    selectedSprout = "加豆芽菜";
 
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
@@ -1377,12 +1373,6 @@ function clickAddItem(name) {
         </div>
         
         <div class="opt-group">
-            <label>🥣 乾 / 湯 選擇</label>
-            <div id="soup-group" class="opt-btn-group">
-                <button type="button" class="opt-btn active" onclick="selectOptBtn('soup', '乾', this)">乾</button>
-                <button type="button" class="opt-btn" onclick="selectOptBtn('soup', '湯', this)">湯</button>
-            </div>
-
             <label>🌶️ 辣度調整</label>
             <div id="spicy-group" class="opt-btn-group">
                 <button type="button" class="opt-btn active" onclick="selectOptBtn('spicy', '不辣', this)">不辣</button>
@@ -1391,14 +1381,6 @@ function clickAddItem(name) {
                 <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '中辣', this)">中辣</button>
                 <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '大辣', this)">大辣</button>
             </div>
-
-            ${isNoodle ? `
-            <label>🥬 豆芽菜需求</label>
-            <div id="sprout-group" class="opt-btn-group">
-                <button type="button" class="opt-btn active" onclick="selectOptBtn('sprout', '加豆芽菜', this)">要加豆芽菜</button>
-                <button type="button" class="opt-btn" onclick="selectOptBtn('sprout', '不加豆芽菜', this)">不加豆芽菜</button>
-            </div>
-            ` : ''}
         </div>
     `;
 
@@ -1409,13 +1391,8 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const soup = selectedSoup;
             const spicy = selectedSpicy;
-            const sprout = isNoodle ? selectedSprout : "-";
-            const note = "無特殊需求";
-
-            const unitPrice = item.price;
-            const customKey = `${item.name}|${soup}|${sprout}|${spicy}|${note}`;
+            const customKey = `${item.name}|${spicy}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -1423,12 +1400,9 @@ function clickAddItem(name) {
                 cart[customKey] = {
                     key: customKey,
                     baseName: item.name,
-                    price: unitPrice,
+                    price: item.price,
                     qty: 1,
-                    soup: soup,
-                    style: sprout,
-                    spicy: spicy,
-                    note: note
+                    spicy: spicy
                 };
             }
 
@@ -1466,9 +1440,7 @@ function renderCart() {
         finalTotal += sub;
         
         let details = [];
-        if (item.soup) details.push(item.soup);
-        if (item.style !== "-") details.push(item.style);
-        if (item.spicy !== "-") details.push(item.spicy);
+        if (item.spicy && item.spicy !== "-") details.push(item.spicy);
         
         const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
         finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
@@ -1535,9 +1507,7 @@ function renderModalCartList() {
         div.className = "cart-item";
         
         let tags = [];
-        if (item.soup) tags.push(`🥣 ${item.soup}`);
-        if (item.style !== "-") tags.push(`🌱 ${item.style}`);
-        if (item.spicy !== "-") tags.push(`🌶️ ${item.spicy}`);
+        if (item.spicy && item.spicy !== "-") tags.push(`🌶️ ${item.spicy}`);
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
@@ -1657,7 +1627,7 @@ async function submitOrderToServer() {
                 cardId: currentCardId,
                 category: "food",
                 type: "food",
-                meal: `凡凡滷味：${finalSummary.trim()}`,
+                meal: `李王麻辣：${finalSummary.trim()}`,
                 spicy: "無",
                 total: finalTotal,
                 note: `總計：$${finalTotal}`
