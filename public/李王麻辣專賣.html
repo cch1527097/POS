@@ -222,37 +222,6 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        .opt-group { margin-top: 12px; }
-        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 6px; font-size: 14px; color: var(--text-dark); }
-        
-        /* 圖形化按鈕選項樣式 */
-        .opt-btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .opt-btn {
-            border: 1px solid var(--border-color);
-            background: #f8fafc;
-            color: #334155;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .opt-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-        .opt-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 2px 6px rgba(192, 57, 43, 0.3);
-        }
-
         /* ==================== 懸浮圓形按鈕群 & 截止時間懸浮元件 ==================== */
         .fab-container {
             position: fixed;
@@ -495,16 +464,6 @@
             cursor: pointer;
         }
         .btn-modal-confirm:hover { background: #a02d22; }
-
-        .custom-item-tag {
-            font-size: 12px;
-            color: #64748b;
-            background: #f1f5f9;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 2px;
-        }
 
         /* 👥 「其他人點了什麼」表格專用樣式 */
         .history-modal-content {
@@ -907,9 +866,6 @@ let finalTotal = 0;
 let finalSummary = "";
 let globalEmployeesMap = {};
 
-// 選擇暫存狀態
-let selectedSpicy = "不辣";
-
 // ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
@@ -1002,7 +958,7 @@ async function fetchCutoffSetting() {
             }
 
             if (rawVal.includes(':')) {
-                const match = rawVal.match(/([01]?\d|2[0-3]):[0-5]\d/);
+                const match = rawVal.match(/ ([01]?\d|2[0-3]):[0-5]\d/);
                 if (match) {
                     latestTime = match[0];
                     break;
@@ -1282,12 +1238,7 @@ function renderMenu(items) {
             const card = document.createElement("div");
             card.className = "item-card";
             
-            let currentQty = 0;
-            Object.keys(cart).forEach(key => {
-                if (cart[key].baseName === item.name) {
-                    currentQty += cart[key].qty;
-                }
-            });
+            let currentQty = cart[item.name] ? cart[item.name].qty : 0;
 
             card.innerHTML = `
                 <div class="item-info">
@@ -1332,95 +1283,30 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-function selectOptBtn(group, val, btn) {
-    if (group === 'spicy') {
-        selectedSpicy = val;
-        document.querySelectorAll('#spicy-group .opt-btn').forEach(b => b.classList.remove('active'));
-    }
-    btn.classList.add('active');
-}
-
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 湯品、其他美食、單點（包含飯食類、加購專區等）無須詢問辣度，直接加入購物車
-    const noSpicyCategories = ["湯品", "其他美食", "單點", "飯食類", "加購專區"];
-
-    if (noSpicyCategories.includes(item.category)) {
-        const customKey = `${item.name}|-`;
-        if (cart[customKey]) {
-            cart[customKey].qty += 1;
-        } else {
-            cart[customKey] = {
-                key: customKey,
-                baseName: item.name,
-                price: item.price,
-                qty: 1,
-                spicy: "-"
-            };
-        }
-        renderCart();
-        renderMenu(currentFilteredItems);
-        return;
+    if (cart[item.name]) {
+        cart[item.name].qty += 1;
+    } else {
+        cart[item.name] = {
+            key: item.name,
+            baseName: item.name,
+            price: item.price,
+            qty: 1
+        };
     }
-
-    selectedSpicy = "不辣";
-
-    let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
-            ${item.icon || '🍲'} ${item.name} ($${item.price})
-        </div>
-        
-        <div class="opt-group">
-            <label>🌶️ 辣度調整</label>
-            <div id="spicy-group" class="opt-btn-group">
-                <button type="button" class="opt-btn active" onclick="selectOptBtn('spicy', '不辣', this)">不辣</button>
-                <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '微辣', this)">微辣</button>
-                <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '小辣', this)">小辣</button>
-                <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '中辣', this)">中辣</button>
-                <button type="button" class="opt-btn" onclick="selectOptBtn('spicy', '大辣', this)">大辣</button>
-            </div>
-        </div>
-    `;
-
-    showCustomModal({
-        title: "請選擇餐點客製化選項",
-        bodyHtml: bodyHtml,
-        confirmText: "加入購物車",
-        cancelText: "取消",
-        showCancel: true,
-        onConfirm: () => {
-            const spicy = selectedSpicy;
-            const customKey = `${item.name}|${spicy}`;
-
-            if (cart[customKey]) {
-                cart[customKey].qty += 1;
-            } else {
-                cart[customKey] = {
-                    key: customKey,
-                    baseName: item.name,
-                    price: item.price,
-                    qty: 1,
-                    spicy: spicy
-                };
-            }
-
-            renderCart();
-            renderMenu(currentFilteredItems);
-            closeModal();
-        }
-    });
+    renderCart();
+    renderMenu(currentFilteredItems);
 }
 
 function removeOneBaseItem(baseName) {
-    const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
-    if (keys.length === 0) return;
+    if (!cart[baseName]) return;
 
-    const lastKey = keys[keys.length - 1];
-    cart[lastKey].qty -= 1;
-    if (cart[lastKey].qty <= 0) {
-        delete cart[lastKey];
+    cart[baseName].qty -= 1;
+    if (cart[baseName].qty <= 0) {
+        delete cart[baseName];
     }
     renderCart();
     renderMenu(currentFilteredItems);
@@ -1439,11 +1325,7 @@ function renderCart() {
         const sub = item.qty * item.price;
         finalTotal += sub;
         
-        let details = [];
-        if (item.spicy && item.spicy !== "-") details.push(item.spicy);
-        
-        const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
-        finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
+        finalSummary += `${item.baseName}*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -1505,14 +1387,10 @@ function renderModalCartList() {
         const sub = item.qty * item.price;
         const div = document.createElement("div");
         div.className = "cart-item";
-        
-        let tags = [];
-        if (item.spicy && item.spicy !== "-") tags.push(`🌶️ ${item.spicy}`);
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                ${tags.length > 0 ? `<div class="custom-item-tag">${tags.join(' | ')}</div>` : ''}
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
