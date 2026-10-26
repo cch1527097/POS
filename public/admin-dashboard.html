@@ -4,224 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>後台管理系統 | Admin Dashboard</title>
-    <!-- 引入 Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- 引入 Google Fonts & Font Awesome 圖示庫 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- 引入 Tailwind CSS 進行加速佈局 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         :root {
-            /* 顏色變數系統 */
-            --bg-color: #f4f7f5;
-            --sidebar-bg: #ffffff;
-            --primary: #1b4332;
-            --primary-hover: #112a20;
-            --primary-light: #e8f5e9;
-            --accent: #2d6a4f;
-            --text-main: #1d2d24;
-            --text-sub: #5c6760;
-            --border-color: #e2e8f0;
+            --bg-main: #f8fafc;
+            --sidebar-bg: #064e3b;
+            --sidebar-text: #e2e8f0;
             --card-bg: #ffffff;
-            --danger: #e63946;
-            --danger-light: #ffebee;
-            --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
-            --radius-sm: 8px;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
             --radius-md: 12px;
             --radius-lg: 16px;
-            --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-subtle: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+            --shadow-hover: 0 12px 28px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+            --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
             box-sizing: border-box;
-            font-family: "Noto Sans TC", "Noto Sans KR", sans-serif;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
             margin: 0;
-            background-color: var(--bg-color);
+            background-color: var(--bg-main);
             color: var(--text-main);
             display: flex;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* ------------------ 手機版頂部 Header ------------------ */
-        .mobile-header {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 60px;
-            background-color: var(--sidebar-bg);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 1000;
-            padding: 0 16px;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: var(--shadow-sm);
+        /* 自訂滾動條 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
-        .mobile-header .brand {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .mobile-menu-btn {
-            background: transparent;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--primary);
-            padding: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(2px);
-            z-index: 1050;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .sidebar-overlay.active {
-            display: block;
-            opacity: 1;
-        }
-
-        /* ------------------ 側邊欄 ------------------ */
+        /* ------------------ 側邊欄樣式 ------------------ */
         .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            padding: 32px 20px;
+            width: 270px;
+            background: linear-gradient(180deg, #022c22 0%, #064e3b 100%);
+            color: var(--sidebar-text);
+            padding: 24px 16px;
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
-            box-shadow: var(--shadow-sm);
             z-index: 1100;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar h2 {
-            font-size: 20px;
-            font-weight: 700;
-            margin: 0 0 12px 0;
-            color: var(--primary);
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
         }
 
         .sidebar .user-info {
-            background-color: var(--primary-light);
-            color: var(--primary);
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid rgba(27, 67, 50, 0.15);
-        }
-
-        .sidebar hr {
-            border: 0;
-            border-top: 1px solid var(--border-color);
-            margin: 0 0 20px 0;
-        }
-
-        .sidebar .menu-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex: 1;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            margin-bottom: 20px;
         }
 
         .sidebar .menu-item {
             padding: 12px 16px;
-            color: var(--text-sub);
-            text-decoration: none;
-            border-radius: var(--radius-sm);
+            color: #cbd5e1;
+            border-radius: 10px;
             cursor: pointer;
-            transition: var(--transition-fast);
+            transition: var(--transition-smooth);
             display: flex;
             align-items: center;
+            gap: 12px;
             width: 100%;
             background: transparent;
             border: none;
             text-align: left;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 500;
             outline: none;
-            min-height: 44px;
+            margin-bottom: 4px;
         }
 
         .sidebar .menu-item:hover {
-            background-color: var(--primary-light);
-            color: var(--primary);
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
             transform: translateX(4px);
         }
 
         .sidebar .menu-item.active {
-            background-color: var(--primary);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: #ffffff;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(27, 67, 50, 0.25);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
         }
 
         .sidebar .logout {
-            color: var(--danger);
+            color: #fca5a5;
             margin-top: auto;
+            border: 1px solid rgba(252, 165, 165, 0.2);
         }
 
         .sidebar .logout:hover {
-            background-color: var(--danger-light);
-            color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #ffffff;
             transform: none;
         }
 
-        /* ------------------ 主內容區 ------------------ */
+        /* ------------------ 主內容區域 ------------------ */
         .main-content {
             flex: 1;
-            padding: 40px;
+            padding: 32px 36px;
             overflow-y: auto;
             min-width: 0;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .header h1 {
-            color: var(--text-main);
-            margin: 0;
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
         }
 
         .tab-content { display: none; }
         .tab-content.active {
             display: block;
-            animation: fadeIn 0.3s cubic-bezier(0, 0, 0.2, 1);
+            animation: slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -230,153 +176,63 @@
             background: var(--card-bg);
             padding: 24px;
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-subtle);
             border: 1px solid var(--border-color);
             margin-bottom: 24px;
+            transition: var(--transition-smooth);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
         }
 
         .card-accent {
-            border-left: 4px solid var(--accent);
-        }
-
-        .card h3 {
-            margin: 0 0 16px 0;
-            color: var(--text-main);
-            font-size: 18px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card h3::before {
-            content: '';
-            display: inline-block;
-            width: 4px;
-            height: 18px;
-            background-color: var(--accent);
-            border-radius: 2px;
-        }
-
-        /* 截止時間面板 */
-        .lock-setting-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .lock-input-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            width: 100%;
-        }
-
-        .lock-input-group label {
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        /* 數據指標卡片 */
-        .summary-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .summary-box {
-            background: var(--card-bg);
-            padding: 20px 22px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            transition: var(--transition-fast);
-        }
-
-        .summary-box:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .summary-box::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-            background-color: var(--primary);
-        }
-
-        .summary-box.box-money::after { background-color: var(--accent); }
-        .summary-box.box-unpaid::after { background-color: var(--danger); }
-        .summary-box.box-store::after { background-color: var(--warning); }
-
-        .summary-box .title {
-            color: var(--text-sub);
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .summary-box .value {
-            color: var(--text-main);
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
+            border-top: 4px solid #10b981;
         }
 
         /* ------------------ 現代膠囊分頁 (Segmented Control) ------------------ */
         .segmented-control-wrapper {
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
             padding-bottom: 4px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .segmented-control {
             display: inline-flex;
-            background: #e9ecef;
+            background: #f1f5f9;
             padding: 4px;
-            border-radius: 10px;
+            border-radius: 12px;
             gap: 4px;
-            white-space: nowrap;
+            border: 1px solid #e2e8f0;
         }
 
         .segmented-btn {
-            padding: 8px 16px;
+            padding: 8px 18px;
             border: none;
             background: transparent;
-            color: var(--text-sub);
-            font-size: 14px;
+            color: #64748b;
+            font-size: 13px;
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
-            transition: var(--transition-fast);
-            min-height: 38px;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .segmented-btn.active {
             background: #ffffff;
-            color: var(--primary);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            color: #047857;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
-        /* 店家管理頂部頁籤 */
+        /* 店家管理頁籤 */
         .store-tab-bar {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             margin-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            border-bottom: 2px solid #e2e8f0;
         }
 
         .store-subtab-btn {
@@ -385,132 +241,96 @@
             background: transparent;
             font-size: 15px;
             font-weight: 600;
-            color: var(--text-sub);
+            color: #64748b;
             cursor: pointer;
             border-bottom: 3px solid transparent;
-            transition: var(--transition-fast);
+            transition: var(--transition-smooth);
             margin-bottom: -2px;
-            white-space: nowrap;
         }
 
-        .store-subtab-btn:hover { color: var(--primary); }
+        .store-subtab-btn:hover { color: #047857; }
         .store-subtab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
+            color: #047857;
+            border-bottom-color: #047857;
         }
 
-        /* ------------------ 控制元件與表單 ------------------ */
-        .form-group {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 20px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .form-group div {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 1;
-            min-width: 180px;
-        }
-
-        .form-group label {
-            font-size: 13px;
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        .search-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex: 1;
-            min-width: 240px;
-        }
-
+        /* ------------------ 表單與輸入框 ------------------ */
         input, select {
             padding: 10px 14px;
-            border: 1px solid var(--border-color);
-            background-color: #f8faf9;
-            border-radius: var(--radius-sm);
-            font-size: 16px; /* 16px 防止 iOS Safari 自動放大 */
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            border-radius: 10px;
+            font-size: 14px;
             outline: none;
-            transition: var(--transition-fast);
+            transition: var(--transition-smooth);
             color: var(--text-main);
             width: 100%;
             height: 42px;
         }
 
         input:focus, select:focus {
-            border-color: var(--primary);
-            background-color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.12);
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
 
         /* 按鈕系統 */
         .btn {
-            background-color: var(--primary);
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
             color: #ffffff;
             border: none;
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             padding: 10px 18px;
             font-size: 14px;
             cursor: pointer;
             font-weight: 600;
-            transition: var(--transition-fast);
+            transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
             min-height: 42px;
             white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(4, 120, 87, 0.2);
         }
 
         .btn:hover {
-            background-color: var(--primary-hover);
+            filter: brightness(1.08);
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.3);
         }
 
         .btn:active { transform: translateY(0); }
 
-        .btn-secondary { background-color: #e9ecef; color: var(--text-main); }
-        .btn-secondary:hover { background-color: #dee2e6; }
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+            box-shadow: none;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-secondary:hover { background: #e2e8f0; color: #0f172a; }
         
-        .btn-danger-light { background-color: var(--danger-light); color: var(--danger); }
-        .btn-danger-light:hover { background-color: #ffd8d8; }
-
-        .btn-line { background-color: #06C755; color: #ffffff; }
-        .btn-line:hover { background-color: #05b34c; }
-
-        .btn-excel-drink { background-color: #00838f; color: #ffffff; }
-        .btn-excel-drink:hover { background-color: #006064; }
-
-        .btn-excel-food { background-color: #e65100; color: #ffffff; }
-        .btn-excel-food:hover { background-color: #bf360c; }
-
-        .action-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 16px;
-            flex-wrap: wrap;
+        .btn-danger-light {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            box-shadow: none;
         }
+        .btn-danger-light:hover { background: #fee2e2; }
 
-        .action-btn-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
+        .btn-line { background: #06C755; color: #ffffff; box-shadow: 0 2px 6px rgba(6, 199, 85, 0.25); }
+        .btn-line:hover { background: #05b34c; }
 
-        /* ------------------ 表格視覺設計 ------------------ */
+        .btn-excel-drink { background: #0284c7; color: #ffffff; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25); }
+        .btn-excel-drink:hover { background: #0369a1; }
+
+        .btn-excel-food { background: #ea580c; color: #ffffff; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25); }
+        .btn-excel-food:hover { background: #c2410c; }
+
+        /* ------------------ 表格設計 ------------------ */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
-            border-radius: var(--radius-sm);
+            border-radius: 12px;
         }
 
         table {
@@ -518,7 +338,7 @@
             border-collapse: separate;
             border-spacing: 0;
             text-align: left;
-            min-width: 850px;
+            min-width: 880px;
         }
 
         th, td {
@@ -530,76 +350,87 @@
         }
 
         th {
-            background-color: #f8faf9;
-            color: var(--text-sub);
+            background-color: #f8fafc;
+            color: #64748b;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        tr:last-child td { border-bottom: none; }
+        tr:hover td {
+            background-color: #f8fafc;
+        }
 
-        .col-meal-detail { white-space: normal; min-width: 240px; }
-        .time-stacked { display: flex; flex-direction: column; line-height: 1.3; }
+        .col-meal-detail { white-space: normal; min-width: 260px; }
+        .time-stacked { display: flex; flex-direction: column; line-height: 1.35; }
         .time-stacked .date-part { font-weight: 600; color: var(--text-main); }
-        .time-stacked .time-part { font-size: 12px; color: var(--text-sub); }
+        .time-stacked .time-part { font-size: 12px; color: var(--text-muted); }
 
         /* 標籤 Badge */
         .badge {
             padding: 4px 10px;
-            border-radius: 12px;
+            border-radius: 99px;
             font-size: 12px;
             font-weight: 600;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             white-space: nowrap;
         }
 
-        .badge-paid { background-color: #e8f5e9; color: #2e7d32; }
-        .badge-unpaid { background-color: var(--danger-light); color: var(--danger); }
-        .badge-dept { background-color: #e3f2fd; color: #1565c0; }
-        .badge-drink { background-color: #e0f7fa; color: #00838f; }
-        .badge-food { background-color: #fff3e0; color: #e65100; }
+        .badge-paid { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-unpaid { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .badge-dept { background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .badge-drink { background-color: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; }
+        .badge-food { background-color: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
 
         .btn-status {
             background: #ffffff;
-            border: 1px solid var(--border-color);
+            border: 1px solid #cbd5e1;
             border-radius: 6px;
-            padding: 6px 10px;
+            padding: 4px 10px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             margin-left: 6px;
-            transition: var(--transition-fast);
+            transition: var(--transition-smooth);
+            color: #334155;
         }
 
-        .btn-status:hover { background-color: var(--primary-light); color: var(--primary); }
+        .btn-status:hover { background-color: #f1f5f9; color: #0f172a; }
 
         .btn-edit {
-            color: var(--primary);
-            background: var(--primary-light);
-            border: none;
-            border-radius: 6px;
+            color: #047857;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 8px;
             padding: 6px 12px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             margin-right: 4px;
-            min-height: 32px;
+            transition: var(--transition-smooth);
         }
 
+        .btn-edit:hover { background: #d1fae5; }
+
         .btn-delete {
-            color: var(--danger);
-            background: var(--danger-light);
-            border: none;
-            border-radius: 6px;
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
             padding: 6px 12px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            min-height: 32px;
+            transition: var(--transition-smooth);
         }
 
+        .btn-delete:hover { background: #fee2e2; }
+
         .scrollable-table-container {
-            max-height: 650px;
+            max-height: 620px;
             overflow-y: auto;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
@@ -612,11 +443,11 @@
             box-shadow: inset 0 -1px 0 var(--border-color);
         }
 
-        /* ------------------ 彈出視窗 Modal ------------------ */
+        /* ------------------ Modal 彈窗 ------------------ */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.45);
+            background-color: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
@@ -624,7 +455,7 @@
             z-index: 2000;
             opacity: 0;
             visibility: hidden;
-            transition: var(--transition-fast);
+            transition: var(--transition-smooth);
             padding: 16px;
         }
 
@@ -633,40 +464,43 @@
         .modal-window {
             background-color: #ffffff;
             width: 100%;
-            max-width: 550px;
+            max-width: 560px;
             border-radius: var(--radius-lg);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             overflow: hidden;
             transform: scale(0.95);
-            transition: var(--transition-fast);
+            transition: var(--transition-smooth);
             max-height: 88vh;
             display: flex;
             flex-direction: column;
+            border: 1px solid #e2e8f0;
         }
 
         .modal-overlay.active .modal-window { transform: scale(1); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--border-color); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border-color); }
         .modal-title { font-size: 18px; font-weight: 700; color: var(--text-main); margin: 0; }
-        .modal-close-btn { background: none; border: none; font-size: 24px; color: var(--text-sub); cursor: pointer; padding: 0; line-height: 1; }
-        .modal-body { padding: 20px; font-size: 14px; line-height: 1.6; overflow-y: auto; flex: 1; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 20px; background-color: #f8faf9; border-top: 1px solid var(--border-color); }
+        .modal-close-btn { background: none; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; padding: 0; line-height: 1; transition: color 0.2s; }
+        .modal-close-btn:hover { color: #0f172a; }
+        .modal-body { padding: 24px; font-size: 14px; line-height: 1.6; overflow-y: auto; flex: 1; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; background-color: #f8fafc; border-top: 1px solid var(--border-color); }
 
-        /* 店家統計卡片 Modal */
         .store-summary-card {
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
             margin-bottom: 14px;
-            background-color: #f8faf9;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
 
         .store-summary-title {
             font-size: 15px;
             font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 10px;
+            color: #047857;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
 
         /* ------------------ RBAC 權限控管視覺隱藏 ------------------ */
@@ -689,10 +523,23 @@
             display: none !important;
         }
 
-        /* ------------------ RWD 響應式佈局優化 (Mobile Adaptive) ------------------ */
+        /* ------------------ 響應式佈局 (RWD Adaptive) ------------------ */
         @media (max-width: 992px) {
-            .mobile-header { display: flex; }
             body { flex-direction: column; padding-top: 60px; }
+
+            .mobile-header {
+                display: flex !important;
+                position: fixed;
+                top: 0; left: 0; right: 0;
+                height: 60px;
+                background-color: #064e3b;
+                color: #ffffff;
+                z-index: 1000;
+                padding: 0 16px;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            }
 
             .sidebar {
                 position: fixed;
@@ -701,75 +548,35 @@
                 height: 100vh;
                 transform: translateX(-100%);
                 padding: 24px 20px;
-                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
             }
 
             .sidebar.mobile-open {
                 transform: translateX(0);
             }
 
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(15, 23, 42, 0.6);
+                backdrop-filter: blur(2px);
+                z-index: 1050;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+                opacity: 1;
+            }
+
             .main-content {
                 padding: 20px 16px;
-            }
-
-            .header h1 {
-                font-size: 22px;
-            }
-
-            .card {
-                padding: 18px 16px;
-            }
-
-            .summary-box {
-                padding: 16px 20px;
-            }
-
-            .summary-box .value {
-                font-size: 24px;
             }
         }
 
         @media (max-width: 768px) {
-            .action-row { flex-direction: column; align-items: stretch; }
-            .search-group { width: 100%; }
-            
-            .action-btn-group {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-                gap: 8px;
-                width: 100%;
-            }
-
-            .action-btn-group .btn {
-                width: 100%;
-                padding: 8px 10px;
-                font-size: 13px;
-            }
-
-            .lock-input-group {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-
-            .lock-input-group label {
-                grid-column: span 2;
-            }
-
-            .lock-input-group .btn {
-                grid-column: span 2;
-                width: 100%;
-            }
-
             /* 手機版：表格轉卡片式渲染 */
-            .table-responsive {
-                overflow-x: visible;
-            }
-
-            .table-responsive table {
-                min-width: 100% !important;
-            }
-
             .table-responsive table, 
             .table-responsive tbody, 
             .table-responsive tr, 
@@ -782,15 +589,15 @@
 
             .table-responsive tr {
                 border: 1px solid var(--border-color);
-                border-radius: var(--radius-md);
+                border-radius: 12px;
                 margin-bottom: 14px;
-                padding: 14px;
+                padding: 16px;
                 background: #ffffff;
-                box-shadow: var(--shadow-sm);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             }
 
             .table-responsive td {
-                border-bottom: 1px dashed var(--border-color);
+                border-bottom: 1px dashed #e2e8f0;
                 padding: 10px 0;
                 display: flex;
                 justify-content: space-between;
@@ -807,38 +614,36 @@
             .table-responsive td::before {
                 content: attr(data-label);
                 font-weight: 700;
-                color: var(--text-sub);
+                color: #64748b;
                 font-size: 13px;
-                min-width: 85px;
+                min-width: 90px;
                 flex-shrink: 0;
             }
 
-            /* 手機模式下對「明細與備註」進行垂直編排 */
             .table-responsive td.col-meal-detail {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 4px;
             }
 
-            .table-responsive td.col-meal-detail::before {
-                margin-bottom: 2px;
-            }
-
             .scrollable-table-container {
                 max-height: none;
                 border: none;
-                border-radius: 0;
-                overflow: visible;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- 手機版頂部選單列 -->
-    <div class="mobile-header">
-        <div class="brand">後台管理系統</div>
-        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="選單">☰</button>
+    <!-- 手機版頂部 Header -->
+    <div class="mobile-header hidden">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-utensils text-emerald-400 text-lg"></i>
+            <span class="font-bold text-base tracking-wide">訂餐後台管理</span>
+        </div>
+        <button class="text-white text-xl p-2 focus:outline-none" onclick="toggleMobileSidebar()" aria-label="選單">
+            <i class="fa-solid fa-bars"></i>
+        </button>
     </div>
 
     <!-- 手機版側邊欄遮罩 -->
@@ -846,17 +651,45 @@
 
     <!-- 側邊欄選單 -->
     <div class="sidebar" id="sidebar">
-        <h2>⚙️ 後台管理系統</h2>
-        <div class="user-info" id="adminDisplayInfo">☁️ 管理員: [加載中...]</div>
-        <hr>
-        <div class="menu-container">
-            <button type="button" class="menu-item active" onclick="handleMenuClick('overview', this)">📊 全部訂單總覽</button>
-            <button type="button" class="menu-item" onclick="handleMenuClick('store-mgr', this)">🏪 店家開放管理</button>
-            <button type="button" class="menu-item" onclick="handleMenuClick('drink-mgr', this)">🥤 喝涼涼訂單</button>
-            <button type="button" class="menu-item" onclick="handleMenuClick('food-mgr', this)">🍱 美味餐點訂單</button>
-            <button type="button" class="menu-item" onclick="handleMenuClick('employee-mgr', this)">🪪 員工管理</button>
-            <button type="button" class="menu-item" onclick="refreshCurrentTab()">🔄 重新整理</button>
-            <a href="admin.html" class="menu-item logout">⇦ 登出後台</a>
+        <div class="flex items-center gap-3 px-2 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 text-lg shadow-inner">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <h2 class="font-bold text-base text-white leading-tight">訂餐後台管理</h2>
+                <span class="text-xs text-emerald-300 font-medium">Enterprise Portal</span>
+            </div>
+        </div>
+
+        <div class="user-info" id="adminDisplayInfo">
+            <div class="flex items-center gap-2 text-xs text-emerald-200">
+                <i class="fa-solid fa-circle-user"></i>
+                <span id="adminNameText">管理員: [加載中...]</span>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-1">
+            <button type="button" class="menu-item active" onclick="handleMenuClick('overview', this)">
+                <i class="fa-solid fa-chart-pie text-base"></i> 全部訂單總覽
+            </button>
+            <button type="button" class="menu-item" onclick="handleMenuClick('store-mgr', this)">
+                <i class="fa-solid fa-store text-base"></i> 店家開放管理
+            </button>
+            <button type="button" class="menu-item" onclick="handleMenuClick('drink-mgr', this)">
+                <i class="fa-solid fa-wine-glass text-base"></i> 喝涼涼訂單
+            </button>
+            <button type="button" class="menu-item" onclick="handleMenuClick('food-mgr', this)">
+                <i class="fa-solid fa-bowl-food text-base"></i> 美味餐點訂單
+            </button>
+            <button type="button" class="menu-item" onclick="handleMenuClick('employee-mgr', this)">
+                <i class="fa-solid fa-id-card text-base"></i> 員工卡號管理
+            </button>
+            <button type="button" class="menu-item" onclick="refreshCurrentTab()">
+                <i class="fa-solid fa-rotate text-base"></i> 重新整理
+            </button>
+            <a href="admin.html" class="menu-item logout mt-auto">
+                <i class="fa-solid fa-right-from-bracket text-base"></i> 登出系統
+            </a>
         </div>
     </div>
 
@@ -865,76 +698,133 @@
         
         <!-- 分頁一：當天系統總覽 -->
         <div id="overview" class="tab-content active">
-            <div class="header">
-                <h1>系統儀表板</h1>
-                <button class="btn" onclick="window.open('index.html', '_blank')">前台點餐連結 ➔</button>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 tracking-tight">儀表板總覽</h1>
+                    <p class="text-xs text-slate-500 mt-1">即時掌握今日全公司餐點訂購動態與店家狀態</p>
+                </div>
+                <button class="btn self-start sm:self-auto" onclick="window.open('index.html', '_blank')">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> 前台點餐頁面
+                </button>
             </div>
 
-            <!-- 獨立卡片：每日點餐截止 / 鎖定時間設定 -->
-            <div class="card card-accent">
-                <h3>⏰ 每日點餐截止 </h3>
-                <p style="color:var(--text-sub); font-size:13px; margin: 0 0 14px 0;">
-                    設定指定日期的截止點餐時間，系統時間到達後前台將自動停止接受該日期的新訂單。
-                </p>
-                <div class="lock-setting-row">
-                    <div class="lock-input-group">
-                        <label for="lockDateInput">截止日期：</label>
-                        <input type="date" id="lockDateInput">
-                        
-                        <label for="lockTimeInput">截止時間：</label>
-                        <input type="time" id="lockTimeInput" value="10:30">
-                        
-                        <button class="btn" onclick="saveLockTime()">💾 儲存時間</button>
+            <!-- 每日點餐截止設定面板 -->
+            <div class="card card-accent relative overflow-hidden">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2 text-emerald-800 font-bold text-base mb-1">
+                            <i class="fa-solid fa-clock text-emerald-600"></i>
+                            <span>每日點餐截止鎖定設定</span>
+                        </div>
+                        <p class="text-xs text-slate-500">
+                            設定指定日期的截止時間，系統時間到達後前台將自動停止接受新訂單。
+                        </p>
                     </div>
-                    <div style="width: 100%; margin-top: 4px;">
-                        <span id="lockTimeDisplay" style="color: var(--primary); font-size: 13px; font-weight: 600;"></span>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <input type="date" id="lockDateInput" class="w-auto text-sm">
+                            <input type="time" id="lockTimeInput" value="10:30" class="w-auto text-sm">
+                        </div>
+                        <button class="btn text-sm py-2" onclick="saveLockTime()">
+                            <i class="fa-solid fa-floppy-disk"></i> 儲存時間
+                        </button>
                     </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span id="lockTimeDisplay" class="font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200"></span>
+                    <span class="text-slate-400"><i class="fa-solid fa-circle-info mr-1"></i>到達截止時間後前台將切換為已鎖定</span>
                 </div>
             </div>
 
             <!-- 4 大營運數據指標 -->
-            <div class="summary-container">
-                <div class="summary-box">
-                    <span class="title">今日總訂單數</span>
-                    <span class="value" id="summaryCount">0 筆</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">今日總訂單</span>
+                        <span class="text-2xl font-extrabold text-slate-800 tracking-tight" id="summaryCount">0 筆</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
                 </div>
-                <div class="summary-box box-money">
-                    <span class="title">今日總營業額</span>
-                    <span class="value" id="summaryAmount">$0</span>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">今日總營業額</span>
+                        <span class="text-2xl font-extrabold text-slate-800 tracking-tight" id="summaryAmount">$0</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-sack-dollar"></i>
+                    </div>
                 </div>
-                <div class="summary-box box-unpaid">
-                    <span class="title">未繳費訂單</span>
-                    <span class="value" id="summaryUnpaid">0 筆</span>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">未繳費訂單</span>
+                        <span class="text-2xl font-extrabold text-rose-600 tracking-tight" id="summaryUnpaid">0 筆</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </div>
                 </div>
-                <div class="summary-box box-store">
-                    <span class="title">開放中店家</span>
-                    <span class="value" id="summaryActiveStores">0 家</span>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">開放中店家</span>
+                        <span class="text-2xl font-extrabold text-slate-800 tracking-tight" id="summaryActiveStores">0 家</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
                 </div>
             </div>
 
+            <!-- 主表格區域 -->
             <div class="card">
-                <h3>當天訂單紀錄 </h3>
-                
-                <!-- 膠囊切換列 -->
-                <div class="segmented-control-wrapper">
-                    <div class="segmented-control">
-                        <button class="segmented-btn active" onclick="setOverviewCategory('all', this)">全部品項</button>
-                        <button class="segmented-btn" onclick="setOverviewCategory('drink', this)">🥤 喝涼涼</button>
-                        <button class="segmented-btn" onclick="setOverviewCategory('food', this)">🍱 美味餐點</button>
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-emerald-600"></i> 當天訂單動態紀錄
+                    </h3>
+                    
+                    <!-- 膠囊切換列 -->
+                    <div class="segmented-control-wrapper mb-0">
+                        <div class="segmented-control">
+                            <button class="segmented-btn active" onclick="setOverviewCategory('all', this)">
+                                <i class="fa-solid fa-border-all"></i> 全部品項
+                            </button>
+                            <button class="segmented-btn" onclick="setOverviewCategory('drink', this)">
+                                <i class="fa-solid fa-glass-water"></i> 喝涼涼
+                            </button>
+                            <button class="segmented-btn" onclick="setOverviewCategory('food', this)">
+                                <i class="fa-solid fa-utensils"></i> 美味餐點
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="action-row">
-                    <div class="search-group">
-                        <input type="text" id="orderSearchInput" placeholder="搜尋姓名、卡號或餐點..." oninput="filterOrders('today')">
+                <!-- 工具列：搜尋與按鈕群 -->
+                <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 mb-5">
+                    <div class="relative flex-1 max-w-md">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                        <input type="text" id="orderSearchInput" placeholder="搜尋姓名、卡號、餐點或部門..." class="pl-10" oninput="filterOrders('today')">
                     </div>
-                    <div class="action-btn-group">
-                        <button class="btn btn-line" onclick="sendLineAnnouncement()">💬 LINE 訂餐公告</button>
-                        <button class="btn btn-secondary" onclick="showStoreSummaryModal()">📊 店家統計</button>
-                        <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('today', 'drink')">🥤 匯出飲料 CSV</button>
-                        <button class="btn btn-excel-food" onclick="exportCategoryToCSV('today', 'food')">🍱 美味餐點 CSV</button>
-                        <button class="btn btn-secondary" onclick="loadOrders()">🔄 刷新</button>
-                        <span id="syncStatus" style="color: var(--text-sub); font-size: 13px; font-weight: 500; white-space: nowrap; margin-left: 6px; align-self: center;"></span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button class="btn btn-line text-xs py-2" onclick="sendLineAnnouncement()">
+                            <i class="fa-brands fa-line text-base"></i> LINE 公告
+                        </button>
+                        <button class="btn btn-secondary text-xs py-2" onclick="showStoreSummaryModal()">
+                            <i class="fa-solid fa-chart-column"></i> 店家統計
+                        </button>
+                        <button class="btn btn-excel-drink text-xs py-2" onclick="exportCategoryToCSV('today', 'drink')">
+                            <i class="fa-solid fa-file-csv"></i> 匯出飲料 CSV
+                        </button>
+                        <button class="btn btn-excel-food text-xs py-2" onclick="exportCategoryToCSV('today', 'food')">
+                            <i class="fa-solid fa-file-csv"></i> 匯出餐點 CSV
+                        </button>
+                        <button class="btn btn-secondary text-xs py-2" onclick="loadOrders()">
+                            <i class="fa-solid fa-rotate"></i> 刷新
+                        </button>
+                        <span id="syncStatus" class="text-xs text-slate-400 font-medium ml-1"></span>
                     </div>
                 </div>
 
@@ -955,7 +845,7 @@
                             </tr>
                         </thead>
                         <tbody id="orderTableBody">
-                            <tr><td colspan="10" style="text-align:center; color:#999;">資料載入中...</td></tr>
+                            <tr><td colspan="10" class="text-center py-8 text-slate-400">資料載入中...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -964,22 +854,27 @@
 
         <!-- 分頁二：店家管理 -->
         <div id="store-mgr" class="tab-content">
-            <div class="header">
-                <h1>🏪 店家開放權限管理</h1>
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-slate-800">🏪 店家開放權限管理</h1>
+                <p class="text-xs text-slate-500 mt-1">即時開啟或關閉前台可供點餐之店家</p>
             </div>
 
             <div class="store-tab-bar">
-                <button type="button" class="store-subtab-btn active" onclick="switchStoreTab('food', this)">🍱 美味餐點店家</button>
-                <button type="button" class="store-subtab-btn" onclick="switchStoreTab('drink', this)">🥤 喝涼涼店家</button>
+                <button type="button" class="store-subtab-btn active" onclick="switchStoreTab('food', this)">
+                    <i class="fa-solid fa-utensils mr-2"></i>美味餐點店家
+                </button>
+                <button type="button" class="store-subtab-btn" onclick="switchStoreTab('drink', this)">
+                    <i class="fa-solid fa-glass-water mr-2"></i>喝涼涼店家
+                </button>
             </div>
             
             <div id="subtab-food" class="store-subtab-content" style="display: block;">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                        <h3 style="margin: 0;">🍱 美味餐點 - 開放店家設定</h3>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary" style="font-size: 12px; min-height: 34px; padding: 6px 12px;" onclick="toggleAllStores('美味餐點', true)">🔓 全選開放</button>
-                            <button class="btn btn-danger-light" style="font-size: 12px; min-height: 34px; padding: 6px 12px;" onclick="toggleAllStores('美味餐點', false)">🔒 全選關閉</button>
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h3 class="text-base font-bold text-slate-800">🍱 美味餐點 - 開放店家控制</h3>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary text-xs py-1.5 px-3 min-h-0" onclick="toggleAllStores('美味餐點', true)">🔓 全選開放</button>
+                            <button class="btn btn-danger-light text-xs py-1.5 px-3 min-h-0" onclick="toggleAllStores('美味餐點', false)">🔒 全選關閉</button>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -994,7 +889,7 @@
                                 </tr>
                             </thead>
                             <tbody id="foodStoreTableBody">
-                                <tr><td colspan="5" style="text-align:center; color:#999;">載入中...</td></tr>
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400">載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1003,11 +898,11 @@
 
             <div id="subtab-drink" class="store-subtab-content" style="display: none;">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                        <h3 style="margin: 0;">🥤 喝涼涼 - 開放店家設定</h3>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary" style="font-size: 12px; min-height: 34px; padding: 6px 12px;" onclick="toggleAllStores('喝涼涼', true)">🔓 全選開放</button>
-                            <button class="btn btn-danger-light" style="font-size: 12px; min-height: 34px; padding: 6px 12px;" onclick="toggleAllStores('喝涼涼', false)">🔒 全選關閉</button>
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h3 class="text-base font-bold text-slate-800">🥤 喝涼涼 - 開放店家控制</h3>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary text-xs py-1.5 px-3 min-h-0" onclick="toggleAllStores('喝涼涼', true)">🔓 全選開放</button>
+                            <button class="btn btn-danger-light text-xs py-1.5 px-3 min-h-0" onclick="toggleAllStores('喝涼涼', false)">🔒 全選關閉</button>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -1022,7 +917,7 @@
                                 </tr>
                             </thead>
                             <tbody id="drinkStoreTableBody">
-                                <tr><td colspan="5" style="text-align:center; color:#999;">載入中...</td></tr>
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400">載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1030,14 +925,18 @@
             </div>
         </div>
 
-        <!-- 分頁三：喝涼涼紀錄 -->
+        <!-- 分頁三：喝涼涼歷史紀錄 -->
         <div id="drink-mgr" class="tab-content">
-            <div class="header">
-                <h1>🥤 喝涼涼 - 飲料歷史紀錄</h1>
-                <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('history', 'drink')">📥 匯出飲料歷史 CSV</button>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">🥤 喝涼涼 - 飲料歷史紀錄</h1>
+                    <p class="text-xs text-slate-500 mt-1">檢視完整歷史飲品點餐與繳費明細</p>
+                </div>
+                <button class="btn btn-excel-drink" onclick="exportCategoryToCSV('history', 'drink')">
+                    <i class="fa-solid fa-file-csv"></i> 匯出飲料歷史 CSV
+                </button>
             </div>
             <div class="card">
-                <h3>完整歷史飲料訂單紀錄</h3>
                 <div class="scrollable-table-container">
                     <div class="table-responsive">
                         <table>
@@ -1054,7 +953,7 @@
                                 </tr>
                             </thead>
                             <tbody id="drinkTableBody">
-                                <tr><td colspan="8" style="text-align:center; color:#999;">資料載入中...</td></tr>
+                                <tr><td colspan="8" class="text-center py-8 text-slate-400">資料載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1062,14 +961,18 @@
             </div>
         </div>
 
-        <!-- 分頁四：美味餐點紀錄 -->
+        <!-- 分頁四：美味餐點歷史紀錄 -->
         <div id="food-mgr" class="tab-content">
-            <div class="header">
-                <h1>🍱 美味餐點 - 正餐歷史紀錄</h1>
-                <button class="btn btn-excel-food" onclick="exportCategoryToCSV('history', 'food')">📥 匯出正餐歷史 CSV</button>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">🍱 美味餐點 - 正餐歷史紀錄</h1>
+                    <p class="text-xs text-slate-500 mt-1">檢視完整歷史餐點點餐與繳費明細</p>
+                </div>
+                <button class="btn btn-excel-food" onclick="exportCategoryToCSV('history', 'food')">
+                    <i class="fa-solid fa-file-csv"></i> 匯出正餐歷史 CSV
+                </button>
             </div>
             <div class="card">
-                <h3>完整歷史餐點訂單紀錄</h3>
                 <div class="scrollable-table-container">
                     <div class="table-responsive">
                         <table>
@@ -1086,7 +989,7 @@
                                 </tr>
                             </thead>
                             <tbody id="foodTableBody">
-                                <tr><td colspan="8" style="text-align:center; color:#999;">資料載入中...</td></tr>
+                                <tr><td colspan="8" class="text-center py-8 text-slate-400">資料載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1096,33 +999,38 @@
 
         <!-- 分頁五：員工管理 -->
         <div id="employee-mgr" class="tab-content">
-            <div class="header">
-                <h1>🪪 員工卡號管理</h1>
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-slate-800">🪪 員工卡號與權限管理</h1>
+                <p class="text-xs text-slate-500 mt-1">管理公司員工點餐認證卡號與部門對應</p>
             </div>
 
             <div class="card">
-                <h3>新增員工卡號資料</h3>
-                <div class="form-group">
+                <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-emerald-600"></i> 新增員工卡號資料
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <div>
-                        <label for="newCardId">員工卡號</label>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">員工卡號</label>
                         <input type="text" id="newCardId" placeholder="例如: 12345">
                     </div>
                     <div>
-                        <label for="newEmpName">員工姓名</label>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">員工姓名</label>
                         <input type="text" id="newEmpName" placeholder="例如: 王小明">
                     </div>
                     <div>
-                        <label for="newDepartment">部門</label>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">部門</label>
                         <input type="text" id="newDepartment" placeholder="例如: 管理部">
                     </div>
                     <div>
-                        <button class="btn" style="width: 100%; height: 42px;" onclick="addNewEmployee()">儲存並加入</button>
+                        <button class="btn w-full" onclick="addNewEmployee()">
+                            <i class="fa-solid fa-plus"></i> 儲存並加入
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h3>員工卡號清單</h3>
+                <h3 class="text-base font-bold text-slate-800 mb-4">員工清單目錄</h3>
                 <div class="scrollable-table-container">
                     <div class="table-responsive">
                         <table>
@@ -1136,7 +1044,7 @@
                                 </tr>
                             </thead>
                             <tbody id="cardTableBody">
-                                <tr><td colspan="5" style="text-align:center; color:#999;">資料載入中...</td></tr>
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400">資料載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1150,15 +1058,15 @@
     <div id="customModal" class="modal-overlay">
         <div class="modal-window">
             <div class="modal-header">
-                <h4 class="modal-title" id="modalTitle">提示</h4>
-                <button class="modal-close-btn" onclick="closeCustomModal()">×</button>
+                <h4 class="modal-title" id="modalTitle">系統提示</h4>
+                <button class="modal-close-btn" onclick="closeCustomModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="modal-body" id="modalMessage">
                 提示內容
             </div>
             <div class="modal-footer" id="modalFooter">
-                <button class="btn btn-secondary" id="modalCancelBtn" onclick="closeCustomModal()">取消</button>
-                <button class="btn" id="modalConfirmBtn">確定</button>
+                <button class="btn btn-secondary text-sm py-2" id="modalCancelBtn" onclick="closeCustomModal()">取消</button>
+                <button class="btn text-sm py-2" id="modalConfirmBtn">確定</button>
             </div>
         </div>
     </div>
@@ -1229,9 +1137,9 @@
             const roleName = (ROLE_PERMISSIONS[role] && ROLE_PERMISSIONS[role].name) || '未知角色';
             const adminName = localStorage.getItem('currentAdminName') || '管理員';
             
-            const adminInfoElem = document.getElementById('adminDisplayInfo');
+            const adminInfoElem = document.getElementById('adminNameText');
             if (adminInfoElem) {
-                adminInfoElem.innerText = `☁️ ${adminName} [${roleName}]`;
+                adminInfoElem.innerText = `${adminName} [${roleName}]`;
             }
         }
 
@@ -1257,8 +1165,7 @@
             return { name: '', department: '未劃分' };
         }
 
-        // ------------------ 店家資料清單 (權威版本) ------------------
-
+        // ------------------ 店家資料清單 (63間權威版本) ------------------
         let storeList = [
             { id: 'store_1', name: '八方雲集', category: '美味餐點', isOpen: true },
             { id: 'store_2', name: '飯大廚', category: '美味餐點', isOpen: false },
@@ -1325,11 +1232,6 @@
             { id: 'store_63', name: '李王麻辣專賣', category: '美味餐點', isOpen: false }
         ];
 
-        /**
-         * 智慧型店家整合機制：
-         * 強制以 HTML 定義的最新店家名稱與類別為主，僅向外部/舊快取讀取 isOpen (開關狀態)。
-         * 避免舊區塊與過期數據（如青蔬寶蔬食滷味、凡凡滷味）覆蓋最新資料。
-         */
         function mergeStoreStates(savedStores) {
             if (!Array.isArray(savedStores)) return;
             const stateMap = {};
@@ -1375,7 +1277,7 @@ ${openStores}
 
             showCustomModal({
                 title: '確認發送 LINE 公告',
-                message: `確定要發送以下內容至 LINE 群組嗎？<br><br><pre style="background:#f4f4f4; padding:12px; border-radius:8px; font-size:12px; text-align:left; white-space:pre-wrap;">${announcementMsg}</pre>`,
+                message: `確定要發送以下內容至 LINE 群組嗎？<br><br><pre style="background:#f8fafc; padding:12px; border-radius:8px; font-size:12px; border:1px solid #e2e8f0; text-align:left; white-space:pre-wrap;">${announcementMsg}</pre>`,
                 isConfirm: true,
                 onConfirm: () => {
                     const lineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(frontendUrl)}&text=${encodeURIComponent(announcementMsg)}`;
@@ -1399,27 +1301,26 @@ ${openStores}
             const foodStores = storeList.filter(s => s.category === '美味餐點');
             const drinkStores = storeList.filter(s => s.category === '喝涼涼');
 
-            // 更新儀表板開放店家數
             const activeCount = storeList.filter(s => s.isOpen).length;
             const activeStoreElem = document.getElementById('summaryActiveStores');
             if (activeStoreElem) activeStoreElem.innerText = `${activeCount} 家`;
 
             const buildRows = (list) => {
                 if (list.length === 0) {
-                    return `<tr><td colspan="5" style="text-align:center; color:#999;">尚無店家資料</td></tr>`;
+                    return `<tr><td colspan="5" class="text-center py-8 text-slate-400">尚無店家資料</td></tr>`;
                 }
                 return list.map(store => {
                     const statusBadge = store.isOpen 
-                        ? `<span class="badge badge-paid">🟢 開放點餐中</span>` 
-                        : `<span class="badge badge-unpaid">🔴 尚未開放</span>`;
+                        ? `<span class="badge badge-paid"><i class="fa-solid fa-circle text-[8px]"></i> 開放點餐中</span>` 
+                        : `<span class="badge badge-unpaid"><i class="fa-solid fa-circle text-[8px]"></i> 尚未開放</span>`;
                     
                     const permissionText = store.isOpen 
-                        ? `<span style="color:var(--primary); font-weight:600;">員工可自由點餐</span>` 
-                        : `<span style="color:var(--text-sub);">員工無法點選</span>`;
+                        ? `<span class="text-emerald-700 font-semibold text-xs"><i class="fa-solid fa-check mr-1"></i>員工可自由點餐</span>` 
+                        : `<span class="text-slate-400 text-xs"><i class="fa-solid fa-lock mr-1"></i>員工無法點選</span>`;
 
                     const actionBtn = store.isOpen
-                        ? `<button class="btn-delete" onclick="closeStore('${store.id}')">🔒 關閉</button>`
-                        : `<button class="btn" style="padding:4px 10px; font-size:12px; min-height:32px;" onclick="openStore('${store.id}')">🔓 開放</button>`;
+                        ? `<button class="btn-delete" onclick="closeStore('${store.id}')"><i class="fa-solid fa-lock mr-1"></i>關閉</button>`
+                        : `<button class="btn text-xs py-1.5 px-3 min-h-0" onclick="openStore('${store.id}')"><i class="fa-solid fa-unlock mr-1"></i>開放</button>`;
 
                     const categoryBadgeClass = store.category === '喝涼涼' ? 'badge-drink' : 'badge-food';
 
@@ -1549,11 +1450,11 @@ ${openStores}
             if (loadedTime) document.getElementById('lockTimeInput').value = loadedTime;
 
             if (loadedDate && loadedTime) {
-                document.getElementById('lockTimeDisplay').innerText = `[目前截止：${loadedDate} ${loadedTime}]`;
+                document.getElementById('lockTimeDisplay').innerText = `目前截止時間：${loadedDate} ${loadedTime}`;
             } else if (loadedTime) {
-                document.getElementById('lockTimeDisplay').innerText = `[目前截止：每日 ${loadedTime}]`;
+                document.getElementById('lockTimeDisplay').innerText = `目前截止時間：每日 ${loadedTime}`;
             } else {
-                document.getElementById('lockTimeDisplay').innerText = `[目前狀態：無限制]`;
+                document.getElementById('lockTimeDisplay').innerText = `目前狀態：無限制`;
             }
         }
 
@@ -1589,7 +1490,7 @@ ${openStores}
             } catch (error) {
                 showCustomModal({ message: `已更新截止時間：${lockDate} ${lockTime}` });
             }
-            document.getElementById('lockTimeDisplay').innerText = `[目前截止：${lockDate} ${lockTime}]`;
+            document.getElementById('lockTimeDisplay').innerText = `目前截止時間：${lockDate} ${lockTime}`;
         }
 
         function isDrinkOrder(order) {
@@ -1756,21 +1657,21 @@ ${openStores}
                 storeMap[storeName].items[mealName].amount += price;
             });
 
-            let htmlContent = `<div style="display:flex; flex-direction:column; gap:12px;">`;
+            let htmlContent = `<div class="flex flex-col gap-3">`;
             Object.keys(storeMap).forEach(store => {
                 const storeData = storeMap[store];
                 htmlContent += `
                     <div class="store-summary-card">
                         <div class="store-summary-title">
                             <span>🏪 ${store}</span>
-                            <span style="font-size:13px; color:var(--text-sub);">共 ${storeData.totalCount} 份 | $${storeData.totalAmount}</span>
+                            <span class="text-xs text-slate-500 font-medium">共 ${storeData.totalCount} 份 | $${storeData.totalAmount}</span>
                         </div>
                         <table style="min-width:100%; border-collapse:collapse; font-size:13px;">
                             <thead>
-                                <tr style="background:#edf2f0; color:var(--text-sub);">
-                                    <th style="padding:6px; text-align:left;">餐點</th>
-                                    <th style="padding:6px; text-align:center;">數量</th>
-                                    <th style="padding:6px; text-align:right;">小計</th>
+                                <tr style="background:#f1f5f9; color:#64748b;">
+                                    <th style="padding:6px 8px; text-align:left;">餐點</th>
+                                    <th style="padding:6px 8px; text-align:center;">數量</th>
+                                    <th style="padding:6px 8px; text-align:right;">小計</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1778,10 +1679,10 @@ ${openStores}
                 Object.keys(storeData.items).forEach(item => {
                     const itemData = storeData.items[item];
                     htmlContent += `
-                        <tr style="border-bottom:1px dashed var(--border-color);">
-                            <td style="padding:6px; font-weight:600;">${item}</td>
-                            <td style="padding:6px; text-align:center; color:var(--primary); font-weight:700;">x${itemData.count}</td>
-                            <td style="padding:6px; text-align:right; font-weight:600;">$${itemData.amount}</td>
+                        <tr style="border-bottom:1px dashed #e2e8f0;">
+                            <td style="padding:6px 8px; font-weight:600;">${item}</td>
+                            <td style="padding:6px 8px; text-align:center; color:#047857; font-weight:700;">x${itemData.count}</td>
+                            <td style="padding:6px 8px; text-align:right; font-weight:600;">$${itemData.amount}</td>
                         </tr>
                     `;
                 });
@@ -1822,7 +1723,7 @@ ${openStores}
             }
 
             if (employeeList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999;">目前無任何員工資料</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">目前無任何員工資料</td></tr>`;
                 return;
             }
 
@@ -1830,13 +1731,13 @@ ${openStores}
                 const cardId = emp.cardId || emp.id || '';
                 return `
                     <tr>
-                        <td data-label="員工卡號"><code style="background:var(--primary-light); padding:2px 6px; border-radius:4px; color:var(--primary);">${cardId}</code></td>
+                        <td data-label="員工卡號"><code class="bg-emerald-50 text-emerald-800 font-mono px-2 py-0.5 rounded text-xs border border-emerald-200">${cardId}</code></td>
                         <td data-label="員工姓名"><strong>${emp.name || '未知'}</strong></td>
-                        <td data-label="權限狀態"><span class="badge badge-paid">已授權</span></td>
+                        <td data-label="權限狀態"><span class="badge badge-paid"><i class="fa-solid fa-check text-[10px]"></i> 已授權</span></td>
                         <td data-label="部門"><span class="badge badge-dept">${emp.department || '未劃分'}</span></td>
                         <td data-label="操作">
-                            <button class="btn-edit" onclick="openEditEmployeeModal('${cardId}')">✏️ 編輯</button>
-                            <button class="btn-delete" onclick="deleteEmployee('${cardId}')">❌ 刪除</button>
+                            <button class="btn-edit" onclick="openEditEmployeeModal('${cardId}')"><i class="fa-solid fa-pen mr-1"></i>編輯</button>
+                            <button class="btn-delete" onclick="deleteEmployee('${cardId}')"><i class="fa-solid fa-trash mr-1"></i>刪除</button>
                         </td>
                     </tr>
                 `;
@@ -1854,15 +1755,15 @@ ${openStores}
                 message: `
                     <div style="display:flex; flex-direction:column; gap:12px;">
                         <div>
-                            <label style="font-size:12px; font-weight:600;">卡號</label>
-                            <input type="text" value="${cardId}" disabled style="background:#eee;">
+                            <label style="font-size:12px; font-weight:600; color:#64748b;">卡號</label>
+                            <input type="text" value="${cardId}" disabled style="background:#f1f5f9; cursor:not-allowed;">
                         </div>
                         <div>
-                            <label style="font-size:12px; font-weight:600;">姓名</label>
+                            <label style="font-size:12px; font-weight:600; color:#64748b;">姓名</label>
                             <input type="text" id="editEmpName" value="${empInfo.name}">
                         </div>
                         <div>
-                            <label style="font-size:12px; font-weight:600;">部門</label>
+                            <label style="font-size:12px; font-weight:600; color:#64748b;">部門</label>
                             <input type="text" id="editEmpDepartment" value="${empInfo.department}">
                         </div>
                     </div>
@@ -2023,7 +1924,7 @@ ${openStores}
                 if (statusSpan) statusSpan.innerText = `最後同步：${new Date().toLocaleTimeString('zh-TW', { hour12: false })}`;
 
             } catch (error) {
-                document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--danger);">同步失敗</td></tr>`;
+                document.getElementById('orderTableBody').innerHTML = `<tr><td colspan="10" class="text-center py-8 text-rose-500">同步失敗</td></tr>`;
                 if (statusSpan) statusSpan.innerText = "同步失敗";
             }
         }
@@ -2043,7 +1944,7 @@ ${openStores}
             if (!tbody) return;
 
             if (!orders || orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${hideCategoryCol ? 8 : 10}" style="text-align:center; color:#999;">無點餐紀錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${hideCategoryCol ? 8 : 10}" class="text-center py-8 text-slate-400">無點餐紀錄</td></tr>`;
                 return;
             }
 
@@ -2073,29 +1974,34 @@ ${openStores}
                 }
 
                 const isPaid = order.isPaid === true || order.isPaid === 'true';
-                const paidBadge = isPaid ? `<span class="badge badge-paid">已繳費</span>` : `<span class="badge badge-unpaid">未繳費</span>`;
+                const paidBadge = isPaid 
+                    ? `<span class="badge badge-paid"><i class="fa-solid fa-circle-check"></i> 已繳費</span>` 
+                    : `<span class="badge badge-unpaid"><i class="fa-solid fa-circle-xmark"></i> 未繳費</span>`;
+                
                 const isDrink = isDrinkOrder(order);
-                const categoryBadge = isDrink ? `<span class="badge badge-drink">🥤 喝涼涼</span>` : `<span class="badge badge-food">🍱 美味餐點</span>`;
+                const categoryBadge = isDrink 
+                    ? `<span class="badge badge-drink"><i class="fa-solid fa-glass-water"></i> 喝涼涼</span>` 
+                    : `<span class="badge badge-food"><i class="fa-solid fa-utensils"></i> 美味餐點</span>`;
 
                 return `
                     <tr>
-                        <td data-label="訂單編號"><code style="background:var(--primary-light); padding:2px 6px; border-radius:4px; color:var(--primary);">${orderIdStr || '無'}</code></td>
+                        <td data-label="訂單編號"><code class="bg-emerald-50 text-emerald-800 font-mono px-2 py-0.5 rounded text-xs border border-emerald-200">${orderIdStr || '無'}</code></td>
                         ${hideCategoryCol ? '' : `<td data-label="類別">${categoryBadge}</td>`}
                         <td data-label="部門"><span class="badge badge-dept">${department}</span></td>
-                        <td data-label="點餐人"><strong>${empName}</strong> <small style="color:#888;">(${cardId || '無卡號'})</small></td>
+                        <td data-label="點餐人"><strong>${empName}</strong> <small class="text-slate-400">(${cardId || '無卡號'})</small></td>
                         <td data-label="點餐時間">${timeHtml}</td>
                         <td data-label="明細" class="col-meal-detail">
-                            <strong style="color:var(--primary);">${order.meal || order.note || '未選擇品項'}</strong><br>
-                            <small style="color:var(--text-sub);">${isDrink ? '甜冰' : '客製'}: ${order.spicy || order.sauce || '無'} | 備註: ${order.note || '無'}</small>
+                            <strong class="text-emerald-800">${order.meal || order.note || '未選擇品項'}</strong><br>
+                            <small class="text-slate-500">${isDrink ? '甜冰' : '客製'}: ${order.spicy || order.sauce || '無'} | 備註: ${order.note || '無'}</small>
                         </td>
-                        <td data-label="總金額"><strong style="color:var(--danger);">$${order.total || order.amount || 0}</strong></td>
+                        <td data-label="總金額"><strong class="text-rose-600 font-extrabold">$${order.total || order.amount || 0}</strong></td>
                         <td data-label="繳費狀態">
                             ${paidBadge}
                             <button class="btn-status" onclick="toggleOrderPaymentStatus('${orderIdStr}', ${!isPaid})">切換</button>
                         </td>
-                        ${hideCategoryCol ? '' : `<td data-label="狀態"><span class="badge">已同步</span></td>`}
+                        ${hideCategoryCol ? '' : `<td data-label="狀態"><span class="badge bg-slate-100 text-slate-600">已同步</span></td>`}
                         <td data-label="操作">
-                            <button class="btn-delete" onclick="deleteOrder('${orderIdStr}')">❌ 刪除</button>
+                            <button class="btn-delete" onclick="deleteOrder('${orderIdStr}')"><i class="fa-solid fa-trash mr-1"></i>刪除</button>
                         </td>
                     </tr>
                 `;
@@ -2240,7 +2146,7 @@ ${openStores}
             // 1. 套用 RBAC 權限控管 UI
             applyRolePermissionsUI();
 
-            // 2. 智慧讀取並整合店家狀態（確保店家名稱永遠採用 HTML 最新定義）
+            // 2. 智慧讀取並整合店家狀態
             try {
                 const res = await fetch('/api/stores');
                 if (res.ok) {
@@ -2257,7 +2163,7 @@ ${openStores}
                 if (saved) mergeStoreStates(JSON.parse(saved));
             }
 
-            // 3. 自動更新本地 LocalStorage 快取為修正後的最新架構
+            // 3. 自動更新本地 LocalStorage 快取
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
             // 4. 渲染各模組資料
