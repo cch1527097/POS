@@ -150,7 +150,7 @@ async function checkIsCancelAllowed() {
     }
 }
 
-// 💡 核心輔助函式：模糊且精準地比對點餐店家 (解決名稱微小差異導致跳過檢測的問題)
+// 💡 核心輔助函式：智慧比對點餐店家 (含品牌簡稱與別名提取)
 function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     if (!Array.isArray(stores) || stores.length === 0) return null;
 
@@ -160,37 +160,35 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
         if (found) return found;
     }
 
-    const targetText = `${reqStoreName} ${cleanMeal}`.trim();
-    if (!targetText) return null;
+    const rawReqName = (reqStoreName || '').trim();
+    const rawMeal = (cleanMeal || '').trim();
+    const combinedText = `${rawReqName} ${rawMeal}`.trim();
+    if (!combinedText) return null;
 
-    // 2. 透過完整名稱雙向包含匹配
+    // 2. 完整名稱雙向包含比對
     for (const store of stores) {
         if (!store || !store.name) continue;
         const cleanName = store.name.replace(/\s*\([^)]*\)/g, '').trim();
         if (!cleanName) continue;
 
-        if (reqStoreName && (reqStoreName.includes(cleanName) || cleanName.includes(reqStoreName))) {
+        if (rawReqName && (rawReqName.includes(cleanName) || cleanName.includes(rawReqName))) {
             return store;
         }
-        if (cleanMeal.includes(cleanName)) {
+        if (rawMeal.includes(cleanName)) {
             return store;
         }
     }
 
-    // 3. 關鍵字去後綴模糊比對 (例如: 「李王麻辣鍋」與「李王麻辣專賣」皆能自動提煉出核心詞「李王麻辣」彙整)
-    const normalize = (str) => str.replace(/(專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|牛排|得利|飲料|茶飲|\s)/g, '').trim();
+    // 3. 核心品牌關鍵字提煉比對 (例如: 「得利牛排」->「得利」、「李王麻辣專賣」->「李王」)
+    const getBrandName = (str) => str.replace(/(牛排|專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|飲料|茶飲|食堂|丼飯|麵館|炒飯|煲仔飯|\s)/g, '').trim();
 
     for (const store of stores) {
         if (!store || !store.name) continue;
         const cleanName = store.name.replace(/\s*\([^)]*\)/g, '').trim();
-        const coreStoreName = normalize(cleanName);
+        const brand = getBrandName(cleanName);
 
-        if (coreStoreName.length >= 2) {
-            const normalizedReq = normalize(reqStoreName);
-            const normalizedMeal = normalize(cleanMeal);
-            if (normalizedReq.includes(coreStoreName) || normalizedMeal.includes(coreStoreName) || targetText.includes(coreStoreName)) {
-                return store;
-            }
+        if (brand.length >= 2 && combinedText.includes(brand)) {
+            return store;
         }
     }
 
@@ -1067,9 +1065,28 @@ app.post('/api/order', async (req, res) => {
             let stores = [];
             try { stores = JSON.parse(storeListRes.rows[0].value) || []; } catch(e) { stores = []; }
             
-            // 💡 使用增強型智慧比對函數查找對應店家
-            const matchedStore = findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal);
+            // 1. 主要智慧比對
+            let matchedStore = findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal);
 
+            // 2. 💡 雙重防護機制：若主要比對沒抓到，針對「所有未開放店家」進行二次關鍵字與品牌比對，防止遺漏
+            if (!matchedStore && stores.length > 0) {
+                const checkText = `${reqStoreId} ${reqStoreName} ${cleanMeal}`;
+                const getBrandName = (str) => str.replace(/(牛排|專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|飲料|茶飲|食堂|丼飯|麵館|\s)/g, '').trim();
+
+                for (const store of stores) {
+                    if (store && !store.isOpen && store.name) {
+                        const cleanName = store.name.replace(/\s*\([^)]*\)/g, '').trim();
+                        const brand = getBrandName(cleanName);
+
+                        if ((cleanName && checkText.includes(cleanName)) || (brand && brand.length >= 2 && checkText.includes(brand))) {
+                            matchedStore = store;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 3. 只要比對到未開放店家，一律傳回 403 阻擋下單
             if (matchedStore && !matchedStore.isOpen) {
                 const displayStoreName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
                 return res.status(403).json({
