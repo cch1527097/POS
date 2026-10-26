@@ -150,6 +150,53 @@ async function checkIsCancelAllowed() {
     }
 }
 
+// 💡 核心輔助函式：模糊且精準地比對點餐店家 (解決名稱微小差異導致跳過檢測的問題)
+function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
+    if (!Array.isArray(stores) || stores.length === 0) return null;
+
+    // 1. 優先透過 storeId 精確匹配
+    if (reqStoreId) {
+        const found = stores.find(s => s && s.id === reqStoreId);
+        if (found) return found;
+    }
+
+    const targetText = `${reqStoreName} ${cleanMeal}`.trim();
+    if (!targetText) return null;
+
+    // 2. 透過完整名稱雙向包含匹配
+    for (const store of stores) {
+        if (!store || !store.name) continue;
+        const cleanName = store.name.replace(/\s*\([^)]*\)/g, '').trim();
+        if (!cleanName) continue;
+
+        if (reqStoreName && (reqStoreName.includes(cleanName) || cleanName.includes(reqStoreName))) {
+            return store;
+        }
+        if (cleanMeal.includes(cleanName)) {
+            return store;
+        }
+    }
+
+    // 3. 關鍵字去後綴模糊比對 (例如: 「李王麻辣鍋」與「李王麻辣專賣」皆能自動提煉出核心詞「李王麻辣」彙整)
+    const normalize = (str) => str.replace(/(專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|飲料|茶飲|\s)/g, '').trim();
+
+    for (const store of stores) {
+        if (!store || !store.name) continue;
+        const cleanName = store.name.replace(/\s*\([^)]*\)/g, '').trim();
+        const coreStoreName = normalize(cleanName);
+
+        if (coreStoreName.length >= 2) {
+            const normalizedReq = normalize(reqStoreName);
+            const normalizedMeal = normalize(cleanMeal);
+            if (normalizedReq.includes(coreStoreName) || normalizedMeal.includes(coreStoreName) || targetText.includes(coreStoreName)) {
+                return store;
+            }
+        }
+    }
+
+    return null;
+}
+
 // 同步寫入 public/orders.json
 async function syncOrdersJsonFile() {
     try {
@@ -1019,21 +1066,9 @@ app.post('/api/order', async (req, res) => {
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
             let stores = [];
             try { stores = JSON.parse(storeListRes.rows[0].value) || []; } catch(e) { stores = []; }
-            let matchedStore = null;
-
-            if (reqStoreId) {
-                matchedStore = stores.find(s => s && s.id === reqStoreId);
-            }
-
-            if (!matchedStore) {
-                matchedStore = stores.find(s => {
-                    if (!s || !s.name) return false;
-                    const cleanName = s.name.replace(/\s*\([^)]*\)/g, '').trim();
-                    if (!cleanName) return false;
-                    if (reqStoreName && (reqStoreName.includes(cleanName) || cleanName.includes(reqStoreName))) return true;
-                    return cleanMeal.includes(cleanName);
-                });
-            }
+            
+            // 💡 使用增強型智慧比對函數查找對應店家
+            const matchedStore = findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal);
 
             if (matchedStore && !matchedStore.isOpen) {
                 const displayStoreName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
