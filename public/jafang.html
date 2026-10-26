@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>青蔬寶蔬食滷味 - 智慧點餐系統</title>
+    <title>得利牛排 - 智慧點餐系統</title>
     <style>
         html { scroll-behavior: smooth; }
 
         :root { 
-            --primary: #276749;       /* 質感森林綠 */
-            --primary-light: #f0fdf4; /* 淡綠底色 */
-            --secondary: #dd6b20;      /* 暖橘點綴 */
-            --accent: #c53030;        /* 濃紅 */
-            --bg-main: #f4f6f9;       /* 輕灰底色 */
-            --text-dark: #2d3748;      /* 深色文字 */
-            --text-muted: #718096;    /* 輔助灰色 */
+            --primary: #c0392b;       /* 溫暖硃砂紅 */
+            --primary-light: #fdf2f2; /* 淡紅底色 */
+            --secondary: #e67e22;      /* 暖橘點綴 */
+            --accent: #d35400;        /* 深橘紅 */
+            --bg-main: #fcfbfa;       /* 柔和輕灰底色 */
+            --text-dark: #2c3e50;      /* 深色文字 */
+            --text-muted: #7f8c8d;    /* 輔助灰色 */
             --border-color: #e2e8f0;  /* 邊框線條 */
         }
 
@@ -103,10 +103,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
+            font-size: 24px;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(39, 103, 73, 0.2);
+            box-shadow: 0 4px 10px rgba(192, 57, 43, 0.25);
             flex-shrink: 0;
+            text-align: center;
+            line-height: 1.2;
         }
         .store-details h1 { margin: 0 0 8px 0; font-size: 22px; font-weight: 700; }
         .store-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--text-muted); }
@@ -176,7 +178,7 @@
 
         .menu-content { flex: 1; min-width: 0; }
         .category-block { margin-bottom: 30px; scroll-margin-top: 70px; }
-        .category-title { font-size: 18px; font-weight: 700; color: var(--primary); margin: 0 0 14px 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 6px; }
+        .category-title { font-size: 18px; font-weight: 700; color: var(--primary); margin: 0 0 14px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
         
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
         
@@ -220,6 +222,37 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
+        .opt-group { margin-top: 12px; }
+        .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 6px; font-size: 14px; color: var(--text-dark); }
+        
+        /* 圖形化按鈕選項樣式 */
+        .opt-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .opt-btn {
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            color: #334155;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .opt-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .opt-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(192, 57, 43, 0.3);
+        }
+
         /* ==================== 懸浮圓形按鈕群 & 截止時間懸浮元件 ==================== */
         .fab-container {
             position: fixed;
@@ -262,7 +295,7 @@
         }
 
         .fab-cart {
-            background-color: var(--primary);
+            background-color: #278638;
             position: relative;
         }
 
@@ -285,7 +318,7 @@
             bottom: 220px;
             right: 20px;
             background: #ffffff;
-            border: 2px solid #4e803c;
+            border: 2px solid var(--primary);
             border-radius: 14px;
             padding: 10px 14px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
@@ -302,7 +335,7 @@
 
         .cutoff-title {
             font-size: 12px;
-            color: #2b4c23;
+            color: var(--primary);
             font-weight: bold;
             margin-bottom: 2px;
             display: flex;
@@ -313,7 +346,7 @@
         .cutoff-time-text {
             font-size: 13px;
             font-weight: 800;
-            color: #2b4c23;
+            color: var(--primary);
             margin-bottom: 4px;
             line-height: 1.2;
         }
@@ -337,7 +370,6 @@
             border-color: #d0d0d0;
         }
 
-        /* 購物車數量紅點標籤 */
         .cart-badge {
             position: absolute;
             top: -4px;
@@ -462,7 +494,7 @@
             border-radius: 8px;
             cursor: pointer;
         }
-        .btn-modal-confirm:hover { background: #1c4d37; }
+        .btn-modal-confirm:hover { background: #a02d22; }
 
         .custom-item-tag {
             font-size: 12px;
@@ -472,62 +504,6 @@
             border-radius: 4px;
             display: inline-block;
             margin-top: 2px;
-        }
-
-        /* ==================== 圖形化客製化選項樣式 ==================== */
-        .option-section {
-            margin-top: 16px;
-            text-align: left;
-        }
-
-        .option-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .option-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 8px;
-        }
-
-        .opt-btn {
-            background: #f8fafc;
-            border: 1.5px solid var(--border-color);
-            border-radius: 10px;
-            padding: 8px 4px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-dark);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            user-select: none;
-        }
-
-        .opt-btn .opt-icon {
-            font-size: 18px;
-        }
-
-        .opt-btn:hover {
-            border-color: var(--primary);
-            background: var(--primary-light);
-        }
-
-        .opt-btn.active {
-            background: var(--primary);
-            color: #ffffff;
-            border-color: var(--primary);
-            box-shadow: 0 3px 8px rgba(39, 103, 73, 0.25);
         }
 
         /* 👥 「其他人點了什麼」表格專用樣式 */
@@ -550,23 +526,23 @@
         }
 
         .history-table th {
-            background-color: #e8f4fd;
-            color: #2b4c23;
+            background-color: var(--primary-light);
+            color: var(--primary);
             font-weight: bold;
             padding: 12px 14px;
-            border-bottom: 2px solid #d6ebd3;
+            border-bottom: 2px solid #fca5a5;
         }
 
         .history-table td {
             padding: 12px 14px;
-            border-bottom: 1px solid #f0f7f0;
-            color: #445941;
+            border-bottom: 1px solid #fdf2f2;
+            color: #1e293b;
         }
 
         .dept-badge {
-            background-color: #e8f4fd;
-            color: #1e88e5;
-            border: 1px solid #bbdefb;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
             padding: 2px 10px;
             border-radius: 12px;
             font-size: 12px;
@@ -576,7 +552,7 @@
 
         .no-record {
             text-align: center;
-            color: #88a085;
+            color: #64748b;
             padding: 30px !important;
             font-style: italic;
         }
@@ -622,13 +598,14 @@
             .container { padding: 16px 12px 80px 12px; }
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
-            .store-logo { width: 60px; height: 60px; font-size: 28px; border-radius: 12px; }
+            .store-logo { width: 60px; height: 60px; font-size: 20px; border-radius: 12px; }
             .store-details h1 { font-size: 18px; }
             .menu-grid { grid-template-columns: 1fr; }
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
             .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
-        /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
+            
+            /* 手機版「今日其他人點了什麼」卡片化樣式 */
             .history-modal-content {
                 width: 95vw !important;
                 max-height: 88vh !important;
@@ -681,7 +658,6 @@
                 border-bottom: none !important;
             }
 
-            /* 1. 卡號/姓名 (左上) */
             .history-table td:nth-child(1) {
                 font-size: 15px;
                 font-weight: 700;
@@ -689,13 +665,11 @@
                 order: 1;
             }
 
-            /* 2. 部門標籤 (右上) */
             .history-table td:nth-child(2) {
                 order: 2;
                 text-align: right;
             }
 
-            /* 3. 時間 (第二列) */
             .history-table td:nth-child(3) {
                 width: 100%;
                 order: 3;
@@ -705,7 +679,6 @@
                 margin-bottom: 6px;
             }
 
-            /* 4. 點餐內容 (第三列，突出框顯示) */
             .history-table td:nth-child(4) {
                 width: 100%;
                 order: 4;
@@ -718,7 +691,6 @@
                 line-height: 1.4;
             }
 
-            /* 5. 金額 (第四列，靠右紅字顯示) */
             .history-table td:nth-child(5) {
                 width: 100%;
                 order: 5;
@@ -729,7 +701,6 @@
                 margin-top: 4px;
             }
 
-            /* 無紀錄時的呈現 */
             .history-table td.no-record {
                 text-align: center !important;
                 background: transparent !important;
@@ -745,7 +716,7 @@
 <div class="navbar">
     <a href="index.html" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋餐點 (例如：高麗菜、王子麵)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋餐點 (例如：沙朗牛排、雞腿排)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -760,7 +731,6 @@
 
 <!-- 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 👥 新增：其他人點了什麼懸浮按鈕 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -787,14 +757,14 @@
 <div class="container">
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">蔬</div>
+            <div class="store-logo">得利<br>牛排</div>
             <div class="store-details">
-                <h1>青蔬寶蔬食滷味</h1>
+                <h1>得利牛排 鹿港店</h1>
                 <div class="store-meta">
-                    <span class="rating">⭐ 4.6 (68)</span>
-                    <span>🕒 11:00 ~ 14:00</span>
-                    <span>📍 505彰化縣鹿港鎮永安里復興路296號</span>
-                    <span>📞 04-774-8748</span>
+                    <span class="rating">⭐ 4.4 (1336)</span>
+                    <span>🕒 11:00 ~ 14:00，16:30 ~ 21:00</span>
+                    <span>📍 彰化縣鹿港鎮民權路50號</span>
+                    <span>📞 04-7750229</span>
                 </div>
             </div>
         </div>
@@ -829,7 +799,7 @@
     </div>
 </div>
 
-<!-- 👥 新增：今日其他人點了什麼彈窗 (Modal) -->
+<!-- 👥 今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -867,133 +837,47 @@ function goBack() {
 }
 
 const menuItems = [
-    // 鍋燒區
-    {name: "鍋燒意麵", price: 95, category: "鍋燒區", icon:"🍲"},
-    {name: "鍋燒雞絲", price: 95, category: "鍋燒區", icon:"🍲"},
-    {name: "鍋燒烏龍", price: 100, category: "鍋燒區", icon:"🍲"},
-    {name: "全素鍋燒(不含麵)", price: 75, category: "鍋燒區", icon:"🍲"},
-    {name: "麻油藥膳鍋(不含麵)", price: 95, category: "鍋燒區", icon:"🍲"},
+    // === 美味餐點 ===
+    {name: "雙片沙朗牛排", price: 300, category: "美味餐點", icon: "🥩"},
+    {name: "嫩煎沙朗牛排", price: 220, category: "美味餐點", icon: "🥩"},
+    {name: "迷迭香雞腿排", price: 200, category: "美味餐點", icon: "🍗"},
+    {name: "美味香煎豬排", price: 200, category: "美味餐點", icon: "🥩"},
+    {name: "深海五味中卷", price: 200, category: "美味餐點", icon: "🦑"},
+    {name: "特製鐵板麵", price: 120, category: "美味餐點", icon: "🍝"},
 
-    // 主食區
-    {name: "素魯飯(小)", price: 40, category: "主食區", icon:"🍚"},
-    {name: "素魯飯(大)", price: 45, category: "主食區", icon:"🍚"},
-    {name: "素肉排飯 (蛋奶素)", price: 70, category: "主食區", icon:"🍚"},
-    {name: "素控肉飯 (蛋奶素)", price: 70, category: "主食區", icon:"🍚"},
-    {name: "味噌肉排湯麵 (蛋奶素)", price: 105, category: "主食區", icon:"🍜"},
-    {name: "素燥魯麵(湯)", price: 55, category: "主食區", icon:"🍜"},
-    {name: "滷水餃10顆", price: 70, category: "主食區", icon:"🥟"},
-    {name: "素肉排湯麵 (蛋奶素)", price: 100, category: "主食區", icon:"🍜"},
+    // === 豪華雙拼 ===
+    {name: "嫩煎沙朗牛排 + 雞腿排", price: 300, category: "豪華雙拼", icon: "🥩"},
+    {name: "嫩煎沙朗牛排 + 豬排", price: 300, category: "豪華雙拼", icon: "🥩"},
+    {name: "嫩煎沙朗牛排 + 中卷", price: 300, category: "豪華雙拼", icon: "🥩"},
+    {name: "嫩煎沙朗牛排 + 草蝦", price: 300, category: "豪華雙拼", icon: "🥩"},
+    {name: "嫩煎沙朗牛排 + 干貝", price: 300, category: "豪華雙拼", icon: "🥩"},
 
-    // 湯品區
-    {name: "豆皮湯", price: 30, category: "湯品區", icon:"🥣"},
-    {name: "豆腐湯", price: 25, category: "湯品區", icon:"🥣"},
-    {name: "菜捲湯", price: 40, category: "湯品區", icon:"🥣"},
-    {name: "紫菜湯", price: 25, category: "湯品區", icon:"🥣"},
-    {name: "紫菜蛋花湯", price: 30, category: "湯品區", icon:"🥣"},
-    {name: "大素丸湯", price: 30, category: "湯品區", icon:"🥣"},
-    {name: "猴頭菇丸湯", price: 30, category: "湯品區", icon:"🥣"},
-    {name: "味噌豆腐湯", price: 30, category: "湯品區", icon:"🥣"},
-    {name: "蛋花湯", price: 25, category: "湯品區", icon:"🥣"},
+    {name: "迷迭香雞腿排 + 豬排", price: 300, category: "豪華雙拼", icon: "🍗"},
+    {name: "迷迭香雞腿排 + 中卷", price: 300, category: "豪華雙拼", icon: "🍗"},
+    {name: "迷迭香雞腿排 + 草蝦", price: 300, category: "豪華雙拼", icon: "🍗"},
+    {name: "迷迭香雞腿排 + 干貝", price: 300, category: "豪華雙拼", icon: "🍗"},
 
-    // 藥膳區
-    {name: "藥膳豆皮湯", price: 60, category: "藥膳區", icon:"🍲"},
-    {name: "藥膳菜捲湯", price: 60, category: "藥膳區", icon:"🍲"},
-    {name: "藥膳豆腐湯", price: 60, category: "藥膳區", icon:"🍲"},
-    {name: "藥膳清湯", price: 30, category: "藥膳區", icon:"🥣"},
-    {name: "藥膳湯餃10顆", price: 100, category: "藥膳區", icon:"🥟"},
-    {name: "藥膳米血湯", price: 55, category: "藥膳區", icon:"🥣"},
+    {name: "美味香煎豬排 + 中卷", price: 300, category: "豪華雙拼", icon: "🥩"},
+    {name: "美味香煎豬排 + 草蝦", price: 300, category: "豪華雙拼", icon: "🥩"},
+    {name: "美味香煎豬排 + 干貝", price: 300, category: "豪華雙拼", icon: "🥩"},
 
-    // 麻辣系列
-    {name: "麻辣臭豆腐(小份)", price: 65, category: "麻辣系列", icon:"🌶️"},
-    {name: "麻辣臭豆腐(大份)", price: 75, category: "麻辣系列", icon:"🌶️"},
-    {name: "麻辣水餃10顆", price: 75, category: "麻辣系列", icon:"🥟"},
-    {name: "麻辣(湯)餃10顆", price: 75, category: "麻辣系列", icon:"🥟"},
-    {name: "麻辣臭臭鍋", price: 150, category: "麻辣系列", icon:"🥘"},
+    {name: "深海五味中卷 + 草蝦", price: 300, category: "豪華雙拼", icon: "🦑"},
+    {name: "深海五味中卷 + 干貝", price: 300, category: "豪華雙拼", icon: "🦑"},
 
-    // 麵類
-    {name: "王子麵", price: 20, category: "麵類", icon:"🍜"},
-    {name: "雞絲麵", price: 20, category: "麵類", icon:"🍜"},
-    {name: "意麵 (蛋奶素)", price: 20, category: "麵類", icon:"🍜"},
-    {name: "冬粉", price: 25, category: "麵類", icon:"🍜"},
-    {name: "河粉", price: 30, category: "麵類", icon:"🍜"},
-    {name: "烏龍麵", price: 30, category: "麵類", icon:"🍜"},
-    {name: "蒸煮麵", price: 25, category: "麵類", icon:"🍜"},
-    {name: "關廟麵", price: 30, category: "麵類", icon:"🍜"},
-    {name: "手工拉麵", price: 40, category: "麵類", icon:"🍜"},
-    {name: "刀削麵", price: 35, category: "麵類", icon:"🍜"},
-    {name: "紫心麵", price: 30, category: "麵類", icon:"🍜"},
-    {name: "菠菜麵", price: 30, category: "麵類", icon:"🍜"},
-    {name: "蕎麥麵", price: 30, category: "麵類", icon:"🍜"},
+    // === 高級餐點 ===
+    {name: "無骨牛小排 (產地:美國)", price: 450, category: "高級餐點", icon: "🥩"},
+    {name: "美國肋眼牛排 (產地:美國)", price: 420, category: "高級餐點", icon: "🥩"},
+    {name: "紐約客牛排 (產地:美國)", price: 400, category: "高級餐點", icon: "🥩"},
+    {name: "菲力牛排 (產地:紐西蘭)", price: 380, category: "高級餐點", icon: "🥩"},
+    {name: "板腱牛排", price: 380, category: "高級餐點", icon: "🥩"},
+    {name: "香煎松阪豬", price: 300, category: "高級餐點", icon: "🥩"},
+    {name: "鮮美紅鮭魚", price: 300, category: "高級餐點", icon: "🐟"},
 
-    // 豆製品區
-    {name: "千張皮*2", price: 20, category: "豆製品區", icon:"🍢"},
-    {name: "豆輪*2", price: 20, category: "豆製品區", icon:"🍢"},
-    {name: "中豆干*2", price: 25, category: "豆製品區", icon:"🍢"},
-    {name: "素肚", price: 20, category: "豆製品區", icon:"🍢"},
-    {name: "素雞", price: 25, category: "豆製品區", icon:"🍢"},
-    {name: "豆包", price: 25, category: "豆製品區", icon:"🍢"},
-    {name: "豆皮", price: 20, category: "豆製品區", icon:"🍢"},
-    {name: "大黑豆干", price: 25, category: "豆製品區", icon:"🍢"},
-    {name: "炸豆包", price: 30, category: "豆製品區", icon:"🍢"},
-    {name: "蘭花干", price: 35, category: "豆製品區", icon:"🍢"},
-    {name: "菜包(菜捲)", price: 30, category: "豆製品區", icon:"🍢"},
-    {name: "韓式年糕", price: 20, category: "豆製品區", icon:"🍢"},
-    {name: "大仙貝 (蛋奶素)", price: 25, category: "豆製品區", icon:"🍢"},
-    {name: "甜不辣 (蛋奶素)", price: 20, category: "豆製品區", icon:"🍢"},
-    {name: "滷蛋 (蛋奶素)", price: 20, category: "豆製品區", icon:"🥚"},
-    {name: "麻吉燒(起司/芝麻)", price: 10, category: "豆製品區", icon:"🍢"},
-    {name: "海帶芽", price: 25, category: "豆製品區", icon:"🌿"},
-    {name: "百頁豆腐", price: 20, category: "豆製品區", icon:"🍢"},
-    {name: "雞蛋豆腐 (蛋奶素)", price: 45, category: "豆製品區", icon:"🍢"},
-    {name: "芋頭糕", price: 25, category: "豆製品區", icon:"🍢"},
-    {name: "紫菜糕", price: 25, category: "豆製品區", icon:"🍢"},
-
-    // 蔬菜區 (時價)
-    {name: "玉米筍 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
-    {name: "菜頭 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
-    {name: "金針菇 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
-    {name: "鴻喜菇 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
-    {name: "袖珍菇 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
-    {name: "香菇 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
-    {name: "櫛瓜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
-    {name: "花椰菜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
-    {name: "木耳 (時價)", price: 20, category: "蔬菜區", icon:"🥬"},
-    {name: "水蓮 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
-    {name: "豆芽菜 (時價)", price: 15, category: "蔬菜區", icon:"🥬"},
-    {name: "地瓜葉 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
-    {name: "茼蒿(季節限定)", price: 30, category: "蔬菜區", icon:"🥬"},
-    {name: "小黃瓜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
-    {name: "高麗菜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
-    {name: "空心菜 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
-    {name: "大陸妹 (時價)", price: 25, category: "蔬菜區", icon:"🥬"},
-    {name: "娃娃菜 (時價)", price: 30, category: "蔬菜區", icon:"🥬"},
-
-    // 其他區
-    {name: "素肉排 (蛋奶素)", price: 25, category: "其他區", icon:"🍢"},
-    {name: "花枝雞捲 (蛋奶素)", price: 20, category: "其他區", icon:"🍢"},
-    {name: "炸豆腐", price: 20, category: "其他區", icon:"🍢"},
-    {name: "大素丸 (蛋奶素)", price: 20, category: "其他區", icon:"🍡"},
-    {name: "干貝柱 (蛋奶素)", price: 20, category: "其他區", icon:"🍡"},
-    {name: "猴頭菇丸*2", price: 25, category: "其他區", icon:"🍡"},
-    {name: "玉米粒*2", price: 20, category: "其他區", icon:"🌽"},
-    {name: "玉米脆皮*2 (蛋奶素)", price: 35, category: "其他區", icon:"🌽"},
-    {name: "三層肉*2 (蛋奶素)", price: 30, category: "其他區", icon:"🍢"},
-    {name: "水晶餃*2 (蛋奶素)", price: 25, category: "其他區", icon:"🥟"},
-    {name: "獅子頭*2 (蛋奶素)", price: 30, category: "其他區", icon:"🍡"},
-    {name: "芋頭角*2", price: 20, category: "其他區", icon:"🍠"},
-    {name: "板豆腐*2", price: 25, category: "其他區", icon:"🍢"},
-    {name: "海帶*2", price: 25, category: "其他區", icon:"🌿"},
-    {name: "野菜百頁*3", price: 20, category: "其他區", icon:"🍢"},
-    {name: "芹菜香菇丸*3", price: 35, category: "其他區", icon:"🍡"},
-    {name: "小貢丸*3 (蛋奶素)", price: 30, category: "其他區", icon:"🍡"},
-    {name: "蒟蒻絲*3", price: 20, category: "其他區", icon:"🍥"},
-    {name: "素花枝*3", price: 20, category: "其他區", icon:"🍥"},
-    {name: "素腰花*3", price: 20, category: "其他區", icon:"🍥"},
-    {name: "蟳肉棒*3 (蛋奶素)", price: 30, category: "其他區", icon:"🍥"},
-    {name: "竹輪*3", price: 30, category: "其他區", icon:"🍢"},
-    {name: "鳥蛋*3 (蛋奶素)", price: 25, category: "其他區", icon:"🥚"},
-    {name: "干貝燒*3 (蛋奶素)", price: 25, category: "其他區", icon:"🍡"},
-    {name: "QQ腸*3 (蛋奶素)", price: 25, category: "其他區", icon:"🍢"}
+    // === 單點小物 ===
+    {name: "奶酥餐包", price: 40, category: "單點小物", icon: "🥖"},
+    {name: "千島醬生菜沙拉", price: 60, category: "單點小物", icon: "🥗"},
+    {name: "美式炸物", price: 120, category: "單點小物", icon: "🍟"},
+    {name: "帶殼五味鮑魚 (3顆)", price: 160, category: "單點小物", icon: "🦪"}
 ];
 
 let cart = {};
@@ -1005,9 +889,9 @@ let finalTotal = 0;
 let finalSummary = "";
 let globalEmployeesMap = {};
 
-// 彈窗選擇狀態暫存
-let selectedSauerkraut = "原味";
-let selectedSpicy = "不辣";
+// 客製化選擇暫存狀態
+let selectedSauce = "黑胡椒";
+let selectedNoodle = "麵條";
 
 // ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
@@ -1037,7 +921,7 @@ window.onload = async function() {
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -1101,7 +985,7 @@ async function fetchCutoffSetting() {
             }
 
             if (rawVal.includes(':')) {
-                const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
+                const match = rawVal.match(/ ([01]?\d|2[0-3]):[0-5]\d/);
                 if (match) {
                     latestTime = match[0];
                     break;
@@ -1198,7 +1082,7 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
+/* ==================== 👥 其他人點了什麼邏輯 ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1272,8 +1156,8 @@ async function fetchOthersOrders() {
                 <td>${nameDisplay}</td>
                 <td><span class="dept-badge">${dept}</span></td>
                 <td>${formatDisplayTime(order)}</td>
-                <td style="font-weight: bold; color: #2b4c23;">${mealText}</td>
-                <td style="color: #2b4c23; font-weight: bold;">$${totalAmount || '-'}</td>
+                <td style="font-weight: bold; color: var(--primary);">${mealText}</td>
+                <td style="color: var(--primary); font-weight: bold;">$${totalAmount || '-'}</td>
             </tr>
         `;
     }).join('');
@@ -1396,7 +1280,7 @@ function renderMenu(items) {
                     </div>
                 </div>
                 <div class="item-img-placeholder">
-                    ${item.icon || '🍱'}
+                    ${item.icon || '🥩'}
                     ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
                 </div>
                 <div class="action-zone" style="margin-left: 10px;">
@@ -1431,69 +1315,75 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-function selectOption(type, value, btnEl) {
-    if (type === 'sauerkraut') {
-        selectedSauerkraut = value;
-    } else if (type === 'spicy') {
-        selectedSpicy = value;
+function selectOptBtn(group, val, btn) {
+    if (group === 'sauce') {
+        selectedSauce = val;
+        document.querySelectorAll('#sauce-group .opt-btn').forEach(b => b.classList.remove('active'));
+    } else if (group === 'noodle') {
+        selectedNoodle = val;
+        document.querySelectorAll('#noodle-group .opt-btn').forEach(b => b.classList.remove('active'));
     }
-    
-    const parent = btnEl.parentElement;
-    parent.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('active'));
-    btnEl.classList.add('active');
+    btn.classList.add('active');
 }
 
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    selectedSauerkraut = "原味";
-    selectedSpicy = "不辣";
+    // 單點小物無需選擇醬料及麵體，直接加入購物車
+    if (item.category === "單點小物") {
+        const customKey = `${item.name}|-|-`;
+        if (cart[customKey]) {
+            cart[customKey].qty += 1;
+        } else {
+            cart[customKey] = {
+                key: customKey,
+                baseName: item.name,
+                price: item.price,
+                qty: 1,
+                sauce: "-",
+                noodle: "-"
+            };
+        }
+        renderCart();
+        renderMenu(currentFilteredItems);
+        return;
+    }
+
+    selectedSauce = "黑胡椒";
+    selectedNoodle = "麵條";
 
     let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:16px; color:var(--primary);">
-            ${item.icon || '🍱'} ${item.name} ($${item.price})
+        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
+            ${item.icon || '🥩'} ${item.name} ($${item.price})
+        </div>
+        
+        <div class="opt-group">
+            <label>🧂 醬料選擇</label>
+            <div id="sauce-group" class="opt-btn-group">
+                <button type="button" class="opt-btn active" onclick="selectOptBtn('sauce', '黑胡椒', this)">黑胡椒</button>
+                <button type="button" class="opt-btn" onclick="selectOptBtn('sauce', '綜合', this)">綜合</button>
+                <button type="button" class="opt-btn" onclick="selectOptBtn('sauce', '蘑菇', this)">蘑菇</button>
+            </div>
         </div>
 
-        <div class="option-section">
-            <div class="option-title">🌶️ 辣味調整</div>
-            <div class="option-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <button type="button" class="opt-btn active" onclick="selectOption('spicy', '不辣', this)">
-                    <span class="opt-icon">🫑</span>
-                    <span>不辣</span>
-                </button>
-                <button type="button" class="opt-btn" onclick="selectOption('spicy', '微辣', this)">
-                    <span class="opt-icon">🌶️</span>
-                    <span>微辣</span>
-                </button>
-                <button type="button" class="opt-btn" onclick="selectOption('spicy', '小辣', this)">
-                    <span class="opt-icon">🌶️</span>
-                    <span>小辣</span>
-                </button>
-                <button type="button" class="opt-btn" onclick="selectOption('spicy', '中辣', this)">
-                    <span class="opt-icon">🔥</span>
-                    <span>中辣</span>
-                </button>
-                <button type="button" class="opt-btn" onclick="selectOption('spicy', '大辣', this)">
-                    <span class="opt-icon">💥</span>
-                    <span>大辣</span>
-                </button>
+        <div class="opt-group" style="margin-top: 14px;">
+            <label>🍝 麵體選擇</label>
+            <div id="noodle-group" class="opt-btn-group">
+                <button type="button" class="opt-btn active" onclick="selectOptBtn('noodle', '麵條', this)">麵條</button>
+                <button type="button" class="opt-btn" onclick="selectOptBtn('noodle', '空心麵', this)">空心麵</button>
             </div>
         </div>
     `;
 
     showCustomModal({
-        title: "請選擇餐點客製化選項",
+        title: "請選擇醬料與麵體",
         bodyHtml: bodyHtml,
         confirmText: "加入購物車",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const sauerkraut = selectedSauerkraut;
-            const spicy = selectedSpicy;
-
-            const unitPrice = item.price;
-            const customKey = `${item.name}|${sauerkraut}|${spicy}`;
+            const customKey = `${item.name}|${selectedSauce}|${selectedNoodle}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -1501,10 +1391,10 @@ function clickAddItem(name) {
                 cart[customKey] = {
                     key: customKey,
                     baseName: item.name,
-                    price: unitPrice,
+                    price: item.price,
                     qty: 1,
-                    sauerkraut: sauerkraut,
-                    spicy: spicy
+                    sauce: selectedSauce,
+                    noodle: selectedNoodle
                 };
             }
 
@@ -1540,7 +1430,13 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        finalSummary += `${item.baseName}(${item.spicy})*${item.qty} `;
+        
+        let details = [];
+        if (item.sauce && item.sauce !== "-") details.push(item.sauce);
+        if (item.noodle && item.noodle !== "-") details.push(item.noodle);
+
+        const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
+        finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -1602,10 +1498,15 @@ function renderModalCartList() {
         const sub = item.qty * item.price;
         const div = document.createElement("div");
         div.className = "cart-item";
+        
+        let tags = [];
+        if (item.sauce && item.sauce !== "-") tags.push(`🧂 ${item.sauce}`);
+        if (item.noodle && item.noodle !== "-") tags.push(`🍝 ${item.noodle}`);
+
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                <div class="custom-item-tag">🌶️ ${item.spicy}</div>
+                ${tags.length > 0 ? `<div class="custom-item-tag">${tags.join(' | ')}</div>` : ''}
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
@@ -1720,8 +1621,8 @@ async function submitOrderToServer() {
                 cardId: currentCardId,
                 category: "food",
                 type: "food",
-                meal: `青蔬寶蔬食滷味：${finalSummary.trim()}`,
-                spicy: "依餐點標示",
+                meal: `美味牛排：${finalSummary.trim()}`,
+                spicy: "無",
                 total: finalTotal,
                 note: `總計：$${finalTotal}`
             };
