@@ -280,7 +280,7 @@ async function initDatabase() {
             { id: 'store_23', name: '明美快餐', category: '美味餐點', isOpen: false },
             { id: 'store_24', name: '森晴餐盒製所', category: '美味餐點', isOpen: false },
             { id: 'store_25', name: '廈門沙茶麵', category: '美味餐點', isOpen: true },
-            { id: 'store_26', name: '凡凡滷味', category: '美味餐點', isOpen: false },
+            { id: 'store_26', name: '李王麻辣專賣', category: '美味餐點', isOpen: false },
             { id: 'store_27', name: '員湘園', category: '美味餐點', isOpen: false },
             { id: 'store_28', name: '志氣雞飯', category: '美味餐點', isOpen: false },
             { id: 'store_29', name: '竑食泰式拌飯', category: '美味餐點', isOpen: true },
