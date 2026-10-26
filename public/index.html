@@ -158,7 +158,7 @@
             border: none;
             background: transparent;
             outline: none;
-            font-size: 16px; /* 防止 iOS 縮放 */
+            font-size: 16px;
             margin-left: 8px;
             width: 100%;
             color: #333;
@@ -2678,7 +2678,7 @@
         let wheelShops = [];
         let isWheelSpinning = false;
         let selectedWheelShop = '';
-        const ITEM_HEIGHT = 104; // 與 CSS .slot-item 高度完全吻合
+        const ITEM_HEIGHT = 104;
 
         function getActiveShops() {
             const activeContainerId = currentCategoryView === 'food' ? 'food-container' : 'drink-container';
@@ -2717,7 +2717,6 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        // 初始化三個滾輪視窗的預設狀態
         function initSlotStrips() {
             for (let r = 1; r <= 3; r++) {
                 const strip = document.getElementById(`strip-${r}`);
@@ -2738,44 +2737,35 @@
             document.getElementById('wheelGoShopBtn').classList.add('hidden');
             document.getElementById('wheelResult').textContent = '🎰 命運拉霸轉動中...';
 
-            // 隨機選定本次中獎店家
             const winningIndex = Math.floor(Math.random() * wheelShops.length);
             selectedWheelShop = wheelShops[winningIndex];
 
-            // 3個滾輪各自停下的時間 (毫秒)
             const reelDelays = [1500, 2200, 2900];
 
             for (let r = 1; r <= 3; r++) {
                 const strip = document.getElementById(`strip-${r}`);
                 if (!strip) continue;
 
-                // 構建滾動鏈條 (每個滾輪滾動 20~30 個節點)
                 const stripLength = 20 + r * 6;
                 let stripHtml = '';
                 
-                // 保持第一個節點為目前的舊名稱（避免瞬間切換閃爍）
                 const currentItemText = strip.querySelector('.slot-item')?.textContent || wheelShops[0];
                 stripHtml += `<div class="slot-item">${currentItemText}</div>`;
 
-                // 中間充填隨機店家名單
                 for (let i = 1; i < stripLength - 1; i++) {
                     const randShop = wheelShops[Math.floor(Math.random() * wheelShops.length)];
                     stripHtml += `<div class="slot-item">${randShop}</div>`;
                 }
 
-                // 最後一個節點精準填入中獎店家
                 stripHtml += `<div class="slot-item">${selectedWheelShop}</div>`;
 
                 strip.innerHTML = stripHtml;
 
-                // 重置位置
                 strip.style.transition = 'none';
                 strip.style.transform = 'translateY(0px)';
 
-                // 強制瀏覽器 Reflow 觸發動畫
                 void strip.offsetHeight;
 
-                // 啟動高速滾動與減速煞車動畫
                 const targetY = -(stripLength - 1) * ITEM_HEIGHT;
                 const duration = reelDelays[r - 1];
 
@@ -2783,7 +2773,6 @@
                 strip.style.transform = `translateY(${targetY}px)`;
             }
 
-            // 最後一個滾輪停止後顯示結果
             setTimeout(() => {
                 isWheelSpinning = false;
                 document.getElementById('spinWheelBtn').disabled = false;
@@ -2854,7 +2843,6 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        /* 👥 開啟/關閉「其他人點了什麼」彈窗與載入資料邏輯 */
         function openOthersModal() {
             fetchOthersOrders();
             const modal = document.getElementById('othersModal');
@@ -3113,7 +3101,19 @@
         }
 
         function redirectToShop(shopName) {
-            const url = shopUrlMap[shopName];
+            let targetShop = shopName;
+
+            // 若店名不在 shopUrlMap，嘗試進行去空格比對
+            if (targetShop && !shopUrlMap[targetShop]) {
+                const cleanTarget = targetShop.replace(/\s+/g, '');
+                const matchedKey = Object.keys(shopUrlMap).find(k => {
+                    const cleanKey = k.replace(/\s+/g, '');
+                    return cleanTarget.includes(cleanKey) || cleanKey.includes(cleanTarget);
+                });
+                if (matchedKey) targetShop = matchedKey;
+            }
+
+            const url = shopUrlMap[targetShop];
             if (!url) {
                 callCustomAlert('提示', `⚠️ 尚未設定 <strong>${shopName}</strong> 的對應點餐網頁。`, null, false);
                 return;
@@ -3336,12 +3336,25 @@
 
                 const fullMealText = order.meal || '';
                 
+                // 💡 強化店家名稱提取邏輯
                 let shopName = order.storeName || order.store || order.shopName || '';
+                
                 if (!shopName && fullMealText) {
-                    if (fullMealText.includes('：')) {
+                    // 1. 優先比對 shopUrlMap 中的店家 Key（支援包含與去空格比對）
+                    const matchedKey = Object.keys(shopUrlMap).find(key => {
+                        const cleanKey = key.replace(/\s+/g, '');
+                        const cleanMeal = fullMealText.replace(/\s+/g, '');
+                        return cleanMeal.includes(cleanKey);
+                    });
+
+                    if (matchedKey) {
+                        shopName = matchedKey;
+                    } else if (fullMealText.includes('：')) {
                         shopName = fullMealText.split('：')[0].trim();
                     } else if (fullMealText.includes(':')) {
                         shopName = fullMealText.split(':')[0].trim();
+                    } else if (fullMealText.includes('-')) {
+                        shopName = fullMealText.split('-')[0].trim();
                     } else if (fullMealText.includes('[') && fullMealText.includes(']')) {
                         shopName = fullMealText.substring(fullMealText.indexOf('[') + 1, fullMealText.indexOf(']')).trim();
                     }
@@ -3380,15 +3393,27 @@
         }
 
         function editOrder(orderId, timestamp, shopName) {
-            const shopMsg = shopName ? `<strong>【${shopName}】</strong>` : '店家';
+            let targetShop = shopName;
+            
+            // 💡 模糊匹配與去空格修飾
+            if (targetShop && !shopUrlMap[targetShop]) {
+                const cleanTarget = targetShop.replace(/\s+/g, '');
+                const matchedKey = Object.keys(shopUrlMap).find(k => {
+                    const cleanKey = k.replace(/\s+/g, '');
+                    return cleanTarget.includes(cleanKey) || cleanKey.includes(cleanTarget);
+                });
+                if (matchedKey) targetShop = matchedKey;
+            }
+
+            const shopMsg = (targetShop && shopUrlMap[targetShop]) ? `<strong>【${targetShop}】</strong>` : '店家';
             callCustomAlert('修改訂單', `✏️ 修改訂單將先刪除目前這筆紀錄，並帶您前往 ${shopMsg} 重新點餐，是否繼續？`, async (confirmed) => {
                 if (!confirmed) return;
                 
                 const success = await executeCancelLogic(orderId, timestamp, false);
                 if (success) {
                     closeCartModal();
-                    if (shopName && shopUrlMap[shopName]) {
-                        redirectToShop(shopName);
+                    if (targetShop && shopUrlMap[targetShop]) {
+                        redirectToShop(targetShop);
                     } else {
                         callCustomAlert('提示', '舊訂單已取消，請至首頁選擇店家重新點餐。', null, false);
                     }
