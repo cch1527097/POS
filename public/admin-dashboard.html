@@ -1703,9 +1703,9 @@ ${openStores}
                         <table style="width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed;">
                             <thead>
                                 <tr style="background:#f1f5f9; color:#64748b;">
-                                    <th style="padding:6px 8px; text-align:left; width:55%;">餐點</th>
-                                    <th style="padding:6px 8px; text-align:center; width:20%;">數量</th>
-                                    <th style="padding:6px 8px; text-align:right; width:25%;">小計</th>
+                                    <th style="padding:6px 8px; text-align:left; width:55%; white-space:normal;">餐點</th>
+                                    <th style="padding:6px 8px; text-align:center; width:20%; white-space:nowrap;">數量</th>
+                                    <th style="padding:6px 8px; text-align:right; width:25%; white-space:nowrap;">小計</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1714,9 +1714,9 @@ ${openStores}
                     const itemData = storeData.items[item];
                     htmlContent += `
                         <tr style="border-bottom:1px dashed #e2e8f0;">
-                            <td style="padding:6px 8px; font-weight:600; word-break:break-all;">${item}</td>
-                            <td style="padding:6px 8px; text-align:center; color:#047857; font-weight:700;">x${itemData.count}</td>
-                            <td style="padding:6px 8px; text-align:right; font-weight:600;">$${itemData.amount}</td>
+                            <td style="padding:6px 8px; font-weight:600; word-break:break-word; white-space:normal;">${item}</td>
+                            <td style="padding:6px 8px; text-align:center; color:#047857; font-weight:700; white-space:nowrap;">x${itemData.count}</td>
+                            <td style="padding:6px 8px; text-align:right; font-weight:600; white-space:nowrap;">$${itemData.amount}</td>
                         </tr>
                     `;
                 });
