@@ -367,7 +367,8 @@ async function initDatabase() {
             { id: 'store_60', name: '熱浪小島', category: '美味餐點', isOpen: false },
             { id: 'store_61', name: '小妞魯味', category: '美味餐點', isOpen: false },
             { id: 'store_62', name: '得利牛排', category: '美味餐點', isOpen: false },
-            { id: 'store_63', name: '李王麻辣專賣', category: '美味餐點', isOpen: false }
+            { id: 'store_63', name: '李王麻辣專賣', category: '美味餐點', isOpen: false },
+            { id: 'store_64', name: '麵匡匡', category: '美味餐點', isOpen: false }
         ];
 
         const currentStoreRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
