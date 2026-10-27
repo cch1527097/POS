@@ -80,7 +80,7 @@
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
-            padding: 24px 16px 100px 16px; 
+            padding: 24px 16px 120px 16px; 
         }
 
         .store-banner {
@@ -554,7 +554,10 @@
         @media (max-width: 600px) {
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
-            .container { padding: 16px 12px 80px 12px; }
+            
+            /* 1. 加大頁面底部 padding，確保最後一項「加購專區」能完全推過懸浮按鈕上方 */
+            .container { padding: 16px 12px 260px 12px !important; }
+
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
             .store-logo { width: 60px; height: 60px; font-size: 20px; border-radius: 12px; }
@@ -562,7 +565,34 @@
             .menu-grid { grid-template-columns: 1fr; }
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
-            .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
+
+            /* 2. 微調懸浮按鈕尺寸與位置（稍微靠右下縮小） */
+            .fab-container {
+                right: 12px;
+                bottom: 16px;
+                gap: 8px;
+            }
+            .fab-btn {
+                width: 46px;
+                height: 46px;
+            }
+            .fab-btn svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            /* 3. 精簡倒數計時元件的內距與空間佔用 */
+            .cutoff-float-badge { 
+                right: 12px; 
+                bottom: 175px; 
+                padding: 6px 10px; 
+                min-width: 110px; 
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+            .cutoff-title { font-size: 11px; margin-bottom: 1px; }
+            .cutoff-time-text { font-size: 11px; margin-bottom: 2px; }
+            .cutoff-timer { font-size: 12px; padding: 2px 6px; }
             
             /* 手機版「今日其他人點了什麼」卡片化樣式 */
             .history-modal-content {
