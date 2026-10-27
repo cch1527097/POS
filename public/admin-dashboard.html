@@ -483,12 +483,26 @@
         .modal-body { padding: 20px; font-size: 14px; line-height: 1.6; overflow-y: auto; flex: 1; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 20px; background-color: #f8fafc; border-top: 1px solid var(--border-color); }
 
+        /* 彈窗內部表格強制解除 880px 全域寬度限制 */
+        .modal-body table {
+            min-width: 0 !important;
+            width: 100% !important;
+            table-layout: fixed;
+        }
+
+        .modal-body th, 
+        .modal-body td {
+            white-space: normal !important;
+            word-break: break-all;
+        }
+
         .store-summary-card {
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 14px;
             margin-bottom: 12px;
             background-color: #ffffff;
+            overflow: hidden;
         }
 
         .store-summary-title {
@@ -1700,12 +1714,12 @@ ${openStores}
                             <span>🏪 ${store}</span>
                             <span class="text-xs text-slate-500 font-medium">共 ${storeData.totalCount} 份 | $${storeData.totalAmount}</span>
                         </div>
-                        <table style="width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed;">
+                        <table style="width:100% !important; min-width:0 !important; border-collapse:collapse; font-size:13px; table-layout:fixed;">
                             <thead>
                                 <tr style="background:#f1f5f9; color:#64748b;">
-                                    <th style="padding:6px 8px; text-align:left; width:55%; white-space:normal;">餐點</th>
-                                    <th style="padding:6px 8px; text-align:center; width:20%; white-space:nowrap;">數量</th>
-                                    <th style="padding:6px 8px; text-align:right; width:25%; white-space:nowrap;">小計</th>
+                                    <th style="padding:6px 8px; text-align:left; width:52%; white-space:normal !important;">餐點</th>
+                                    <th style="padding:6px 8px; text-align:center; width:20%; white-space:nowrap !important;">數量</th>
+                                    <th style="padding:6px 8px; text-align:right; width:28%; white-space:nowrap !important;">小計</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1714,9 +1728,9 @@ ${openStores}
                     const itemData = storeData.items[item];
                     htmlContent += `
                         <tr style="border-bottom:1px dashed #e2e8f0;">
-                            <td style="padding:6px 8px; font-weight:600; word-break:break-word; white-space:normal;">${item}</td>
-                            <td style="padding:6px 8px; text-align:center; color:#047857; font-weight:700; white-space:nowrap;">x${itemData.count}</td>
-                            <td style="padding:6px 8px; text-align:right; font-weight:600; white-space:nowrap;">$${itemData.amount}</td>
+                            <td style="padding:6px 8px; font-weight:600; word-break:break-all; white-space:normal !important;">${item}</td>
+                            <td style="padding:6px 8px; text-align:center; color:#047857; font-weight:700; white-space:nowrap !important;">x${itemData.count}</td>
+                            <td style="padding:6px 8px; text-align:right; font-weight:600; white-space:nowrap !important;">$${itemData.amount}</td>
                         </tr>
                     `;
                 });
