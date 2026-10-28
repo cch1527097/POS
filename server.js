@@ -1136,6 +1136,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
+// 💡 取得個人訂單紀錄 API (已更新：支援跨日揪團模式，起算時間擴展至昨日 - INTERVAL '1 day')
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
@@ -1149,7 +1150,7 @@ app.get('/api/order-history', async (req, res) => {
             `SELECT order_id, meal, spicy, note, total, timestamp 
              FROM orders 
              WHERE card_id = $1 
-               AND created_at >= (date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') AT TIME ZONE 'Asia/Taipei')
+               AND created_at >= ((date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') - INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
                AND created_at < ((date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') + INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
              ORDER BY order_id DESC;`,
             [cleanCardId]
