@@ -265,7 +265,7 @@
 
         /* ------------------ 表單與輸入框 ------------------ */
         input, select {
-            padding: 10px 16px !important; /* 增加左右留白，避免字體貼邊或被 Tailwind 蓋掉 */
+            padding: 10px 16px;
             border: 1px solid #cbd5e1;
             background-color: #ffffff;
             border-radius: 10px;
@@ -275,6 +275,12 @@
             color: var(--text-main);
             width: 100%;
             height: 44px; /* 提高手機觸控區 */
+        }
+
+        /* 解決帶圖示的搜尋輸入框內文與圖示重疊問題 */
+        .relative input#orderSearchInput,
+        .relative input {
+            padding-left: 40px !important;
         }
 
         input:focus, select:focus {
@@ -851,7 +857,7 @@
                 <!-- 工具列：搜尋與按鈕群（手機橫向滾動優化） -->
                 <div class="flex flex-col gap-3 mb-5">
                     <div class="relative w-full">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                         <input type="text" id="orderSearchInput" placeholder="搜尋姓名、卡號、餐點或部門..." class="pl-10 w-full" oninput="filterOrders('today')">
                     </div>
                     
