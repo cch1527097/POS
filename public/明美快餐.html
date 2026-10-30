@@ -1307,6 +1307,25 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
+    // 分類為「主菜單點」時，直接加入購物車，不跳出彈窗
+    if (item.category === "主菜單點") {
+        const customKey = `${item.name}|無特殊需求`;
+        if (cart[customKey]) {
+            cart[customKey].qty += 1;
+        } else {
+            cart[customKey] = {
+                key: customKey,
+                baseName: item.name,
+                price: item.price,
+                qty: 1,
+                option: "無特殊需求"
+            };
+        }
+        renderCart();
+        renderMenu(currentFilteredItems);
+        return;
+    }
+
     selectedOption = "無特殊需求";
 
     let bodyHtml = `
@@ -1324,6 +1343,7 @@ function clickAddItem(name) {
                 <span class="opt-icon">🍚</span>
                 <span class="opt-text">飯少</span>
             </div>
+        </div>
     `;
 
     showCustomModal({
