@@ -2895,7 +2895,7 @@
             }
         }
 
-        /* 🎉 🎉🎉 揪團發起與網址生成邏輯 (自訂結單時間) */
+        /* 🎉 揪團發起與網址生成邏輯 (自訂結單時間) */
         function openGroupModal() {
             const selectEl = document.getElementById('groupShopSelect');
             if (selectEl) {
@@ -2953,10 +2953,22 @@
 
             const groupCreatedAt = Date.now();
             const groupId = 'GRP' + groupCreatedAt;
-            const empName = localStorage.getItem('currentEmpName') || loggedInCardId || '團長';
+            const currentCard = localStorage.getItem('currentCardId') || loggedInCardId || '';
+            const empName = localStorage.getItem('currentEmpName') || currentCard || '團長';
             
             currentGroupId = groupId;
             currentInitiator = empName;
+
+            // 💡 關鍵修正：同時寫入 localStorage 永久紀錄，登出再登入不會遺失！
+            const groupData = {
+                groupId: groupId,
+                initiatorCard: currentCard,
+                initiatorName: empName,
+                cutoff: cutoffTime,
+                createdAt: groupCreatedAt
+            };
+            localStorage.setItem('myInitiatedGroup', JSON.stringify(groupData));
+
             sessionStorage.setItem('currentGroupId', groupId);
             sessionStorage.setItem('currentGroupInitiator', empName);
             sessionStorage.setItem('currentGroupCutoff', cutoffTime);
@@ -2965,8 +2977,6 @@
             checkInitiatorStatus();
 
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-            
-            // 💡 將自訂結單時間 cutoff 與建立時間 createdAt 加入揪團特製網址
             currentGroupGeneratedUrl = `${baseUrl}index.html?shop=${encodeURIComponent(shopPage)}&shopName=${encodeURIComponent(selectedShop)}&groupId=${groupId}&initiator=${encodeURIComponent(empName)}&cutoff=${encodeURIComponent(cutoffTime)}&createdAt=${groupCreatedAt}`;
 
             const urlInput = document.getElementById('groupGeneratedUrl');
@@ -3005,8 +3015,8 @@
         }
 
         /* ⏱️ 計算該揪團的結單時間 Timestamp */
-        function getGroupCutoffTimestamp() {
-            const cutoffStr = sessionStorage.getItem('currentGroupCutoff') || targetCutoffStr;
+        function getGroupCutoffTimestamp(cutoffStrParam, createdAtParam) {
+            const cutoffStr = cutoffStrParam || sessionStorage.getItem('currentGroupCutoff') || targetCutoffStr;
             if (!cutoffStr) return null;
 
             if (cutoffStr.includes('-')) {
@@ -3018,7 +3028,7 @@
             if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
 
             let baseDate = new Date();
-            const createdAt = sessionStorage.getItem('currentGroupCreatedAt');
+            const createdAt = createdAtParam || sessionStorage.getItem('currentGroupCreatedAt');
             if (createdAt && !isNaN(Number(createdAt))) {
                 baseDate = new Date(Number(createdAt));
             }
@@ -3032,31 +3042,57 @@
             const excelBtn = document.getElementById('excelExportBtn');
             if (!excelBtn) return;
 
-            const currentCard = localStorage.getItem('currentCardId') || loggedInCardId || '';
-            const currentName = localStorage.getItem('currentEmpName') || '';
-            const savedInitiator = currentInitiator || sessionStorage.getItem('currentGroupInitiator') || '';
+            const currentCard = (localStorage.getItem('currentCardId') || loggedInCardId || '').trim().toLowerCase();
+            const currentName = (localStorage.getItem('currentEmpName') || '').trim().toLowerCase();
 
-            // 非發起揪團者 -> 絕對隱藏
-            if (!savedInitiator) {
+            if (!currentCard && !currentName) {
                 excelBtn.classList.add('hidden');
                 return;
             }
 
-            const initTrimmed = savedInitiator.trim().toLowerCase();
-            const cardTrimmed = currentCard.trim().toLowerCase();
-            const nameTrimmed = currentName.trim().toLowerCase();
+            // 1. 優先從 localStorage 讀取發起紀錄（跨登入、跨重新整理均有效）
+            let groupData = null;
+            try {
+                const saved = localStorage.getItem('myInitiatedGroup');
+                if (saved) groupData = JSON.parse(saved);
+            } catch(e) {}
 
-            const isInitiator = (cardTrimmed && initTrimmed === cardTrimmed) ||
-                                (nameTrimmed && initTrimmed === nameTrimmed) ||
-                                (initTrimmed === `${cardTrimmed} ${nameTrimmed}`.trim());
+            // 2. 若 localStorage 無紀錄，則讀取 sessionStorage 備援
+            if (!groupData) {
+                const init = sessionStorage.getItem('currentGroupInitiator');
+                const cutoff = sessionStorage.getItem('currentGroupCutoff');
+                const createdAt = sessionStorage.getItem('currentGroupCreatedAt');
+                if (init && cutoff) {
+                    groupData = {
+                        initiatorCard: '',
+                        initiatorName: init,
+                        cutoff: cutoff,
+                        createdAt: createdAt
+                    };
+                }
+            }
+
+            if (!groupData) {
+                excelBtn.classList.add('hidden');
+                return;
+            }
+
+            // 3. 比對當前登入者是否為該團發起者 (卡號或姓名符合即可)
+            const initCard = (groupData.initiatorCard || '').trim().toLowerCase();
+            const initName = (groupData.initiatorName || '').trim().toLowerCase();
+
+            const isInitiator = (currentCard && initCard && currentCard === initCard) ||
+                                (currentName && initName && currentName === initName) ||
+                                (currentCard && initName && currentCard === initName) ||
+                                (currentName && initCard && currentName === initCard);
 
             if (!isInitiator) {
                 excelBtn.classList.add('hidden');
                 return;
             }
 
-            // 是發起揪團者 -> 檢查是否「已結單」且「結單尚未超過一天」
-            const cutoffTs = getGroupCutoffTimestamp();
+            // 4. 計算結單時間狀態
+            const cutoffTs = getGroupCutoffTimestamp(groupData.cutoff, groupData.createdAt);
             if (!cutoffTs) {
                 excelBtn.classList.add('hidden');
                 return;
@@ -3071,7 +3107,7 @@
             if (isCutoffExpired && isWithinOneDay) {
                 excelBtn.classList.remove('hidden'); // 結單後 + 1天內 顯現
             } else {
-                excelBtn.classList.add('hidden'); // 未結單 OR 已結單超過1天 隱藏
+                excelBtn.classList.add('hidden'); // 未結單 或 已過一天 隱藏
             }
         }
 
