@@ -218,6 +218,7 @@ async function syncOrdersJsonFile() {
                 note, 
                 total, 
                 timestamp,
+                group_id AS "groupId",
                 COALESCE(is_paid, false) AS "isPaid"
             FROM orders
             ORDER BY order_id DESC;
@@ -257,12 +258,14 @@ async function initDatabase() {
                 note TEXT,
                 total NUMERIC(10, 2),
                 timestamp VARCHAR(100),
+                group_id VARCHAR(100),
                 is_paid BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
         await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;`);
+        await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS group_id VARCHAR(100);`);
 
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -825,6 +828,7 @@ app.get('/api/orders', async (req, res) => {
                 note, 
                 total, 
                 timestamp,
+                group_id AS "groupId",
                 COALESCE(is_paid, false) AS "isPaid"
             FROM orders
             ORDER BY order_id DESC;
@@ -1049,15 +1053,16 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API (採用嚴格白名單機制：匹配到開放店家才准下單)
+// 下訂單 API (支援 groupId 儲存)
 app.post('/api/order', async (req, res) => {
     try {
-        const { cardId, meal, storeId, storeName, note, spicy, total } = req.body;
+        const { cardId, meal, storeId, storeName, note, spicy, total, groupId } = req.body;
         const cleanMeal = meal ? String(meal).trim().slice(0, 300) : "";
         const reqStoreId = storeId ? String(storeId).trim().slice(0, 50) : "";
         const reqStoreName = storeName ? String(storeName).trim().slice(0, 100) : "";
         const cleanSpicy = spicy ? String(spicy).trim().slice(0, 50) : "無";
         const cleanNote = note ? String(note).trim().slice(0, 300) : "無";
+        const cleanGroupId = groupId ? String(groupId).trim().slice(0, 100) : null;
 
         const numTotal = Number(total);
         if (isNaN(numTotal) || numTotal < 0) {
@@ -1074,7 +1079,6 @@ app.post('/api/order', async (req, res) => {
             let matchedStore = findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal);
 
             // 2. 嚴格白名單阻擋邏輯：
-            // 若無法對應到資料庫中的任何店家 -> 視為無法辨識/未授權，直接阻擋
             if (!matchedStore) {
                 return res.status(403).json({
                     success: false,
@@ -1082,7 +1086,6 @@ app.post('/api/order', async (req, res) => {
                 });
             }
 
-            // 若對應到的店家 isOpen 為 false -> 一律回傳 403 阻擋下單
             if (!matchedStore.isOpen) {
                 const displayStoreName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
                 return res.status(403).json({
@@ -1112,8 +1115,8 @@ app.post('/api/order', async (req, res) => {
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
 
         const insertQuery = `
-            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp, is_paid)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, false);
+            INSERT INTO orders (order_id, card_id, name, meal, spicy, note, total, timestamp, group_id, is_paid)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, false);
         `;
         const values = [
             orderIdVal,
@@ -1123,7 +1126,8 @@ app.post('/api/order', async (req, res) => {
             cleanSpicy,
             cleanNote,
             numTotal,
-            timestampStr
+            timestampStr,
+            cleanGroupId
         ];
 
         await pool.query(insertQuery, values);
@@ -1147,7 +1151,7 @@ app.get('/api/order-history', async (req, res) => {
 
     try {
         const result = await pool.query(
-            `SELECT order_id, meal, spicy, note, total, timestamp 
+            `SELECT order_id, meal, spicy, note, total, timestamp, group_id 
              FROM orders 
              WHERE card_id = $1 
                AND created_at >= ((date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') - INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
@@ -1159,7 +1163,8 @@ app.get('/api/order-history', async (req, res) => {
         const userOrders = result.rows.map(order => ({
             time: order.timestamp ? String(order.timestamp) : '-',
             meal: order.meal,
-            note: `醬料辣度: ${order.spicy} | 備註: ${order.note} | 金額: $${order.total}`
+            note: `醬料辣度: ${order.spicy} | 備註: ${order.note} | 金額: $${order.total}`,
+            groupId: order.group_id
         }));
 
         res.json({ success: true, orders: userOrders });
@@ -1174,7 +1179,7 @@ app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT 
-                order_id, timestamp, card_id, name, meal, spicy, note, total,
+                order_id, timestamp, card_id, name, meal, spicy, note, total, group_id,
                 COALESCE(is_paid, false) AS is_paid
             FROM orders
             ORDER BY order_id ASC;
@@ -1189,6 +1194,7 @@ app.get('/api/export-excel', async (req, res) => {
             spicy: row.spicy,
             note: row.note,
             total: Number(row.total),
+            groupId: row.group_id || '-',
             isPaid: row.is_paid ? '已繳費' : '未繳費'
         }));
 
@@ -1203,6 +1209,7 @@ app.get('/api/export-excel', async (req, res) => {
             { header: '醬料辣度', key: 'spicy', width: 15 },
             { header: '備註', key: 'note', width: 25 },
             { header: '金額', key: 'total', width: 12 },
+            { header: '揪團編號', key: 'groupId', width: 18 },
             { header: '繳費狀態', key: 'isPaid', width: 12 }
         ];
         
@@ -1222,6 +1229,7 @@ app.get('/api/export-excel', async (req, res) => {
                 spicy: order.spicy || '無',
                 note: order.note || '無',
                 total: !isNaN(order.total) ? order.total : 0,
+                groupId: order.groupId,
                 isPaid: order.isPaid
             });
         });
