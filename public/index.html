@@ -662,9 +662,34 @@
             transform: scale(1.08);
         }
 
-        .cutoff-float-badge {
+        .group-float-btn {
             position: fixed;
             bottom: 190px;
+            right: 20px;
+            background-color: #fa8c16;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(250, 140, 22, 0.35);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .group-float-btn:hover {
+            background-color: #d46b08;
+            transform: scale(1.08);
+        }
+
+        .cutoff-float-badge {
+            position: fixed;
+            bottom: 245px;
             right: 20px;
             background: #ffffff;
             border: 2px solid #4e803c;
@@ -1118,12 +1143,18 @@
                 gap: 6px;
             }
 
-            /* 手機版：懸浮按鈕調整排列 */
             .cutoff-float-badge {
                 right: 14px;
-                bottom: 180px;
+                bottom: 230px;
                 padding: 6px 10px;
                 min-width: 115px;
+            }
+
+            .group-float-btn {
+                right: 14px;
+                bottom: 176px;
+                width: 42px;
+                height: 42px;
             }
 
             .others-float-btn {
@@ -1147,7 +1178,6 @@
                 height: 42px;
             }
 
-            /* 手機版：彈窗表格轉卡片式渲染 */
             .history-table-wrapper {
                 overflow-x: visible;
             }
@@ -2129,7 +2159,16 @@
             <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
         </div>
 
-        <!-- 👥 新增：購物車按鈕上面的「其他人點了什麼」懸浮按鈕 -->
+        <!-- 🎉 揪團懸浮按鈕 -->
+        <button class="group-float-btn" title="發起 / 參加揪團" aria-label="揪團" onclick="openGroupModal()">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M19 8v6m3-3h-6"></path>
+            </svg>
+        </button>
+
+        <!-- 👥 購物車按鈕上面的「其他人點了什麼」懸浮按鈕 -->
         <button class="others-float-btn" title="其他人點了什麼" aria-label="其他人點了什麼" onclick="openOthersModal()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -2216,7 +2255,7 @@
         </div>
     </div>
 
-    <!-- 👥 新增：其他人點了什麼彈窗 (Modal) -->
+    <!-- 👥 其他人點了什麼彈窗 (Modal) -->
     <div id="othersModal" class="branch-modal-overlay hidden" onclick="closeOthersModal(event)">
         <div class="branch-modal-content history-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
@@ -2243,6 +2282,46 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎉 🎉🎉 新增：揪團發起彈窗 (Modal) -->
+    <div id="groupModal" class="branch-modal-overlay hidden" onclick="closeGroupModal(event)">
+        <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 480px;">
+            <div class="branch-modal-header">
+                <h3>🎉 發起揪團點餐</h3>
+                <span class="close-btn" onclick="closeGroupModal()">&times;</span>
+            </div>
+            <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                <div>
+                    <label style="font-size: 14px; font-weight: bold; color: #2b4c23; display: block; margin-bottom: 8px;">
+                        1. 請選擇要揪團的餐廳：
+                    </label>
+                    <select id="groupShopSelect" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #c8d8c5; font-size: 15px; outline: none; background-color: #f9fdf8;">
+                        <option value="">-- 請選擇餐廳 --</option>
+                    </select>
+                </div>
+
+                <button id="createGroupLinkBtn" class="login-btn" style="width: 100%; padding: 11px 0; font-size: 16px; background-color: #fa8c16;" onclick="createGroupLink()">
+                    🔗 產生揪團專屬網址
+                </button>
+
+                <div id="groupLinkResult" class="hidden" style="background: #f6ffed; border: 1px solid #b7eb8f; padding: 14px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px;">
+                    <span style="font-size: 13.5px; font-weight: bold; color: #27690a; display: flex; align-items: center; gap: 4px;">
+                        ✅ 揪團連結已成功產生！複製分享給同事：
+                    </span>
+                    <input type="text" id="groupGeneratedUrl" readonly style="width: 100%; padding: 9px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; background: #ffffff; color: #333;" onclick="this.select()">
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 4px;">
+                        <button class="login-btn" style="flex: 1; padding: 9px 0; font-size: 14px; background-color: #52c41a;" onclick="copyGroupUrl()">
+                            📋 複製網址
+                        </button>
+                        <button class="login-btn" style="flex: 1; padding: 9px 0; font-size: 14px; background-color: #1890ff;" onclick="goToGroupShop()">
+                            🚀 自己先去點餐
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2387,6 +2466,9 @@
         let cutoffTimerInterval = null;
         let targetCutoffStr = null;
         let targetCutoffDateStr = null;
+
+        // 揪團變數
+        let currentGroupGeneratedUrl = '';
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -2685,6 +2767,85 @@
                 } else {
                     countdownDisplay.textContent = `${mm}:${ss}`;
                 }
+            }
+        }
+
+        /* 🎉 🎉🎉 新增：揪團彈窗與網址生成邏輯 */
+        function openGroupModal() {
+            const selectEl = document.getElementById('groupShopSelect');
+            if (selectEl) {
+                selectEl.innerHTML = '<option value="">-- 請選擇餐廳 --</option>';
+                Object.keys(shopUrlMap).forEach(shopName => {
+                    const opt = document.createElement('option');
+                    opt.value = shopName;
+                    opt.textContent = shopName;
+                    selectEl.appendChild(opt);
+                });
+            }
+
+            document.getElementById('groupLinkResult')?.classList.add('hidden');
+            currentGroupGeneratedUrl = '';
+            document.getElementById('groupModal')?.classList.remove('hidden');
+        }
+
+        function closeGroupModal(event) {
+            const modal = document.getElementById('groupModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function createGroupLink() {
+            const selectEl = document.getElementById('groupShopSelect');
+            const selectedShop = selectEl?.value;
+
+            if (!selectedShop) {
+                callCustomAlert('提示', '請先選擇要揪團的餐廳！', null, false);
+                return;
+            }
+
+            const shopPage = shopUrlMap[selectedShop];
+            if (!shopPage) {
+                callCustomAlert('提示', '找不到對應的餐廳頁面！', null, false);
+                return;
+            }
+
+            const groupId = 'GRP' + Date.now();
+            const empName = localStorage.getItem('currentEmpName') || loggedInCardId || '團長';
+            
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+            currentGroupGeneratedUrl = `${baseUrl}${shopPage}?groupId=${groupId}&initiator=${encodeURIComponent(empName)}`;
+
+            const urlInput = document.getElementById('groupGeneratedUrl');
+            if (urlInput) urlInput.value = currentGroupGeneratedUrl;
+
+            document.getElementById('groupLinkResult')?.classList.remove('hidden');
+        }
+
+        function copyGroupUrl() {
+            if (!currentGroupGeneratedUrl) return;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(currentGroupGeneratedUrl).then(() => {
+                    callCustomAlert('成功', '📋 揪團網址已複製到剪貼簿，快貼給同事吧！', null, false);
+                }).catch(() => {
+                    fallbackCopyUrl();
+                });
+            } else {
+                fallbackCopyUrl();
+            }
+        }
+
+        function fallbackCopyUrl() {
+            const urlInput = document.getElementById('groupGeneratedUrl');
+            if (urlInput) {
+                urlInput.select();
+                document.execCommand('copy');
+                callCustomAlert('成功', '📋 揪團網址已複製到剪貼簿！', null, false);
+            }
+        }
+
+        function goToGroupShop() {
+            if (currentGroupGeneratedUrl) {
+                window.location.href = currentGroupGeneratedUrl;
             }
         }
 
@@ -3117,7 +3278,6 @@
         function redirectToShop(shopName) {
             let targetShop = shopName;
 
-            // 若店名不在 shopUrlMap，嘗試進行去空格比對
             if (targetShop && !shopUrlMap[targetShop]) {
                 const cleanTarget = targetShop.replace(/\s+/g, '');
                 const matchedKey = Object.keys(shopUrlMap).find(k => {
@@ -3250,7 +3410,6 @@
             return !isNaN(parsedStr) ? parsedStr : 0;
         }
 
-        // 💡 判斷訂單是否為今天或昨天（適用於跨日揪團模式）
         function isTodayOrYesterdayOrder(orderObj) {
             const orderTs = getMilliTimestamp(orderObj);
             if (orderTs === 0) return false;
@@ -3367,11 +3526,9 @@
 
                 const fullMealText = order.meal || '';
                 
-                // 💡 強化店家名稱提取邏輯
                 let shopName = order.storeName || order.store || order.shopName || '';
                 
                 if (!shopName && fullMealText) {
-                    // 1. 優先比對 shopUrlMap 中的店家 Key（支援包含與去空格比對）
                     const matchedKey = Object.keys(shopUrlMap).find(key => {
                         const cleanKey = key.replace(/\s+/g, '');
                         const cleanMeal = fullMealText.replace(/\s+/g, '');
@@ -3425,8 +3582,7 @@
 
         function editOrder(orderId, timestamp, shopName) {
             let targetShop = shopName;
-            
-            // 💡 模糊匹配與去空格修飾
+
             if (targetShop && !shopUrlMap[targetShop]) {
                 const cleanTarget = targetShop.replace(/\s+/g, '');
                 const matchedKey = Object.keys(shopUrlMap).find(k => {
@@ -3574,7 +3730,6 @@
                     tdNote.setAttribute('data-label', '備註說明');
                     tdNote.textContent = order.note || '-';
 
-                    // 💡 提取店家名稱供修改訂單使用
                     let shopName = order.storeName || order.store || order.shopName || '';
                     if (!shopName && fullMealText) {
                         const matchedKey = Object.keys(shopUrlMap).find(key => {
@@ -3605,7 +3760,6 @@
                     tdAction.style.textAlign = 'center';
                     tdAction.style.whiteSpace = 'nowrap';
 
-                    // 💡 修改點：改為判斷昨天與今天皆可修改/取消
                     const canModify = isTodayOrYesterdayOrder(order);
                     if (isAllowCancel && canModify) {
                         tdAction.innerHTML = `
