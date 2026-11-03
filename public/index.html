@@ -687,9 +687,35 @@
             transform: scale(1.08);
         }
 
-        .cutoff-float-badge {
+        /* 📊 匯出 Excel 懸浮按鈕樣式 */
+        .excel-float-btn {
             position: fixed;
             bottom: 245px;
+            right: 20px;
+            background-color: #107c41;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 124, 65, 0.35);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .excel-float-btn:hover {
+            background-color: #0b5c30;
+            transform: scale(1.08);
+        }
+
+        .cutoff-float-badge {
+            position: fixed;
+            bottom: 300px;
             right: 20px;
             background: #ffffff;
             border: 2px solid #4e803c;
@@ -1145,9 +1171,16 @@
 
             .cutoff-float-badge {
                 right: 14px;
-                bottom: 230px;
+                bottom: 284px;
                 padding: 6px 10px;
                 min-width: 115px;
+            }
+
+            .excel-float-btn {
+                right: 14px;
+                bottom: 230px;
+                width: 42px;
+                height: 42px;
             }
 
             .group-float-btn {
@@ -2159,6 +2192,17 @@
             <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
         </div>
 
+        <!-- 📊 匯出 Excel 懸浮按鈕 (僅發起揪團者顯示) -->
+        <button id="excelExportBtn" class="excel-float-btn hidden" title="匯出訂單 Excel" aria-label="匯出 Excel" onclick="exportGroupOrdersToExcel()">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+        </button>
+
         <!-- 🎉 揪團懸浮按鈕 -->
         <button class="group-float-btn" title="發起 / 參加揪團" aria-label="揪團" onclick="openGroupModal()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2476,6 +2520,8 @@
 
         // 揪團變數
         let currentGroupGeneratedUrl = '';
+        let currentGroupId = '';
+        let currentInitiator = '';
 
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
@@ -2581,6 +2627,20 @@
             const groupId = urlParams.get('groupId');
             const initiator = urlParams.get('initiator');
             const cutoff = urlParams.get('cutoff');
+
+            if (groupId) {
+                currentGroupId = groupId;
+                sessionStorage.setItem('currentGroupId', groupId);
+            } else {
+                currentGroupId = sessionStorage.getItem('currentGroupId') || '';
+            }
+
+            if (initiator) {
+                currentInitiator = initiator;
+                sessionStorage.setItem('currentGroupInitiator', initiator);
+            } else {
+                currentInitiator = sessionStorage.getItem('currentGroupInitiator') || '';
+            }
 
             // 若從揪團網址點入，將目標與結單時間暫存至 sessionStorage
             if (targetShop && groupId) {
@@ -2877,6 +2937,13 @@
             const groupId = 'GRP' + Date.now();
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId || '團長';
             
+            currentGroupId = groupId;
+            currentInitiator = empName;
+            sessionStorage.setItem('currentGroupId', groupId);
+            sessionStorage.setItem('currentGroupInitiator', empName);
+
+            checkInitiatorStatus();
+
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
             
             // 💡 將自訂結單時間 cutoff 加入揪團特製網址
@@ -2915,6 +2982,105 @@
             if (currentGroupGeneratedUrl) {
                 window.location.href = currentGroupGeneratedUrl;
             }
+        }
+
+        /* 👑 判斷當前登入者是否為「發起揪團者」，用以控制右下角「匯出 Excel」按鈕顯示與隱藏 */
+        function checkInitiatorStatus() {
+            const excelBtn = document.getElementById('excelExportBtn');
+            if (!excelBtn) return;
+
+            const currentCard = localStorage.getItem('currentCardId') || loggedInCardId || '';
+            const currentName = localStorage.getItem('currentEmpName') || '';
+            
+            const savedInitiator = currentInitiator || sessionStorage.getItem('currentGroupInitiator') || '';
+
+            if (!savedInitiator) {
+                excelBtn.classList.add('hidden');
+                return;
+            }
+
+            const initTrimmed = savedInitiator.trim().toLowerCase();
+            const cardTrimmed = currentCard.trim().toLowerCase();
+            const nameTrimmed = currentName.trim().toLowerCase();
+
+            const isInitiator = (cardTrimmed && initTrimmed === cardTrimmed) ||
+                                (nameTrimmed && initTrimmed === nameTrimmed) ||
+                                (initTrimmed === `${cardTrimmed} ${nameTrimmed}`.trim());
+
+            if (isInitiator) {
+                excelBtn.classList.remove('hidden');
+            } else {
+                excelBtn.classList.add('hidden');
+            }
+        }
+
+        /* 📊 匯出揪團訂單至 Excel (CSV) 檔 */
+        async function exportGroupOrdersToExcel() {
+            let orders = [];
+            try {
+                const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
+                if (res.ok) {
+                    orders = await res.json();
+                }
+            } catch (e) {}
+
+            if (!orders || orders.length === 0) {
+                try {
+                    const res = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        orders = Array.isArray(data) ? data : (data.orders || []);
+                    }
+                } catch (e) {}
+            }
+
+            let targetOrders = [];
+            if (currentGroupId) {
+                targetOrders = orders.filter(o => o.groupId === currentGroupId || (isTodayOrYesterdayOrder(o) && currentGroupId));
+            }
+            if (targetOrders.length === 0) {
+                targetOrders = orders.filter(o => isTodayOrYesterdayOrder(o));
+            }
+
+            if (targetOrders.length === 0) {
+                callCustomAlert('提示', '目前尚無可匯出的訂單紀錄！', null, false);
+                return;
+            }
+
+            let csvContent = '\uFEFF'; // BOM 防止中文亂碼
+            csvContent += '卡號/姓名,部門,日期時間,點餐店家/內容,金額,備註說明\n';
+
+            targetOrders.forEach(order => {
+                const cardId = order.cardId || order.card_id || '';
+                const empName = order.empName || order.name || order.emp_name || '';
+                const nameDisplay = (cardId || empName) ? `${cardId} ${empName}`.trim() : '匿名同仁';
+                const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : (order.department || '未劃分');
+                const timeStr = formatDisplayTime(order);
+                
+                let mealText = order.meal || order.note || '無品項內容';
+                mealText = mealText.replace(/"/g, '""');
+
+                let totalAmount = Number(order.total || order.amount || 0);
+                if (!totalAmount && order.note) {
+                    const match = String(order.note).match(/總計:\s*\$(\d+)/);
+                    if (match) totalAmount = parseInt(match[1], 10);
+                }
+
+                let noteText = (order.note || '-').replace(/"/g, '""');
+
+                csvContent += `"${nameDisplay}","${dept}","${timeStr}","${mealText}","${totalAmount}","${noteText}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `揪團訂單匯出_${dateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         /* ==================== 🎰 店家拉霸機功能邏輯 ==================== */
@@ -3420,6 +3586,7 @@
             fetchOrderHistory(cardId);
             fetchGlobalOrders(cardId);
             startCutoffCountdown();
+            checkInitiatorStatus();
         }
 
         function showLoginSection() {
@@ -3444,6 +3611,7 @@
                 cardInput.setCustomValidity(''); 
             }
             
+            document.getElementById('excelExportBtn')?.classList.add('hidden');
             document.getElementById('offline-tag').style.display = 'none';
             document.getElementById('order-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
