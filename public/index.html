@@ -2216,7 +2216,7 @@
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 1-3-3.87"></path>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
         </button>
@@ -2513,11 +2513,6 @@
         // 揪團變數
         let currentGroupGeneratedUrl = '';
 
-        // 💡 規格化卡號工具函式 (去空格 + 轉大寫)
-        function normalizeCardId(id) {
-            return String(id || '').trim().toUpperCase();
-        }
-
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
             '飯大廚': 'aafang.html',
@@ -2632,8 +2627,7 @@
                 }));
             }
 
-            const rawSavedCardId = localStorage.getItem('currentCardId') || '';
-            const savedCardId = normalizeCardId(rawSavedCardId);
+            const savedCardId = localStorage.getItem('currentCardId');
             const savedEmpName = localStorage.getItem('currentEmpName');
             const savedDept = localStorage.getItem('currentDepartment');
             const savedOffline = localStorage.getItem('isOfflineMode') === 'true';
@@ -2757,7 +2751,7 @@
                     }
 
                     if (rawVal.includes(':')) {
-                        const match = rawVal.match(/([01]?\d|2[0-3]):[0-5]\d/);
+                        const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
                         if (match) {
                             latestTime = match[0];
                             break;
@@ -2854,7 +2848,7 @@
             }
         }
 
-        /* 🎉 🎉🎉 新增與修正：揪團彈窗與網址生成與權限修復邏輯 */
+        /* 🎉 🎉🎉 新增：揪團彈窗與網址生成邏輯 */
         function openGroupModal() {
             const selectEl = document.getElementById('groupShopSelect');
             if (selectEl) {
@@ -2893,37 +2887,15 @@
             }
 
             const groupId = 'GRP' + Date.now();
-            const rawCardId = localStorage.getItem('currentCardId') || loggedInCardId || '';
-            const currentCardId = normalizeCardId(rawCardId);
-            const empName = (localStorage.getItem('currentEmpName') || currentCardId || '團長').trim();
+            const currentCardId = localStorage.getItem('currentCardId') || loggedInCardId;
+            const empName = localStorage.getItem('currentEmpName') || currentCardId || '團長';
 
             if (currentCardId) {
-                // 1. 儲存至卡號專屬清單
                 let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${currentCardId}`) || '[]');
                 if (!myGroups.includes(groupId)) {
                     myGroups.push(groupId);
                     localStorage.setItem(`initiated_groups_${currentCardId}`, JSON.stringify(myGroups));
                 }
-
-                // 2. 儲存至姓名專屬清單 (雙重防護)
-                if (empName) {
-                    let myNameGroups = JSON.parse(localStorage.getItem(`initiated_groups_${empName}`) || '[]');
-                    if (!myNameGroups.includes(groupId)) {
-                        myNameGroups.push(groupId);
-                        localStorage.setItem(`initiated_groups_${empName}`, JSON.stringify(myNameGroups));
-                    }
-                }
-
-                // 3. 儲存至全域揪團總表 (跨帳號/登出後復原)
-                let allGroups = JSON.parse(localStorage.getItem('all_initiated_groups') || '[]');
-                allGroups.push({
-                    groupId: groupId,
-                    cardId: currentCardId,
-                    empName: empName,
-                    shopName: selectedShop,
-                    createdAt: new Date().toISOString()
-                });
-                localStorage.setItem('all_initiated_groups', JSON.stringify(allGroups));
             }
 
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -2941,46 +2913,31 @@
             const excelBtn = document.getElementById('excelExportBtn');
             if (!excelBtn) return;
 
-            const rawCardId = localStorage.getItem('currentCardId') || loggedInCardId || '';
-            const savedCardId = normalizeCardId(rawCardId);
-            const savedEmpName = (localStorage.getItem('currentEmpName') || '').trim();
+            const savedCardId = localStorage.getItem('currentCardId') || loggedInCardId || '';
+            const savedEmpName = localStorage.getItem('currentEmpName') || '';
 
-            if (!savedCardId && !savedEmpName) {
+            if (!savedCardId) {
                 excelBtn.classList.add('hidden');
                 return;
             }
 
             const urlParams = new URLSearchParams(window.location.search);
-            const urlInitiator = (urlParams.get('initiator') || '').trim();
+            const urlInitiator = urlParams.get('initiator');
             const urlGroupId = urlParams.get('groupId');
 
-            // 1. 檢查卡號歷史紀錄
-            let myGroupsByCard = JSON.parse(localStorage.getItem(`initiated_groups_${savedCardId}`) || '[]');
-            
-            // 2. 檢查姓名歷史紀錄
-            let myGroupsByName = savedEmpName ? JSON.parse(localStorage.getItem(`initiated_groups_${savedEmpName}`) || '[]') : [];
+            let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${savedCardId}`) || '[]');
 
-            // 3. 檢查全域揪團總表紀錄
-            let allGroups = JSON.parse(localStorage.getItem('all_initiated_groups') || '[]');
-            let globalMatchGroups = allGroups.filter(g => 
-                (g.cardId && normalizeCardId(g.cardId) === savedCardId) || 
-                (g.empName && savedEmpName && g.empName.trim().toUpperCase() === savedEmpName.toUpperCase())
-            );
-
-            // 若目前網址帶有揪團參數，自動登記至此使用者清單
-            if (urlInitiator && (urlInitiator.toUpperCase() === savedEmpName.toUpperCase() || normalizeCardId(urlInitiator) === savedCardId)) {
-                if (urlGroupId) {
-                    if (!myGroupsByCard.includes(urlGroupId)) {
-                        myGroupsByCard.push(urlGroupId);
-                        localStorage.setItem(`initiated_groups_${savedCardId}`, JSON.stringify(myGroupsByCard));
-                    }
+            if (urlInitiator && (urlInitiator === savedEmpName || urlInitiator === savedCardId)) {
+                if (urlGroupId && !myGroups.includes(urlGroupId)) {
+                    myGroups.push(urlGroupId);
+                    localStorage.setItem(`initiated_groups_${savedCardId}`, JSON.stringify(myGroups));
                 }
             }
 
             let isInitiator = false;
-            if (myGroupsByCard.length > 0 || myGroupsByName.length > 0 || globalMatchGroups.length > 0) {
+            if (myGroups.length > 0) {
                 isInitiator = true;
-            } else if (urlInitiator && (urlInitiator.toUpperCase() === savedEmpName.toUpperCase() || normalizeCardId(urlInitiator) === savedCardId)) {
+            } else if (urlInitiator && (urlInitiator === savedEmpName || urlInitiator === savedCardId)) {
                 isInitiator = true;
             }
 
@@ -3009,19 +2966,6 @@
                 } catch (e) {}
             }
 
-            // 💡 若 API 與 orders.json 皆無資料，讀取本地離線快取的訂單
-            if (!orders || orders.length === 0) {
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && key.startsWith('orders_')) {
-                        try {
-                            const localItems = JSON.parse(localStorage.getItem(key)) || [];
-                            orders.push(...localItems);
-                        } catch (e) {}
-                    }
-                }
-            }
-
             let activeOrders = orders.filter(order => isTodayOrYesterdayOrder(order));
             activeOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
 
@@ -3030,15 +2974,13 @@
                 return;
             }
 
-            let csvContent = "﻿";
-            csvContent += "卡號,姓名,部門,訂單時間,點餐店家與內容,金額,備註
-";
+            let csvContent = "\uFEFF";
+            csvContent += "卡號,姓名,部門,訂單時間,點餐店家與內容,金額,備註\n";
 
             activeOrders.forEach(order => {
                 const cardId = order.cardId || order.card_id || '';
                 const empName = order.empName || order.name || order.emp_name || '';
-                const cleanCard = normalizeCardId(cardId);
-                const dept = (globalEmployeesMap[cleanCard] && globalEmployeesMap[cleanCard].department) ? globalEmployeesMap[cleanCard].department : (order.department || '未劃分');
+                const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : (order.department || '未劃分');
                 const timeStr = formatDisplayTime(order);
                 let mealText = (order.meal || order.note || '').replace(/"/g, '""');
                 
@@ -3050,8 +2992,7 @@
 
                 const noteText = (order.note || '').replace(/"/g, '""');
 
-                csvContent += `"${cardId}","${empName}","${dept}","${timeStr}","${mealText}","${totalAmount}","${noteText}"
-`;
+                csvContent += `"${cardId}","${empName}","${dept}","${timeStr}","${mealText}","${totalAmount}","${noteText}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -3214,11 +3155,7 @@
             try {
                 const response = await fetch('/api/employees');
                 if (response.ok) {
-                    const rawMap = await response.json();
-                    globalEmployeesMap = {};
-                    Object.keys(rawMap).forEach(key => {
-                        globalEmployeesMap[normalizeCardId(key)] = rawMap[key];
-                    });
+                    globalEmployeesMap = await response.json();
                 }
             } catch (err) {
                 console.warn('⚠️ 無法載入員工部門清單:', err);
@@ -3313,10 +3250,9 @@
 
             othersList.innerHTML = activeOrders.map(order => {
                 const cardId = order.cardId || order.card_id || '';
-                const cleanCard = normalizeCardId(cardId);
                 const empName = order.empName || order.name || order.emp_name || '';
                 const nameDisplay = (cardId || empName) ? `${cardId} ${empName}`.trim() : '匿名同仁';
-                const dept = (globalEmployeesMap[cleanCard] && globalEmployeesMap[cleanCard].department) ? globalEmployeesMap[cleanCard].department : (order.department || '未劃分');
+                const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : (order.department || '未劃分');
                 
                 let mealText = order.meal || order.note || '無品項內容';
                 let totalAmount = Number(order.total || order.amount || 0);
@@ -3487,8 +3423,7 @@
                 return;
             }
 
-            const rawCardId = cardInput.value.trim();
-            const cardId = normalizeCardId(rawCardId);
+            const cardId = cardInput.value.trim();
             isSubmitting = true;
             if (loginBtn) loginBtn.disabled = true;
 
@@ -3547,9 +3482,8 @@
             
             localStorage.setItem('selectedCategory', currentCategoryView);
 
-            const cleanCard = normalizeCardId(loggedInCardId);
-            const empName = localStorage.getItem('currentEmpName') || cleanCard;
-            const targetUrl = `${url}?cardId=${encodeURIComponent(cleanCard)}&empName=${encodeURIComponent(empName)}`;
+            const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
+            const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}`;
             window.location.href = targetUrl;
         }
 
@@ -3564,28 +3498,26 @@
         function navigateToAdmin() { window.location.href = 'admin.html'; }
 
         function showOrderSection(cardId, empName, department, isOffline = false) {
-            const cleanCardId = normalizeCardId(cardId);
-            
             // 💡 登入成功後，檢查是否有暫存的揪團跳轉目標
             const pendingGroup = JSON.parse(sessionStorage.getItem('pendingGroupRedirect') || 'null');
             if (pendingGroup) {
                 sessionStorage.removeItem('pendingGroupRedirect');
-                const targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(cleanCardId)}&empName=${encodeURIComponent(empName || cleanCardId)}`;
+                const targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(cardId)}&empName=${encodeURIComponent(empName || cardId)}`;
                 window.location.href = targetUrl;
                 return;
             }
 
-            loggedInCardId = cleanCardId; 
-            const userDept = department || (globalEmployeesMap[cleanCardId] ? globalEmployeesMap[cleanCardId].department : '未劃分');
+            loggedInCardId = cardId; 
+            const userDept = department || (globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : '未劃分');
 
-            localStorage.setItem('currentCardId', cleanCardId);
-            localStorage.setItem('currentEmpName', empName || cleanCardId);
+            localStorage.setItem('currentCardId', cardId);
+            localStorage.setItem('currentEmpName', empName || cardId);
             localStorage.setItem('currentDepartment', userDept);
             localStorage.setItem('isOfflineMode', isOffline ? 'true' : 'false');
 
             const userNameEl = document.getElementById('user-name');
             if (userNameEl) {
-                userNameEl.textContent = empName || cleanCardId;
+                userNameEl.textContent = empName || cardId;
             }
 
             const userDeptEl = document.getElementById('user-department');
@@ -3601,8 +3533,8 @@
             document.body.classList.add('order-mode');
             
             restoreSelectedCategory();
-            fetchOrderHistory(cleanCardId);
-            fetchGlobalOrders(cleanCardId);
+            fetchOrderHistory(cardId);
+            fetchGlobalOrders(cardId);
             startCutoffCountdown();
             checkIsGroupInitiator();
         }
@@ -3724,8 +3656,6 @@
             const historyList = document.getElementById('history-list');
             if (!historyList) return;
 
-            const cleanCardId = normalizeCardId(cardId);
-
             let isAllowCancel = true;
             try {
                 const allowRes = await fetch(`/api/allow-cancel?_=${new Date().getTime()}`, { 
@@ -3743,7 +3673,7 @@
             let localOrders = [];
             let isApiSuccess = false;
 
-            const localKey = `orders_${cleanCardId}`;
+            const localKey = `orders_${cardId}`;
             try {
                 localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
             } catch(e) { localOrders = []; }
@@ -3752,7 +3682,7 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-                const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cleanCardId)}&_=${new Date().getTime()}`, { 
+                const response = await fetch(`/api/orders?cardId=${encodeURIComponent(cardId)}&_=${new Date().getTime()}`, { 
                     signal: controller.signal,
                     cache: 'no-store'
                 });
@@ -3769,7 +3699,7 @@
             let merged = isApiSuccess ? apiOrders : localOrders;
             
             let activeOrders = merged.filter(order => {
-                const isUserCard = normalizeCardId(order.cardId || order.card_id || '') === cleanCardId;
+                const isUserCard = String(order.cardId || '').trim().toLowerCase() === String(cardId).trim().toLowerCase();
                 return isTodayOrYesterdayOrder(order) && isUserCard;
             });
 
@@ -3780,7 +3710,7 @@
                 return;
             }
 
-            const userDept = globalEmployeesMap[cleanCardId] ? globalEmployeesMap[cleanCardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
+            const userDept = globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
 
             historyList.innerHTML = activeOrders.map(order => {
                 const rawTotal = Number(order.total);
@@ -3817,7 +3747,7 @@
 
                 const timeKey = order.timestamp || order.time || order.Time || '';
                 const orderId = order.orderId || order.order_id || order.id || '';
-                const safeShopName = shopName.replace(/'/g, "\'");
+                const safeShopName = shopName.replace(/'/g, "\\'");
 
                 const actionHtml = isAllowCancel ? `
                     <button class="order-action-btn btn-edit-order" onclick="editOrder('${orderId}', '${timeKey}', '${safeShopName}')">修改</button>
@@ -3826,7 +3756,7 @@
 
                 return `
                     <tr>
-                        <td data-label="卡號/姓名">${order.cardId || cleanCardId}</td>
+                        <td data-label="卡號/姓名">${order.cardId || cardId}</td>
                         <td data-label="部門"><span class="dept-badge">${userDept}</span></td>
                         <td data-label="日期時間">${formatDisplayTime(order)}</td>
                         <td data-label="點餐店家/內容">${fullMealText || '無品項內容'}</td>
@@ -3877,7 +3807,7 @@
         }
 
         async function executeCancelLogic(orderId, timestamp, showAlert = true) {
-            const cardId = normalizeCardId(loggedInCardId);
+            const cardId = loggedInCardId;
             let success = false;
 
             try {
@@ -3925,8 +3855,6 @@
             if (!globalHistoryList) return;
             if (!targetCardId) return;
 
-            const cleanTargetCardId = normalizeCardId(targetCardId);
-
             let isAllowCancel = true;
             try {
                 const allowRes = await fetch(`/api/allow-cancel?_=${new Date().getTime()}`, { 
@@ -3948,8 +3876,9 @@
                 const orderArray = Array.isArray(allOrders) ? allOrders : (allOrders.orders || []);
 
                 const userOrders = orderArray.filter(order => {
-                    const orderCard = normalizeCardId(order.cardId || order.card_id || '');
-                    return orderCard === cleanTargetCardId;
+                    const orderCard = String(order.cardId || '').trim().toLowerCase();
+                    const loginCard = String(targetCardId).trim().toLowerCase();
+                    return orderCard === loginCard;
                 });
 
                 if (userOrders.length === 0) {
@@ -3959,7 +3888,7 @@
 
                 userOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
 
-                const userDept = globalEmployeesMap[cleanTargetCardId] ? globalEmployeesMap[cleanTargetCardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
+                const userDept = globalEmployeesMap[targetCardId] ? globalEmployeesMap[targetCardId].department : (localStorage.getItem('currentDepartment') || '未劃分');
 
                 globalHistoryList.innerHTML = '';
                 userOrders.forEach(order => {
@@ -4021,7 +3950,7 @@
 
                     const timeKey = order.timestamp || order.time || order.Time || '';
                     const orderId = order.orderId || order.order_id || order.id || '';
-                    const safeShopName = shopName.replace(/'/g, "\'");
+                    const safeShopName = shopName.replace(/'/g, "\\'");
 
                     const tdAction = document.createElement('td');
                     tdAction.setAttribute('data-label', '控制操作');
