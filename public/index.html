@@ -2287,11 +2287,11 @@
         </div>
     </div>
 
-    <!-- 🎉 🎉🎉 新增：揪團發起彈窗 (Modal) -->
+    <!-- 🎉 揪團發起彈窗 (Modal) - 支援自訂結單時間 -->
     <div id="groupModal" class="branch-modal-overlay hidden" onclick="closeGroupModal(event)">
         <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 480px;">
             <div class="branch-modal-header">
-                <h3>🎉 發起揪團點餐</h3>
+                <h3>🎉 自行發起揪團點餐</h3>
                 <span class="close-btn" onclick="closeGroupModal()">&times;</span>
             </div>
             <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
@@ -2302,6 +2302,13 @@
                     <select id="groupShopSelect" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #c8d8c5; font-size: 15px; outline: none; background-color: #f9fdf8;">
                         <option value="">-- 請選擇餐廳 --</option>
                     </select>
+                </div>
+
+                <div>
+                    <label style="font-size: 14px; font-weight: bold; color: #2b4c23; display: block; margin-bottom: 8px;">
+                        2. 請設定本團結單時間：
+                    </label>
+                    <input type="time" id="groupCutoffInput" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #c8d8c5; font-size: 15px; outline: none; background-color: #f9fdf8;">
                 </div>
 
                 <button id="createGroupLinkBtn" class="login-btn" style="width: 100%; padding: 11px 0; font-size: 16px; background-color: #fa8c16;" onclick="createGroupLink()">
@@ -2567,20 +2574,22 @@
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
-            // 💡 1. 檢查網址是否有帶入揪團參數
+            // 💡 1. 解析網址帶入的揪團參數與自訂結單時間 cutoff
             const urlParams = new URLSearchParams(window.location.search);
             const targetShop = urlParams.get('shop');
             const shopName = urlParams.get('shopName');
             const groupId = urlParams.get('groupId');
             const initiator = urlParams.get('initiator');
+            const cutoff = urlParams.get('cutoff');
 
-            // 若從揪團網址點入，將目標暫存至 sessionStorage
+            // 若從揪團網址點入，將目標與結單時間暫存至 sessionStorage
             if (targetShop && groupId) {
                 sessionStorage.setItem('pendingGroupRedirect', JSON.stringify({
                     shop: targetShop,
                     shopName: shopName || '',
                     groupId: groupId,
-                    initiator: initiator || ''
+                    initiator: initiator || '',
+                    cutoff: cutoff || ''
                 }));
             }
 
@@ -2593,22 +2602,26 @@
 
             // 💡 2. 判斷登入狀態與揪團跳轉
             if (savedCardId) {
-                // 已登入：若有待處理的揪團，直接自動進入點餐頁面
+                // 已登入：若有待處理的揪團，帶入完整參數後自動前往點餐頁面
                 if (pendingGroup) {
                     sessionStorage.removeItem('pendingGroupRedirect');
-                    const targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(savedCardId)}&empName=${encodeURIComponent(savedEmpName || savedCardId)}`;
+                    let targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(savedCardId)}&empName=${encodeURIComponent(savedEmpName || savedCardId)}`;
+                    if (pendingGroup.cutoff) {
+                        targetUrl += `&cutoff=${encodeURIComponent(pendingGroup.cutoff)}`;
+                    }
                     window.location.href = targetUrl;
                     return;
                 }
                 showOrderSection(savedCardId, savedEmpName, savedDept, savedOffline);
             } else {
-                // 未登入：留在登入畫面，並顯示提示訊息
+                // 未登入：停留在登入畫面，並顯示提示訊息與本團截止時間
                 showLoginSection();
                 if (pendingGroup) {
                     const subtitleEl = document.querySelector('.subtitle');
                     if (subtitleEl) {
                         const displayShop = pendingGroup.shopName || '揪團';
-                        subtitleEl.innerHTML = `<span style="color:#fa8c16; font-weight:bold;">🎉 您正要加入【${displayShop}】揪團<br>請先輸入員工卡號登入！</span>`;
+                        const cutoffText = pendingGroup.cutoff ? `<br>⏰ 團長設定結單時間：${pendingGroup.cutoff}` : '';
+                        subtitleEl.innerHTML = `<span style="color:#fa8c16; font-weight:bold;">🎉 您正要加入【${displayShop}】揪團${cutoffText}<br>請先輸入員工卡號登入！</span>`;
                     }
                 }
             }
@@ -2805,7 +2818,7 @@
             }
         }
 
-        /* 🎉 🎉🎉 新增：揪團彈窗與網址生成邏輯 */
+        /* 🎉 🎉🎉 揪團發起與網址生成邏輯 (自訂結單時間) */
         function openGroupModal() {
             const selectEl = document.getElementById('groupShopSelect');
             if (selectEl) {
@@ -2816,6 +2829,16 @@
                     opt.textContent = shopName;
                     selectEl.appendChild(opt);
                 });
+            }
+
+            // 自動帶入預設結單時間 (當前時間 + 30 分鐘)
+            const cutoffInput = document.getElementById('groupCutoffInput');
+            if (cutoffInput) {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() + 30);
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                cutoffInput.value = `${hours}:${minutes}`;
             }
 
             document.getElementById('groupLinkResult')?.classList.add('hidden');
@@ -2830,10 +2853,18 @@
 
         function createGroupLink() {
             const selectEl = document.getElementById('groupShopSelect');
+            const cutoffInput = document.getElementById('groupCutoffInput');
+
             const selectedShop = selectEl?.value;
+            const cutoffTime = cutoffInput?.value;
 
             if (!selectedShop) {
                 callCustomAlert('提示', '請先選擇要揪團的餐廳！', null, false);
+                return;
+            }
+
+            if (!cutoffTime) {
+                callCustomAlert('提示', '請設定本團的結單時間！', null, false);
                 return;
             }
 
@@ -2847,8 +2878,9 @@
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId || '團長';
             
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-            // 💡 產生經由 index.html 驗證登入的特製網址
-            currentGroupGeneratedUrl = `${baseUrl}index.html?shop=${encodeURIComponent(shopPage)}&shopName=${encodeURIComponent(selectedShop)}&groupId=${groupId}&initiator=${encodeURIComponent(empName)}`;
+            
+            // 💡 將自訂結單時間 cutoff 加入揪團特製網址
+            currentGroupGeneratedUrl = `${baseUrl}index.html?shop=${encodeURIComponent(shopPage)}&shopName=${encodeURIComponent(selectedShop)}&groupId=${groupId}&initiator=${encodeURIComponent(empName)}&cutoff=${encodeURIComponent(cutoffTime)}`;
 
             const urlInput = document.getElementById('groupGeneratedUrl');
             if (urlInput) urlInput.value = currentGroupGeneratedUrl;
@@ -3347,11 +3379,14 @@
         function navigateToAdmin() { window.location.href = 'admin.html'; }
 
         function showOrderSection(cardId, empName, department, isOffline = false) {
-            // 💡 登入成功後，檢查是否有暫存的揪團跳轉目標
+            // 💡 登入成功後，檢查是否有暫存的揪團跳轉目標，帶入包含 cutoff 的完整參數
             const pendingGroup = JSON.parse(sessionStorage.getItem('pendingGroupRedirect') || 'null');
             if (pendingGroup) {
                 sessionStorage.removeItem('pendingGroupRedirect');
-                const targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(cardId)}&empName=${encodeURIComponent(empName || cardId)}`;
+                let targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(cardId)}&empName=${encodeURIComponent(empName || cardId)}`;
+                if (pendingGroup.cutoff) {
+                    targetUrl += `&cutoff=${encodeURIComponent(pendingGroup.cutoff)}`;
+                }
                 window.location.href = targetUrl;
                 return;
             }
