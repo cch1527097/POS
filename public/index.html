@@ -2217,8 +2217,7 @@
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                <path d="M23 21v-2a4 4 0 0 1 0 7.75"></path>
             </svg>
         </button>
 
@@ -2751,10 +2750,31 @@
             }, 1000);
         }
 
+        /* 💡 優先採用「揪團結單時間」，若無揪團才抓取「系統全域截止時間」 */
         async function fetchCutoffSetting() {
             let latestTime = null;
             let latestDate = null;
 
+            // 1. 優先檢查：是否有「揪團結單時間」(SessionStorage 或 LocalStorage)
+            const groupCutoff = sessionStorage.getItem('currentGroupCutoff');
+            let myGroupCutoff = null;
+            try {
+                const savedGroup = JSON.parse(localStorage.getItem('myInitiatedGroup') || 'null');
+                if (savedGroup && savedGroup.cutoff) {
+                    myGroupCutoff = savedGroup.cutoff;
+                }
+            } catch(e) {}
+
+            const activeGroupCutoff = groupCutoff || myGroupCutoff;
+
+            // 若存在揪團結單時間，優先採用並直接更新全域變數
+            if (activeGroupCutoff) {
+                targetCutoffStr = activeGroupCutoff;
+                targetCutoffDateStr = null; // 揪團預設採用當日結單
+                return;
+            }
+
+            // 2. 若無揪團，才讀取系統全域設定 (API / cutoff.json / localStorage)
             try {
                 const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
                 if (response.ok) {
@@ -2826,7 +2846,7 @@
             const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
             const cutoffTitle = document.querySelector('.cutoff-title');
             
-            // 💡 倒數計時更新時，連同檢查與更新匯出按鈕的權限與時間狀態
+            // 倒數計時更新時，連同檢查與更新匯出按鈕的權限與時間狀態
             checkInitiatorStatus();
 
             if (!timeDisplay || !countdownDisplay) return;
@@ -2928,6 +2948,7 @@
             if (modal) modal.classList.add('hidden');
         }
 
+        /* 💡 產生揪團連結，同步更新 localStorage 與右下角倒數 UI */
         function createGroupLink() {
             const selectEl = document.getElementById('groupShopSelect');
             const cutoffInput = document.getElementById('groupCutoffInput');
@@ -2959,7 +2980,7 @@
             currentGroupId = groupId;
             currentInitiator = empName;
 
-            // 💡 關鍵修正：同時寫入 localStorage 永久紀錄，登出再登入不會遺失！
+            // 寫入 localStorage 永久紀錄與 sessionStorage 暫存
             const groupData = {
                 groupId: groupId,
                 initiatorCard: currentCard,
@@ -2974,6 +2995,10 @@
             sessionStorage.setItem('currentGroupCutoff', cutoffTime);
             sessionStorage.setItem('currentGroupCreatedAt', groupCreatedAt);
 
+            // 💡 立即觸發右下角倒數 UI 更新與權限檢查
+            fetchCutoffSetting().then(() => {
+                updateCountdownUI();
+            });
             checkInitiatorStatus();
 
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -3642,7 +3667,7 @@
         function navigateToAdmin() { window.location.href = 'admin.html'; }
 
         function showOrderSection(cardId, empName, department, isOffline = false) {
-            // 💡 登入成功後，檢查是否有暫存的揪團跳轉目標，帶入包含 cutoff 的完整參數
+            // 登入成功後，檢查是否有暫存的揪團跳轉目標，帶入包含 cutoff 的完整參數
             const pendingGroup = JSON.parse(sessionStorage.getItem('pendingGroupRedirect') || 'null');
             if (pendingGroup) {
                 sessionStorage.removeItem('pendingGroupRedirect');
