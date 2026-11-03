@@ -2192,7 +2192,7 @@
             <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
         </div>
 
-        <!-- 📊 匯出 Excel 懸浮按鈕 (僅發起揪團者顯示) -->
+        <!-- 📊 匯出 Excel 懸浮按鈕 (發起揪團者 結單後顯示，滿一天後隱藏) -->
         <button id="excelExportBtn" class="excel-float-btn hidden" title="匯出訂單 Excel" aria-label="匯出 Excel" onclick="exportGroupOrdersToExcel()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -2627,6 +2627,7 @@
             const groupId = urlParams.get('groupId');
             const initiator = urlParams.get('initiator');
             const cutoff = urlParams.get('cutoff');
+            const createdAt = urlParams.get('createdAt');
 
             if (groupId) {
                 currentGroupId = groupId;
@@ -2642,6 +2643,14 @@
                 currentInitiator = sessionStorage.getItem('currentGroupInitiator') || '';
             }
 
+            if (cutoff) {
+                sessionStorage.setItem('currentGroupCutoff', cutoff);
+            }
+
+            if (createdAt) {
+                sessionStorage.setItem('currentGroupCreatedAt', createdAt);
+            }
+
             // 若從揪團網址點入，將目標與結單時間暫存至 sessionStorage
             if (targetShop && groupId) {
                 sessionStorage.setItem('pendingGroupRedirect', JSON.stringify({
@@ -2649,7 +2658,8 @@
                     shopName: shopName || '',
                     groupId: groupId,
                     initiator: initiator || '',
-                    cutoff: cutoff || ''
+                    cutoff: cutoff || '',
+                    createdAt: createdAt || ''
                 }));
             }
 
@@ -2668,6 +2678,9 @@
                     let targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(savedCardId)}&empName=${encodeURIComponent(savedEmpName || savedCardId)}`;
                     if (pendingGroup.cutoff) {
                         targetUrl += `&cutoff=${encodeURIComponent(pendingGroup.cutoff)}`;
+                    }
+                    if (pendingGroup.createdAt) {
+                        targetUrl += `&createdAt=${encodeURIComponent(pendingGroup.createdAt)}`;
                     }
                     window.location.href = targetUrl;
                     return;
@@ -2812,6 +2825,10 @@
             const timeDisplay = document.getElementById('cutoffTimeDisplay');
             const countdownDisplay = document.getElementById('cutoffCountdownDisplay');
             const cutoffTitle = document.querySelector('.cutoff-title');
+            
+            // 💡 倒數計時更新時，連同檢查與更新匯出按鈕的權限與時間狀態
+            checkInitiatorStatus();
+
             if (!timeDisplay || !countdownDisplay) return;
 
             if (!targetCutoffStr) {
@@ -2934,20 +2951,23 @@
                 return;
             }
 
-            const groupId = 'GRP' + Date.now();
+            const groupCreatedAt = Date.now();
+            const groupId = 'GRP' + groupCreatedAt;
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId || '團長';
             
             currentGroupId = groupId;
             currentInitiator = empName;
             sessionStorage.setItem('currentGroupId', groupId);
             sessionStorage.setItem('currentGroupInitiator', empName);
+            sessionStorage.setItem('currentGroupCutoff', cutoffTime);
+            sessionStorage.setItem('currentGroupCreatedAt', groupCreatedAt);
 
             checkInitiatorStatus();
 
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
             
-            // 💡 將自訂結單時間 cutoff 加入揪團特製網址
-            currentGroupGeneratedUrl = `${baseUrl}index.html?shop=${encodeURIComponent(shopPage)}&shopName=${encodeURIComponent(selectedShop)}&groupId=${groupId}&initiator=${encodeURIComponent(empName)}&cutoff=${encodeURIComponent(cutoffTime)}`;
+            // 💡 將自訂結單時間 cutoff 與建立時間 createdAt 加入揪團特製網址
+            currentGroupGeneratedUrl = `${baseUrl}index.html?shop=${encodeURIComponent(shopPage)}&shopName=${encodeURIComponent(selectedShop)}&groupId=${groupId}&initiator=${encodeURIComponent(empName)}&cutoff=${encodeURIComponent(cutoffTime)}&createdAt=${groupCreatedAt}`;
 
             const urlInput = document.getElementById('groupGeneratedUrl');
             if (urlInput) urlInput.value = currentGroupGeneratedUrl;
@@ -2984,16 +3004,39 @@
             }
         }
 
-        /* 👑 判斷當前登入者是否為「發起揪團者」，用以控制右下角「匯出 Excel」按鈕顯示與隱藏 */
+        /* ⏱️ 計算該揪團的結單時間 Timestamp */
+        function getGroupCutoffTimestamp() {
+            const cutoffStr = sessionStorage.getItem('currentGroupCutoff') || targetCutoffStr;
+            if (!cutoffStr) return null;
+
+            if (cutoffStr.includes('-')) {
+                const parsed = Date.parse(cutoffStr.replace(/-/g, '/'));
+                if (!isNaN(parsed)) return parsed;
+            }
+
+            const parts = cutoffStr.split(':').map(Number);
+            if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+
+            let baseDate = new Date();
+            const createdAt = sessionStorage.getItem('currentGroupCreatedAt');
+            if (createdAt && !isNaN(Number(createdAt))) {
+                baseDate = new Date(Number(createdAt));
+            }
+
+            const cutoffDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), parts[0], parts[1], 0, 0);
+            return cutoffDate.getTime();
+        }
+
+        /* 👑 判斷當前登入者是否為「發起揪團者」，且「已結單」且「結單未超過一天」，滿足才顯示匯出 Excel 按鈕 */
         function checkInitiatorStatus() {
             const excelBtn = document.getElementById('excelExportBtn');
             if (!excelBtn) return;
 
             const currentCard = localStorage.getItem('currentCardId') || loggedInCardId || '';
             const currentName = localStorage.getItem('currentEmpName') || '';
-            
             const savedInitiator = currentInitiator || sessionStorage.getItem('currentGroupInitiator') || '';
 
+            // 非發起揪團者 -> 絕對隱藏
             if (!savedInitiator) {
                 excelBtn.classList.add('hidden');
                 return;
@@ -3007,10 +3050,28 @@
                                 (nameTrimmed && initTrimmed === nameTrimmed) ||
                                 (initTrimmed === `${cardTrimmed} ${nameTrimmed}`.trim());
 
-            if (isInitiator) {
-                excelBtn.classList.remove('hidden');
-            } else {
+            if (!isInitiator) {
                 excelBtn.classList.add('hidden');
+                return;
+            }
+
+            // 是發起揪團者 -> 檢查是否「已結單」且「結單尚未超過一天」
+            const cutoffTs = getGroupCutoffTimestamp();
+            if (!cutoffTs) {
+                excelBtn.classList.add('hidden');
+                return;
+            }
+
+            const nowMs = Date.now();
+            const oneDayMs = 24 * 60 * 60 * 1000; // 24小時（一天）
+
+            const isCutoffExpired = nowMs >= cutoffTs; // 已結單
+            const isWithinOneDay = nowMs <= (cutoffTs + oneDayMs); // 結單後一天內
+
+            if (isCutoffExpired && isWithinOneDay) {
+                excelBtn.classList.remove('hidden'); // 結單後 + 1天內 顯現
+            } else {
+                excelBtn.classList.add('hidden'); // 未結單 OR 已結單超過1天 隱藏
             }
         }
 
@@ -3047,7 +3108,7 @@
                 return;
             }
 
-            let csvContent = '\uFEFF'; // BOM 防止中文亂碼
+            let csvContent = '\uFEFF'; // BOM 防止 Excel 中文亂碼
             csvContent += '卡號/姓名,部門,日期時間,點餐店家/內容,金額,備註說明\n';
 
             targetOrders.forEach(order => {
@@ -3552,6 +3613,9 @@
                 let targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(cardId)}&empName=${encodeURIComponent(empName || cardId)}`;
                 if (pendingGroup.cutoff) {
                     targetUrl += `&cutoff=${encodeURIComponent(pendingGroup.cutoff)}`;
+                }
+                if (pendingGroup.createdAt) {
+                    targetUrl += `&createdAt=${encodeURIComponent(pendingGroup.createdAt)}`;
                 }
                 window.location.href = targetUrl;
                 return;
