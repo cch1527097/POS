@@ -2567,15 +2567,50 @@
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
+            // 💡 1. 檢查網址是否有帶入揪團參數
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetShop = urlParams.get('shop');
+            const shopName = urlParams.get('shopName');
+            const groupId = urlParams.get('groupId');
+            const initiator = urlParams.get('initiator');
+
+            // 若從揪團網址點入，將目標暫存至 sessionStorage
+            if (targetShop && groupId) {
+                sessionStorage.setItem('pendingGroupRedirect', JSON.stringify({
+                    shop: targetShop,
+                    shopName: shopName || '',
+                    groupId: groupId,
+                    initiator: initiator || ''
+                }));
+            }
+
             const savedCardId = localStorage.getItem('currentCardId');
             const savedEmpName = localStorage.getItem('currentEmpName');
             const savedDept = localStorage.getItem('currentDepartment');
             const savedOffline = localStorage.getItem('isOfflineMode') === 'true';
             
+            const pendingGroup = JSON.parse(sessionStorage.getItem('pendingGroupRedirect') || 'null');
+
+            // 💡 2. 判斷登入狀態與揪團跳轉
             if (savedCardId) {
+                // 已登入：若有待處理的揪團，直接自動進入點餐頁面
+                if (pendingGroup) {
+                    sessionStorage.removeItem('pendingGroupRedirect');
+                    const targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(savedCardId)}&empName=${encodeURIComponent(savedEmpName || savedCardId)}`;
+                    window.location.href = targetUrl;
+                    return;
+                }
                 showOrderSection(savedCardId, savedEmpName, savedDept, savedOffline);
             } else {
+                // 未登入：留在登入畫面，並顯示提示訊息
                 showLoginSection();
+                if (pendingGroup) {
+                    const subtitleEl = document.querySelector('.subtitle');
+                    if (subtitleEl) {
+                        const displayShop = pendingGroup.shopName || '揪團';
+                        subtitleEl.innerHTML = `<span style="color:#fa8c16; font-weight:bold;">🎉 您正要加入【${displayShop}】揪團<br>請先輸入員工卡號登入！</span>`;
+                    }
+                }
             }
 
             await fetchEmployeeList();
@@ -2812,7 +2847,8 @@
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId || '團長';
             
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-            currentGroupGeneratedUrl = `${baseUrl}${shopPage}?groupId=${groupId}&initiator=${encodeURIComponent(empName)}`;
+            // 💡 產生經由 index.html 驗證登入的特製網址
+            currentGroupGeneratedUrl = `${baseUrl}index.html?shop=${encodeURIComponent(shopPage)}&shopName=${encodeURIComponent(selectedShop)}&groupId=${groupId}&initiator=${encodeURIComponent(empName)}`;
 
             const urlInput = document.getElementById('groupGeneratedUrl');
             if (urlInput) urlInput.value = currentGroupGeneratedUrl;
@@ -3311,6 +3347,15 @@
         function navigateToAdmin() { window.location.href = 'admin.html'; }
 
         function showOrderSection(cardId, empName, department, isOffline = false) {
+            // 💡 登入成功後，檢查是否有暫存的揪團跳轉目標
+            const pendingGroup = JSON.parse(sessionStorage.getItem('pendingGroupRedirect') || 'null');
+            if (pendingGroup) {
+                sessionStorage.removeItem('pendingGroupRedirect');
+                const targetUrl = `${pendingGroup.shop}?groupId=${encodeURIComponent(pendingGroup.groupId)}&initiator=${encodeURIComponent(pendingGroup.initiator)}&cardId=${encodeURIComponent(cardId)}&empName=${encodeURIComponent(empName || cardId)}`;
+                window.location.href = targetUrl;
+                return;
+            }
+
             loggedInCardId = cardId; 
             const userDept = department || (globalEmployeesMap[cardId] ? globalEmployeesMap[cardId].department : '未劃分');
 
