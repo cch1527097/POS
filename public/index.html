@@ -2872,43 +2872,116 @@
         }
 
         function createGroupLink() {
-            const selectEl = document.getElementById('groupShopSelect');
-            const selectedShop = selectEl?.value;
+    const selectEl = document.getElementById('groupShopSelect');
+    const selectedShop = selectEl?.value;
 
-            if (!selectedShop) {
-                callCustomAlert('提示', '請先選擇要揪團的餐廳！', null, false);
-                return;
-            }
+    if (!selectedShop) {
+        callCustomAlert('提示', '請先選擇要揪團的餐廳！', null, false);
+        return;
+    }
 
-            const shopPage = shopUrlMap[selectedShop];
-            if (!shopPage) {
-                callCustomAlert('提示', '找不到對應的餐廳頁面！', null, false);
-                return;
-            }
+    const shopPage = shopUrlMap[selectedShop];
+    if (!shopPage) {
+        callCustomAlert('提示', '找不到對應的餐廳頁面！', null, false);
+        return;
+    }
 
-            const groupId = 'GRP' + Date.now();
-            const currentCardId = localStorage.getItem('currentCardId') || loggedInCardId;
-            const empName = localStorage.getItem('currentEmpName') || currentCardId || '團長';
+    const groupId = 'GRP' + Date.now();
+    // 💡 統一進行 trim 處理
+    const rawCardId = localStorage.getItem('currentCardId') || loggedInCardId || '';
+    const currentCardId = rawCardId.trim();
+    const empName = (localStorage.getItem('currentEmpName') || currentCardId || '團長').trim();
 
-            if (currentCardId) {
-                let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${currentCardId}`) || '[]');
-                if (!myGroups.includes(groupId)) {
-                    myGroups.push(groupId);
-                    localStorage.setItem(`initiated_groups_${currentCardId}`, JSON.stringify(myGroups));
+    if (currentCardId) {
+        let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${currentCardId}`) || '[]');
+        if (!myGroups.includes(groupId)) {
+            myGroups.push(groupId);
+            localStorage.setItem(`initiated_groups_${currentCardId}`, JSON.stringify(myGroups));
+        }
+    }
+
+    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+    currentGroupGeneratedUrl = `${baseUrl}index.html?shop=${encodeURIComponent(shopPage)}&shopName=${encodeURIComponent(selectedShop)}&groupId=${groupId}&initiator=${encodeURIComponent(empName)}`;
+
+    const urlInput = document.getElementById('groupGeneratedUrl');
+    if (urlInput) urlInput.value = currentGroupGeneratedUrl;
+
+    document.getElementById('groupLinkResult')?.classList.remove('hidden');
+
+    checkIsGroupInitiator();
+}
+
+async function checkIsGroupInitiator() {
+    const excelBtn = document.getElementById('excelExportBtn');
+    if (!excelBtn) return;
+
+    const savedCardId = (localStorage.getItem('currentCardId') || loggedInCardId || '').trim();
+    const savedEmpName = (localStorage.getItem('currentEmpName') || '').trim();
+
+    if (!savedCardId) {
+        excelBtn.classList.add('hidden');
+        return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlInitiator = (urlParams.get('initiator') || '').trim();
+    const urlGroupId = (urlParams.get('groupId') || '').trim();
+
+    let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${savedCardId}`) || '[]');
+
+    // 1. 若 URL 中含有團長身分，補寫入 LocalStorage
+    if (urlInitiator && (urlInitiator === savedEmpName || urlInitiator === savedCardId)) {
+        if (urlGroupId && !myGroups.includes(urlGroupId)) {
+            myGroups.push(urlGroupId);
+            localStorage.setItem(`initiated_groups_${savedCardId}`, JSON.stringify(myGroups));
+        }
+    }
+
+    let isInitiator = false;
+    if (myGroups.length > 0) {
+        isInitiator = true;
+    } else if (urlInitiator && (urlInitiator === savedEmpName || urlInitiator === savedCardId)) {
+        isInitiator = true;
+    }
+
+    // 2. 💡 雙向備援驗證：若 LocalStorage 查無紀錄，自動查詢今日訂單資料庫
+    if (!isInitiator) {
+        try {
+            let orders = [];
+            const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
+            if (res.ok) {
+                orders = await res.json();
+            } else {
+                const jsonRes = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
+                if (jsonRes.ok) {
+                    const data = await jsonRes.json();
+                    orders = Array.isArray(data) ? data : (data.orders || []);
                 }
             }
 
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-            currentGroupGeneratedUrl = `${baseUrl}index.html?shop=${encodeURIComponent(shopPage)}&shopName=${encodeURIComponent(selectedShop)}&groupId=${groupId}&initiator=${encodeURIComponent(empName)}`;
+            // 檢查訂單紀錄中是否有該使用者發起的揪團或個人訂單
+            const hasOrderMatch = orders.some(o => {
+                const oCard = String(o.cardId || o.card_id || '').trim();
+                const oInit = String(o.initiator || '').trim();
+                return (oCard === savedCardId || oInit === savedEmpName || oInit === savedCardId) && isTodayOrYesterdayOrder(o);
+            });
 
-            const urlInput = document.getElementById('groupGeneratedUrl');
-            if (urlInput) urlInput.value = currentGroupGeneratedUrl;
-
-            document.getElementById('groupLinkResult')?.classList.remove('hidden');
-
-            checkIsGroupInitiator();
+            if (hasOrderMatch) {
+                isInitiator = true;
+            }
+        } catch (e) {
+            console.warn('團長身分訂單比對失敗:', e);
         }
+    }
 
+    // 3. 依據判定結果顯示或隱藏按鈕
+    if (isInitiator) {
+        excelBtn.classList.remove('hidden');
+    } else {
+        excelBtn.classList.add('hidden');
+    }
+}
+        
         function checkIsGroupInitiator() {
             const excelBtn = document.getElementById('excelExportBtn');
             if (!excelBtn) return;
