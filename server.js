@@ -8,6 +8,17 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 允許跨網域存取 (CORS) 處理
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -54,7 +65,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 💡 核心輔助函式：檢查目前是否處於點餐鎖定狀態 (日期 + 時間判斷)
+// 💡 核心輔助函式：檢查目前是否處於點餐鎖定狀態
 async function getLockStatus() {
     try {
         const lockRes = await pool.query("SELECT key, value FROM settings WHERE key IN ('order_lock_time', 'order_lock_date');");
@@ -70,7 +81,6 @@ async function getLockStatus() {
             return { isLocked: false, lockDate: "", lockTime: "", lockDisplay: "" };
         }
 
-        // 取得台灣時間現況
         const now = new Date();
         const taipeiFormatter = new Intl.DateTimeFormat('zh-TW', {
             timeZone: 'Asia/Taipei',
@@ -93,7 +103,7 @@ async function getLockStatus() {
         const currentM = minutePart ? Number(minutePart.value) : now.getMinutes();
         const currentTotalMinutes = currentH * 60 + currentM;
 
-        let lockTotalMinutes = 24 * 60; // 若未設定時間預設全天鎖定
+        let lockTotalMinutes = 24 * 60;
         if (lockTime && lockTime.includes(':')) {
             const [lockH, lockM] = lockTime.split(':').map(Number);
             lockTotalMinutes = lockH * 60 + lockM;
@@ -103,14 +113,13 @@ async function getLockStatus() {
 
         if (lockDate) {
             if (currentDateStr > lockDate) {
-                isLocked = true; // 超過設定日期 -> 已鎖定
+                isLocked = true;
             } else if (currentDateStr === lockDate) {
                 if (currentTotalMinutes >= lockTotalMinutes) {
-                    isLocked = true; // 同一天且超過設定時間 -> 已鎖定
+                    isLocked = true;
                 }
             }
         } else if (lockTime) {
-            // 只有設定時間（每日重複鎖定）
             if (currentTotalMinutes >= lockTotalMinutes) {
                 isLocked = true;
             }
@@ -125,16 +134,14 @@ async function getLockStatus() {
     }
 }
 
-// 💡 核心輔助函式：檢查取消/修改訂單功能是否開放 (結合手動開關與每日/指定日期截止時間)
+// 💡 核心輔助函式：檢查取消/修改訂單功能是否開放
 async function checkIsCancelAllowed() {
     try {
-        // 1. 檢查管理員手動開關設定
         const checkAllow = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
         if (checkAllow.rows.length > 0 && checkAllow.rows[0].value === 'false') {
             return { allowed: false, message: '管理員已關閉取消與修改訂單功能！' };
         }
 
-        // 2. 檢查是否已過截止時間
         const lockStatus = await getLockStatus();
         if (lockStatus.isLocked) {
             return { 
@@ -150,7 +157,7 @@ async function checkIsCancelAllowed() {
     }
 }
 
-// 💡 核心輔助函式：智慧比對點餐店家 (修正：支援 魯/滷 異體字替換、去除空白格與品牌提取)
+// 💡 核心輔助函式：智慧比對點餐店家
 function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     if (!Array.isArray(stores) || stores.length === 0) return null;
 
@@ -159,7 +166,6 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
         if (found) return found;
     }
 
-    // 修正點：消除所有空白格，避免前後台名稱空格不一致導致匹配失敗
     const normalizeText = (str) => (str || '').replace(/滷/g, '魯').replace(/\s+/g, '').trim();
 
     const rawReqName = normalizeText(reqStoreName);
@@ -207,18 +213,20 @@ async function syncOrdersJsonFile() {
 
         const result = await pool.query(`
             SELECT 
-                order_id AS "orderId", 
-                card_id AS "cardId", 
-                name, 
-                meal, 
-                spicy, 
-                note, 
-                total, 
-                timestamp,
-                group_id AS "groupId",
-                COALESCE(is_paid, false) AS "isPaid"
-            FROM orders
-            ORDER BY order_id DESC;
+                o.order_id AS "orderId", 
+                o.card_id AS "cardId", 
+                o.name, 
+                o.meal, 
+                o.spicy, 
+                o.note, 
+                o.total, 
+                o.timestamp,
+                o.group_id AS "groupId",
+                COALESCE(o.is_paid, false) AS "isPaid",
+                COALESCE(u.department, '未劃分') AS "department"
+            FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
+            ORDER BY o.order_id DESC;
         `);
 
         const formattedRows = result.rows.map(row => ({
@@ -234,7 +242,6 @@ async function syncOrdersJsonFile() {
     }
 }
 
-// 產生 JavaScript 安全整數範圍內的唯一 Order ID
 function generateSafeOrderId() {
     const timestamp = Date.now();
     const randomSuffix = Math.floor(Math.random() * 900) + 100;
@@ -264,7 +271,6 @@ async function initDatabase() {
         await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;`);
         await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS group_id VARCHAR(100);`);
 
-        // 新增 groups 揪團紀錄資料表
         await pool.query(`
             CREATE TABLE IF NOT EXISTS groups (
                 id SERIAL PRIMARY KEY,
@@ -438,7 +444,55 @@ async function initDatabase() {
     }
 }
 
-// 發起揪團寫入資料庫 API
+// ------------------ API 路由定義 ------------------
+
+// 取得訂單列表常式 (支援單複數別名 /api/orders 與 /api/order)
+const handleGetOrders = async (req, res) => {
+    try {
+        const { cardId, all } = req.query;
+        let queryStr = `
+            SELECT 
+                o.order_id AS "orderId", 
+                o.card_id AS "cardId", 
+                o.name, 
+                o.meal, 
+                o.spicy, 
+                o.note, 
+                o.total, 
+                o.timestamp,
+                o.group_id AS "groupId",
+                COALESCE(o.is_paid, false) AS "isPaid",
+                COALESCE(u.department, '未劃分') AS "department"
+            FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
+        `;
+        const queryParams = [];
+
+        if (cardId && all !== 'true') {
+            queryStr += ` WHERE o.card_id = $1`;
+            queryParams.push(String(cardId).trim());
+        }
+
+        queryStr += ` ORDER BY o.order_id DESC;`;
+
+        const result = await pool.query(queryStr, queryParams);
+
+        const formattedRows = result.rows.map(row => ({
+            ...row,
+            orderId: Number(row.orderId) || row.orderId,
+            total: Number(row.total) || 0
+        }));
+
+        res.json(formattedRows);
+    } catch (err) {
+        console.error('獲取訂單失敗:', err.message);
+        res.status(500).json({ success: false, message: '無法取得訂單資料' });
+    }
+};
+
+app.get('/api/orders', handleGetOrders);
+app.get('/api/order', handleGetOrders); // 增加別名相容性
+
 app.post('/api/groups', async (req, res) => {
     try {
         const { groupId, cardId } = req.body;
@@ -462,7 +516,6 @@ app.post('/api/groups', async (req, res) => {
     }
 });
 
-// 取消訂單 API
 app.post('/api/orders/cancel', async (req, res) => {
     try {
         const cancelCheck = await checkIsCancelAllowed();
@@ -508,25 +561,18 @@ app.post('/api/orders/cancel', async (req, res) => {
     }
 });
 
-// 取得前台取消訂單開關狀態 (動態比對當前時間)
 app.get('/api/allow-cancel', async (req, res) => {
     try {
         const cancelCheck = await checkIsCancelAllowed();
         const allowCancel = cancelCheck.allowed;
         
-        console.log(`[查詢狀態] 前台取消訂單狀態為: ${allowCancel ? '開放中' : '已鎖定/關閉'}`);
         res.json({ 
             success: true, 
             allowCancel: allowCancel,
             allow_cancel: allowCancel,
             allowOrderCancel: allowCancel,
             allow_order_cancel: allowCancel,
-            data: {
-                allowCancel: allowCancel,
-                allow_cancel: allowCancel,
-                allowOrderCancel: allowCancel,
-                allow_order_cancel: allowCancel
-            }
+            data: { allowCancel, allow_cancel: allowCancel, allowOrderCancel: allowCancel, allow_order_cancel: allowCancel }
         });
     } catch (err) {
         console.error('讀取取消訂單開關失敗:', err.message);
@@ -534,17 +580,8 @@ app.get('/api/allow-cancel', async (req, res) => {
     }
 });
 
-// 設定前台取消訂單開關處理常式
 const handleAllowCancelUpdate = async (req, res) => {
-    const rawVal = req.body.allowCancel ?? 
-                   req.body.allow_cancel ?? 
-                   req.body.allow_order_cancel ?? 
-                   req.body.allowOrderCancel ??
-                   req.body.enabled ?? 
-                   req.body.allow ?? 
-                   req.body.status ?? 
-                   req.body.value;
-
+    const rawVal = req.body.allowCancel ?? req.body.allow_cancel ?? req.body.allow_order_cancel ?? req.body.allowOrderCancel ?? req.body.enabled ?? req.body.allow ?? req.body.status ?? req.body.value;
     const valStr = (rawVal === true || rawVal === 'true' || rawVal === 1 || rawVal === '1') ? 'true' : 'false';
 
     try {
@@ -572,7 +609,6 @@ const handleAllowCancelUpdate = async (req, res) => {
 app.post('/api/allow-cancel', handleAllowCancelUpdate);
 app.put('/api/allow-cancel', handleAllowCancelUpdate);
 
-// 取得截止時間 API
 app.get('/api/cutoff-time', async (req, res) => {
     try {
         const lockStatus = await getLockStatus();
@@ -589,7 +625,6 @@ app.get('/api/cutoff-time', async (req, res) => {
     }
 });
 
-// 修正：更新截止時間 API 放寬日期驗證，支援僅單獨設定每日時間或包含日期
 app.post('/api/cutoff-time', async (req, res) => {
     const { cutoffTime, lockTime, time, lockDate } = req.body;
     const newTime = (cutoffTime || lockTime || time || "").trim().slice(0, 10);
@@ -631,7 +666,6 @@ app.post('/api/cutoff-time', async (req, res) => {
     }
 });
 
-// 通用 Settings API
 app.get('/api/settings', async (req, res) => {
     try {
         const result = await pool.query('SELECT key, value FROM settings;');
@@ -707,7 +741,6 @@ const handleSettingsUpdate = async (req, res) => {
 app.post('/api/settings', handleSettingsUpdate);
 app.put('/api/settings', handleSettingsUpdate);
 
-// 鎖定時間 API
 app.get('/api/lock-time', async (req, res) => {
     try {
         const lockStatus = await getLockStatus();
@@ -723,7 +756,6 @@ app.get('/api/lock-time', async (req, res) => {
     }
 });
 
-// 修正：更新鎖定時間 API 放寬日期必填檢查
 app.post('/api/lock-time', async (req, res) => {
     const { lockTime, cutoffTime, lockDate } = req.body;
     const targetTime = lockTime || cutoffTime;
@@ -854,48 +886,6 @@ app.post('/api/active-store', async (req, res) => {
     } catch (err) {
         console.error('更新開放店家失敗:', err.message);
         res.status(500).json({ success: false, message: '設定開放店家失敗' });
-    }
-});
-
-// 支援依 cardId 篩選或傳入 all=true 回傳全部訂單
-app.get('/api/orders', async (req, res) => {
-    try {
-        const { cardId, all } = req.query;
-        let queryStr = `
-            SELECT 
-                order_id AS "orderId", 
-                card_id AS "cardId", 
-                name, 
-                meal, 
-                spicy, 
-                note, 
-                total, 
-                timestamp,
-                group_id AS "groupId",
-                COALESCE(is_paid, false) AS "isPaid"
-            FROM orders
-        `;
-        const queryParams = [];
-
-        if (cardId && all !== 'true') {
-            queryStr += ` WHERE card_id = $1`;
-            queryParams.push(String(cardId).trim());
-        }
-
-        queryStr += ` ORDER BY order_id DESC;`;
-
-        const result = await pool.query(queryStr, queryParams);
-
-        const formattedRows = result.rows.map(row => ({
-            ...row,
-            orderId: Number(row.orderId) || row.orderId,
-            total: Number(row.total) || 0
-        }));
-
-        res.json(formattedRows);
-    } catch (err) {
-        console.error('獲取訂單失敗:', err.message);
-        res.status(500).json({ success: false, message: '無法取得訂單資料' });
     }
 });
 
@@ -1089,12 +1079,7 @@ app.post('/api/login', async (req, res) => {
                 allow_cancel: allowCancel,
                 allowOrderCancel: allowCancel,
                 allow_order_cancel: allowCancel,
-                data: {
-                    allowCancel: allowCancel,
-                    allow_cancel: allowCancel,
-                    allowOrderCancel: allowCancel,
-                    allow_order_cancel: allowCancel
-                }
+                data: { allowCancel, allow_cancel: allowCancel, allowOrderCancel: allowCancel, allow_order_cancel: allowCancel }
             });
         } else {
             res.json({ success: false, message: '卡號無效，拒絕存取' });
@@ -1105,7 +1090,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API (支援 groupId 儲存)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total, groupId } = req.body;
@@ -1189,7 +1173,6 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 取得個人訂單紀錄 API (支援查詢是否為團長 isOrganizer)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
@@ -1209,7 +1192,6 @@ app.get('/api/order-history', async (req, res) => {
             [cleanCardId]
         );
 
-        // 檢查近 24 小時內該卡號是否曾在 groups 資料表中建立過揪團
         const groupCheck = await pool.query(
             `SELECT 1 FROM groups 
              WHERE card_id = $1 
@@ -1234,15 +1216,16 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
-// Excel 匯出
 app.get('/api/export-excel', async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT 
-                order_id, timestamp, card_id, name, meal, spicy, note, total, group_id,
-                COALESCE(is_paid, false) AS is_paid
-            FROM orders
-            ORDER BY order_id ASC;
+                o.order_id, o.timestamp, o.card_id, o.name, o.meal, o.spicy, o.note, o.total, o.group_id,
+                COALESCE(o.is_paid, false) AS is_paid,
+                COALESCE(u.department, '未劃分') AS department
+            FROM orders o
+            LEFT JOIN users u ON o.card_id = u.card_id
+            ORDER BY o.order_id ASC;
         `);
         
         const orders = result.rows.map(row => ({
@@ -1250,6 +1233,7 @@ app.get('/api/export-excel', async (req, res) => {
             timestamp: row.timestamp,
             cardId: row.card_id,
             name: row.name,
+            department: row.department,
             meal: row.meal,
             spicy: row.spicy,
             note: row.note,
@@ -1263,6 +1247,7 @@ app.get('/api/export-excel', async (req, res) => {
         sheet1.columns = [
             { header: '訂單ID', key: 'orderId', width: 22 },
             { header: '時間', key: 'timestamp', width: 25 },
+            { header: '部門', key: 'department', width: 15 },
             { header: '員工卡號', key: 'cardId', width: 15 },
             { header: '員工姓名', key: 'name', width: 15 }, 
             { header: '點餐店家/品項', key: 'meal', width: 25 },
@@ -1283,6 +1268,7 @@ app.get('/api/export-excel', async (req, res) => {
             sheet1.addRow({
                 orderId: order.orderId,
                 timestamp: order.timestamp,
+                department: order.department,
                 cardId: order.cardId,
                 name: order.name || '未知', 
                 meal: order.meal,
