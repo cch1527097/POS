@@ -263,7 +263,7 @@ async function initDatabase() {
         await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;`);
         await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS group_id VARCHAR(100);`);
 
-        // 新增 groups 揪團紀錄資料表
+        // 💡 新增 groups 揪團紀錄資料表
         await pool.query(`
             CREATE TABLE IF NOT EXISTS groups (
                 id SERIAL PRIMARY KEY,
@@ -415,16 +415,19 @@ async function initDatabase() {
             ALTER TABLE users ADD COLUMN IF NOT EXISTS department VARCHAR(100) DEFAULT '未劃分';
         `);
 
-        // 💡 關鍵修正 1：每次啟動時自動比對並補全員工名單，避免跳過
-        console.log('[系統提示] 正在同步/補全員工名單至 Neon PostgreSQL...');
-        const cardIds = Object.keys(INITIAL_USER_DB);
-        const names = Object.values(INITIAL_USER_DB);
+        const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
+        if (parseInt(userCheck.rows[0].count, 10) === 0) {
+            console.log('[系統提示] 正在初始化預設員工名單至 Neon PostgreSQL...');
+            const cardIds = Object.keys(INITIAL_USER_DB);
+            const names = Object.values(INITIAL_USER_DB);
 
-        await pool.query(`
-            INSERT INTO users (card_id, name, is_paid, department)
-            SELECT unnest($1::text[]), unnest($2::text[]), false, '未劃分'
-            ON CONFLICT (card_id) DO NOTHING;
-        `, [cardIds, names]);
+            await pool.query(`
+                INSERT INTO users (card_id, name, is_paid, department)
+                SELECT * FROM UNNEST($1::text[], $2::text[]) AS t(card_id, name)
+                CROSS JOIN (SELECT false AS is_paid, '未劃分' AS department) d
+                ON CONFLICT (card_id) DO NOTHING;
+            `, [cardIds, names]);
+        }
 
         console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);
         await syncOrdersJsonFile();
@@ -434,7 +437,7 @@ async function initDatabase() {
     }
 }
 
-// 發起揪團寫入資料庫 API
+// 💡 新增：發起揪團寫入資料庫 API
 app.post('/api/groups', async (req, res) => {
     try {
         const { groupId, cardId } = req.body;
@@ -1053,7 +1056,6 @@ app.delete('/api/orders/:orderId', async (req, res) => {
     }
 });
 
-// 💡 登入 API (包含無此卡號自動救援機制與團長身份同步)
 app.post('/api/login', async (req, res) => {
     const { cardId } = req.body;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
@@ -1063,42 +1065,15 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        let result = await pool.query('SELECT card_id, name FROM users WHERE card_id = $1;', [cleanCardId]);
-        
-        // 💡 關鍵修正 2：自動救援機制。若 Neon 查無資料，但屬於系統預設名單，自動補寫入 Neon DB 解決「無此卡號」問題
-        if (result.rows.length === 0 && INITIAL_USER_DB[cleanCardId]) {
-            const defaultName = INITIAL_USER_DB[cleanCardId];
-            await pool.query(
-                `INSERT INTO users (card_id, name, is_paid, department) 
-                 VALUES ($1, $2, false, '未劃分') 
-                 ON CONFLICT (card_id) DO NOTHING;`,
-                [cleanCardId, defaultName]
-            );
-            result = await pool.query('SELECT card_id, name FROM users WHERE card_id = $1;', [cleanCardId]);
-        }
-
+        const result = await pool.query('SELECT card_id, name FROM users WHERE card_id = $1;', [cleanCardId]);
         if (result.rows.length > 0) {
             const cancelCheck = await checkIsCancelAllowed();
             const allowCancel = cancelCheck.allowed;
-
-            // 💡 關鍵修正 3：查詢 Neon 的 groups 資料表，確定近 24 小時內是否為團長
-            const groupRes = await pool.query(
-                `SELECT group_id FROM groups 
-                 WHERE card_id = $1 
-                   AND created_at >= ((date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') - INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
-                 ORDER BY id DESC LIMIT 1;`,
-                [cleanCardId]
-            );
-
-            const isOrganizer = groupRes.rows.length > 0;
-            const activeGroupId = isOrganizer ? groupRes.rows[0].group_id : null;
 
             res.json({ 
                 success: true, 
                 message: '登入成功', 
                 empName: result.rows[0].name,
-                isOrganizer: isOrganizer,
-                groupId: activeGroupId,
                 allowCancel: allowCancel,
                 allow_cancel: allowCancel,
                 allowOrderCancel: allowCancel,
@@ -1203,7 +1178,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 💡 取得個人訂單紀錄 API (支援查詢是否為團長 isOrganizer)
+// 💡 升級：取得個人訂單紀錄 API (支援查詢是否為團長 isOrganizer)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
