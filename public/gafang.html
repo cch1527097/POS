@@ -950,29 +950,32 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「鼎森」或「泰式」的門市
+    // 搜尋名稱包含「徊香」或「麵線糊」的門市
     const storeTarget = stores.find(s => s.name && (s.name.includes('徊香') || s.name.includes('麵線糊')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    // 建立後台品項金額對照表
-    const itemPriceMap = {};
-    storeTarget.items.forEach(item => {
-        if (item.name && item.price !== undefined) {
-            itemPriceMap[item.name.trim()] = Number(item.price);
-        }
+    const backendItems = storeTarget.items.map((item, idx) => {
+        const cleanName = item.name ? item.name.trim() : '';
+        const category = item.category || "招牌特色";
+        const hasSize = item.hasSize ?? (cleanName.includes("麵線糊") || cleanName.includes("炒麵"));
+        
+        return {
+            id: item.id || (idx + 1),
+            name: cleanName,
+            subName: item.subName || item.description || '',
+            price: item.price !== undefined ? Number(item.price) : 0,
+            smallPrice: item.smallPrice !== undefined ? Number(item.smallPrice) : (item.price ? Number(item.price) : 40),
+            largePrice: item.largePrice !== undefined ? Number(item.largePrice) : 50,
+            category: category,
+            icon: item.icon || (cleanName.includes("米糕") ? "🍚" : (cleanName.includes("湯") ? "🥣" : "🍜")),
+            hasSize: hasSize
+        };
     });
 
-    // 動態更新菜單項目價格
-    let updated = false;
-    menuItems.forEach(item => {
-        if (itemPriceMap[item.name] !== undefined) {
-            item.price = itemPriceMap[item.name];
-            updated = true;
-        }
-    });
-
-    if (updated && typeof renderMenu === 'function') {
-        renderMenu(currentFilteredItems);
+    if (backendItems.length > 0) {
+        menuItems.length = 0;
+        menuItems.push(...backendItems);
+        filterMenu();
     }
 }
 
