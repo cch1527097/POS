@@ -923,7 +923,6 @@ window.onload = async function() {
 
     renderMenu(menuItems);
     
-    // 👇 新增後台同步機制
     await syncPricesFromBackend();
     setInterval(syncPricesFromBackend, 10000);
 
@@ -934,7 +933,7 @@ window.onload = async function() {
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -977,8 +976,8 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「鼎森」或「泰式」的門市
-    const storeTarget = stores.find(s => s.name && (s.name.includes('家灶') || s.name.includes('傳統爌肉豬腳')));
+    // 尋找 家灶傳統爌肉豬腳專賣 門市
+    const storeTarget = stores.find(s => s.id === 'store_chiazao' || (s.name && (s.name.includes('家灶') || s.name.includes('爌肉') || s.name.includes('豬腳'))));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
     // 建立後台品項金額對照表
@@ -1142,7 +1141,7 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
+/* ==================== 👥 其他人點了什麼邏輯 ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1375,7 +1374,6 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 選擇圖形化卡片 handler
 function selectOptionCard(group, val, el) {
     currentOptions[group] = val;
     const parentContainer = el.parentElement;
@@ -1389,7 +1387,6 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 重設為預設值
     currentOptions = { egg: '不加蛋', spicy: '不辣' };
 
     let bodyHtml = `
