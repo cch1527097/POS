@@ -1,7 +1,6 @@
 require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool } = require('pg');
 
@@ -200,43 +199,6 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     return null;
 }
 
-// 同步寫入 public/orders.json
-async function syncOrdersJsonFile() {
-    try {
-        const publicDir = path.join(__dirname, 'public');
-        if (!fs.existsSync(publicDir)) {
-            await fs.promises.mkdir(publicDir, { recursive: true });
-        }
-
-        const result = await pool.query(`
-            SELECT 
-                order_id AS "orderId", 
-                card_id AS "cardId", 
-                name, 
-                meal, 
-                spicy, 
-                note, 
-                total, 
-                timestamp,
-                group_id AS "groupId",
-                COALESCE(is_paid, false) AS "isPaid"
-            FROM orders
-            ORDER BY order_id DESC;
-        `);
-
-        const formattedRows = result.rows.map(row => ({
-            ...row,
-            orderId: Number(row.orderId) || row.orderId,
-            total: Number(row.total) || 0
-        }));
-
-        const jsonPath = path.join(publicDir, 'orders.json');
-        await fs.promises.writeFile(jsonPath, JSON.stringify(formattedRows, null, 2), 'utf-8');
-    } catch (err) {
-        console.warn('⚠️ 警告：同步 orders.json 失敗:', err.message);
-    }
-}
-
 // 產生 JavaScript 安全整數範圍內的唯一 Order ID
 function generateSafeOrderId() {
     const timestamp = Date.now();
@@ -424,7 +386,6 @@ async function initDatabase() {
         }
 
         console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);
-        await syncOrdersJsonFile();
     } catch (err) {
         console.error(`❌ 初始化 Neon 資料庫失敗：`, err.message);
         throw err;
@@ -470,7 +431,6 @@ app.post('/api/orders/cancel', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到對應訂單，或該訂單無權限刪除！' });
         }
 
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '訂單已成功取消並刪除！' });
     } catch (error) {
         console.error('後端取消訂單失敗:', error);
@@ -542,7 +502,7 @@ const handleAllowCancelUpdate = async (req, res) => {
 app.post('/api/allow-cancel', handleAllowCancelUpdate);
 app.put('/api/allow-cancel', handleAllowCancelUpdate);
 
-// 💡 補全前台相容 API：/api/cutoff-time 取得/更新截止時間
+// 💡 補全前台相容 API：/api/cutoff-time 取得/更新截止時間 (已修復檢核邏輯)
 app.get('/api/cutoff-time', async (req, res) => {
     try {
         const lockStatus = await getLockStatus();
@@ -562,28 +522,32 @@ app.get('/api/cutoff-time', async (req, res) => {
 app.post('/api/cutoff-time', async (req, res) => {
     const { cutoffTime, lockTime, time, lockDate } = req.body;
     const newTime = (cutoffTime || lockTime || time || "").trim().slice(0, 10);
-    const newDate = (lockDate || "").trim().slice(0, 20);
+    const newDate = (lockDate !== undefined && lockDate !== null) ? String(lockDate).trim().slice(0, 20) : null;
 
-    if (!newTime || !newDate) {
-        return res.status(400).json({ success: false, message: '請選擇有效的截止日期與時間！' });
+    if (!newTime && newDate === null) {
+        return res.status(400).json({ success: false, message: '請提供有效的截止時間或日期！' });
     }
 
     try {
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('order_lock_time', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [newTime]);
+        if (newTime) {
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_time', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [newTime]);
+        }
 
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('order_lock_date', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [newDate]);
+        if (newDate !== null) {
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_date', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [newDate]);
+        }
 
         return res.json({ 
             success: true, 
-            message: `已成功將點餐截止時間設定為 ${newDate} ${newTime}`,
+            message: `已成功更新點餐截止時間與日期！`,
             cutoffTime: newTime,
             lockTime: newTime,
             lockDate: newDate
@@ -670,7 +634,7 @@ const handleSettingsUpdate = async (req, res) => {
 app.post('/api/settings', handleSettingsUpdate);
 app.put('/api/settings', handleSettingsUpdate);
 
-// ==================== 鎖定時間 API ====================
+// ==================== 鎖定時間 API (已修復檢核邏輯) ====================
 
 app.get('/api/lock-time', async (req, res) => {
     try {
@@ -691,33 +655,35 @@ app.post('/api/lock-time', async (req, res) => {
     const { lockTime, cutoffTime, lockDate } = req.body;
     const targetTime = lockTime || cutoffTime;
     const newLockTime = targetTime ? String(targetTime).trim().slice(0, 10) : "";
-    const newLockDate = lockDate ? String(lockDate).trim().slice(0, 20) : "";
+    const newLockDate = (lockDate !== undefined && lockDate !== null) ? String(lockDate).trim().slice(0, 20) : null;
 
-    if (!newLockTime || !newLockDate) {
+    if (!newLockTime && newLockDate === null) {
         return res.status(400).json({ 
             success: false, 
-            message: '請提供有效的截止日期與時間！' 
+            message: '請提供有效的截止日期或時間！' 
         });
     }
 
     try {
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('order_lock_time', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [newLockTime]);
+        if (newLockTime) {
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_time', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [newLockTime]);
+        }
 
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('order_lock_date', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [newLockDate]);
-
-        const displayStr = `${newLockDate} ${newLockTime}`;
+        if (newLockDate !== null) {
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_date', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [newLockDate]);
+        }
 
         return res.json({ 
             success: true, 
-            message: `已成功將點餐截止時間設定為 ${displayStr}`,
+            message: `已成功更新點餐截止時間！`,
             lockTime: newLockTime,
             cutoffTime: newLockTime,
             lockDate: newLockDate
@@ -816,10 +782,12 @@ app.post('/api/active-store', async (req, res) => {
     }
 });
 
+// 💡 取得訂單列表 API (已優化：預設撈取 30 天內訂單或可加 ?all=true，避免全表過載)
 app.get('/api/orders', async (req, res) => {
     try {
-        const result = await pool.query(`
-            SELECT 
+        const showAll = req.query.all === 'true';
+        const sql = showAll
+            ? `SELECT 
                 order_id AS "orderId", 
                 card_id AS "cardId", 
                 name, 
@@ -830,9 +798,24 @@ app.get('/api/orders', async (req, res) => {
                 timestamp,
                 group_id AS "groupId",
                 COALESCE(is_paid, false) AS "isPaid"
-            FROM orders
-            ORDER BY order_id DESC;
-        `);
+               FROM orders
+               ORDER BY order_id DESC;`
+            : `SELECT 
+                order_id AS "orderId", 
+                card_id AS "cardId", 
+                name, 
+                meal, 
+                spicy, 
+                note, 
+                total, 
+                timestamp,
+                group_id AS "groupId",
+                COALESCE(is_paid, false) AS "isPaid"
+               FROM orders
+               WHERE created_at >= (NOW() - INTERVAL '30 days')
+               ORDER BY order_id DESC;`;
+
+        const result = await pool.query(sql);
 
         const formattedRows = result.rows.map(row => ({
             ...row,
@@ -867,7 +850,6 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
 
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '訂單繳費狀態更新成功！' });
     } catch (err) {
         console.error('更新訂單繳費狀態失敗:', err.message);
@@ -909,7 +891,6 @@ app.patch('/api/employees/:cardId/payment', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '繳費狀態更新成功' });
     } catch (err) {
         console.error('更新員工繳費狀態失敗:', err.message);
@@ -941,7 +922,6 @@ app.put('/api/employees/:cardId', async (req, res) => {
 
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
         
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '員工資料更新成功' });
     } catch (err) {
         console.error('更新員工資料失敗:', err.message);
@@ -1007,7 +987,6 @@ app.delete('/api/orders/:orderId', async (req, res) => {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
 
-        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: `訂單 ${targetOrderIdStr} 已成功刪除。` });
     } catch (error) {
         console.error('後端處理刪除訂單發生錯誤:', error);
@@ -1131,7 +1110,6 @@ app.post('/api/order', async (req, res) => {
         ];
 
         await pool.query(insertQuery, values);
-        syncOrdersJsonFile().catch(() => {});
 
         res.json({ success: true, message: `🎉 訂單送出成功！` });
     } catch (error) {
@@ -1140,7 +1118,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 💡 取得個人訂單紀錄 API (已更新：支援跨日揪團模式，起算時間擴展至昨日 - INTERVAL '1 day')
+// 💡 取得個人訂單紀錄 API (支援跨日揪團模式，起算時間擴展至昨日)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
