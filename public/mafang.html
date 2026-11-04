@@ -27,7 +27,7 @@
             line-height: 1.5;
         }
 
-        /* ==================== 頂部 Header 樣式 ==================== */
+        /* 頂部 Header 樣式 */
         .navbar {
             width: 100%;
             background-color: #ffffff;
@@ -222,7 +222,7 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; transition: background 0.2s; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        /* ==================== 圖形化 Modal 選項 UI ==================== */
+        /* 圖形化 Modal 選項 UI */
         .option-section-title {
             font-size: 14px;
             font-weight: 700;
@@ -283,7 +283,7 @@
             margin-bottom: 12px;
         }
 
-        /* ==================== 懸浮圓形按鈕群 & 截止時間懸浮元件 ==================== */
+        /* 懸浮按鈕與計時元件 */
         .fab-container {
             position: fixed;
             bottom: 24px;
@@ -309,40 +309,15 @@
             outline: none;
         }
 
-        .fab-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.28);
-        }
+        .fab-btn:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(0,0,0,0.28); }
+        .fab-btn:active { transform: scale(0.95); }
+        .fab-btn svg { width: 26px; height: 26px; fill: #ffffff; }
 
-        .fab-btn:active {
-            transform: scale(0.95);
-        }
+        .fab-cart { background-color: #278638; position: relative; }
+        .fab-exit { background-color: #a40e11; }
+        .others-float-btn { background-color: #0091ff; color: white; }
+        .others-float-btn:hover { background-color: #0073e6; }
 
-        .fab-btn svg {
-            width: 26px;
-            height: 26px;
-            fill: #ffffff;
-        }
-
-        .fab-cart {
-            background-color: #278638;
-            position: relative;
-        }
-
-        .fab-exit {
-            background-color: #a40e11;
-        }
-
-        /* 👥 新增：其他人點了什麼 懸浮按鈕樣式 */
-        .others-float-btn {
-            background-color: #0091ff;
-            color: white;
-        }
-        .others-float-btn:hover {
-            background-color: #0073e6;
-        }
-
-        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
         .cutoff-float-badge {
             position: fixed;
             bottom: 220px;
@@ -363,44 +338,11 @@
             user-select: none;
         }
 
-        .cutoff-title {
-            font-size: 12px;
-            color: #2b4c23;
-            font-weight: bold;
-            margin-bottom: 2px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .cutoff-title { font-size: 12px; color: #2b4c23; font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+        .cutoff-time-text { font-size: 13px; font-weight: 800; color: #2b4c23; margin-bottom: 4px; line-height: 1.2; }
+        .cutoff-timer { font-size: 14px; font-weight: 800; color: #d9363e; background: #ffeef0; padding: 3px 10px; border-radius: 10px; letter-spacing: 0.5px; width: 100%; border: 1px solid #fca5a5; box-sizing: border-box; }
+        .cutoff-timer.expired { color: #666666; background: #f0f0f0; border-color: #d0d0d0; }
 
-        .cutoff-time-text {
-            font-size: 13px;
-            font-weight: 800;
-            color: #2b4c23;
-            margin-bottom: 4px;
-            line-height: 1.2;
-        }
-
-        .cutoff-timer {
-            font-size: 14px;
-            font-weight: 800;
-            color: #d9363e;
-            background: #ffeef0;
-            padding: 3px 10px;
-            border-radius: 10px;
-            letter-spacing: 0.5px;
-            width: 100%;
-            border: 1px solid #fca5a5;
-            box-sizing: border-box;
-        }
-
-        .cutoff-timer.expired {
-            color: #666666;
-            background: #f0f0f0;
-            border-color: #d0d0d0;
-        }
-
-        /* 購物車數量紅點標籤 */
         .cart-badge {
             position: absolute;
             top: -4px;
@@ -428,212 +370,63 @@
             100% { transform: scale(1); }
         }
 
-        /* ==================== Modal 彈窗樣式 ==================== */
+        /* Modal 彈窗樣式 */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.45);
             backdrop-filter: blur(3px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             z-index: 10000;
-            opacity: 0;
-            visibility: hidden;
+            opacity: 0; visibility: hidden;
             transition: opacity 0.2s ease, visibility 0.2s ease;
         }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
 
         .modal-container {
             background: #fff;
-            width: 90%;
-            max-width: 440px;
+            width: 90%; max-width: 440px;
             border-radius: 20px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.2);
             overflow: hidden;
             transform: translateY(20px) scale(0.95);
             transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             max-height: 85vh;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
         }
-
         .modal-overlay.active .modal-container { transform: translateY(0) scale(1); }
 
-        .modal-header {
-            padding: 18px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #f1f5f9;
-            background: #fafafa;
-        }
-
+        .modal-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; background: #fafafa; }
         .modal-title { font-size: 18px; font-weight: 800; color: #1e293b; margin: 0; }
-
-        .modal-close {
-            background: #f1f5f9;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            font-size: 18px;
-            color: #64748b;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
+        .modal-close { background: #f1f5f9; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 18px; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .modal-close:hover { background: #e2e8f0; color: #0f172a; }
 
-        .modal-body {
-            padding: 20px;
-            font-size: 15px;
-            color: #334155;
-            line-height: 1.6;
-            overflow-y: auto;
-            flex: 1;
-        }
+        .modal-body { padding: 20px; font-size: 15px; color: #334155; line-height: 1.6; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 16px 20px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #f1f5f9; background: #fafafa; }
 
-        .modal-footer {
-            padding: 16px 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            border-top: 1px solid #f1f5f9;
-            background: #fafafa;
-        }
-
-        .btn-modal-cancel {
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            color: #475569;
-            padding: 10px 18px;
-            font-size: 14px;
-            font-weight: 700;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
+        .btn-modal-cancel { background: #fff; border: 1px solid #cbd5e1; color: #475569; padding: 10px 18px; font-size: 14px; font-weight: 700; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
         .btn-modal-cancel:hover { background: #f8fafc; }
 
-        .btn-modal-confirm {
-            background: var(--primary);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 700;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(44, 62, 80, 0.25);
-            transition: all 0.2s;
-        }
+        .btn-modal-confirm { background: var(--primary); border: none; color: white; padding: 10px 20px; font-size: 14px; font-weight: 700; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 10px rgba(44, 62, 80, 0.25); transition: all 0.2s; }
         .btn-modal-confirm:hover { background: #1a252f; transform: translateY(-1px); }
 
-        .custom-item-tag {
-            font-size: 12px;
-            color: #475569;
-            background: #f1f5f9;
-            padding: 2px 8px;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 4px;
-            font-weight: 600;
-        }
+        .custom-item-tag { font-size: 12px; color: #475569; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; font-weight: 600; }
 
-        /* 👥 「其他人點了什麼」表格專用樣式 */
-        .history-modal-content {
-            width: 92vw !important;
-            max-width: 1000px !important;
-            max-height: 85vh !important;
-        }
+        .history-modal-content { width: 92vw !important; max-width: 1000px !important; max-height: 85vh !important; }
+        .history-table-wrapper { overflow-x: auto; }
+        .history-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 15px; min-width: 550px; }
+        .history-table th { background-color: #e8f4fd; color: #2b4c23; font-weight: bold; padding: 12px 14px; border-bottom: 2px solid #d6ebd3; }
+        .history-table td { padding: 12px 14px; border-bottom: 1px solid #f0f7f0; color: #445941; }
+        .dept-badge { background-color: #e8f4fd; color: #1e88e5; border: 1px solid #bbdefb; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .no-record { text-align: center; color: #88a085; padding: 30px !important; font-style: italic; }
 
-        .history-table-wrapper {
-            overflow-x: auto;
-        }
-
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 15px;
-            min-width: 550px;
-        }
-
-        .history-table th {
-            background-color: #e8f4fd;
-            color: #2b4c23;
-            font-weight: bold;
-            padding: 12px 14px;
-            border-bottom: 2px solid #d6ebd3;
-        }
-
-        .history-table td {
-            padding: 12px 14px;
-            border-bottom: 1px solid #f0f7f0;
-            color: #445941;
-        }
-
-        .dept-badge {
-            background-color: #e8f4fd;
-            color: #1e88e5;
-            border: 1px solid #bbdefb;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .no-record {
-            text-align: center;
-            color: #88a085;
-            padding: 30px !important;
-            font-style: italic;
-        }
-
-        /* RWD 調整 */
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
-            .category-sidebar { 
-                display: flex;
-                flex: none;
-                width: 100%;
-                box-sizing: border-box;
-                overflow-x: auto;
-                white-space: nowrap;
-                position: sticky; 
-                top: 60px; 
-                z-index: 900;
-                background: #fff;
-                padding: 10px 12px;
-                margin-bottom: 16px;
-                border-radius: 0 0 12px 12px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                -webkit-overflow-scrolling: touch;
-            }
+            .category-sidebar { display: flex; flex: none; width: 100%; box-sizing: border-box; overflow-x: auto; white-space: nowrap; position: sticky; top: 60px; z-index: 900; background: #fff; padding: 10px 12px; margin-bottom: 16px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; }
             .category-sidebar::-webkit-scrollbar { display: none; }
-            .side-cat-item { 
-                flex: 0 0 auto; 
-                margin-right: 8px; 
-                margin-bottom: 0;
-                padding: 8px 16px;
-                font-size: 13px;
-                background: #f1f5f9;
-                border-radius: 20px;
-            }
+            .side-cat-item { flex: 0 0 auto; margin-right: 8px; margin-bottom: 0; padding: 8px 16px; font-size: 13px; background: #f1f5f9; border-radius: 20px; }
             .side-cat-item.active { background: var(--primary); color: #fff; }
             .category-block { scroll-margin-top: 130px; }
         }
@@ -650,115 +443,20 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
             .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
-        /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
-            .history-modal-content {
-                width: 95vw !important;
-                max-height: 88vh !important;
-                border-radius: 16px !important;
-                margin: 0 auto;
-            }
-
-            .history-modal-content .modal-body {
-                padding: 12px 14px !important;
-            }
-
-            .history-table-wrapper {
-                overflow-x: visible !important;
-            }
-
-            .history-table, 
-            .history-table thead, 
-            .history-table tbody, 
-            .history-table th, 
-            .history-table td, 
-            .history-table tr {
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-            }
-
-            .history-table {
-                min-width: 0 !important;
-            }
-
-            .history-table thead {
-                display: none;
-            }
-
-            .history-table tbody tr {
-                background: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                padding: 12px 14px;
-                margin-bottom: 12px;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-                display: flex;
-                flex-wrap: wrap;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            .history-table td {
-                padding: 2px 0 !important;
-                border-bottom: none !important;
-            }
-
-            /* 1. 卡號/姓名 (左上) */
-            .history-table td:nth-child(1) {
-                font-size: 15px;
-                font-weight: 700;
-                color: #1e293b;
-                order: 1;
-            }
-
-            /* 2. 部門標籤 (右上) */
-            .history-table td:nth-child(2) {
-                order: 2;
-                text-align: right;
-            }
-
-            /* 3. 時間 (第二列) */
-            .history-table td:nth-child(3) {
-                width: 100%;
-                order: 3;
-                font-size: 12px;
-                color: #64748b;
-                margin-top: 2px;
-                margin-bottom: 6px;
-            }
-
-            /* 4. 點餐內容 (第三列，突出框顯示) */
-            .history-table td:nth-child(4) {
-                width: 100%;
-                order: 4;
-                font-size: 14px;
-                background: #f8fafc;
-                border: 1px solid #f1f5f9;
-                border-radius: 8px;
-                padding: 8px 10px !important;
-                margin: 4px 0;
-                line-height: 1.4;
-            }
-
-            /* 5. 金額 (第四列，靠右紅字顯示) */
-            .history-table td:nth-child(5) {
-                width: 100%;
-                order: 5;
-                text-align: right;
-                font-size: 15px;
-                font-weight: 800 !important;
-                color: #e74c3c !important;
-                margin-top: 4px;
-            }
-
-            /* 無紀錄時的呈現 */
-            .history-table td.no-record {
-                text-align: center !important;
-                background: transparent !important;
-                border: none !important;
-                padding: 30px 0 !important;
-                color: #88a085;
-            }
+            .history-modal-content { width: 95vw !important; max-height: 88vh !important; border-radius: 16px !important; margin: 0 auto; }
+            .history-modal-content .modal-body { padding: 12px 14px !important; }
+            .history-table-wrapper { overflow-x: visible !important; }
+            .history-table, .history-table thead, .history-table tbody, .history-table th, .history-table td, .history-table tr { display: block; width: 100%; box-sizing: border-box; }
+            .history-table { min-width: 0 !important; }
+            .history-table thead { display: none; }
+            .history-table tbody tr { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+            .history-table td { padding: 2px 0 !important; border-bottom: none !important; }
+            .history-table td:nth-child(1) { font-size: 15px; font-weight: 700; color: #1e293b; order: 1; }
+            .history-table td:nth-child(2) { order: 2; text-align: right; }
+            .history-table td:nth-child(3) { width: 100%; order: 3; font-size: 12px; color: #64748b; margin-top: 2px; margin-bottom: 6px; }
+            .history-table td:nth-child(4) { width: 100%; order: 4; font-size: 14px; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 8px 10px !important; margin: 4px 0; line-height: 1.4; }
+            .history-table td:nth-child(5) { width: 100%; order: 5; text-align: right; font-size: 15px; font-weight: 800 !important; color: #e74c3c !important; margin-top: 4px; }
+            .history-table td.no-record { text-align: center !important; background: transparent !important; border: none !important; padding: 30px 0 !important; color: #88a085; }
         }
     </style>
 </head>
@@ -771,18 +469,13 @@
     </div>
 </div>
 
-<!-- ⏱️ 右下角截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
-    <div class="cutoff-title">
-        ⏱️ 點餐截止時間
-    </div>
+    <div class="cutoff-title">⏱️ 點餐截止時間</div>
     <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
     <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
 </div>
 
-<!-- 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 👥 新增：其他人點了什麼懸浮按鈕 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -835,7 +528,6 @@
     </div>
 </div>
 
-<!-- 客製化 / 購物車 Modal 彈窗 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -850,13 +542,10 @@
     </div>
 </div>
 
-<!-- 👥 新增：今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
-            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
-                👥 今日其他人點了什麼
-            </h3>
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">👥 今日其他人點了什麼</h3>
             <button class="modal-close" onclick="closeOthersModal()">&times;</button>
         </div>
         <div class="modal-body" style="padding: 20px;">
@@ -872,9 +561,7 @@
                         </tr>
                     </thead>
                     <tbody id="others-list">
-                        <tr>
-                            <td colspan="5" class="no-record">載入今日所有人點餐資料中...</td>
-                        </tr>
+                        <tr><td colspan="5" class="no-record">載入今日所有人點餐資料中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -883,12 +570,9 @@
 </div>
 
 <script>
-function goBack() {
-    window.location.href = 'index.html'; 
-}
+function goBack() { window.location.href = 'index.html'; }
 
 const menuItems = [
-    // === 鴨血豆腐臭豆腐系列 ===
     {name: "炸臭豆腐", price: 60, category: "鴨血豆腐臭豆腐系列 (無備註一律小辣)", icon:"🦆"},
     {name: "麻辣鴨血", price: 80, category: "鴨血豆腐臭豆腐系列 (無備註一律小辣)", icon:"🦆"},
     {name: "清蒸臭豆腐", price: 100, category: "鴨血豆腐臭豆腐系列 (無備註一律小辣)", icon:"🦆"},
@@ -896,12 +580,8 @@ const menuItems = [
     {name: "麻辣鴨血臭豆腐", price: 100, category: "鴨血豆腐臭豆腐系列 (無備註一律小辣)", icon:"🦆"},
     {name: "加豬肉", price: 65, category: "鴨血豆腐臭豆腐系列 (無備註一律小辣)", icon:"🦆"},
     {name: "加冬粉/白飯/王子麵", price: 15, category: "鴨血豆腐臭豆腐系列 (無備註一律小辣)", icon:"🦆"},
-
-    // === 麵類 ===
     {name: "古早味乾麵", price: 50, category: "麵類", icon:"🍜"},
     {name: "香辣肉醬麵", price: 70, category: "麵類", icon:"🍜"},
-
-    // === 飯類 ===
     {name: "豬腳飯 (中段)", price: 95, category: "飯類", icon:"🍙"},
     {name: "豬腳飯 (前蹄)", price: 90, category: "飯類", icon:"🍙"},
     {name: "爌肉飯", price: 80, category: "飯類", icon:"🍙"},
@@ -909,14 +589,10 @@ const menuItems = [
     {name: "蒸蛋飯", price: 60, category: "飯類", icon:"🍙"},
     {name: "辣肉醬蒸蛋飯", price: 70, category: "飯類", icon:"🍙"},
     {name: "香辣肉醬飯", price: 75, category: "飯類", icon:"🍙"},
-
-    // === 湯類 ===
     {name: "牛肉蛋花湯 (無肉)", price: 55, category: "湯類", icon:"🍜"},
     {name: "味噌貢丸湯", price: 40, category: "湯類", icon:"🍜"},
     {name: "味噌蛋花湯", price: 40, category: "湯類", icon:"🍜"},
     {name: "味噌湯", price: 25, category: "湯類", icon:"🍜"},
-
-    // === 小菜類 ===
     {name: "小菜-豬腳 (中段)", price: 70, category: "小菜類", icon:"🥬"},
     {name: "小菜-豬腳 (前蹄)", price: 65, category: "小菜類", icon:"🥬"},
     {name: "嘴邊肉", price: 65, category: "小菜類", icon:"🥬"},
@@ -941,19 +617,17 @@ let cart = {};
 let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
-
 let finalTotal = 0;
 let finalSummary = "";
 let globalEmployeesMap = {};
 
-// 暫存客製化選擇
 let tempSpicy = "小辣";
 let tempNote = "無特殊需求";
 
-// ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
+let isExpiredFlag = false;
 
 window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -971,38 +645,18 @@ window.onload = async function() {
     }
 
     renderMenu(menuItems);
-    
-    // 👇 新增後台同步機制
     await syncPricesFromBackend();
     setInterval(syncPricesFromBackend, 10000);
 
     renderCart();
-
-    // 啟動倒數計時與全院員工清單載入
     fetchEmployeeList();
     startCutoffCountdown();
 };
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
 });
-
-async function startCutoffCountdown() {
-    if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
-    await fetchCutoffSetting();
-    updateCountdownUI();
-    
-    let pollCounter = 0;
-    cutoffTimerInterval = setInterval(async () => {
-        updateCountdownUI();
-        pollCounter++;
-        if (pollCounter >= 2) {
-            pollCounter = 0;
-            await fetchCutoffSetting();
-        }
-    }, 1000);
-}
 
 async function syncPricesFromBackend() {
     let stores = null;
@@ -1025,11 +679,10 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「鼎森」或「泰式」的門市
-    const storeTarget = stores.find(s => s.name && (s.name.includes('嵐 爌肉') || s.name.includes('豬腳飯')));
+    // 比對「嵐 爌肉」或「豬腳飯」關鍵字
+    const storeTarget = stores.find(s => s.name && (s.name.includes('嵐') || s.name.includes('爌肉') || s.name.includes('豬腳飯')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    // 建立後台品項金額對照表
     const itemPriceMap = {};
     storeTarget.items.forEach(item => {
         if (item.name && item.price !== undefined) {
@@ -1037,7 +690,6 @@ async function syncPricesFromBackend() {
         }
     });
 
-    // 動態更新菜單項目價格
     let updated = false;
     menuItems.forEach(item => {
         if (itemPriceMap[item.name] !== undefined) {
@@ -1046,9 +698,25 @@ async function syncPricesFromBackend() {
         }
     });
 
-    if (updated && typeof renderMenu === 'function') {
-        renderMenu(currentFilteredItems);
+    if (updated) {
+        filterMenu();
     }
+}
+
+async function startCutoffCountdown() {
+    if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
+    await fetchCutoffSetting();
+    updateCountdownUI();
+    
+    let pollCounter = 0;
+    cutoffTimerInterval = setInterval(async () => {
+        updateCountdownUI();
+        pollCounter++;
+        if (pollCounter >= 5) {
+            pollCounter = 0;
+            await fetchCutoffSetting();
+        }
+    }, 1000);
 }
 
 async function fetchCutoffSetting() {
@@ -1078,26 +746,19 @@ async function fetchCutoffSetting() {
         for (const key of targetKeys) {
             const rawVal = localStorage.getItem(key);
             if (!rawVal) continue;
-
             if (rawVal.startsWith('{')) {
                 try {
                     const parsed = JSON.parse(rawVal);
                     const t = parsed.cutoffTime || parsed.time || parsed.cutoff || parsed.value || parsed.lockTime;
                     const d = parsed.lockDate || parsed.cutoffDate || parsed.date;
                     if (t && typeof t === 'string' && t.includes(':')) {
-                        latestTime = t;
-                        if (d) latestDate = d;
-                        break;
+                        latestTime = t; if (d) latestDate = d; break;
                     }
                 } catch (e) {}
             }
-
             if (rawVal.includes(':')) {
                 const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
-                if (match) {
-                    latestTime = match[0];
-                    break;
-                }
+                if (match) { latestTime = match[0]; break; }
             }
         }
     }
@@ -1106,18 +767,8 @@ async function fetchCutoffSetting() {
         latestDate = localStorage.getItem('lockDate') || localStorage.getItem('cutoffDate') || null;
     }
 
-    if (latestTime) {
-        const cleanTime = latestTime.replace(/[^0-9:]/g, '');
-        targetCutoffStr = (cleanTime && cleanTime.includes(':')) ? cleanTime : null;
-    } else {
-        targetCutoffStr = null;
-    }
-
-    if (latestDate && typeof latestDate === 'string' && latestDate.includes('-')) {
-        targetCutoffDateStr = latestDate.trim();
-    } else {
-        targetCutoffDateStr = null;
-    }
+    targetCutoffStr = latestTime ? latestTime.replace(/[^0-9:]/g, '') : null;
+    targetCutoffDateStr = (latestDate && typeof latestDate === 'string' && latestDate.includes('-')) ? latestDate.trim() : null;
 }
 
 function updateCountdownUI() {
@@ -1130,58 +781,42 @@ function updateCountdownUI() {
         timeDisplay.textContent = '--:--';
         countdownDisplay.textContent = '尚未設定點餐截止';
         countdownDisplay.classList.remove('expired');
+        isExpiredFlag = false;
         return;
     }
 
-    if (targetCutoffDateStr) {
-        timeDisplay.textContent = `${targetCutoffDateStr} ${targetCutoffStr}`;
-        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 點餐截止時間';
-    } else {
-        timeDisplay.textContent = targetCutoffStr;
-        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 今日點餐截止';
-    }
+    timeDisplay.textContent = targetCutoffDateStr ? `${targetCutoffDateStr} ${targetCutoffStr}` : targetCutoffStr;
+    if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 點餐截止時間';
 
     const now = new Date();
     const timeParts = targetCutoffStr.split(':').map(Number);
-    const targetHours = timeParts[0] !== undefined ? timeParts[0] : 9;
-    const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
-    const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
-
-    let year = now.getFullYear();
-    let month = now.getMonth();
-    let day = now.getDate();
+    let year = now.getFullYear(), month = now.getMonth(), day = now.getDate();
 
     if (targetCutoffDateStr && targetCutoffDateStr.includes('-')) {
         const dateParts = targetCutoffDateStr.split('-').map(Number);
         if (dateParts.length === 3 && !dateParts.some(isNaN)) {
-            year = dateParts[0];
-            month = dateParts[1] - 1;
-            day = dateParts[2];
+            year = dateParts[0]; month = dateParts[1] - 1; day = dateParts[2];
         }
     }
 
-    const targetTime = new Date(year, month, day, targetHours, targetMinutes, targetSeconds);
+    const targetTime = new Date(year, month, day, timeParts[0] || 9, timeParts[1] || 30, timeParts[2] || 0);
     const diffMs = targetTime - now;
 
     if (diffMs <= 0) {
         countdownDisplay.textContent = '已截止點餐';
         countdownDisplay.classList.add('expired');
+        isExpiredFlag = true;
     } else {
         countdownDisplay.classList.remove('expired');
+        isExpiredFlag = false;
         const totalSecs = Math.floor(diffMs / 1000);
         const hrs = Math.floor(totalSecs / 3600);
         const mins = Math.floor((totalSecs % 3600) / 60);
         const secs = totalSecs % 60;
-
-        const hh = String(hrs).padStart(2, '0');
-        const mm = String(mins).padStart(2, '0');
-        const ss = String(secs).padStart(2, '0');
+        const hh = String(hrs).padStart(2, '0'), mm = String(mins).padStart(2, '0'), ss = String(secs).padStart(2, '0');
 
         if (hrs >= 24) {
-            const days = Math.floor(hrs / 24);
-            const remainHrs = hrs % 24;
-            const rh = String(remainHrs).padStart(2, '0');
-            countdownDisplay.textContent = `${days}天 ${rh}:${mm}:${ss}`;
+            countdownDisplay.textContent = `${Math.floor(hrs / 24)}天 ${String(hrs % 24).padStart(2, '0')}:${mm}:${ss}`;
         } else if (hrs > 0) {
             countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
         } else {
@@ -1190,13 +825,10 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
-        if (response.ok) {
-            globalEmployeesMap = await response.json();
-        }
+        if (response.ok) globalEmployeesMap = await response.json();
     } catch (err) {
         console.warn('⚠️ 無法載入員工部門清單:', err);
     }
@@ -1216,15 +848,12 @@ function closeOthersModal(event) {
 async function fetchOthersOrders() {
     const othersList = document.getElementById('others-list');
     if (!othersList) return;
-
     othersList.innerHTML = `<tr><td colspan="5" class="no-record">載入今日所有人點餐資料中...</td></tr>`;
 
     let orders = [];
     try {
         const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
-        if (res.ok) {
-            orders = await res.json();
-        }
+        if (res.ok) orders = await res.json();
     } catch (e) {}
 
     if (!orders || orders.length === 0) {
@@ -1273,7 +902,6 @@ async function fetchOthersOrders() {
 
 function getMilliTimestamp(obj) {
     if (!obj) return 0;
-    
     let rawTime = obj.time || obj.Time || obj.date || obj.datetime || obj.timestamp || '';
     rawTime = String(rawTime).trim();
     if (!rawTime) return 0;
@@ -1287,14 +915,11 @@ function getMilliTimestamp(obj) {
         try {
             const isPM = rawTime.includes('下午');
             let cleanStr = rawTime.replace(/[上下]午/, ' ').replace(/\s+/g, ' ');
-            
             let [datePart, timePart] = cleanStr.trim().split(' ');
             if (datePart && timePart) {
                 let [hrs, mins, secs] = timePart.split(':').map(Number);
-                
                 if (isPM && hrs < 12) hrs += 12;
                 if (!isPM && hrs === 12) hrs = 0;
-                
                 const standardStr = `${datePart.replace(/\//g, '-')} ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
                 const parsed = Date.parse(standardStr);
                 if (!isNaN(parsed)) return parsed;
@@ -1309,10 +934,8 @@ function getMilliTimestamp(obj) {
 function isTodayOrder(orderObj) {
     const orderTs = getMilliTimestamp(orderObj);
     if (orderTs === 0) return false;
-
     const orderDate = new Date(orderTs);
     const today = new Date();
-
     return orderDate.getFullYear() === today.getFullYear() &&
            orderDate.getMonth() === today.getMonth() &&
            orderDate.getDate() === today.getDate();
@@ -1322,12 +945,10 @@ function formatDisplayTime(obj) {
     if (!obj) return '-';
     const rawTime = obj.time || obj.Time || obj.date || obj.datetime || '';
     if (rawTime) return rawTime; 
-
     if (obj.timestamp) {
         const ts = Number(obj.timestamp);
         if (!isNaN(ts) && ts > 0) {
-            const finalTs = ts < 9999999999 ? ts * 1000 : ts;
-            const d = new Date(finalTs);
+            const d = new Date(ts < 9999999999 ? ts * 1000 : ts);
             return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
         }
         return obj.timestamp;
@@ -1335,10 +956,8 @@ function formatDisplayTime(obj) {
     return '-';
 }
 
-/* ==================== 菜單與點餐邏輯 ==================== */
 function renderMenu(items) {
     const categories = [...new Set(items.map(i => i.category))];
-    
     const sideCats = document.getElementById("side-cats");
     sideCats.innerHTML = "";
     categories.forEach((cat, idx) => {
@@ -1412,18 +1031,13 @@ function debounceFilterMenu() {
 
 function filterMenu() {
     const query = document.getElementById("search").value.trim().toLowerCase();
-    if (!query) {
-        currentFilteredItems = [...menuItems];
-    } else {
-        currentFilteredItems = menuItems.filter(item => 
-            item.name.toLowerCase().includes(query) || 
-            item.category.toLowerCase().includes(query)
-        );
-    }
+    currentFilteredItems = !query ? [...menuItems] : menuItems.filter(item => 
+        item.name.toLowerCase().includes(query) || 
+        item.category.toLowerCase().includes(query)
+    );
     renderMenu(currentFilteredItems);
 }
 
-// 切換客製化卡片選項
 function selectOption(type, value, element) {
     if (type === 'spicy') {
         tempSpicy = value;
@@ -1439,7 +1053,6 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 重設預設值
     tempSpicy = "小辣";
     tempNote = "無特殊需求";
 
@@ -1532,33 +1145,24 @@ function removeOneBaseItem(baseName) {
 function renderCart() {
     finalTotal = 0;
     finalSummary = "";
-    
     let totalCount = 0;
-    const keys = Object.keys(cart);
 
-    keys.forEach(key => {
+    Object.keys(cart).forEach(key => {
         const item = cart[key];
         totalCount += item.qty;
-        const sub = item.qty * item.price;
-        finalTotal += sub;
+        finalTotal += item.qty * item.price;
         finalSummary += `${item.baseName}(${item.spicy}/${item.note})*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
     if (badgeEl) {
-        if (totalCount > 0) {
-            badgeEl.innerText = totalCount > 99 ? '99+' : totalCount;
-            badgeEl.style.display = "flex";
-        } else {
-            badgeEl.style.display = "none";
-        }
+        badgeEl.innerText = totalCount > 99 ? '99+' : totalCount;
+        badgeEl.style.display = totalCount > 0 ? "flex" : "none";
     }
 }
 
 function openCartModal() {
-    const keys = Object.keys(cart);
-    
-    if (keys.length === 0) {
+    if (Object.keys(cart).length === 0) {
         return showCustomModal({
             title: "購物車提示",
             bodyHtml: "<div style='text-align:center; padding: 20px 0;'><div style='font-size:40px;'>🛒</div><p style='color:#64748b; font-weight:600; margin-top:10px;'>購物車目前是空的喔！</p></div>",
@@ -1573,7 +1177,6 @@ function openCartModal() {
             <button class="btn-clear-all" onclick="clearCartModal()">🗑️ 清空全部</button>
         </div>
         <div id="modal-cart-list" style="max-height: 280px; overflow-y: auto; margin-bottom: 12px; padding-right: 4px;"></div>
-        
         <div id="modal-total-amount" style="text-align:right; font-size:18px; font-weight:800; color:var(--accent); border-top:2px solid #f1f5f9; padding-top:12px;">
             總計: $${finalTotal}
         </div>
@@ -1585,9 +1188,7 @@ function openCartModal() {
         confirmText: "🚀 確認送出訂單",
         cancelText: "繼續點餐",
         showCancel: true,
-        onConfirm: () => {
-            submitOrderToServer();
-        }
+        onConfirm: () => { submitOrderToServer(); }
     });
 
     renderModalCartList();
@@ -1626,9 +1227,7 @@ function renderModalCartList() {
 function changeQtyByKey(key, delta) {
     if (cart[key]) {
         cart[key].qty += delta;
-        if (cart[key].qty <= 0) {
-            delete cart[key];
-        }
+        if (cart[key].qty <= 0) delete cart[key];
         renderCart();
         renderMenu(currentFilteredItems);
 
@@ -1643,9 +1242,7 @@ function changeQtyByKey(key, delta) {
 function updateModalTotal() {
     renderCart();
     const totalEl = document.getElementById("modal-total-amount");
-    if (totalEl) {
-        totalEl.innerText = `總計: $${finalTotal}`;
-    }
+    if (totalEl) totalEl.innerText = `總計: $${finalTotal}`;
 }
 
 function clearCartModal() {
@@ -1664,19 +1261,11 @@ function showCustomModal({ title, bodyHtml, confirmText = "確定", cancelText =
 
     confirmBtn.innerText = confirmText;
     cancelBtn.innerText = cancelText;
-
-    if (showCancel) {
-        cancelBtn.style.display = "block";
-    } else {
-        cancelBtn.style.display = "none";
-    }
+    cancelBtn.style.display = showCancel ? "block" : "none";
 
     confirmBtn.onclick = function() {
-        if (onConfirm) {
-            onConfirm();
-        } else {
-            closeModal();
-        }
+        if (onConfirm) onConfirm();
+        else closeModal();
     };
 
     document.getElementById("custom-modal").classList.add("active");
@@ -1701,6 +1290,15 @@ async function submitOrderToServer() {
             title: "提示",
             bodyHtml: "<div style='text-align:center; padding:10px;'>⚠️ 購物車是空的，請先挑選餐點！</div>",
             confirmText: "確定",
+            showCancel: false
+        });
+    }
+
+    if (isExpiredFlag) {
+        return showCustomModal({
+            title: "點餐已截止",
+            bodyHtml: "<div style='text-align:center; padding:10px;'>⏱️ 抱歉，今日點餐已過截止時間！無法送出新訂單。</div>",
+            confirmText: "我知道了",
             showCancel: false
         });
     }
