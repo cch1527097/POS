@@ -942,6 +942,77 @@ let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
 
+// ------------------ 後台價格即時同步邏輯 ------------------
+async function syncPricesFromBackend() {
+    let stores = null;
+    try {
+        const res = await fetch(`/api/stores?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            stores = data.stores || data;
+        }
+    } catch (e) {
+        console.warn('無法連結 API 讀取門市菜單，嘗試讀取本地暫存...', e);
+    }
+
+    if (!stores) {
+        const saved = localStorage.getItem('active_store_config');
+        if (saved) {
+            try { stores = JSON.parse(saved); } catch (e) {}
+        }
+    }
+
+    if (!stores || !Array.isArray(stores)) return;
+
+    // 尋找 TEA TOP 第一味 (名稱包含 TEA TOP 或 第一味 的店家)
+    const storeTeaTop = stores.find(s => (s.name && (s.name.includes('TEA TOP') || s.name.includes('第一味'))));
+    if (!storeTeaTop || !storeTeaTop.items || storeTeaTop.items.length === 0) return;
+
+    // 建立後台品項對照表
+    const itemPriceMap = {};
+    storeTeaTop.items.forEach(item => {
+        if (item.name && item.price !== undefined) {
+            itemPriceMap[item.name.trim()] = Number(item.price);
+        }
+    });
+
+    // 動態更新 menuItems 價格
+    let updated = false;
+    menuItems.forEach(item => {
+        const mKey = `${item.name} (M)`;
+        const lKey = `${item.name} (L)`;
+        const bKey1 = `${item.name} (瓶)`;
+        const bKey2 = `${item.name} (B)`;
+
+        if (itemPriceMap[mKey] !== undefined) {
+            item.priceM = itemPriceMap[mKey];
+            updated = true;
+        }
+        if (itemPriceMap[lKey] !== undefined) {
+            item.priceL = itemPriceMap[lKey];
+            updated = true;
+        }
+        if (itemPriceMap[bKey1] !== undefined) {
+            item.priceB = itemPriceMap[bKey1];
+            updated = true;
+        } else if (itemPriceMap[bKey2] !== undefined) {
+            item.priceB = itemPriceMap[bKey2];
+            updated = true;
+        }
+
+        // 若後台為單一品項名稱對照
+        if (itemPriceMap[item.name] !== undefined) {
+            if (item.priceL !== undefined) item.priceL = itemPriceMap[item.name];
+            else if (item.priceM !== undefined) item.priceM = itemPriceMap[item.name];
+            updated = true;
+        }
+    });
+
+    if (updated) {
+        renderMenu(currentFilteredItems);
+    }
+}
+
 window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -958,6 +1029,8 @@ window.onload = async function() {
     }
 
     renderMenu(menuItems);
+    await syncPricesFromBackend();
+    setInterval(syncPricesFromBackend, 10000); // 每 10 秒自動同步後台最新價格
     renderCart();
 
     // 啟動倒數計時與全院員工清單載入
