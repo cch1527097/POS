@@ -2915,6 +2915,7 @@ async function checkIsGroupInitiator() {
     const excelBtn = document.getElementById('excelExportBtn');
     if (!excelBtn) return;
 
+    // 1. 統一進行 trim 清除字串前後空格
     const savedCardId = (localStorage.getItem('currentCardId') || loggedInCardId || '').trim();
     const savedEmpName = (localStorage.getItem('currentEmpName') || '').trim();
 
@@ -2929,7 +2930,7 @@ async function checkIsGroupInitiator() {
 
     let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${savedCardId}`) || '[]');
 
-    // 1. 若 URL 中含有團長身分，補寫入 LocalStorage
+    // 2. 若 URL 中含有團長身分，補寫入 LocalStorage
     if (urlInitiator && (urlInitiator === savedEmpName || urlInitiator === savedCardId)) {
         if (urlGroupId && !myGroups.includes(urlGroupId)) {
             myGroups.push(urlGroupId);
@@ -2944,7 +2945,7 @@ async function checkIsGroupInitiator() {
         isInitiator = true;
     }
 
-    // 2. 💡 雙向備援驗證：若 LocalStorage 查無紀錄，自動查詢今日訂單資料庫
+    // 3. 💡 雙向備援驗證：若 LocalStorage 查無紀錄（例如關閉瀏覽器後重登），自動查詢今日訂單資料庫
     if (!isInitiator) {
         try {
             let orders = [];
@@ -2974,7 +2975,7 @@ async function checkIsGroupInitiator() {
         }
     }
 
-    // 3. 依據判定結果顯示或隱藏按鈕
+    // 4. 依據判定結果顯示或隱藏按鈕
     if (isInitiator) {
         excelBtn.classList.remove('hidden');
     } else {
