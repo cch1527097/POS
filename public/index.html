@@ -2191,8 +2191,8 @@
             <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
         </div>
 
-        <!-- 📊 匯出 Excel 懸浮按鈕（僅揪團者可見） -->
-        <button id="excelExportBtn" class="excel-float-btn hidden" title="匯出揪團 Excel" aria-label="匯出 Excel" onclick="exportGroupOrdersToExcel()">
+        <!-- 📊 匯出 Excel 懸浮按鈕（永久顯示） -->
+        <button id="excelExportBtn" class="excel-float-btn" title="匯出揪團 Excel" aria-label="匯出 Excel" onclick="exportGroupOrdersToExcel()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
@@ -2924,13 +2924,13 @@
             const excelBtn = document.getElementById('excelExportBtn');
             if (!excelBtn) return;
 
+            // 改為永久顯示匯出 Excel 按鈕
+            excelBtn.classList.remove('hidden');
+
             const savedCardId = (localStorage.getItem('currentCardId') || loggedInCardId || '').trim();
             const savedEmpName = (localStorage.getItem('currentEmpName') || '').trim();
 
-            if (!savedCardId) {
-                excelBtn.classList.add('hidden');
-                return;
-            }
+            if (!savedCardId) return;
 
             const urlParams = new URLSearchParams(window.location.search);
             const urlInitiator = (urlParams.get('initiator') || '').trim();
@@ -2938,71 +2938,12 @@
 
             let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${savedCardId}`) || '[]');
 
-            // 1. 若 URL 中含有團長身分，補寫入 LocalStorage
+            // 若 URL 中含有團長身分，補寫入 LocalStorage
             if (urlInitiator && (urlInitiator === savedEmpName || urlInitiator === savedCardId)) {
                 if (urlGroupId && !myGroups.includes(urlGroupId)) {
                     myGroups.push(urlGroupId);
                     localStorage.setItem(`initiated_groups_${savedCardId}`, JSON.stringify(myGroups));
                 }
-            }
-
-            let isInitiator = false;
-            if (myGroups.length > 0) {
-                isInitiator = true;
-            } else if (urlInitiator && (urlInitiator === savedEmpName || urlInitiator === savedCardId)) {
-                isInitiator = true;
-            }
-
-            // 2. 💡 向 Neon 後端查詢是否為 24 小時內之揪團發起人 (解決清除瀏覽紀錄後身份丟失問題)
-            if (!isInitiator) {
-                try {
-                    const res = await fetch(`/api/order-history?cardId=${encodeURIComponent(savedCardId)}&_=${new Date().getTime()}`, { cache: 'no-store' });
-                    if (res.ok) {
-                        const historyData = await res.json();
-                        if (historyData.isOrganizer) {
-                            isInitiator = true;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Neon 後端團長身分查詢失敗:', e);
-                }
-            }
-
-            // 3. 雙向備援驗證：若 LocalStorage 與團長表均查無，自動查詢今日訂單資料庫
-            if (!isInitiator) {
-                try {
-                    let orders = [];
-                    const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
-                    if (res.ok) {
-                        orders = await res.json();
-                    } else {
-                        const jsonRes = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
-                        if (jsonRes.ok) {
-                            const data = await jsonRes.json();
-                            orders = Array.isArray(data) ? data : (data.orders || []);
-                        }
-                    }
-
-                    // 檢查訂單紀錄中是否有該使用者發起的揪團或個人訂單
-                    const hasOrderMatch = orders.some(o => {
-                        const oCard = String(o.cardId || o.card_id || '').trim();
-                        const oInit = String(o.initiator || '').trim();
-                        return (oCard === savedCardId || oInit === savedEmpName || oInit === savedCardId) && isTodayOrYesterdayOrder(o);
-                    });
-
-                    if (hasOrderMatch) {
-                        isInitiator = true;
-                    }
-                } catch (e) {
-                    console.warn('團長身分訂單比對失敗:', e);
-                }
-            }
-
-            // 4. 依據判定結果顯示或隱藏按鈕
-            if (isInitiator) {
-                excelBtn.classList.remove('hidden');
-            } else {
-                excelBtn.classList.add('hidden');
             }
         }
 
@@ -3467,68 +3408,59 @@
         }
 
         async function executeLogin() {
-    if (isSubmitting) return;
-    
-    const cardInput = document.getElementById('cardId');
-    const loginBtn = document.getElementById('submit-login-btn');
-    
-    if (!cardInput) return;
-
-    cardInput.setCustomValidity('');
-
-    if (!cardInput.value.trim()) {
-        cardInput.reportValidity();
-        return;
-    }
-
-    const cardId = cardInput.value.trim();
-    isSubmitting = true;
-    if (loginBtn) loginBtn.disabled = true;
-
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
-        
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cardId: cardId }),
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        
-        const data = await response.json();
-        if (data.success) {
-            if (!globalEmployeesMap || !globalEmployeesMap[cardId]) {
-                await fetchEmployeeList();
-            }
-            const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
+            if (isSubmitting) return;
             
-            // 💡 關鍵修正：若後端驗證此卡號為團長，即時同步寫入新瀏覽器的 LocalStorage 並觸發還原
-            if (data.isOrganizer) {
-                let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${cardId}`) || '[]');
-                const gId = data.groupId || 'AUTO_SYNCED_GROUP';
-                if (!myGroups.includes(gId)) {
-                    myGroups.push(gId);
-                    localStorage.setItem(`initiated_groups_${cardId}`, JSON.stringify(myGroups));
-                }
+            const cardInput = document.getElementById('cardId');
+            const loginBtn = document.getElementById('submit-login-btn');
+            
+            if (!cardInput) return;
+
+            cardInput.setCustomValidity('');
+
+            if (!cardInput.value.trim()) {
+                cardInput.reportValidity();
+                return;
             }
 
-            showOrderSection(cardId, data.empName || cardId, dept, false);
-        } else {
-            cardInput.setCustomValidity(`${data.message || '無此卡號'}`);
-            cardInput.reportValidity();
-            if (loginBtn) loginBtn.disabled = false;
-            isSubmitting = false;
+            const cardId = cardInput.value.trim();
+            isSubmitting = true;
+            if (loginBtn) loginBtn.disabled = true;
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cardId: cardId }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                if (data.success) {
+                    if (!globalEmployeesMap || !globalEmployeesMap[cardId]) {
+                        await fetchEmployeeList();
+                    }
+                    const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
+                    
+                    showOrderSection(cardId, data.empName || cardId, dept, false);
+                } else {
+                    cardInput.setCustomValidity(`${data.message || '無此卡號'}`);
+                    cardInput.reportValidity();
+                    if (loginBtn) loginBtn.disabled = false;
+                    isSubmitting = false;
+                }
+            } catch (error) {
+                if (loginBtn) loginBtn.disabled = false;
+                isSubmitting = false;
+                
+                const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
+                showOrderSection(cardId, cardId, dept, true);
+            }
         }
-    } catch (error) {
-        if (loginBtn) loginBtn.disabled = false;
-        isSubmitting = false;
-        
-        const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
-        showOrderSection(cardId, cardId, dept, true);
-    }
-}
+
         function redirectToShop(shopName) {
             let targetShop = shopName;
 
