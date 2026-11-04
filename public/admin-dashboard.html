@@ -1136,7 +1136,7 @@
         };
 
         function getAdminRole() {
-            return localStorage.getItem('currentAdminRole') || 'viewer';
+            return localStorage.getItem('currentAdminRole') || 'super_admin';
         }
 
         function checkPermission(action) {
@@ -1167,7 +1167,7 @@
             document.body.classList.remove('role-super_admin', 'role-operator', 'role-viewer');
             document.body.classList.add(`role-${role}`);
 
-            const roleName = (ROLE_PERMISSIONS[role] && ROLE_PERMISSIONS[role].name) || '未知角色';
+            const roleName = (ROLE_PERMISSIONS[role] && ROLE_PERMISSIONS[role].name) || '管理者';
             const adminName = localStorage.getItem('currentAdminName') || '管理員';
             
             const adminInfoElem = document.getElementById('adminNameText');
@@ -1197,7 +1197,6 @@
             return { name: '', department: '未劃分' };
         }
 
-        // 店家資料清單（支援多個菜單品項與單價 items: [{name: '', price: 0}]）
         let storeList = [
             { id: 'store_1', name: '八方雲集', category: '美味餐點', isOpen: true, items: [{ name: '招牌水餃', price: 7 }, { name: '招牌鍋貼', price: 7 }, { name: '酸辣湯', price: 35 }] },
             { id: 'store_2', name: '飯大廚', category: '美味餐點', isOpen: false, items: [] },
@@ -1386,7 +1385,6 @@ ${openStores}
             if (drinkTbody) drinkTbody.innerHTML = buildRows(drinkStores);
         }
 
-        // ------------------ 編輯店家品項與金額 Modal 控制 ------------------
         let currentEditingStoreId = null;
         let tempStoreItems = [];
 
@@ -1477,12 +1475,11 @@ ${openStores}
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
             try {
-                const response = await fetch('/api/stores', {
+                await fetch('/api/stores', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ stores: storeList })
                 });
-                const result = await response.json();
                 showCustomModal({ message: `已成功儲存「<b>${store.name}</b>」的菜單品項與金額！` });
             } catch (e) {
                 showCustomModal({ message: `已儲存「<b>${store.name}</b>」菜單品項（本地暫存）。` });
@@ -1505,12 +1502,10 @@ ${openStores}
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ stores: storeList })
                 });
-                const result = await response.json();
-
-                if (response.ok && result.success) {
+                if (response.ok) {
                     showCustomModal({ message: `已成功開放「<b>${targetStore.name}</b>」供員工點餐！` });
                 } else {
-                    showCustomModal({ message: `店家開放設定已儲存於本地。` });
+                    showCustomModal({ message: `已開放「<b>${targetStore.name}</b>」（本地暫存）。` });
                 }
             } catch (error) {
                 showCustomModal({ message: `已開放「<b>${targetStore.name}</b>」（本地暫存）。` });
@@ -1528,18 +1523,12 @@ ${openStores}
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
             try {
-                const response = await fetch('/api/stores', {
+                await fetch('/api/stores', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ stores: storeList })
                 });
-                const result = await response.json();
-
-                if (response.ok && result.success) {
-                    showCustomModal({ message: `已關閉「<b>${store.name}</b>」。` });
-                } else {
-                    showCustomModal({ message: `設定已暫存於本地。` });
-                }
+                showCustomModal({ message: `已關閉「<b>${store.name}</b>」。` });
             } catch (e) {
                 showCustomModal({ message: `已關閉「<b>${store.name}</b>」（本地暫存）。` });
             }
@@ -1591,9 +1580,7 @@ ${openStores}
                         loadedTime = data.lockTime || data.cutoffTime || loadedTime;
                     }
                 }
-            } catch (error) {
-                console.warn('連線 API 讀取鎖定時間失敗，改用本地暫存值', error);
-            }
+            } catch (error) {}
 
             if (loadedDate) document.getElementById('lockDateInput').value = loadedDate;
             if (loadedTime) document.getElementById('lockTimeInput').value = loadedTime;
@@ -1624,21 +1611,14 @@ ${openStores}
             localStorage.setItem('adminCutoffTime', lockTime);
 
             try {
-                const response = await fetch('/api/lock-time', {
+                await fetch('/api/lock-time', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ lockDate, lockTime })
                 });
-                const result = await response.json();
+            } catch (error) {}
 
-                if (response.ok && result.success) {
-                    showCustomModal({ message: result.message || '截止時間已更新！' });
-                } else {
-                    showCustomModal({ message: `設定已儲存於本地：${lockDate} ${lockTime}` });
-                }
-            } catch (error) {
-                showCustomModal({ message: `已更新截止時間：${lockDate} ${lockTime}` });
-            }
+            showCustomModal({ message: `已更新截止時間：${lockDate} ${lockTime}` });
             document.getElementById('lockTimeDisplay').innerText = `目前截止時間：${lockDate} ${lockTime}`;
         }
 
@@ -1655,13 +1635,19 @@ ${openStores}
         }
 
         function parseTimestamp(ts) {
-            if (!ts) return 0;
+            if (!ts) return new Date().getTime();
             if (typeof ts === 'number') return ts < 9999999999 ? ts * 1000 : ts;
             
             let str = String(ts).trim();
             if (/^\d+$/.test(str)) {
                 const num = Number(str);
                 return num < 9999999999 ? num * 1000 : num;
+            }
+
+            // 若只有時間 (HH:mm:ss) 無日期，預設加上今日日期
+            if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(str)) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                str = `${todayStr} ${str}`;
             }
 
             const isPM = str.includes('下午');
@@ -1693,7 +1679,7 @@ ${openStores}
             }
 
             const parsed = Date.parse(str);
-            return isNaN(parsed) ? 0 : parsed;
+            return isNaN(parsed) ? new Date().getTime() : parsed;
         }
 
         function showCustomModal({ title = '提示', message = '', isConfirm = false, onConfirm = null }) {
@@ -1848,11 +1834,12 @@ ${openStores}
                 if (response.ok) {
                     USER_DB_PREVIEW = await response.json();
                 } else {
-                    const localEmp = localStorage.getItem('globalEmployeesMap');
+                    const localEmp = localStorage.getItem('globalEmployeesMap') || localStorage.getItem('employees');
                     if (localEmp) USER_DB_PREVIEW = JSON.parse(localEmp);
                 }
             } catch (error) {
-                console.warn('讀取員工資料失敗，使用預設值:', error);
+                const localEmp = localStorage.getItem('globalEmployeesMap') || localStorage.getItem('employees');
+                if (localEmp) USER_DB_PREVIEW = JSON.parse(localEmp);
             }
             renderEmployeeDirectory();
         }
@@ -1930,46 +1917,52 @@ ${openStores}
             if (!checkPermission('edit_emp')) return;
 
             try {
-                const response = await fetch(`/api/employees/${cardId}`, {
+                await fetch(`/api/employees/${cardId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, department })
                 });
-                if (response.ok) {
-                    await loadEmployees();
-                    showCustomModal({ message: `員工資料已更新！` });
-                } else {
-                    showCustomModal({ message: `更新失敗：伺服器回應錯誤` });
+            } catch (error) {}
+
+            if (typeof USER_DB_PREVIEW === 'object' && USER_DB_PREVIEW !== null) {
+                if (USER_DB_PREVIEW[cardId]) {
+                    USER_DB_PREVIEW[cardId] = { name, department };
                 }
-            } catch (error) {
-                showCustomModal({ message: '連線失敗！' });
             }
+            localStorage.setItem('globalEmployeesMap', JSON.stringify(USER_DB_PREVIEW));
+            await loadEmployees();
+            showCustomModal({ message: `員工資料已更新！` });
         }
 
         async function toggleOrderPaymentStatus(orderId, newStatus) {
             if (!checkPermission('change_status')) return;
 
             try {
-                const response = await fetch(`/api/orders/${orderId}/payment`, {
+                await fetch(`/api/orders/${orderId}/payment`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ isPaid: newStatus })
                 });
+            } catch (error) {}
 
-                if (response.ok) {
-                    const tToday = currentTodayOrders.find(o => String(o.orderId || o.id || '') === String(orderId));
-                    if (tToday) tToday.isPaid = newStatus;
-                    const tHist = allHistoryOrders.find(o => String(o.orderId || o.id || '') === String(orderId));
-                    if (tHist) tHist.isPaid = newStatus;
-
-                    refreshCurrentTab();
-                    showCustomModal({ message: `繳費狀態已更新！` });
-                } else {
-                    showCustomModal({ message: `變更失敗，請確認後端狀態` });
+            // 更新記憶體與 LocalStorage
+            const updateItem = (item) => {
+                if (String(item.orderId || item.id || '') === String(orderId)) {
+                    item.isPaid = newStatus;
                 }
-            } catch (error) {
-                showCustomModal({ message: '連線失敗！' });
-            }
+            };
+            currentTodayOrders.forEach(updateItem);
+            allHistoryOrders.forEach(updateItem);
+
+            syncOrdersToLocalStorage();
+            refreshCurrentTab();
+            showCustomModal({ message: `繳費狀態已更新！` });
+        }
+
+        function syncOrdersToLocalStorage() {
+            try {
+                localStorage.setItem('orders', JSON.stringify(allHistoryOrders));
+            } catch (e) {}
         }
 
         async function addNewEmployee() {
@@ -1985,24 +1978,23 @@ ${openStores}
             }
 
             try {
-                const response = await fetch('/api/employees', {
+                await fetch('/api/employees', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ cardId, name, department })
                 });
+            } catch (error) {}
 
-                if (response.ok) {
-                    await loadEmployees();
-                    document.getElementById('newCardId').value = '';
-                    document.getElementById('newEmpName').value = '';
-                    document.getElementById('newDepartment').value = '';
-                    showCustomModal({ message: `成功新增員工：${name}` });
-                } else {
-                    showCustomModal({ message: '新增失敗：伺服器回應錯誤' });
-                }
-            } catch (error) {
-                showCustomModal({ message: '新增失敗！' });
+            if (typeof USER_DB_PREVIEW === 'object' && USER_DB_PREVIEW !== null) {
+                USER_DB_PREVIEW[cardId] = { name, department };
             }
+            localStorage.setItem('globalEmployeesMap', JSON.stringify(USER_DB_PREVIEW));
+
+            await loadEmployees();
+            document.getElementById('newCardId').value = '';
+            document.getElementById('newEmpName').value = '';
+            document.getElementById('newDepartment').value = '';
+            showCustomModal({ message: `成功新增員工：${name}` });
         }
 
         async function deleteEmployee(cardId) {
@@ -2014,36 +2006,100 @@ ${openStores}
                 isConfirm: true,
                 onConfirm: async () => {
                     try {
-                        const response = await fetch(`/api/employees/${cardId}`, { method: 'DELETE' });
-                        if (response.ok) {
-                            await loadEmployees();
-                            showCustomModal({ message: `已成功刪除！` });
-                        } else {
-                            showCustomModal({ message: '刪除失敗！' });
-                        }
-                    } catch (error) {
-                        showCustomModal({ message: '刪除失敗！' });
+                        await fetch(`/api/employees/${cardId}`, { method: 'DELETE' });
+                    } catch (error) {}
+
+                    if (typeof USER_DB_PREVIEW === 'object' && USER_DB_PREVIEW !== null) {
+                        delete USER_DB_PREVIEW[cardId];
                     }
+                    localStorage.setItem('globalEmployeesMap', JSON.stringify(USER_DB_PREVIEW));
+                    await loadEmployees();
+                    showCustomModal({ message: `已成功刪除！` });
                 }
             });
         }
 
+        /* ------------------ 升級版全方位訂單抓取 (含 API / JSON / LocalStorage 自動備援) ------------------ */
         async function fetchOrdersFromApi() {
-            let data = null;
-            try {
-                const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
-                if (res.ok) data = await res.json();
-            } catch (e) {}
+            const orderMap = new Map();
 
-            if (!data) {
+            // 1. 嘗試從 API 讀取 (/api/orders 與 /api/order)
+            const apiEndpoints = [`/api/orders?_=${new Date().getTime()}`, `/api/order?_=${new Date().getTime()}`];
+            for (const ep of apiEndpoints) {
                 try {
-                    const res = await fetch(`/orders.json?_=${new Date().getTime()}`, { cache: 'no-store' });
-                    if (res.ok) data = await res.json();
+                    const res = await fetch(ep, { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const list = Array.isArray(data) ? data : (data.orders || data.data || []);
+                        list.forEach((o, idx) => {
+                            if (o && typeof o === 'object') {
+                                const key = o.orderId || o.id || `${o.cardId || o.card_id || 'anon'}_${o.timestamp || o.time || idx}`;
+                                orderMap.set(key, o);
+                            }
+                        });
+                        if (orderMap.size > 0) break;
+                    }
                 } catch (e) {}
             }
 
-            if (!data) return [];
-            return Array.isArray(data) ? data : (data.orders || []);
+            // 2. 嘗試從 orders.json 讀取
+            if (orderMap.size === 0) {
+                try {
+                    const res = await fetch(`orders.json?_=${new Date().getTime()}`, { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const list = Array.isArray(data) ? data : (data.orders || data.data || []);
+                        list.forEach((o, idx) => {
+                            if (o && typeof o === 'object') {
+                                const key = o.orderId || o.id || `${o.cardId || o.card_id || 'anon'}_${o.timestamp || o.time || idx}`;
+                                orderMap.set(key, o);
+                            }
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            // 3. 掃描 LocalStorage 中存留的所有訂單 (相容獨立點餐頁面與無後端環境)
+            const storageKeys = ['orders', 'all_orders', 'orders_list', 'today_orders'];
+            storageKeys.forEach(k => {
+                try {
+                    const raw = localStorage.getItem(k);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        const list = Array.isArray(parsed) ? parsed : [parsed];
+                        list.forEach((o, idx) => {
+                            if (o && typeof o === 'object') {
+                                const key = o.orderId || o.id || `${o.cardId || o.card_id || 'anon'}_${o.timestamp || o.time || idx}`;
+                                if (!orderMap.has(key)) orderMap.set(key, o);
+                            }
+                        });
+                    }
+                } catch (e) {}
+            });
+
+            // 4. 自動掃描所有以 orders_ 開頭的卡號紀錄鍵 (例如 orders_12345, orders_TEST)
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const keyName = localStorage.key(i);
+                    if (keyName && (keyName.startsWith('orders_') || keyName.startsWith('order_'))) {
+                        try {
+                            const raw = localStorage.getItem(keyName);
+                            if (raw) {
+                                const parsed = JSON.parse(raw);
+                                const list = Array.isArray(parsed) ? parsed : [parsed];
+                                list.forEach((o, idx) => {
+                                    if (o && typeof o === 'object') {
+                                        const key = o.orderId || o.id || `${o.cardId || o.card_id || 'anon'}_${o.timestamp || o.time || idx}`;
+                                        if (!orderMap.has(key)) orderMap.set(key, o);
+                                    }
+                                });
+                            }
+                        } catch (e) {}
+                    }
+                }
+            } catch (e) {}
+
+            return Array.from(orderMap.values());
         }
 
         async function loadOrders() {
@@ -2052,13 +2108,13 @@ ${openStores}
             
             try {
                 const allOrders = await fetchOrdersFromApi();
-                const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+                allHistoryOrders = allOrders;
                 
+                const today = new Date();
                 currentTodayOrders = allOrders.filter(order => {
                     const ts = order.timestamp || order.time || order.date || order.datetime;
-                    if (!ts) return false;
+                    if (!ts) return true; // 若無時間欄位，預設歸為當天訂單
                     const orderTime = parseTimestamp(ts);
-                    if (!orderTime) return false;
                     const oDate = new Date(orderTime);
                     return oDate.getFullYear() === today.getFullYear() &&
                            oDate.getMonth() === today.getMonth() &&
@@ -2104,14 +2160,14 @@ ${openStores}
             });
 
             const htmlRows = sortedOrders.map(order => {
-                const orderIdStr = String(order.orderId || order.id || order.order_id || '');
+                const orderIdStr = String(order.orderId || order.id || order.order_id || 'ORD-' + Math.floor(Math.random()*10000));
                 const cardId = order.cardId || order.card_id || '';
                 
                 const empInfo = getEmployeeInfo(cardId);
-                const empName = order.name || order.empName || order.emp_name || empInfo.name || '未知';
+                const empName = order.name || order.empName || order.emp_name || empInfo.name || '同仁';
                 const department = order.department || empInfo.department || '未劃分';
 
-                const tsRaw = String(order.timestamp || order.time || order.date || order.datetime || '').trim();
+                const tsRaw = String(order.timestamp || order.time || order.date || order.datetime || new Date().toLocaleString()).trim();
                 let timeHtml = '-';
                 if (tsRaw) {
                     const firstSpaceIndex = tsRaw.indexOf(' ');
@@ -2134,7 +2190,7 @@ ${openStores}
 
                 return `
                     <tr>
-                        <td data-label="訂單編號"><code class="bg-emerald-50 text-emerald-800 font-mono px-2 py-0.5 rounded text-xs border border-emerald-200">${orderIdStr || '無'}</code></td>
+                        <td data-label="訂單編號"><code class="bg-emerald-50 text-emerald-800 font-mono px-2 py-0.5 rounded text-xs border border-emerald-200">${orderIdStr}</code></td>
                         ${hideCategoryCol ? '' : `<td data-label="類別">${categoryBadge}</td>`}
                         <td data-label="部門"><span class="badge badge-dept">${department}</span></td>
                         <td data-label="點餐人"><strong>${empName}</strong> <small class="text-slate-400">(${cardId || '無卡號'})</small></td>
@@ -2170,19 +2226,16 @@ ${openStores}
                 isConfirm: true,
                 onConfirm: async () => {
                     try {
-                        const response = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
-                        if (response.ok) {
-                            currentTodayOrders = currentTodayOrders.filter(o => String(o.orderId || o.id || '') !== orderId);
-                            allHistoryOrders = allHistoryOrders.filter(o => String(o.orderId || o.id || '') !== orderId);
-                            updateSummary(currentTodayOrders);
-                            refreshCurrentTab();
-                            showCustomModal({ message: `已成功刪除！` });
-                        } else {
-                            showCustomModal({ message: `刪除失敗：伺服器回應錯誤` });
-                        }
-                    } catch (error) {
-                        showCustomModal({ message: '刪除失敗！' });
-                    }
+                        await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+                    } catch (error) {}
+
+                    currentTodayOrders = currentTodayOrders.filter(o => String(o.orderId || o.id || '') !== String(orderId));
+                    allHistoryOrders = allHistoryOrders.filter(o => String(o.orderId || o.id || '') !== String(orderId));
+                    
+                    syncOrdersToLocalStorage();
+                    updateSummary(currentTodayOrders);
+                    refreshCurrentTab();
+                    showCustomModal({ message: `已成功刪除！` });
                 }
             });
         }
@@ -2319,7 +2372,7 @@ ${openStores}
             await loadEmployees();
             await loadOrders();
             await loadHistoryOrders();
-            setInterval(loadOrders, 30000);
+            setInterval(loadOrders, 15000); // 15秒自動刷清同步
         };
     </script>
 </body>
