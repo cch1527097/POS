@@ -27,7 +27,6 @@
             line-height: 1.5;
         }
 
-        /* ==================== 頂部 Header 樣式 ==================== */
         .navbar {
             width: 100%;
             background-color: #ffffff;
@@ -220,7 +219,6 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        /* 圖形化客製化選項樣式 */
         .opt-group { margin-top: 12px; }
         .opt-group label { font-weight: 600; display: block; margin-top: 14px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
         .opt-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -244,7 +242,6 @@
             box-shadow: 0 2px 6px rgba(139, 0, 0, 0.25);
         }
 
-        /* ==================== 懸浮圓形按鈕群 & 截止時間懸浮元件 ==================== */
         .fab-container {
             position: fixed;
             bottom: 24px;
@@ -270,40 +267,15 @@
             outline: none;
         }
 
-        .fab-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.28);
-        }
+        .fab-btn:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(0,0,0,0.28); }
+        .fab-btn:active { transform: scale(0.95); }
+        .fab-btn svg { width: 26px; height: 26px; fill: #ffffff; }
 
-        .fab-btn:active {
-            transform: scale(0.95);
-        }
+        .fab-cart { background-color: #278638; position: relative; }
+        .fab-exit { background-color: #a40e11; }
+        .others-float-btn { background-color: #0091ff; color: white; }
+        .others-float-btn:hover { background-color: #0073e6; }
 
-        .fab-btn svg {
-            width: 26px;
-            height: 26px;
-            fill: #ffffff;
-        }
-
-        .fab-cart {
-            background-color: #278638;
-            position: relative;
-        }
-
-        .fab-exit {
-            background-color: #a40e11;
-        }
-
-        /* 👥 新增：其他人點了什麼 懸浮按鈕樣式 */
-        .others-float-btn {
-            background-color: #0091ff;
-            color: white;
-        }
-        .others-float-btn:hover {
-            background-color: #0073e6;
-        }
-
-        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
         .cutoff-float-badge {
             position: fixed;
             bottom: 220px;
@@ -324,44 +296,11 @@
             user-select: none;
         }
 
-        .cutoff-title {
-            font-size: 12px;
-            color: #2b4c23;
-            font-weight: bold;
-            margin-bottom: 2px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        .cutoff-title { font-size: 12px; color: #2b4c23; font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+        .cutoff-time-text { font-size: 13px; font-weight: 800; color: #2b4c23; margin-bottom: 4px; line-height: 1.2; }
+        .cutoff-timer { font-size: 14px; font-weight: 800; color: #d9363e; background: #ffeef0; padding: 3px 10px; border-radius: 10px; letter-spacing: 0.5px; width: 100%; border: 1px solid #fca5a5; box-sizing: border-box; }
+        .cutoff-timer.expired { color: #666666; background: #f0f0f0; border-color: #d0d0d0; }
 
-        .cutoff-time-text {
-            font-size: 13px;
-            font-weight: 800;
-            color: #2b4c23;
-            margin-bottom: 4px;
-            line-height: 1.2;
-        }
-
-        .cutoff-timer {
-            font-size: 14px;
-            font-weight: 800;
-            color: #d9363e;
-            background: #ffeef0;
-            padding: 3px 10px;
-            border-radius: 10px;
-            letter-spacing: 0.5px;
-            width: 100%;
-            border: 1px solid #fca5a5;
-            box-sizing: border-box;
-        }
-
-        .cutoff-timer.expired {
-            color: #666666;
-            background: #f0f0f0;
-            border-color: #d0d0d0;
-        }
-
-        /* 購物車數量紅點標籤 */
         .cart-badge {
             position: absolute;
             top: -4px;
@@ -389,197 +328,64 @@
             100% { transform: scale(1); }
         }
 
-        /* ==================== Modal 彈窗樣式 ==================== */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             z-index: 10000;
-            opacity: 0;
-            visibility: hidden;
+            opacity: 0; visibility: hidden;
             transition: opacity 0.2s ease, visibility 0.2s ease;
         }
 
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
 
         .modal-container {
             background: #fff;
-            width: 90%;
-            max-width: 440px;
+            width: 90%; max-width: 440px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             overflow: hidden;
             transform: scale(0.95);
             transition: transform 0.2s ease;
             max-height: 90vh;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
         }
 
         .modal-overlay.active .modal-container { transform: scale(1); }
 
-        .modal-header {
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
+        .modal-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; }
         .modal-title { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; }
 
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: #94a3b8;
-            cursor: pointer;
-            line-height: 1;
-        }
+        .modal-close { background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; line-height: 1; }
         .modal-close:hover { color: #475569; }
 
-        .modal-body {
-            padding: 16px 20px;
-            font-size: 15px;
-            color: #334155;
-            line-height: 1.6;
-            overflow-y: auto;
-            flex: 1;
-        }
+        .modal-body { padding: 16px 20px; font-size: 15px; color: #334155; line-height: 1.6; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 14px 20px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #f8fafc; }
 
-        .modal-footer {
-            padding: 14px 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            border-top: 1px solid #f8fafc;
-        }
-
-        .btn-modal-cancel {
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+        .btn-modal-cancel { background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; }
         .btn-modal-cancel:hover { background: #f8fafc; }
 
-        .btn-modal-confirm {
-            background: var(--primary);
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+        .btn-modal-confirm { background: var(--primary); border: none; color: white; padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; }
         .btn-modal-confirm:hover { background: #5c0000; }
 
-        .custom-item-tag {
-            font-size: 12px;
-            color: #64748b;
-            background: #f1f5f9;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 2px;
-        }
+        .custom-item-tag { font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px; }
 
-        /* 👥 「其他人點了什麼」表格專用樣式 */
-        .history-modal-content {
-            width: 92vw !important;
-            max-width: 1000px !important;
-            max-height: 85vh !important;
-        }
+        .history-modal-content { width: 92vw !important; max-width: 1000px !important; max-height: 85vh !important; }
+        .history-table-wrapper { overflow-x: auto; }
+        .history-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 15px; min-width: 550px; }
+        .history-table th { background-color: #e8f4fd; color: #2b4c23; font-weight: bold; padding: 12px 14px; border-bottom: 2px solid #d6ebd3; }
+        .history-table td { padding: 12px 14px; border-bottom: 1px solid #f0f7f0; color: #445941; }
+        .dept-badge { background-color: #e8f4fd; color: #1e88e5; border: 1px solid #bbdefb; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .no-record { text-align: center; color: #88a085; padding: 30px !important; font-style: italic; }
 
-        .history-table-wrapper {
-            overflow-x: auto;
-        }
-
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 15px;
-            min-width: 550px;
-        }
-
-        .history-table th {
-            background-color: #e8f4fd;
-            color: #2b4c23;
-            font-weight: bold;
-            padding: 12px 14px;
-            border-bottom: 2px solid #d6ebd3;
-        }
-
-        .history-table td {
-            padding: 12px 14px;
-            border-bottom: 1px solid #f0f7f0;
-            color: #445941;
-        }
-
-        .dept-badge {
-            background-color: #e8f4fd;
-            color: #1e88e5;
-            border: 1px solid #bbdefb;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .no-record {
-            text-align: center;
-            color: #88a085;
-            padding: 30px !important;
-            font-style: italic;
-        }
-
-        /* RWD 調整 */
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
-            .category-sidebar { 
-                display: flex;
-                flex: none;
-                width: 100%;
-                box-sizing: border-box;
-                overflow-x: auto;
-                white-space: nowrap;
-                position: sticky; 
-                top: 60px; 
-                z-index: 900;
-                background: #fff;
-                padding: 10px 12px;
-                margin-bottom: 16px;
-                border-radius: 0 0 12px 12px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                -webkit-overflow-scrolling: touch;
-            }
+            .category-sidebar { display: flex; flex: none; width: 100%; box-sizing: border-box; overflow-x: auto; white-space: nowrap; position: sticky; top: 60px; z-index: 900; background: #fff; padding: 10px 12px; margin-bottom: 16px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); -webkit-overflow-scrolling: touch; }
             .category-sidebar::-webkit-scrollbar { display: none; }
-            .side-cat-item { 
-                flex: 0 0 auto; 
-                margin-right: 8px; 
-                margin-bottom: 0;
-                padding: 8px 16px;
-                font-size: 13px;
-                background: #f1f5f9;
-                border-radius: 20px;
-            }
+            .side-cat-item { flex: 0 0 auto; margin-right: 8px; margin-bottom: 0; padding: 8px 16px; font-size: 13px; background: #f1f5f9; border-radius: 20px; }
             .side-cat-item.active { background: var(--primary); color: #fff; }
             .category-block { scroll-margin-top: 130px; }
         }
@@ -596,115 +402,20 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
             .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
-        /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
-            .history-modal-content {
-                width: 95vw !important;
-                max-height: 88vh !important;
-                border-radius: 16px !important;
-                margin: 0 auto;
-            }
-
-            .history-modal-content .modal-body {
-                padding: 12px 14px !important;
-            }
-
-            .history-table-wrapper {
-                overflow-x: visible !important;
-            }
-
-            .history-table, 
-            .history-table thead, 
-            .history-table tbody, 
-            .history-table th, 
-            .history-table td, 
-            .history-table tr {
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-            }
-
-            .history-table {
-                min-width: 0 !important;
-            }
-
-            .history-table thead {
-                display: none;
-            }
-
-            .history-table tbody tr {
-                background: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                padding: 12px 14px;
-                margin-bottom: 12px;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-                display: flex;
-                flex-wrap: wrap;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            .history-table td {
-                padding: 2px 0 !important;
-                border-bottom: none !important;
-            }
-
-            /* 1. 卡號/姓名 (左上) */
-            .history-table td:nth-child(1) {
-                font-size: 15px;
-                font-weight: 700;
-                color: #1e293b;
-                order: 1;
-            }
-
-            /* 2. 部門標籤 (右上) */
-            .history-table td:nth-child(2) {
-                order: 2;
-                text-align: right;
-            }
-
-            /* 3. 時間 (第二列) */
-            .history-table td:nth-child(3) {
-                width: 100%;
-                order: 3;
-                font-size: 12px;
-                color: #64748b;
-                margin-top: 2px;
-                margin-bottom: 6px;
-            }
-
-            /* 4. 點餐內容 (第三列，突出框顯示) */
-            .history-table td:nth-child(4) {
-                width: 100%;
-                order: 4;
-                font-size: 14px;
-                background: #f8fafc;
-                border: 1px solid #f1f5f9;
-                border-radius: 8px;
-                padding: 8px 10px !important;
-                margin: 4px 0;
-                line-height: 1.4;
-            }
-
-            /* 5. 金額 (第四列，靠右紅字顯示) */
-            .history-table td:nth-child(5) {
-                width: 100%;
-                order: 5;
-                text-align: right;
-                font-size: 15px;
-                font-weight: 800 !important;
-                color: #e74c3c !important;
-                margin-top: 4px;
-            }
-
-            /* 無紀錄時的呈現 */
-            .history-table td.no-record {
-                text-align: center !important;
-                background: transparent !important;
-                border: none !important;
-                padding: 30px 0 !important;
-                color: #88a085;
-            }
+            .history-modal-content { width: 95vw !important; max-height: 88vh !important; border-radius: 16px !important; margin: 0 auto; }
+            .history-modal-content .modal-body { padding: 12px 14px !important; }
+            .history-table-wrapper { overflow-x: visible !important; }
+            .history-table, .history-table thead, .history-table tbody, .history-table th, .history-table td, .history-table tr { display: block; width: 100%; box-sizing: border-box; }
+            .history-table { min-width: 0 !important; }
+            .history-table thead { display: none; }
+            .history-table tbody tr { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+            .history-table td { padding: 2px 0 !important; border-bottom: none !important; }
+            .history-table td:nth-child(1) { font-size: 15px; font-weight: 700; color: #1e293b; order: 1; }
+            .history-table td:nth-child(2) { order: 2; text-align: right; }
+            .history-table td:nth-child(3) { width: 100%; order: 3; font-size: 12px; color: #64748b; margin-top: 2px; margin-bottom: 6px; }
+            .history-table td:nth-child(4) { width: 100%; order: 4; font-size: 14px; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 8px 10px !important; margin: 4px 0; line-height: 1.4; }
+            .history-table td:nth-child(5) { width: 100%; order: 5; text-align: right; font-size: 15px; font-weight: 800 !important; color: #e74c3c !important; margin-top: 4px; }
+            .history-table td.no-record { text-align: center !important; background: transparent !important; border: none !important; padding: 30px 0 !important; color: #88a085; }
         }
     </style>
 </head>
@@ -717,18 +428,13 @@
     </div>
 </div>
 
-<!-- ⏱️ 右下角截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
-    <div class="cutoff-title">
-        ⏱️ 點餐截止時間
-    </div>
+    <div class="cutoff-title">⏱️ 點餐截止時間</div>
     <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
     <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
 </div>
 
-<!-- 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 👥 新增：其他人點了什麼懸浮按鈕 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -768,7 +474,6 @@
         </div>
     </div>
 
-    <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
         <span class="promo-text">外送最低金額 <b>1200</b> 元</span>
@@ -782,7 +487,6 @@
     </div>
 </div>
 
-<!-- 客製化 / 購物車 Modal 彈窗 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -797,13 +501,10 @@
     </div>
 </div>
 
-<!-- 👥 新增：今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
-            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
-                👥 今日其他人點了什麼
-            </h3>
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">👥 今日其他人點了什麼</h3>
             <button class="modal-close" onclick="closeOthersModal()">&times;</button>
         </div>
         <div class="modal-body" style="padding: 20px;">
@@ -819,9 +520,7 @@
                         </tr>
                     </thead>
                     <tbody id="others-list">
-                        <tr>
-                            <td colspan="5" class="no-record">載入今日所有人點餐資料中...</td>
-                        </tr>
+                        <tr><td colspan="5" class="no-record">載入今日所有人點餐資料中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -830,12 +529,9 @@
 </div>
 
 <script>
-function goBack() {
-    window.location.href = 'index.html'; 
-}
+function goBack() { window.location.href = 'index.html'; }
 
 const menuItems = [
-    // === 丼飯 ===
     {name: "炙燒豚五花丼飯", price: 150, category: "丼飯", icon:"🍱"},
     {name: "炙燒豚五花丼飯 加肉", price: 180, category: "丼飯", icon:"🍱"},
     {name: "蔥鹽蜜汁松花丼飯", price: 180, category: "丼飯", icon:"🍱"},
@@ -849,13 +545,9 @@ const menuItems = [
     {name: "鹽烤虱目魚肚丼飯", price: 170, category: "丼飯", icon:"🍱"},
     {name: "炙燒鮭魚菲力丼飯", price: 240, category: "丼飯", icon:"🍱"},
     {name: "手作鰻魚飯", price: 360, category: "丼飯", icon:"🍱"},
-
-    // === 烏龍湯麵 ===
     {name: "柴魚鍋燒湯烏龍麵", price: 120, category: "烏龍湯麵", icon:"🍜"},
     {name: "韓式泡菜湯烏龍麵", price: 130, category: "烏龍湯麵", icon:"🍜"},
     {name: "味噌海帶湯烏龍麵", price: 130, category: "烏龍湯麵", icon:"🍜"},
-
-    // === 咖哩飯 ===
     {name: "職人熟成咖哩飯", price: 100, category: "咖哩飯", icon:"🍛"},
     {name: "酥炸唐揚雞咖哩飯", price: 160, category: "咖哩飯", icon:"🍛"},
     {name: "起司豬排咖哩飯", price: 190, category: "咖哩飯", icon:"🍛"},
@@ -864,13 +556,9 @@ const menuItems = [
     {name: "炸蝦天婦羅咖哩飯", price: 170, category: "咖哩飯", icon:"🍛"},
     {name: "廣島炸牡蠣咖哩飯", price: 200, category: "咖哩飯", icon:"🍛"},
     {name: "炙燒牛肉咖哩飯", price: 180, category: "咖哩飯", icon:"🍛"},
-
-    // === 炒 ===
     {name: "鮭魚炒飯", price: 120, category: "炒", icon:"🍳"},
     {name: "讚岐炒烏龍麵 (原味)", price: 120, category: "炒", icon:"🍜"},
     {name: "讚岐炒烏龍麵 (泡菜)", price: 120, category: "炒", icon:"🍜"},
-
-    // === 湯·飲 ===
     {name: "味噌海帶湯 (可續碗)", price: 20, category: "湯·飲", icon:"🥣"},
     {name: "味噌蛤蜊湯", price: 50, category: "湯·飲", icon:"🥣"},
     {name: "薑絲蛤蜊湯", price: 100, category: "湯·飲", icon:"🥣"},
@@ -878,8 +566,6 @@ const menuItems = [
     {name: "鱸魚湯", price: 170, category: "湯·飲", icon:"🥣"},
     {name: "可樂", price: 25, category: "湯·飲", icon:"🥤"},
     {name: "雪碧", price: 25, category: "湯·飲", icon:"🥤"},
-
-    // === 單點烤物 ===
     {name: "泡菜雪花牛燒肉", price: 190, category: "單點烤物", icon:"🥩"},
     {name: "安格斯黑牛燒肉", price: 250, category: "單點烤物", icon:"🥩"},
     {name: "泡菜豚五花燒肉", price: 170, category: "單點烤物", icon:"🥩"},
@@ -891,16 +577,12 @@ const menuItems = [
     {name: "醬烤/泰式 雞腿排", price: 170, category: "單點烤物", icon:"🍗"},
     {name: "酒蒸蛤蜊", price: 180, category: "單點烤物", icon:"🦪"},
     {name: "加購升級套餐 (附白飯、茶碗蒸、沙拉、小菜、湯品)", price: 120, category: "單點烤物", icon:"🍱"},
-
-    // === 烤串 ===
     {name: "雞肉串 2串", price: 100, category: "烤串", icon:"🍡"},
     {name: "五花肉串 2串", price: 100, category: "烤串", icon:"🍡"},
     {name: "櫛瓜串 2串", price: 70, category: "烤串", icon:"🍡"},
     {name: "美國牛肋串", price: 70, category: "烤串", icon:"🍡"},
     {name: "炙燒干貝串", price: 100, category: "烤串", icon:"🍡"},
     {name: "鰻魚串", price: 80, category: "烤串", icon:"🍡"},
-
-    // === 炸物 ===
     {name: "酥炸唐揚雞", price: 60, category: "炸物", icon:"🍗"},
     {name: "厚切炸豬排", price: 90, category: "炸物", icon:"🥩"},
     {name: "原味卡拉雞", price: 60, category: "炸物", icon:"🍗"},
@@ -909,8 +591,6 @@ const menuItems = [
     {name: "廣島炸牡蠣 3入", price: 120, category: "炸物", icon:"🦪"},
     {name: "炸起司可樂餅", price: 60, category: "炸物", icon:"🥔"},
     {name: "炸物拼盤", price: 200, category: "炸物", icon:"🍟"},
-
-    // === 小菜 ===
     {name: "滿座茶碗蒸", price: 45, category: "小菜", icon:"🥚"},
     {name: "魚卵沙拉", price: 90, category: "小菜", icon:"🥗"},
     {name: "玉子燒沙拉", price: 60, category: "小菜", icon:"🥗"},
@@ -928,17 +608,15 @@ let cart = {};
 let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
-
 let finalTotal = 0;
 let finalSummary = "";
 let globalEmployeesMap = {};
 
-// ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
+let isExpiredFlag = false;
 
-// 暫存彈窗選項變數
 let selectedUdon = "白飯";
 let selectedSpicy = "正常";
 
@@ -958,38 +636,18 @@ window.onload = async function() {
     }
 
     renderMenu(menuItems);
-    
-    // 👇 新增後台同步機制
     await syncPricesFromBackend();
     setInterval(syncPricesFromBackend, 10000);
 
     renderCart();
-
-    // 啟動倒數計時與全院員工清單載入
     fetchEmployeeList();
     startCutoffCountdown();
 };
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
 });
-
-async function startCutoffCountdown() {
-    if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
-    await fetchCutoffSetting();
-    updateCountdownUI();
-    
-    let pollCounter = 0;
-    cutoffTimerInterval = setInterval(async () => {
-        updateCountdownUI();
-        pollCounter++;
-        if (pollCounter >= 2) {
-            pollCounter = 0;
-            await fetchCutoffSetting();
-        }
-    }, 1000);
-}
 
 async function syncPricesFromBackend() {
     let stores = null;
@@ -1012,11 +670,10 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「鼎森」或「泰式」的門市
+    // 比對「滿座」或「燒肉」關鍵字
     const storeTarget = stores.find(s => s.name && (s.name.includes('滿座') || s.name.includes('燒肉')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    // 建立後台品項金額對照表
     const itemPriceMap = {};
     storeTarget.items.forEach(item => {
         if (item.name && item.price !== undefined) {
@@ -1024,7 +681,6 @@ async function syncPricesFromBackend() {
         }
     });
 
-    // 動態更新菜單項目價格
     let updated = false;
     menuItems.forEach(item => {
         if (itemPriceMap[item.name] !== undefined) {
@@ -1033,9 +689,25 @@ async function syncPricesFromBackend() {
         }
     });
 
-    if (updated && typeof renderMenu === 'function') {
-        renderMenu(currentFilteredItems);
+    if (updated) {
+        filterMenu();
     }
+}
+
+async function startCutoffCountdown() {
+    if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
+    await fetchCutoffSetting();
+    updateCountdownUI();
+    
+    let pollCounter = 0;
+    cutoffTimerInterval = setInterval(async () => {
+        updateCountdownUI();
+        pollCounter++;
+        if (pollCounter >= 2) {
+            pollCounter = 0;
+            await fetchCutoffSetting();
+        }
+    }, 1000);
 }
 
 async function fetchCutoffSetting() {
@@ -1117,6 +789,7 @@ function updateCountdownUI() {
         timeDisplay.textContent = '--:--';
         countdownDisplay.textContent = '尚未設定點餐截止';
         countdownDisplay.classList.remove('expired');
+        isExpiredFlag = false;
         return;
     }
 
@@ -1153,8 +826,10 @@ function updateCountdownUI() {
     if (diffMs <= 0) {
         countdownDisplay.textContent = '已截止點餐';
         countdownDisplay.classList.add('expired');
+        isExpiredFlag = true;
     } else {
         countdownDisplay.classList.remove('expired');
+        isExpiredFlag = false;
         const totalSecs = Math.floor(diffMs / 1000);
         const hrs = Math.floor(totalSecs / 3600);
         const mins = Math.floor((totalSecs % 3600) / 60);
@@ -1177,7 +852,6 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1322,7 +996,6 @@ function formatDisplayTime(obj) {
     return '-';
 }
 
-/* ==================== 菜單與點餐邏輯 ==================== */
 function renderMenu(items) {
     const categories = [...new Set(items.map(i => i.category))];
     
@@ -1410,7 +1083,6 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-// 切換圖形化按鈕狀態
 function selectOption(group, value, btnEl) {
     const parent = btnEl.parentElement;
     parent.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('active'));
@@ -1562,9 +1234,7 @@ function openCartModal() {
         confirmText: "確認送出訂單",
         cancelText: "繼續點餐",
         showCancel: true,
-        onConfirm: () => {
-            submitOrderToServer();
-        }
+        onConfirm: () => { submitOrderToServer(); }
     });
 
     renderModalCartList();
@@ -1600,9 +1270,7 @@ function renderModalCartList() {
 function changeQtyByKey(key, delta) {
     if (cart[key]) {
         cart[key].qty += delta;
-        if (cart[key].qty <= 0) {
-            delete cart[key];
-        }
+        if (cart[key].qty <= 0) delete cart[key];
         renderCart();
         renderMenu(currentFilteredItems);
 
@@ -1617,9 +1285,7 @@ function changeQtyByKey(key, delta) {
 function updateModalTotal() {
     renderCart();
     const totalEl = document.getElementById("modal-total-amount");
-    if (totalEl) {
-        totalEl.innerText = `總計: $${finalTotal}`;
-    }
+    if (totalEl) totalEl.innerText = `總計: $${finalTotal}`;
 }
 
 function clearCartModal() {
@@ -1639,18 +1305,11 @@ function showCustomModal({ title, bodyHtml, confirmText = "確定", cancelText =
     confirmBtn.innerText = confirmText;
     cancelBtn.innerText = cancelText;
 
-    if (showCancel) {
-        cancelBtn.style.display = "block";
-    } else {
-        cancelBtn.style.display = "none";
-    }
+    cancelBtn.style.display = showCancel ? "block" : "none";
 
     confirmBtn.onclick = function() {
-        if (onConfirm) {
-            onConfirm();
-        } else {
-            closeModal();
-        }
+        if (onConfirm) onConfirm();
+        else closeModal();
     };
 
     document.getElementById("custom-modal").classList.add("active");
@@ -1679,6 +1338,15 @@ async function submitOrderToServer() {
         });
     }
 
+    if (isExpiredFlag) {
+        return showCustomModal({
+            title: "點餐已截止",
+            bodyHtml: "⏱️ 抱歉，今日點餐已過截止時間！無法送出新訂單。",
+            confirmText: "我知道了",
+            showCancel: false
+        });
+    }
+
     let summaryDetailHtml = `<div style="margin-bottom:6px;">💳 卡號：<b>${currentCardId}</b></div>`;
     summaryDetailHtml += `<div style="margin-bottom:6px;">📝 餐點明細：<br><span style="color:#475569; font-size:14px;">${finalSummary}</span></div>`;
     summaryDetailHtml += `<div style="font-size:18px; font-weight:bold; margin-top:10px; color:var(--accent);">💰 總金額：$${finalTotal}</div>`;
@@ -1700,7 +1368,8 @@ async function submitOrderToServer() {
                 type: "food",
                 meal: `滿座燒肉丼飯屋：${finalSummary.trim()}`,
                 spicy: "無",
-                total: finalTotal
+                total: finalTotal,
+                note: `總計：$${finalTotal}`
             };
 
             try {
