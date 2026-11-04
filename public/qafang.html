@@ -927,7 +927,6 @@ window.onload = async function() {
 
     renderMenu(menuItems);
     
-    // 👇 新增後台同步機制
     await syncPricesFromBackend();
     setInterval(syncPricesFromBackend, 10000);
 
@@ -938,7 +937,7 @@ window.onload = async function() {
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -981,8 +980,8 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「鼎森」或「泰式」的門市
-    const storeTarget = stores.find(s => s.name && (s.name.includes('丼滋') || s.name.includes('丼滋')));
+    // 尋找 丼滋丼滋 門市
+    const storeTarget = stores.find(s => s.id === 'store_donburi' || (s.name && s.name.includes('丼滋')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
     // 建立後台品項金額對照表
@@ -1146,7 +1145,7 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
+/* ==================== 👥 其他人點了什麼邏輯 ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
