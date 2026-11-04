@@ -954,29 +954,32 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「鼎森」或「泰式」的門市
+    // 搜尋名稱包含「羹香」或「鴨肉羹」的門市
     const storeTarget = stores.find(s => s.name && (s.name.includes('羹香') || s.name.includes('鴨肉羹')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    // 建立後台品項金額對照表
-    const itemPriceMap = {};
-    storeTarget.items.forEach(item => {
-        if (item.name && item.price !== undefined) {
-            itemPriceMap[item.name.trim()] = Number(item.price);
-        }
+    const backendItems = storeTarget.items.map((item, idx) => {
+        const cleanName = item.name ? item.name.trim() : '';
+        const category = item.category || (cleanName.includes("鴨肉羹") ? "招牌鴨肉羹" : (cleanName.includes("家庭") ? "家庭份量" : (cleanName.includes("泡菜") || cleanName.includes("肝") || cleanName.includes("涼拌") ? "涼拌小菜類" : (cleanName.includes("麵") || cleanName.includes("飯") ? "其它飯麵" : "小菜"))));
+        const hasSize = item.hasSize ?? (cleanName.includes("羹") || cleanName.includes("麵") || cleanName.includes("飯"));
+        
+        return {
+            id: item.id || (idx + 1),
+            name: cleanName,
+            subName: item.subName || item.description || '',
+            price: item.price !== undefined ? Number(item.price) : 0,
+            smallPrice: item.smallPrice !== undefined ? Number(item.smallPrice) : (item.price ? Number(item.price) : 60),
+            largePrice: item.largePrice !== undefined ? Number(item.largePrice) : 70,
+            category: category,
+            icon: item.icon || (category === "招牌鴨肉羹" ? "🥣" : (category === "小菜" ? "🥬" : (category === "涼拌小菜類" ? "🥗" : "🍜"))),
+            hasSize: hasSize
+        };
     });
 
-    // 動態更新菜單項目價格
-    let updated = false;
-    menuItems.forEach(item => {
-        if (itemPriceMap[item.name] !== undefined) {
-            item.price = itemPriceMap[item.name];
-            updated = true;
-        }
-    });
-
-    if (updated && typeof renderMenu === 'function') {
-        renderMenu(currentFilteredItems);
+    if (backendItems.length > 0) {
+        menuItems.length = 0;
+        menuItems.push(...backendItems);
+        filterMenu();
     }
 }
 
