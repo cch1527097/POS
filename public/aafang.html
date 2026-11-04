@@ -1046,13 +1046,8 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 取得當前頁面檔名或標題名稱匹配門市
-    const currentFileName = decodeURIComponent(window.location.pathname.split('/').pop().replace('.html', '').trim());
-    const store = stores.find(s => {
-        if (!s.name) return false;
-        const sName = s.name.trim();
-        return sName.includes(currentFileName) || currentFileName.includes(sName) || (s.id && currentFileName.includes(s.id));
-    }) || stores[0];
+    // 尋找「飯大廚」門市資料（精準搜尋名稱包含 飯大廚 的門市）
+    const store = stores.find(s => s.name && s.name.includes('飯大廚')) || stores[0];
 
     if (!store || !store.items || store.items.length === 0) return;
 
