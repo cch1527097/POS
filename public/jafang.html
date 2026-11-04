@@ -225,7 +225,6 @@
         .opt-group { margin-top: 12px; }
         .opt-group label { font-weight: 600; display: block; margin-top: 10px; margin-bottom: 6px; font-size: 14px; color: var(--text-dark); }
         
-        /* 圖形化按鈕選項樣式 */
         .opt-btn-group {
             display: flex;
             flex-wrap: wrap;
@@ -253,7 +252,6 @@
             box-shadow: 0 2px 6px rgba(192, 57, 43, 0.3);
         }
 
-        /* ==================== 懸浮圓形按鈕群 & 截止時間懸浮元件 ==================== */
         .fab-container {
             position: fixed;
             bottom: 24px;
@@ -303,7 +301,6 @@
             background-color: #a40e11;
         }
 
-        /* 👥 新增：其他人點了什麼 懸浮按鈕樣式 */
         .others-float-btn {
             background-color: #0091ff;
             color: white;
@@ -312,7 +309,6 @@
             background-color: #0073e6;
         }
 
-        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
         .cutoff-float-badge {
             position: fixed;
             bottom: 220px;
@@ -397,7 +393,6 @@
             100% { transform: scale(1); }
         }
 
-        /* ==================== Modal 彈窗樣式 ==================== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -506,7 +501,6 @@
             margin-top: 2px;
         }
 
-        /* 👥 「其他人點了什麼」表格專用樣式 */
         .history-modal-content {
             width: 92vw !important;
             max-width: 1000px !important;
@@ -557,7 +551,6 @@
             font-style: italic;
         }
 
-        /* RWD 調整 */
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
@@ -604,8 +597,6 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
             .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
-            
-            /* 手機版「今日其他人點了什麼」卡片化樣式 */
             .history-modal-content {
                 width: 95vw !important;
                 max-height: 88vh !important;
@@ -720,7 +711,6 @@
     </div>
 </div>
 
-<!-- ⏱️ 右下角截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
     <div class="cutoff-title">
         ⏱️ 點餐截止時間
@@ -729,7 +719,6 @@
     <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
 </div>
 
-<!-- 懸浮按鈕群 -->
 <div class="fab-container">
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -770,7 +759,6 @@
         </div>
     </div>
 
-    <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
         <span class="promo-text">外送最低金額 <b>800</b> 元</span>
@@ -784,7 +772,6 @@
     </div>
 </div>
 
-<!-- 客製化 / 購物車 Modal 彈窗 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -799,7 +786,6 @@
     </div>
 </div>
 
-<!-- 👥 今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -893,65 +879,14 @@ let finalTotal = 0;
 let finalSummary = "";
 let globalEmployeesMap = {};
 
-// 客製化選擇暫存狀態
 let selectedSauce = "黑胡椒";
 let selectedNoodle = "麵條";
 
-// ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
 
-window.onload = async function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
-
-    const statusDiv = document.getElementById("card-status");
-    if (currentCardId) {
-        statusDiv.innerHTML = `💳 目前感應卡號：<b>${currentCardId}</b>`;
-        statusDiv.style.background = "#e0f2fe";
-        statusDiv.style.color = "#0369a1";
-    } else {
-        statusDiv.innerHTML = `⚠️ 未偵測到卡號！請確認是透過感應卡開單。`;
-        statusDiv.style.background = "#fee2e2";
-        statusDiv.style.color = "#991b1b";
-    }
-
-    renderMenu(menuItems);
-    
-    // 👇 新增後台同步機制
-    await syncPricesFromBackend();
-    setInterval(syncPricesFromBackend, 10000);
-
-    renderCart();
-
-    // 啟動倒數計時與全院員工清單載入
-    fetchEmployeeList();
-    startCutoffCountdown();
-};
-
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
-window.addEventListener('storage', (e) => {
-    fetchCutoffSetting();
-    updateCountdownUI();
-});
-
-async function startCutoffCountdown() {
-    if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
-    await fetchCutoffSetting();
-    updateCountdownUI();
-    
-    let pollCounter = 0;
-    cutoffTimerInterval = setInterval(async () => {
-        updateCountdownUI();
-        pollCounter++;
-        if (pollCounter >= 2) {
-            pollCounter = 0;
-            await fetchCutoffSetting();
-        }
-    }, 1000);
-}
-
+// ------------------ 後台價格即時同步邏輯 ------------------
 async function syncPricesFromBackend() {
     let stores = null;
     try {
@@ -973,8 +908,11 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「鼎森」或「泰式」的門市
-    const storeTarget = stores.find(s => s.name && (s.name.includes('得利') || s.name.includes('牛排')));
+    // 搜尋 ID 或名稱包含「得利」或「牛排」的門市
+    const storeTarget = stores.find(s => 
+        (s.id && s.id.includes('jafang')) || 
+        (s.name && (s.name.includes('得利') || s.name.includes('牛排')))
+    );
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
     // 建立後台品項金額對照表
@@ -997,6 +935,53 @@ async function syncPricesFromBackend() {
     if (updated && typeof renderMenu === 'function') {
         renderMenu(currentFilteredItems);
     }
+}
+
+window.onload = async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
+
+    const statusDiv = document.getElementById("card-status");
+    if (currentCardId) {
+        statusDiv.innerHTML = `💳 目前感應卡號：<b>${currentCardId}</b>`;
+        statusDiv.style.background = "#e0f2fe";
+        statusDiv.style.color = "#0369a1";
+    } else {
+        statusDiv.innerHTML = `⚠️ 未偵測到卡號！請確認是透過感應卡開單。`;
+        statusDiv.style.background = "#fee2e2";
+        statusDiv.style.color = "#991b1b";
+    }
+
+    renderMenu(menuItems);
+    
+    await syncPricesFromBackend();
+    setInterval(syncPricesFromBackend, 10000);
+
+    renderCart();
+
+    fetchEmployeeList();
+    startCutoffCountdown();
+};
+
+window.addEventListener('storage', (e) => {
+    fetchCutoffSetting();
+    updateCountdownUI();
+});
+
+async function startCutoffCountdown() {
+    if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
+    await fetchCutoffSetting();
+    updateCountdownUI();
+    
+    let pollCounter = 0;
+    cutoffTimerInterval = setInterval(async () => {
+        updateCountdownUI();
+        pollCounter++;
+        if (pollCounter >= 2) {
+            pollCounter = 0;
+            await fetchCutoffSetting();
+        }
+    }, 1000);
 }
 
 async function fetchCutoffSetting() {
@@ -1138,7 +1123,6 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1283,7 +1267,6 @@ function formatDisplayTime(obj) {
     return '-';
 }
 
-/* ==================== 菜單與點餐邏輯 ==================== */
 function renderMenu(items) {
     const categories = [...new Set(items.map(i => i.category))];
     
@@ -1386,7 +1369,6 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 單點小物無需選擇醬料及麵體，直接加入購物車
     if (item.category === "單點小物") {
         const customKey = `${item.name}|-|-`;
         if (cart[customKey]) {
