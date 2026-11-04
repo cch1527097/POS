@@ -206,7 +206,7 @@ function generateSafeOrderId() {
     return Number(`${timestamp}${randomSuffix}`);
 }
 
-// 初始化資料庫
+// 初始化資料庫 (含 groups 表)
 async function initDatabase() {
     try {
         await pool.query(`
@@ -222,6 +222,15 @@ async function initDatabase() {
                 timestamp VARCHAR(100),
                 group_id VARCHAR(100),
                 is_paid BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // 新增 groups 資料表以保存 Neon 中的揪團發起者資訊
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS groups (
+                group_id VARCHAR(100) PRIMARY KEY,
+                creator_card_id VARCHAR(50) NOT NULL,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -392,6 +401,29 @@ async function initDatabase() {
     }
 }
 
+// ==================== 建立/登記揪團 API (新增) ====================
+
+app.post('/api/groups', async (req, res) => {
+    const { groupId, cardId } = req.body;
+    const cleanGroupId = groupId ? String(groupId).trim().slice(0, 100) : '';
+    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
+
+    if (!cleanGroupId || !cleanCardId) {
+        return res.status(400).json({ success: false, message: '缺少揪團編號或卡號！' });
+    }
+
+    try {
+        await pool.query(
+            `INSERT INTO groups (group_id, creator_card_id) VALUES ($1, $2) ON CONFLICT (group_id) DO NOTHING;`,
+            [cleanGroupId, cleanCardId]
+        );
+        res.json({ success: true, message: '揪團紀錄儲存成功！' });
+    } catch (err) {
+        console.error('紀錄揪團失敗:', err);
+        res.status(500).json({ success: false, message: '伺服器建立揪團紀錄失敗。' });
+    }
+});
+
 // ==================== 取消訂單 API ====================
 
 app.post('/api/orders/cancel', async (req, res) => {
@@ -502,7 +534,7 @@ const handleAllowCancelUpdate = async (req, res) => {
 app.post('/api/allow-cancel', handleAllowCancelUpdate);
 app.put('/api/allow-cancel', handleAllowCancelUpdate);
 
-// 💡 補全前台相容 API：/api/cutoff-time 取得/更新截止時間 (已修復檢核邏輯)
+// 💡 補全前台相容 API：/api/cutoff-time 取得/更新截止時間
 app.get('/api/cutoff-time', async (req, res) => {
     try {
         const lockStatus = await getLockStatus();
@@ -634,7 +666,7 @@ const handleSettingsUpdate = async (req, res) => {
 app.post('/api/settings', handleSettingsUpdate);
 app.put('/api/settings', handleSettingsUpdate);
 
-// ==================== 鎖定時間 API (已修復檢核邏輯) ====================
+// ==================== 鎖定時間 API ====================
 
 app.get('/api/lock-time', async (req, res) => {
     try {
@@ -782,7 +814,6 @@ app.post('/api/active-store', async (req, res) => {
     }
 });
 
-// 💡 取得訂單列表 API (已優化：預設撈取 30 天內訂單或可加 ?all=true，避免全表過載)
 app.get('/api/orders', async (req, res) => {
     try {
         const showAll = req.query.all === 'true';
@@ -994,6 +1025,7 @@ app.delete('/api/orders/:orderId', async (req, res) => {
     }
 });
 
+// 登入 API (整合 Neon 揪團發起人權限查詢)
 app.post('/api/login', async (req, res) => {
     const { cardId } = req.body;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
@@ -1008,6 +1040,18 @@ app.post('/api/login', async (req, res) => {
             const cancelCheck = await checkIsCancelAllowed();
             const allowCancel = cancelCheck.allowed;
 
+            // 向 Neon 查詢該卡號是不是近 24 小時內發起過揪團的人
+            const groupCheck = await pool.query(
+                `SELECT group_id FROM groups 
+                 WHERE creator_card_id = $1 
+                   AND created_at >= (NOW() AT TIME ZONE 'Asia/Taipei' - INTERVAL '1 day')
+                 ORDER BY created_at DESC LIMIT 1;`,
+                [cleanCardId]
+            );
+
+            const isOrganizer = groupCheck.rows.length > 0;
+            const activeGroupId = isOrganizer ? groupCheck.rows[0].group_id : null;
+
             res.json({ 
                 success: true, 
                 message: '登入成功', 
@@ -1016,11 +1060,15 @@ app.post('/api/login', async (req, res) => {
                 allow_cancel: allowCancel,
                 allowOrderCancel: allowCancel,
                 allow_order_cancel: allowCancel,
+                isOrganizer: isOrganizer,          // 告訴前端此人是否為揪團發起人
+                createdGroupId: activeGroupId,      // 當前發起的揪團 ID
                 data: {
                     allowCancel: allowCancel,
                     allow_cancel: allowCancel,
                     allowOrderCancel: allowCancel,
-                    allow_order_cancel: allowCancel
+                    allow_order_cancel: allowCancel,
+                    isOrganizer: isOrganizer,
+                    createdGroupId: activeGroupId
                 }
             });
         } else {
@@ -1032,7 +1080,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API (支援 groupId 儲存)
+// 下訂單 API (支援 groupId 儲存，且自動將揪團創立者寫入 Neon groups 表)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total, groupId } = req.body;
@@ -1089,6 +1137,14 @@ app.post('/api/order', async (req, res) => {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
         }
 
+        // 若該筆訂單帶有揪團編號，將揪團資訊與卡號自動登記至 Neon DB
+        if (cleanGroupId) {
+            await pool.query(
+                `INSERT INTO groups (group_id, creator_card_id) VALUES ($1, $2) ON CONFLICT (group_id) DO NOTHING;`,
+                [cleanGroupId, cleanCardId]
+            );
+        }
+
         const empName = userRes.rows[0].name;
         const orderIdVal = generateSafeOrderId();
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
@@ -1118,7 +1174,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 💡 取得個人訂單紀錄 API (支援跨日揪團模式，起算時間擴展至昨日)
+// 💡 取得個人訂單紀錄 API (支援跨日揪團模式，起算時間擴展至昨日，並同時查詢揪團創立者狀態)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
@@ -1138,6 +1194,15 @@ app.get('/api/order-history', async (req, res) => {
             [cleanCardId]
         );
 
+        // 查詢該卡號是否為近 24 小時內的揪團創立者
+        const groupCheck = await pool.query(
+            `SELECT group_id FROM groups 
+             WHERE creator_card_id = $1 
+               AND created_at >= (NOW() AT TIME ZONE 'Asia/Taipei' - INTERVAL '1 day')
+             ORDER BY created_at DESC LIMIT 1;`,
+            [cleanCardId]
+        );
+
         const userOrders = result.rows.map(order => ({
             time: order.timestamp ? String(order.timestamp) : '-',
             meal: order.meal,
@@ -1145,7 +1210,15 @@ app.get('/api/order-history', async (req, res) => {
             groupId: order.group_id
         }));
 
-        res.json({ success: true, orders: userOrders });
+        const isOrganizer = groupCheck.rows.length > 0;
+        const activeGroupId = isOrganizer ? groupCheck.rows[0].group_id : null;
+
+        res.json({ 
+            success: true, 
+            orders: userOrders,
+            isOrganizer: isOrganizer,
+            createdGroupId: activeGroupId
+        });
     } catch (error) {
         console.error('讀取紀錄失敗:', error);
         res.json({ success: false, message: '讀取歷史紀錄失敗', orders: [] });
