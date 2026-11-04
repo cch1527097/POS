@@ -3220,27 +3220,6 @@
             }
         }
 
-        // 登入成功處理
-if (data.success) {
-    localStorage.setItem('userCardId', cardId);
-    localStorage.setItem('userName', data.empName);
-
-    // 💡 關鍵修正：若後端驗證此卡號為團長，即時同步寫入新瀏覽器的 LocalStorage 並顯示按鈕
-    if (data.isOrganizer) {
-        localStorage.setItem('isOrganizer', 'true');
-        if (data.groupId) {
-            localStorage.setItem('currentGroupId', data.groupId);
-        }
-        // 顯示「匯出 Excel」按鈕（請依前端實際按鈕 ID 修改）
-        const exportBtn = document.getElementById('exportExcelBtn');
-        if (exportBtn) exportBtn.style.display = 'inline-block';
-    } else {
-        localStorage.removeItem('isOrganizer');
-    }
-
-    alert(`歡迎回來，${data.empName}！`);
-}
-
         function callCustomAlert(title, message, callback, showCancel = true) {
             document.getElementById('customAlertTitle').textContent = title;
             document.getElementById('customAlertMessage').innerHTML = message;
