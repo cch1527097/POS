@@ -969,6 +969,7 @@ async function startCutoffCountdown() {
     }, 1000);
 }
 
+// 全功能後台菜單與價格同步邏輯
 async function syncPricesFromBackend() {
     let stores = null;
     try {
@@ -990,29 +991,31 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「鼎森」或「泰式」的門市
+    // 搜尋名稱包含「顏舍」或「關東煮」的目標門市
     const storeTarget = stores.find(s => s.name && (s.name.includes('顏舍') || s.name.includes('關東煮')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    // 建立後台品項金額對照表
-    const itemPriceMap = {};
-    storeTarget.items.forEach(item => {
-        if (item.name && item.price !== undefined) {
-            itemPriceMap[item.name.trim()] = Number(item.price);
-        }
-    });
+    // 將後台傳回的品項格式化並同步至前端菜單陣列
+    const backendItems = storeTarget.items.map((item, idx) => ({
+        id: item.id || (idx + 1),
+        name: item.name.trim(),
+        price: Number(item.price),
+        category: item.category || "暖心關東煮",
+        icon: item.icon || "🍢",
+        hasSoupOption: item.hasSoupOption ?? (item.category === "暖心關東煮" || item.name.includes("烏龍"))
+    }));
 
-    // 動態更新菜單項目價格
-    let updated = false;
-    menuItems.forEach(item => {
-        if (itemPriceMap[item.name] !== undefined) {
-            item.price = itemPriceMap[item.name];
-            updated = true;
+    if (backendItems.length > 0) {
+        // 清空並覆寫，實現與後台完全同步（包含新增、修改與刪除）
+        menuItems.length = 0;
+        menuItems.push(...backendItems);
+        
+        // 重新執行過濾與渲染
+        if (typeof filterMenu === 'function') {
+            filterMenu();
+        } else if (typeof renderMenu === 'function') {
+            renderMenu(menuItems);
         }
-    });
-
-    if (updated && typeof renderMenu === 'function') {
-        renderMenu(currentFilteredItems);
     }
 }
 
