@@ -3467,59 +3467,68 @@
         }
 
         async function executeLogin() {
-            if (isSubmitting) return;
-            
-            const cardInput = document.getElementById('cardId');
-            const loginBtn = document.getElementById('submit-login-btn');
-            
-            if (!cardInput) return;
+    if (isSubmitting) return;
+    
+    const cardInput = document.getElementById('cardId');
+    const loginBtn = document.getElementById('submit-login-btn');
+    
+    if (!cardInput) return;
 
-            cardInput.setCustomValidity('');
+    cardInput.setCustomValidity('');
 
-            if (!cardInput.value.trim()) {
-                cardInput.reportValidity();
-                return;
+    if (!cardInput.value.trim()) {
+        cardInput.reportValidity();
+        return;
+    }
+
+    const cardId = cardInput.value.trim();
+    isSubmitting = true;
+    if (loginBtn) loginBtn.disabled = true;
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cardId: cardId }),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        const data = await response.json();
+        if (data.success) {
+            if (!globalEmployeesMap || !globalEmployeesMap[cardId]) {
+                await fetchEmployeeList();
             }
-
-            const cardId = cardInput.value.trim();
-            isSubmitting = true;
-            if (loginBtn) loginBtn.disabled = true;
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 2000);
-                
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cardId: cardId }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                
-                const data = await response.json();
-                if (data.success) {
-                    if (!globalEmployeesMap || !globalEmployeesMap[cardId]) {
-                        await fetchEmployeeList();
-                    }
-                    const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
-                    
-                    showOrderSection(cardId, data.empName || cardId, dept, false);
-                } else {
-                    cardInput.setCustomValidity(`${data.message || '無此卡號'}`);
-                    cardInput.reportValidity();
-                    if (loginBtn) loginBtn.disabled = false;
-                    isSubmitting = false;
+            const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
+            
+            // 💡 關鍵修正：若後端驗證此卡號為團長，即時同步寫入新瀏覽器的 LocalStorage 並觸發還原
+            if (data.isOrganizer) {
+                let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${cardId}`) || '[]');
+                const gId = data.groupId || 'AUTO_SYNCED_GROUP';
+                if (!myGroups.includes(gId)) {
+                    myGroups.push(gId);
+                    localStorage.setItem(`initiated_groups_${cardId}`, JSON.stringify(myGroups));
                 }
-            } catch (error) {
-                if (loginBtn) loginBtn.disabled = false;
-                isSubmitting = false;
-                
-                const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
-                showOrderSection(cardId, cardId, dept, true);
             }
-        }
 
+            showOrderSection(cardId, data.empName || cardId, dept, false);
+        } else {
+            cardInput.setCustomValidity(`${data.message || '無此卡號'}`);
+            cardInput.reportValidity();
+            if (loginBtn) loginBtn.disabled = false;
+            isSubmitting = false;
+        }
+    } catch (error) {
+        if (loginBtn) loginBtn.disabled = false;
+        isSubmitting = false;
+        
+        const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
+        showOrderSection(cardId, cardId, dept, true);
+    }
+}
         function redirectToShop(shopName) {
             let targetShop = shopName;
 
