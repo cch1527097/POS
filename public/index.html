@@ -1273,7 +1273,7 @@
 </head>
 <body class="login-mode">
 
-    <!-- 1. 登入畫面區塊 (修正：移除預設 hidden 類別，避免 JS 載入前畫面閃爍或空白) -->
+    <!-- 1. 登入畫面區塊 -->
     <div id="login-section" class="login-card">
         <img src="logo.gif" alt="Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
@@ -1390,7 +1390,7 @@
             </nav>
         </header>
 
-        <!-- 第一區塊：美味餐點 (修正：移除多餘的 this 參數) -->
+        <!-- 第一區塊：美味餐點 -->
         <div class="category-header" id="food-section">
             🍱 美味餐點
         </div>
@@ -1503,7 +1503,6 @@
                 </div>
             </div>
 
-            <!-- 修正：竑食 泰式拌飯 圖片與簡介重複問題 -->
             <div class="shop-card" onclick="redirectToShop('竑食 泰式拌飯')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">竑食 泰式拌飯</span>
@@ -2274,7 +2273,7 @@
         </div>
     </div>
 
-    <!-- 付款介紹彈窗 (Modal) (修正：調整重複的標題文字) -->
+    <!-- 付款介紹彈窗 (Modal) -->
     <div id="paymentModal" class="branch-modal-overlay hidden" onclick="closePaymentModal(event)">
         <div class="branch-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
@@ -2330,7 +2329,7 @@
         </div>
     </div>
 
-    <!-- 🎉 🎉🎉 新增：揪團發起彈窗 (Modal) -->
+    <!-- 🎉 揪團發起彈窗 (Modal) -->
     <div id="groupModal" class="branch-modal-overlay hidden" onclick="closeGroupModal(event)">
         <div class="branch-modal-content" onclick="event.stopPropagation()" style="max-width: 480px;">
             <div class="branch-modal-header">
@@ -2513,7 +2512,6 @@
         // 揪團變數
         let currentGroupGeneratedUrl = '';
 
-        // 修正：補全與統一店家映射 Key，防止匹配失效
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
             '飯大廚': 'aafang.html',
@@ -2769,9 +2767,10 @@
                 latestDate = localStorage.getItem('lockDate') || localStorage.getItem('cutoffDate') || null;
             }
 
+            // 修正：改用正規表示式精準擷取 HH:MM，避免含有日期連字號時 replace/split 錯誤
             if (latestTime) {
-                const cleanTime = latestTime.replace(/[^0-9:]/g, '');
-                targetCutoffStr = (cleanTime && cleanTime.includes(':')) ? cleanTime : null;
+                const timeMatch = String(latestTime).match(/([01]?\d|2[0-3]):[0-5]\d/);
+                targetCutoffStr = timeMatch ? timeMatch[0] : null;
             } else {
                 targetCutoffStr = null;
             }
@@ -2853,7 +2852,7 @@
             }
         }
 
-        /* 🎉 🎉🎉 新增：揪團彈窗與網址生成邏輯 */
+        /* 🎉 揪團彈窗與網址生成邏輯 */
         function openGroupModal() {
             const selectEl = document.getElementById('groupShopSelect');
             if (selectEl) {
@@ -2903,7 +2902,6 @@
                     localStorage.setItem(`initiated_groups_${currentCardId}`, JSON.stringify(myGroups));
                 }
 
-                // 【同步 Neon 資料庫】發送 POST 請求寫入後端 groups 資料表
                 try {
                     await fetch('/api/groups', {
                         method: 'POST',
@@ -2926,11 +2924,11 @@
             checkIsGroupInitiator();
         }
 
-        async function checkIsGroupInitiator() {
+        // 修正：移除無用之 async 宣告
+        function checkIsGroupInitiator() {
             const excelBtn = document.getElementById('excelExportBtn');
             if (!excelBtn) return;
 
-            // 改為永久顯示匯出 Excel 按鈕
             excelBtn.classList.remove('hidden');
 
             const savedCardId = (localStorage.getItem('currentCardId') || loggedInCardId || '').trim();
@@ -2944,7 +2942,6 @@
 
             let myGroups = JSON.parse(localStorage.getItem(`initiated_groups_${savedCardId}`) || '[]');
 
-            // 若 URL 中含有團長身分，補寫入 LocalStorage
             if (urlInitiator && (urlInitiator === savedEmpName || urlInitiator === savedCardId)) {
                 if (urlGroupId && !myGroups.includes(urlGroupId)) {
                     myGroups.push(urlGroupId);
@@ -2956,9 +2953,13 @@
         async function exportGroupOrdersToExcel() {
             let orders = [];
 
+            // 修正：加入陣列格式安全檢查，防護物件格式回傳導致 filter 報錯
             try {
                 const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
-                if (res.ok) orders = await res.json();
+                if (res.ok) {
+                    const data = await res.json();
+                    orders = Array.isArray(data) ? data : (data.orders || []);
+                }
             } catch (e) {}
 
             if (!orders || orders.length === 0) {
@@ -3345,7 +3346,6 @@
             }
         }
 
-        // 修正：統一 SVG 線條粗細，移除與 CSS 衝突的 stroke-width="2"
         function showDrinkOnly() {
             currentCategoryView = 'drink';
             localStorage.setItem('selectedCategory', 'drink');
@@ -3369,7 +3369,6 @@
             resetSearch();
         }
 
-        // 修正：統一 SVG 線條粗細，移除與 CSS 衝突的 stroke-width="2"
         function showFoodOnly() {
             currentCategoryView = 'food';
             localStorage.setItem('selectedCategory', 'food');
@@ -3453,6 +3452,9 @@
                     }
                     const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
                     
+                    // 修正：登入成功時將登入按鈕與 isSubmitting 狀態還原
+                    isSubmitting = false;
+                    if (loginBtn) loginBtn.disabled = false;
                     showOrderSection(cardId, data.empName || cardId, dept, false);
                 } else {
                     cardInput.setCustomValidity(`${data.message || '無此卡號'}`);
@@ -3505,7 +3507,6 @@
         function navigateToAdmin() { window.location.href = 'admin.html'; }
 
         function showOrderSection(cardId, empName, department, isOffline = false) {
-            // 💡 登入成功後，檢查是否有暫存的揪團跳轉目標
             const pendingGroup = JSON.parse(sessionStorage.getItem('pendingGroupRedirect') || 'null');
             if (pendingGroup) {
                 sessionStorage.removeItem('pendingGroupRedirect');
@@ -3577,7 +3578,6 @@
             requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
         }
 
-        // 修正：相容 Safari / iOS 的跨瀏覽器日期解析
         function getMilliTimestamp(obj) {
             if (!obj) return 0;
             
@@ -3602,7 +3602,6 @@
                         if (isPM && hrs < 12) hrs += 12;
                         if (!isPM && hrs === 12) hrs = 0;
                         
-                        // 修正：使用斜線 '/' 取代連字號 '-'，可確保跨瀏覽器與 Safari 正常解析
                         const standardStr = `${datePart.replace(/-/g, '/')}` + 
                             ` ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
                         const parsed = Date.parse(standardStr);
@@ -3733,7 +3732,6 @@
                 }
 
                 const fullMealText = order.meal || '';
-                
                 let shopName = order.storeName || order.store || order.shopName || '';
                 
                 if (!shopName && fullMealText) {
@@ -3759,10 +3757,10 @@
                 const timeKey = order.timestamp || order.time || order.Time || '';
                 const orderId = order.orderId || order.order_id || order.id || '';
                 
-                // 修正：轉義單引號與字串安全處理，避免 HTML onclick 語法中斷
-                const safeOrderId = String(orderId).replace(/'/g, "\\'");
-                const safeTimeKey = String(timeKey).replace(/'/g, "\\'");
-                const safeShopName = String(shopName).replace(/'/g, "\\'");
+                // 修正：補全雙引號與單引號轉義，避免 onclick HTML 屬性解析錯誤
+                const safeOrderId = String(orderId).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeTimeKey = String(timeKey).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeShopName = String(shopName).replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                 const actionHtml = isAllowCancel ? `
                     <button class="order-action-btn btn-edit-order" onclick="editOrder('${safeOrderId}', '${safeTimeKey}', '${safeShopName}')">修改</button>
@@ -3972,10 +3970,10 @@
                     const timeKey = order.timestamp || order.time || order.Time || '';
                     const orderId = order.orderId || order.order_id || order.id || '';
 
-                    // 修正：轉義單引號與字串安全處理，避免 HTML onclick 語法中斷
-                    const safeOrderId = String(orderId).replace(/'/g, "\\'");
-                    const safeTimeKey = String(timeKey).replace(/'/g, "\\'");
-                    const safeShopName = String(shopName).replace(/'/g, "\\'");
+                    // 修正：補全雙引號與單引號轉義，避免 onclick HTML 屬性解析錯誤
+                    const safeOrderId = String(orderId).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeTimeKey = String(timeKey).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeShopName = String(shopName).replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                     const tdAction = document.createElement('td');
                     tdAction.setAttribute('data-label', '控制操作');
