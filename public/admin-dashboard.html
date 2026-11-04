@@ -515,8 +515,8 @@
         body.role-viewer button[onclick*="openStore"],
         body.role-viewer button[onclick*="closeStore"],
         body.role-viewer button[onclick*="toggleAllStores"],
+        body.role-viewer button[onclick*="openStoreMenuModal"],
         body.role-viewer button[onclick*="addNewEmployee"],
-        body.role-viewer input[onchange*="updateStoreAmount"],
         body.role-viewer .sidebar .menu-item[onclick*="employee-mgr"] {
             display: none !important;
         }
@@ -886,8 +886,8 @@
         <!-- 分頁二：店家管理 -->
         <div id="store-mgr" class="tab-content">
             <div class="mb-5">
-                <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🏪 店家開放與金額管理</h1>
-                <p class="text-xs text-slate-500 mt-1">即時開啟、關閉前台點餐店家並可修改店家金額/低消</p>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🏪 店家開放與品項金額管理</h1>
+                <p class="text-xs text-slate-500 mt-1">即時開啟、關閉前台點餐店家，並可編輯各家菜單品項名稱與金額</p>
             </div>
 
             <div class="store-tab-bar">
@@ -902,7 +902,7 @@
             <div id="subtab-food" class="store-subtab-content" style="display: block;">
                 <div class="card">
                     <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                        <h3 class="text-base font-bold text-slate-800">🍱 美味餐點 - 開放店家與金額控制</h3>
+                        <h3 class="text-base font-bold text-slate-800">🍱 美味餐點 - 開放店家與菜單管理</h3>
                         <div class="flex gap-2">
                             <button class="btn btn-secondary text-xs py-1.5 px-3 min-h-[36px]" onclick="toggleAllStores('美味餐點', true)">🔓 全選開放</button>
                             <button class="btn btn-danger-light text-xs py-1.5 px-3 min-h-[36px]" onclick="toggleAllStores('美味餐點', false)">🔒 全選關閉</button>
@@ -914,7 +914,7 @@
                                 <tr>
                                     <th>店家名稱</th>
                                     <th>餐點類別</th>
-                                    <th>店家金額</th>
+                                    <th>菜單品項</th>
                                     <th>目前開放狀態</th>
                                     <th>前台權限</th>
                                     <th>控制操作</th>
@@ -931,7 +931,7 @@
             <div id="subtab-drink" class="store-subtab-content" style="display: none;">
                 <div class="card">
                     <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                        <h3 class="text-base font-bold text-slate-800">🥤 喝涼涼 - 開放店家與金額控制</h3>
+                        <h3 class="text-base font-bold text-slate-800">🥤 喝涼涼 - 開放店家與菜單管理</h3>
                         <div class="flex gap-2">
                             <button class="btn btn-secondary text-xs py-1.5 px-3 min-h-[36px]" onclick="toggleAllStores('喝涼涼', true)">🔓 全選開放</button>
                             <button class="btn btn-danger-light text-xs py-1.5 px-3 min-h-[36px]" onclick="toggleAllStores('喝涼涼', false)">🔒 全選關閉</button>
@@ -943,7 +943,7 @@
                                 <tr>
                                     <th>店家名稱</th>
                                     <th>餐點類別</th>
-                                    <th>店家金額</th>
+                                    <th>菜單品項</th>
                                     <th>目前開放狀態</th>
                                     <th>前台權限</th>
                                     <th>控制操作</th>
@@ -1113,6 +1113,7 @@
         let currentOverviewCategory = 'all';
         let searchTimeout = null;
 
+        // 手機側邊欄開關控制
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -1127,6 +1128,7 @@
             }
         }
 
+        // ------------------ RBAC 權限控制邏輯 ------------------
         const ROLE_PERMISSIONS = {
             super_admin: { name: '最高管理者', canDelete: true,  canEditEmp: true,  canManageStore: true,  canChangeStatus: true },
             operator:    { name: '現場管理員', canDelete: false, canEditEmp: false, canManageStore: true,  canChangeStatus: true },
@@ -1150,7 +1152,7 @@
                 return false;
             }
             if (action === 'manage_store' && !perm.canManageStore) {
-                showCustomModal({ message: '⚠️ 唯讀權限無法修改「店家開放與金額設定」！' });
+                showCustomModal({ message: '⚠️ 唯讀權限無法修改「店家開放與品項金額」！' });
                 return false;
             }
             if (action === 'change_status' && !perm.canChangeStatus) {
@@ -1195,72 +1197,72 @@
             return { name: '', department: '未劃分' };
         }
 
-        // 店家資料清單（包含金額欄位 amount）
+        // 店家資料清單（支援多個菜單品項與單價 items: [{name: '', price: 0}]）
         let storeList = [
-            { id: 'store_1', name: '八方雲集', category: '美味餐點', amount: 0, isOpen: true },
-            { id: 'store_2', name: '飯大廚', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_3', name: '鼎森泰式料理', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_4', name: '榮郁香廣式燒臘', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_5', name: '顏舍關東煮', category: '美味餐點', amount: 0, isOpen: true },
-            { id: 'store_6', name: '羹香鴨肉羹', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_7', name: '徊香麵線糊', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_8', name: '四海遊龍', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_9', name: '北斗賓肉圓', category: '美味餐點', amount: 0, isOpen: true },
-            { id: 'store_10', name: '老聃飲食', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_11', name: '八廚職人弁当', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_12', name: '嵐 爌肉・豬腳飯', category: '美味餐點', amount: 0, isOpen: true },
-            { id: 'store_13', name: '旺春豐傳統小吃', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_14', name: '咕雞鹽水雞', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_15', name: '家灶傳統爌肉豬腳專賣', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_16', name: '丼滋丼滋', category: '美味餐點', amount: 0, isOpen: true },
-            { id: 'store_17', name: '老蕭土魠魚羹麵館', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_18', name: '小松丼丼食事處', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_19', name: '滿座燒肉丼飯屋', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_20', name: '地6攤排餐', category: '美味餐點', amount: 0, isOpen: true },
-            { id: 'store_21', name: '八鮮雲吞', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_22', name: '明美快餐', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_23', name: '森晴餐盒製所', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_24', name: '廈門沙茶麵', category: '美味餐點', amount: 0, isOpen: true },
-            { id: 'store_25', name: '員湘園', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_26', name: '志氣雞飯', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_27', name: '竑食泰式拌飯', category: '美味餐點', amount: 0, isOpen: true },
-            { id: 'store_28', name: '50嵐', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_29', name: 'TEA TOP', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_30', name: '得正', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_31', name: '尚淳草本茶', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_32', name: '烏弄', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_33', name: '可不可熟成紅茶', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_34', name: '鹿兒角', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_35', name: '八曜和茶', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_36', name: '一沐日', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_37', name: '粉圓伯', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_38', name: '先喝道', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_39', name: '李珍心綠豆沙專門店', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_40', name: '吳家紅茶冰', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_41', name: '有茶', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_42', name: '青山', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_43', name: '迷客夏', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_44', name: '茗沏', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_45', name: '李記紅茶冰', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_46', name: '旅人阿宏', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_47', name: '麻古茶坊', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_48', name: '茶湯會', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_49', name: '樂法', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_50', name: '一鳴', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_51', name: '五路鍋聖', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_52', name: '秈鋤料理廚房', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_53', name: '江滬上海小籠湯包', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_54', name: '食光飯糰', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_55', name: '春耕', category: '喝涼涼', amount: 0, isOpen: false },
-            { id: 'store_56', name: '秋本家', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_57', name: '名家大餛飩', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_58', name: '小宸義大利麵', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_59', name: '阿香師油飯', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_60', name: '熱浪小島', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_61', name: '小妞魯味', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_62', name: '得利牛排', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_63', name: '李王麻辣專賣', category: '美味餐點', amount: 0, isOpen: false },
-            { id: 'store_64', name: '麵匡匡', category: '美味餐點', amount: 0, isOpen: false }
+            { id: 'store_1', name: '八方雲集', category: '美味餐點', isOpen: true, items: [{ name: '招牌水餃', price: 7 }, { name: '招牌鍋貼', price: 7 }, { name: '酸辣湯', price: 35 }] },
+            { id: 'store_2', name: '飯大廚', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_3', name: '鼎森泰式料理', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_4', name: '榮郁香廣式燒臘', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_5', name: '顏舍關東煮', category: '美味餐點', isOpen: true, items: [] },
+            { id: 'store_6', name: '羹香鴨肉羹', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_7', name: '徊香麵線糊', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_8', name: '四海遊龍', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_9', name: '北斗賓肉圓', category: '美味餐點', isOpen: true, items: [] },
+            { id: 'store_10', name: '老聃飲食', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_11', name: '八廚職人弁当', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_12', name: '嵐 爌肉・豬腳飯', category: '美味餐點', isOpen: true, items: [] },
+            { id: 'store_13', name: '旺春豐傳統小吃', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_14', name: '咕雞鹽水雞', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_15', name: '家灶傳統爌肉豬腳專賣', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_16', name: '丼滋丼滋', category: '美味餐點', isOpen: true, items: [] },
+            { id: 'store_17', name: '老蕭土魠魚羹麵館', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_18', name: '小松丼丼食事處', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_19', name: '滿座燒肉丼飯屋', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_20', name: '地6攤排餐', category: '美味餐點', isOpen: true, items: [] },
+            { id: 'store_21', name: '八鮮雲吞', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_22', name: '明美快餐', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_23', name: '森晴餐盒製所', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_24', name: '廈門沙茶麵', category: '美味餐點', isOpen: true, items: [] },
+            { id: 'store_25', name: '員湘園', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_26', name: '志氣雞飯', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_27', name: '竑食泰式拌飯', category: '美味餐點', isOpen: true, items: [] },
+            { id: 'store_28', name: '50嵐', category: '喝涼涼', isOpen: false, items: [{ name: '四季春青茶', price: 35 }, { name: '珍珠奶茶', price: 50 }] },
+            { id: 'store_29', name: 'TEA TOP', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_30', name: '得正', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_31', name: '尚淳草本茶', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_32', name: '烏弄', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_33', name: '可不可熟成紅茶', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_34', name: '鹿兒角', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_35', name: '八曜和茶', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_36', name: '一沐日', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_37', name: '粉圓伯', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_38', name: '先喝道', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_39', name: '李珍心綠豆沙專門店', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_40', name: '吳家紅茶冰', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_41', name: '有茶', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_42', name: '青山', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_43', name: '迷客夏', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_44', name: '茗沏', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_45', name: '李記紅茶冰', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_46', name: '旅人阿宏', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_47', name: '麻古茶坊', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_48', name: '茶湯會', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_49', name: '樂法', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_50', name: '一鳴', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_51', name: '五路鍋聖', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_52', name: '秈鋤料理廚房', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_53', name: '江滬上海小籠湯包', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_54', name: '食光飯糰', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_55', name: '春耕', category: '喝涼涼', isOpen: false, items: [] },
+            { id: 'store_56', name: '秋本家', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_57', name: '名家大餛飩', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_58', name: '小宸義大利麵', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_59', name: '阿香師油飯', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_60', name: '熱浪小島', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_61', name: '小妞魯味', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_62', name: '得利牛排', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_63', name: '李王麻辣專賣', category: '美味餐點', isOpen: false, items: [] },
+            { id: 'store_64', name: '麵匡匡', category: '美味餐點', isOpen: false, items: [] }
         ];
 
         function mergeStoreStates(savedStores) {
@@ -1268,14 +1270,14 @@
             const stateMap = {};
             savedStores.forEach(s => {
                 if (s && s.id) {
-                    stateMap[s.id] = { isOpen: s.isOpen, amount: s.amount ?? 0 };
+                    stateMap[s.id] = { isOpen: s.isOpen, items: s.items || [] };
                 }
             });
             storeList.forEach(s => {
                 if (stateMap[s.id] !== undefined) {
                     s.isOpen = stateMap[s.id].isOpen;
-                    if (stateMap[s.id].amount !== undefined) {
-                        s.amount = stateMap[s.id].amount;
+                    if (stateMap[s.id].items) {
+                        s.items = stateMap[s.id].items;
                     }
                 }
             });
@@ -1284,7 +1286,7 @@
         async function sendLineAnnouncement() {
             const openStores = storeList
                 .filter(s => s.isOpen)
-                .map(s => `• ${s.name} (${s.category}) ${s.amount ? `- $${s.amount}` : ''}`)
+                .map(s => `• ${s.name} (${s.category})`)
                 .join('\n');
 
             if (!openStores) {
@@ -1339,13 +1341,13 @@ ${openStores}
             const activeStoreElem = document.getElementById('summaryActiveStores');
             if (activeStoreElem) activeStoreElem.innerText = `${activeCount} 家`;
 
-            const isViewer = getAdminRole() === 'viewer';
-
             const buildRows = (list) => {
                 if (list.length === 0) {
                     return `<tr><td colspan="6" class="text-center py-8 text-slate-400">尚無店家資料</td></tr>`;
                 }
                 return list.map(store => {
+                    const itemCount = (store.items && Array.isArray(store.items)) ? store.items.length : 0;
+                    
                     const statusBadge = store.isOpen 
                         ? `<span class="badge badge-paid"><i class="fa-solid fa-circle text-[8px]"></i> 開放點餐中</span>` 
                         : `<span class="badge badge-unpaid"><i class="fa-solid fa-circle text-[8px]"></i> 尚未開放</span>`;
@@ -1364,18 +1366,17 @@ ${openStores}
                         <tr>
                             <td data-label="店家名稱"><strong>${store.name}</strong></td>
                             <td data-label="餐點類別"><span class="badge ${categoryBadgeClass}">${store.category}</span></td>
-                            <td data-label="店家金額">
-                                <div class="flex items-center gap-1 max-w-[120px]">
-                                    <span class="text-xs text-slate-400 font-bold">$</span>
-                                    <input type="number" min="0" step="1" value="${store.amount || 0}" 
-                                           class="w-full text-sm font-semibold border border-slate-300 rounded px-2 py-1 focus:ring-2 focus:ring-emerald-500 focus:outline-none" 
-                                           onchange="updateStoreAmount('${store.id}', this.value)"
-                                           ${isViewer ? 'disabled' : ''}>
-                                </div>
+                            <td data-label="菜單品項">
+                                <span class="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-slate-200">
+                                    <i class="fa-solid fa-utensils mr-1 text-emerald-600"></i>${itemCount} 個品項
+                                </span>
                             </td>
                             <td data-label="開放狀態">${statusBadge}</td>
                             <td data-label="前台權限">${permissionText}</td>
-                            <td data-label="控制操作">${actionBtn}</td>
+                            <td data-label="控制操作">
+                                <button class="btn-edit" onclick="openStoreMenuModal('${store.id}')"><i class="fa-solid fa-list-check mr-1"></i>品項菜單</button>
+                                ${actionBtn}
+                            </td>
                         </tr>
                     `;
                 }).join('');
@@ -1385,15 +1386,94 @@ ${openStores}
             if (drinkTbody) drinkTbody.innerHTML = buildRows(drinkStores);
         }
 
-        async function updateStoreAmount(storeId, newAmount) {
+        // ------------------ 編輯店家品項與金額 Modal 控制 ------------------
+        let currentEditingStoreId = null;
+        let tempStoreItems = [];
+
+        function openStoreMenuModal(storeId) {
             if (!checkPermission('manage_store')) return;
 
             const store = storeList.find(s => s.id === storeId);
             if (!store) return;
 
-            const parsedVal = Math.max(0, parseInt(newAmount, 10) || 0);
-            store.amount = parsedVal;
+            currentEditingStoreId = storeId;
+            tempStoreItems = JSON.parse(JSON.stringify(store.items || []));
 
+            renderMenuItemsModalContent(store.name);
+        }
+
+        function renderMenuItemsModalContent(storeName) {
+            let itemsHtml = '';
+            if (tempStoreItems.length === 0) {
+                itemsHtml = `<div class="text-center text-slate-400 py-6 text-sm">目前尚無品項，請點擊下方按鈕新增品項與單價。</div>`;
+            } else {
+                itemsHtml = tempStoreItems.map((item, idx) => `
+                    <div class="flex items-center gap-2 mb-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+                        <div class="flex-1">
+                            <input type="text" placeholder="例如: 招牌水餃" value="${item.name || ''}" 
+                                   onchange="updateTempItemName(${idx}, this.value)" 
+                                   class="text-sm h-10 px-3 border border-slate-300 rounded-md w-full focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div class="flex items-center gap-1 w-32 shrink-0">
+                            <span class="text-xs text-slate-500 font-bold">$</span>
+                            <input type="number" min="0" step="1" placeholder="金額" value="${item.price ?? 0}" 
+                                   onchange="updateTempItemPrice(${idx}, this.value)" 
+                                   class="text-sm h-10 px-2 border border-slate-300 rounded-md w-full font-semibold focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <button type="button" class="btn-delete px-3 py-2 text-xs shrink-0" onclick="removeTempMenuItem(${idx})">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            const modalMsg = `
+                <div class="flex flex-col gap-3">
+                    <p class="text-xs text-slate-500">請設定「<strong>${storeName}</strong>」前台供員工點選的餐點/飲料品項與單價：</p>
+                    <div id="modalMenuItemsList" class="max-h-[320px] overflow-y-auto pr-1">
+                        ${itemsHtml}
+                    </div>
+                    <button type="button" class="btn btn-secondary text-xs py-2 w-full flex items-center justify-center gap-1.5 mt-1" onclick="addTempMenuItem()">
+                        <i class="fa-solid fa-plus text-emerald-600"></i> 新增品項與金額
+                    </button>
+                </div>
+            `;
+
+            showCustomModal({
+                title: `🍱 管理品項與金額 - ${storeName}`,
+                message: modalMsg,
+                isConfirm: true,
+                onConfirm: () => saveStoreMenuItems()
+            });
+        }
+
+        function updateTempItemName(idx, val) {
+            if (tempStoreItems[idx]) tempStoreItems[idx].name = val.trim();
+        }
+
+        function updateTempItemPrice(idx, val) {
+            if (tempStoreItems[idx]) tempStoreItems[idx].price = Math.max(0, parseInt(val, 10) || 0);
+        }
+
+        function addTempMenuItem() {
+            tempStoreItems.push({ name: '', price: 0 });
+            const store = storeList.find(s => s.id === currentEditingStoreId);
+            renderMenuItemsModalContent(store ? store.name : '');
+        }
+
+        function removeTempMenuItem(idx) {
+            tempStoreItems.splice(idx, 1);
+            const store = storeList.find(s => s.id === currentEditingStoreId);
+            renderMenuItemsModalContent(store ? store.name : '');
+        }
+
+        async function saveStoreMenuItems() {
+            const store = storeList.find(s => s.id === currentEditingStoreId);
+            if (!store) return;
+
+            store.items = tempStoreItems.filter(i => i.name.trim() !== '');
+
+            renderStoreTable();
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
             try {
@@ -1402,12 +1482,10 @@ ${openStores}
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ stores: storeList })
                 });
-                if (response.ok) {
-                    const result = await response.json();
-                    if (!result.success) console.warn('伺服器未回傳成功訊息，已先寫入本地');
-                }
-            } catch (error) {
-                console.warn('同步 API 修改店家金額失敗，已暫存本地', error);
+                const result = await response.json();
+                showCustomModal({ message: `已成功儲存「<b>${store.name}</b>」的菜單品項與金額！` });
+            } catch (e) {
+                showCustomModal({ message: `已儲存「<b>${store.name}</b>」菜單品項（本地暫存）。` });
             }
         }
 
