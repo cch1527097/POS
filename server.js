@@ -1070,24 +1070,10 @@ app.post('/api/login', async (req, res) => {
             const cancelCheck = await checkIsCancelAllowed();
             const allowCancel = cancelCheck.allowed;
 
-            // 💡 關鍵修正：主動查詢資料庫，檢查該卡號近 24 小時內是否為團長
-            const groupRes = await pool.query(
-                `SELECT group_id FROM groups 
-                 WHERE card_id = $1 
-                   AND created_at >= ((date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') - INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
-                 ORDER BY id DESC LIMIT 1;`,
-                [cleanCardId]
-            );
-
-            const isOrganizer = groupRes.rows.length > 0;
-            const activeGroupId = isOrganizer ? groupRes.rows[0].group_id : null;
-
             res.json({ 
                 success: true, 
                 message: '登入成功', 
                 empName: result.rows[0].name,
-                isOrganizer: isOrganizer,       // 💡 回傳是否為團長
-                groupId: activeGroupId,         // 💡 回傳對應的揪團 ID
                 allowCancel: allowCancel,
                 allow_cancel: allowCancel,
                 allowOrderCancel: allowCancel,
