@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 自動解析並剔除 DATABASE_URL 中的 sslmode 參數，避免 pg 模組觸發警告
-const rawDbUrl = process.env.DATABASE_URL;
+const rawDbUrl = process.env.DATABASE_URL || '';
 let cleanDbUrl = rawDbUrl;
 
 if (rawDbUrl) {
@@ -150,7 +150,7 @@ async function checkIsCancelAllowed() {
     }
 }
 
-// 💡 核心輔助函式：智慧比對點餐店家 (支援 魯/滷 異體字替換與品牌提取)
+// 💡 核心輔助函式：智慧比對點餐店家 (修正：支援 魯/滷 異體字替換、去除空白格與品牌提取)
 function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     if (!Array.isArray(stores) || stores.length === 0) return null;
 
@@ -159,11 +159,12 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
         if (found) return found;
     }
 
-    const normalizeText = (str) => (str || '').replace(/滷/g, '魯').trim();
+    // 修正點：消除所有空白格，避免前後台名稱空格不一致導致匹配失敗
+    const normalizeText = (str) => (str || '').replace(/滷/g, '魯').replace(/\s+/g, '').trim();
 
     const rawReqName = normalizeText(reqStoreName);
     const rawMeal = normalizeText(cleanMeal);
-    const combinedText = `${rawReqName} ${rawMeal}`.trim();
+    const combinedText = `${rawReqName}${rawMeal}`.trim();
     if (!combinedText) return null;
 
     for (const store of stores) {
@@ -263,7 +264,7 @@ async function initDatabase() {
         await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;`);
         await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS group_id VARCHAR(100);`);
 
-        // 💡 新增 groups 揪團紀錄資料表
+        // 新增 groups 揪團紀錄資料表
         await pool.query(`
             CREATE TABLE IF NOT EXISTS groups (
                 id SERIAL PRIMARY KEY,
@@ -437,7 +438,7 @@ async function initDatabase() {
     }
 }
 
-// 💡 新增：發起揪團寫入資料庫 API
+// 發起揪團寫入資料庫 API
 app.post('/api/groups', async (req, res) => {
     try {
         const { groupId, cardId } = req.body;
@@ -461,8 +462,7 @@ app.post('/api/groups', async (req, res) => {
     }
 });
 
-// ==================== 取消訂單 API ====================
-
+// 取消訂單 API
 app.post('/api/orders/cancel', async (req, res) => {
     try {
         const cancelCheck = await checkIsCancelAllowed();
@@ -508,7 +508,7 @@ app.post('/api/orders/cancel', async (req, res) => {
     }
 });
 
-// 💡 取得前台取消訂單開關狀態 (動態比對當前時間)
+// 取得前台取消訂單開關狀態 (動態比對當前時間)
 app.get('/api/allow-cancel', async (req, res) => {
     try {
         const cancelCheck = await checkIsCancelAllowed();
@@ -572,7 +572,7 @@ const handleAllowCancelUpdate = async (req, res) => {
 app.post('/api/allow-cancel', handleAllowCancelUpdate);
 app.put('/api/allow-cancel', handleAllowCancelUpdate);
 
-// 💡 補全前台相容 API：/api/cutoff-time 取得/更新截止時間
+// 取得截止時間 API
 app.get('/api/cutoff-time', async (req, res) => {
     try {
         const lockStatus = await getLockStatus();
@@ -589,34 +589,41 @@ app.get('/api/cutoff-time', async (req, res) => {
     }
 });
 
+// 修正：更新截止時間 API 放寬日期驗證，支援僅單獨設定每日時間或包含日期
 app.post('/api/cutoff-time', async (req, res) => {
     const { cutoffTime, lockTime, time, lockDate } = req.body;
     const newTime = (cutoffTime || lockTime || time || "").trim().slice(0, 10);
-    const newDate = (lockDate || "").trim().slice(0, 20);
+    const newDate = (lockDate !== undefined) ? String(lockDate).trim().slice(0, 20) : null;
 
-    if (!newTime || !newDate) {
-        return res.status(400).json({ success: false, message: '請選擇有效的截止日期與時間！' });
+    if (!newTime && newDate === null) {
+        return res.status(400).json({ success: false, message: '請選擇有效的截止時間！' });
     }
 
     try {
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('order_lock_time', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [newTime]);
+        if (newTime) {
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_time', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [newTime]);
+        }
 
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('order_lock_date', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [newDate]);
+        if (newDate !== null) {
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_date', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [newDate]);
+        }
+
+        const displayStr = newDate ? `${newDate} ${newTime}` : newTime;
 
         return res.json({ 
             success: true, 
-            message: `已成功將點餐截止時間設定為 ${newDate} ${newTime}`,
+            message: `已成功將點餐截止時間設定為 ${displayStr}`,
             cutoffTime: newTime,
             lockTime: newTime,
-            lockDate: newDate
+            lockDate: newDate ?? ''
         });
     } catch (err) {
         console.error('更新截止時間失敗:', err.message);
@@ -700,8 +707,7 @@ const handleSettingsUpdate = async (req, res) => {
 app.post('/api/settings', handleSettingsUpdate);
 app.put('/api/settings', handleSettingsUpdate);
 
-// ==================== 鎖定時間 API ====================
-
+// 鎖定時間 API
 app.get('/api/lock-time', async (req, res) => {
     try {
         const lockStatus = await getLockStatus();
@@ -717,40 +723,45 @@ app.get('/api/lock-time', async (req, res) => {
     }
 });
 
+// 修正：更新鎖定時間 API 放寬日期必填檢查
 app.post('/api/lock-time', async (req, res) => {
     const { lockTime, cutoffTime, lockDate } = req.body;
     const targetTime = lockTime || cutoffTime;
     const newLockTime = targetTime ? String(targetTime).trim().slice(0, 10) : "";
-    const newLockDate = lockDate ? String(lockDate).trim().slice(0, 20) : "";
+    const newLockDate = (lockDate !== undefined) ? String(lockDate).trim().slice(0, 20) : null;
 
-    if (!newLockTime || !newLockDate) {
+    if (!newLockTime && newLockDate === null) {
         return res.status(400).json({ 
             success: false, 
-            message: '請提供有效的截止日期與時間！' 
+            message: '請提供有效的截止時間！' 
         });
     }
 
     try {
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('order_lock_time', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [newLockTime]);
+        if (newLockTime) {
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_time', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [newLockTime]);
+        }
 
-        await pool.query(`
-            INSERT INTO settings (key, value) 
-            VALUES ('order_lock_date', $1)
-            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-        `, [newLockDate]);
+        if (newLockDate !== null) {
+            await pool.query(`
+                INSERT INTO settings (key, value) 
+                VALUES ('order_lock_date', $1)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+            `, [newLockDate]);
+        }
 
-        const displayStr = `${newLockDate} ${newLockTime}`;
+        const displayStr = newLockDate ? `${newLockDate} ${newLockTime}` : newLockTime;
 
         return res.json({ 
             success: true, 
             message: `已成功將點餐截止時間設定為 ${displayStr}`,
             lockTime: newLockTime,
             cutoffTime: newLockTime,
-            lockDate: newLockDate
+            lockDate: newLockDate ?? ''
         });
     } catch (err) {
         console.error('更新鎖定時間失敗:', err.message);
@@ -846,7 +857,7 @@ app.post('/api/active-store', async (req, res) => {
     }
 });
 
-// 💡 升級：支援依 cardId 篩選或傳入 all=true 回傳全部訂單
+// 支援依 cardId 篩選或傳入 all=true 回傳全部訂單
 app.get('/api/orders', async (req, res) => {
     try {
         const { cardId, all } = req.query;
@@ -1178,7 +1189,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 💡 升級：取得個人訂單紀錄 API (支援查詢是否為團長 isOrganizer)
+// 取得個人訂單紀錄 API (支援查詢是否為團長 isOrganizer)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
