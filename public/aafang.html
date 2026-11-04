@@ -1023,6 +1023,76 @@ let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
 
+
+// ------------------ 後台價格即時同步邏輯 ------------------
+async function syncPricesFromBackend() {
+    let stores = null;
+    try {
+        const res = await fetch(`/api/stores?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            stores = data.stores || data;
+        }
+    } catch (e) {
+        console.warn('無法連結 API 讀取門市菜單，嘗試讀取本地暫存...', e);
+    }
+
+    if (!stores) {
+        const saved = localStorage.getItem('active_store_config');
+        if (saved) {
+            try { stores = JSON.parse(saved); } catch (e) {}
+        }
+    }
+
+    if (!stores || !Array.isArray(stores)) return;
+
+    // 取得當前頁面檔名或標題名稱匹配門市
+    const currentFileName = decodeURIComponent(window.location.pathname.split('/').pop().replace('.html', '').trim());
+    const store = stores.find(s => {
+        if (!s.name) return false;
+        const sName = s.name.trim();
+        return sName.includes(currentFileName) || currentFileName.includes(sName) || (s.id && currentFileName.includes(s.id));
+    }) || stores[0];
+
+    if (!store || !store.items || store.items.length === 0) return;
+
+    // 建立後台品項金額對照表
+    const itemPriceMap = {};
+    store.items.forEach(item => {
+        if (item.name && item.price !== undefined) {
+            itemPriceMap[item.name.trim()] = Number(item.price);
+        }
+    });
+
+    // 動態更新菜單項目價格
+    let updated = false;
+    if (typeof menuItems !== 'undefined' && Array.isArray(menuItems)) {
+        menuItems.forEach(item => {
+            const mKey = `${item.name} (M)`;
+            const lKey = `${item.name} (L)`;
+
+            if (itemPriceMap[mKey] !== undefined) {
+                item.priceM = itemPriceMap[mKey];
+                updated = true;
+            }
+            if (itemPriceMap[lKey] !== undefined) {
+                item.priceL = itemPriceMap[lKey];
+                updated = true;
+            }
+            if (itemPriceMap[item.name] !== undefined) {
+                item.price = itemPriceMap[item.name];
+                if (item.priceM !== undefined) item.priceM = itemPriceMap[item.name];
+                if (item.priceL !== undefined) item.priceL = itemPriceMap[item.name];
+                updated = true;
+            }
+        });
+    }
+
+    if (updated && typeof renderMenu === 'function') {
+        renderMenu(typeof currentFilteredItems !== 'undefined' ? currentFilteredItems : menuItems);
+    }
+}
+
 window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -1039,6 +1109,8 @@ window.onload = async function() {
     }
 
     renderMenu(menuItems);
+    await syncPricesFromBackend();
+    setInterval(syncPricesFromBackend, 10000);
     renderCart();
 
     // 啟動倒數計時與全院員工清單載入
