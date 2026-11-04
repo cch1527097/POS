@@ -437,7 +437,7 @@ async function initDatabase() {
     }
 }
 
-// 💡 新增：發起揪團寫入資料庫 API
+// 💡 發起揪團寫入資料庫 API
 app.post('/api/groups', async (req, res) => {
     try {
         const { groupId, cardId } = req.body;
@@ -1056,6 +1056,7 @@ app.delete('/api/orders/:orderId', async (req, res) => {
     }
 });
 
+// 💡 登入 API：升級主動查詢 Neon 資料庫還原團長身份
 app.post('/api/login', async (req, res) => {
     const { cardId } = req.body;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
@@ -1070,10 +1071,24 @@ app.post('/api/login', async (req, res) => {
             const cancelCheck = await checkIsCancelAllowed();
             const allowCancel = cancelCheck.allowed;
 
+            // 💡 關鍵修正：查詢 Neon 的 groups 資料表，確認近 24 小時內是否為團長
+            const groupRes = await pool.query(
+                `SELECT group_id FROM groups 
+                 WHERE card_id = $1 
+                   AND created_at >= ((date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') - INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
+                 ORDER BY id DESC LIMIT 1;`,
+                [cleanCardId]
+            );
+
+            const isOrganizer = groupRes.rows.length > 0;
+            const activeGroupId = isOrganizer ? groupRes.rows[0].group_id : null;
+
             res.json({ 
                 success: true, 
                 message: '登入成功', 
                 empName: result.rows[0].name,
+                isOrganizer: isOrganizer,       // 💡 回傳是否為團長
+                groupId: activeGroupId,         // 💡 回傳對應的揪團 ID
                 allowCancel: allowCancel,
                 allow_cancel: allowCancel,
                 allowOrderCancel: allowCancel,
