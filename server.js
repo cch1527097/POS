@@ -1,6 +1,7 @@
 require('dotenv').config(); // 載入 .env 環境變數
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { Pool } = require('pg');
 
@@ -199,6 +200,43 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     return null;
 }
 
+// 同步寫入 public/orders.json
+async function syncOrdersJsonFile() {
+    try {
+        const publicDir = path.join(__dirname, 'public');
+        if (!fs.existsSync(publicDir)) {
+            await fs.promises.mkdir(publicDir, { recursive: true });
+        }
+
+        const result = await pool.query(`
+            SELECT 
+                order_id AS "orderId", 
+                card_id AS "cardId", 
+                name, 
+                meal, 
+                spicy, 
+                note, 
+                total, 
+                timestamp,
+                group_id AS "groupId",
+                COALESCE(is_paid, false) AS "isPaid"
+            FROM orders
+            ORDER BY order_id DESC;
+        `);
+
+        const formattedRows = result.rows.map(row => ({
+            ...row,
+            orderId: Number(row.orderId) || row.orderId,
+            total: Number(row.total) || 0
+        }));
+
+        const jsonPath = path.join(publicDir, 'orders.json');
+        await fs.promises.writeFile(jsonPath, JSON.stringify(formattedRows, null, 2), 'utf-8');
+    } catch (err) {
+        console.warn('⚠️ 警告：同步 orders.json 失敗:', err.message);
+    }
+}
+
 // 產生 JavaScript 安全整數範圍內的唯一 Order ID
 function generateSafeOrderId() {
     const timestamp = Date.now();
@@ -206,7 +244,7 @@ function generateSafeOrderId() {
     return Number(`${timestamp}${randomSuffix}`);
 }
 
-// 初始化資料庫 (含 groups 表)
+// 初始化資料庫
 async function initDatabase() {
     try {
         await pool.query(`
@@ -222,15 +260,6 @@ async function initDatabase() {
                 timestamp VARCHAR(100),
                 group_id VARCHAR(100),
                 is_paid BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        // 新增 groups 資料表以保存 Neon 中的揪團發起者資訊
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS groups (
-                group_id VARCHAR(100) PRIMARY KEY,
-                creator_card_id VARCHAR(50) NOT NULL,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -395,34 +424,12 @@ async function initDatabase() {
         }
 
         console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);
+        await syncOrdersJsonFile();
     } catch (err) {
         console.error(`❌ 初始化 Neon 資料庫失敗：`, err.message);
         throw err;
     }
 }
-
-// ==================== 建立/登記揪團 API (新增) ====================
-
-app.post('/api/groups', async (req, res) => {
-    const { groupId, cardId } = req.body;
-    const cleanGroupId = groupId ? String(groupId).trim().slice(0, 100) : '';
-    const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
-
-    if (!cleanGroupId || !cleanCardId) {
-        return res.status(400).json({ success: false, message: '缺少揪團編號或卡號！' });
-    }
-
-    try {
-        await pool.query(
-            `INSERT INTO groups (group_id, creator_card_id) VALUES ($1, $2) ON CONFLICT (group_id) DO NOTHING;`,
-            [cleanGroupId, cleanCardId]
-        );
-        res.json({ success: true, message: '揪團紀錄儲存成功！' });
-    } catch (err) {
-        console.error('紀錄揪團失敗:', err);
-        res.status(500).json({ success: false, message: '伺服器建立揪團紀錄失敗。' });
-    }
-});
 
 // ==================== 取消訂單 API ====================
 
@@ -463,6 +470,7 @@ app.post('/api/orders/cancel', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到對應訂單，或該訂單無權限刪除！' });
         }
 
+        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '訂單已成功取消並刪除！' });
     } catch (error) {
         console.error('後端取消訂單失敗:', error);
@@ -554,32 +562,28 @@ app.get('/api/cutoff-time', async (req, res) => {
 app.post('/api/cutoff-time', async (req, res) => {
     const { cutoffTime, lockTime, time, lockDate } = req.body;
     const newTime = (cutoffTime || lockTime || time || "").trim().slice(0, 10);
-    const newDate = (lockDate !== undefined && lockDate !== null) ? String(lockDate).trim().slice(0, 20) : null;
+    const newDate = (lockDate || "").trim().slice(0, 20);
 
-    if (!newTime && newDate === null) {
-        return res.status(400).json({ success: false, message: '請提供有效的截止時間或日期！' });
+    if (!newTime || !newDate) {
+        return res.status(400).json({ success: false, message: '請選擇有效的截止日期與時間！' });
     }
 
     try {
-        if (newTime) {
-            await pool.query(`
-                INSERT INTO settings (key, value) 
-                VALUES ('order_lock_time', $1)
-                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-            `, [newTime]);
-        }
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('order_lock_time', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [newTime]);
 
-        if (newDate !== null) {
-            await pool.query(`
-                INSERT INTO settings (key, value) 
-                VALUES ('order_lock_date', $1)
-                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-            `, [newDate]);
-        }
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('order_lock_date', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [newDate]);
 
         return res.json({ 
             success: true, 
-            message: `已成功更新點餐截止時間與日期！`,
+            message: `已成功將點餐截止時間設定為 ${newDate} ${newTime}`,
             cutoffTime: newTime,
             lockTime: newTime,
             lockDate: newDate
@@ -687,35 +691,33 @@ app.post('/api/lock-time', async (req, res) => {
     const { lockTime, cutoffTime, lockDate } = req.body;
     const targetTime = lockTime || cutoffTime;
     const newLockTime = targetTime ? String(targetTime).trim().slice(0, 10) : "";
-    const newLockDate = (lockDate !== undefined && lockDate !== null) ? String(lockDate).trim().slice(0, 20) : null;
+    const newLockDate = lockDate ? String(lockDate).trim().slice(0, 20) : "";
 
-    if (!newLockTime && newLockDate === null) {
+    if (!newLockTime || !newLockDate) {
         return res.status(400).json({ 
             success: false, 
-            message: '請提供有效的截止日期或時間！' 
+            message: '請提供有效的截止日期與時間！' 
         });
     }
 
     try {
-        if (newLockTime) {
-            await pool.query(`
-                INSERT INTO settings (key, value) 
-                VALUES ('order_lock_time', $1)
-                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-            `, [newLockTime]);
-        }
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('order_lock_time', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [newLockTime]);
 
-        if (newLockDate !== null) {
-            await pool.query(`
-                INSERT INTO settings (key, value) 
-                VALUES ('order_lock_date', $1)
-                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-            `, [newLockDate]);
-        }
+        await pool.query(`
+            INSERT INTO settings (key, value) 
+            VALUES ('order_lock_date', $1)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+        `, [newLockDate]);
+
+        const displayStr = `${newLockDate} ${newLockTime}`;
 
         return res.json({ 
             success: true, 
-            message: `已成功更新點餐截止時間！`,
+            message: `已成功將點餐截止時間設定為 ${displayStr}`,
             lockTime: newLockTime,
             cutoffTime: newLockTime,
             lockDate: newLockDate
@@ -816,9 +818,8 @@ app.post('/api/active-store', async (req, res) => {
 
 app.get('/api/orders', async (req, res) => {
     try {
-        const showAll = req.query.all === 'true';
-        const sql = showAll
-            ? `SELECT 
+        const result = await pool.query(`
+            SELECT 
                 order_id AS "orderId", 
                 card_id AS "cardId", 
                 name, 
@@ -829,24 +830,9 @@ app.get('/api/orders', async (req, res) => {
                 timestamp,
                 group_id AS "groupId",
                 COALESCE(is_paid, false) AS "isPaid"
-               FROM orders
-               ORDER BY order_id DESC;`
-            : `SELECT 
-                order_id AS "orderId", 
-                card_id AS "cardId", 
-                name, 
-                meal, 
-                spicy, 
-                note, 
-                total, 
-                timestamp,
-                group_id AS "groupId",
-                COALESCE(is_paid, false) AS "isPaid"
-               FROM orders
-               WHERE created_at >= (NOW() - INTERVAL '30 days')
-               ORDER BY order_id DESC;`;
-
-        const result = await pool.query(sql);
+            FROM orders
+            ORDER BY order_id DESC;
+        `);
 
         const formattedRows = result.rows.map(row => ({
             ...row,
@@ -881,6 +867,7 @@ app.patch('/api/orders/:orderId/payment', async (req, res) => {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
 
+        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '訂單繳費狀態更新成功！' });
     } catch (err) {
         console.error('更新訂單繳費狀態失敗:', err.message);
@@ -922,6 +909,7 @@ app.patch('/api/employees/:cardId/payment', async (req, res) => {
             return res.status(404).json({ success: false, message: '找不到該卡號的員工' });
         }
 
+        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '繳費狀態更新成功' });
     } catch (err) {
         console.error('更新員工繳費狀態失敗:', err.message);
@@ -953,6 +941,7 @@ app.put('/api/employees/:cardId', async (req, res) => {
 
         await pool.query('UPDATE orders SET name = $1 WHERE card_id = $2;', [cleanName, cleanCardId]);
         
+        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: '員工資料更新成功' });
     } catch (err) {
         console.error('更新員工資料失敗:', err.message);
@@ -1018,6 +1007,7 @@ app.delete('/api/orders/:orderId', async (req, res) => {
             return res.status(404).json({ success: false, message: `找不到訂單編號: ${targetOrderIdStr}` });
         }
 
+        syncOrdersJsonFile().catch(() => {});
         res.json({ success: true, message: `訂單 ${targetOrderIdStr} 已成功刪除。` });
     } catch (error) {
         console.error('後端處理刪除訂單發生錯誤:', error);
@@ -1025,7 +1015,6 @@ app.delete('/api/orders/:orderId', async (req, res) => {
     }
 });
 
-// 登入 API (整合 Neon 揪團發起人權限查詢)
 app.post('/api/login', async (req, res) => {
     const { cardId } = req.body;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
@@ -1040,18 +1029,6 @@ app.post('/api/login', async (req, res) => {
             const cancelCheck = await checkIsCancelAllowed();
             const allowCancel = cancelCheck.allowed;
 
-            // 向 Neon 查詢該卡號是不是近 24 小時內發起過揪團的人
-            const groupCheck = await pool.query(
-                `SELECT group_id FROM groups 
-                 WHERE creator_card_id = $1 
-                   AND created_at >= (NOW() AT TIME ZONE 'Asia/Taipei' - INTERVAL '1 day')
-                 ORDER BY created_at DESC LIMIT 1;`,
-                [cleanCardId]
-            );
-
-            const isOrganizer = groupCheck.rows.length > 0;
-            const activeGroupId = isOrganizer ? groupCheck.rows[0].group_id : null;
-
             res.json({ 
                 success: true, 
                 message: '登入成功', 
@@ -1060,15 +1037,11 @@ app.post('/api/login', async (req, res) => {
                 allow_cancel: allowCancel,
                 allowOrderCancel: allowCancel,
                 allow_order_cancel: allowCancel,
-                isOrganizer: isOrganizer,          // 告訴前端此人是否為揪團發起人
-                createdGroupId: activeGroupId,      // 當前發起的揪團 ID
                 data: {
                     allowCancel: allowCancel,
                     allow_cancel: allowCancel,
                     allowOrderCancel: allowCancel,
-                    allow_order_cancel: allowCancel,
-                    isOrganizer: isOrganizer,
-                    createdGroupId: activeGroupId
+                    allow_order_cancel: allowCancel
                 }
             });
         } else {
@@ -1080,7 +1053,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 下訂單 API (支援 groupId 儲存，且自動將揪團創立者寫入 Neon groups 表)
+// 下訂單 API (支援 groupId 儲存)
 app.post('/api/order', async (req, res) => {
     try {
         const { cardId, meal, storeId, storeName, note, spicy, total, groupId } = req.body;
@@ -1137,14 +1110,6 @@ app.post('/api/order', async (req, res) => {
             return res.status(400).json({ success: false, message: '卡號無效或未授權，拒絕下單！' });
         }
 
-        // 若該筆訂單帶有揪團編號，將揪團資訊與卡號自動登記至 Neon DB
-        if (cleanGroupId) {
-            await pool.query(
-                `INSERT INTO groups (group_id, creator_card_id) VALUES ($1, $2) ON CONFLICT (group_id) DO NOTHING;`,
-                [cleanGroupId, cleanCardId]
-            );
-        }
-
         const empName = userRes.rows[0].name;
         const orderIdVal = generateSafeOrderId();
         const timestampStr = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
@@ -1166,6 +1131,7 @@ app.post('/api/order', async (req, res) => {
         ];
 
         await pool.query(insertQuery, values);
+        syncOrdersJsonFile().catch(() => {});
 
         res.json({ success: true, message: `🎉 訂單送出成功！` });
     } catch (error) {
@@ -1174,7 +1140,7 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 💡 取得個人訂單紀錄 API (支援跨日揪團模式，起算時間擴展至昨日，並同時查詢揪團創立者狀態)
+// 💡 取得個人訂單紀錄 API (已更新：支援跨日揪團模式，起算時間擴展至昨日 - INTERVAL '1 day')
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
@@ -1194,15 +1160,6 @@ app.get('/api/order-history', async (req, res) => {
             [cleanCardId]
         );
 
-        // 查詢該卡號是否為近 24 小時內的揪團創立者
-        const groupCheck = await pool.query(
-            `SELECT group_id FROM groups 
-             WHERE creator_card_id = $1 
-               AND created_at >= (NOW() AT TIME ZONE 'Asia/Taipei' - INTERVAL '1 day')
-             ORDER BY created_at DESC LIMIT 1;`,
-            [cleanCardId]
-        );
-
         const userOrders = result.rows.map(order => ({
             time: order.timestamp ? String(order.timestamp) : '-',
             meal: order.meal,
@@ -1210,15 +1167,7 @@ app.get('/api/order-history', async (req, res) => {
             groupId: order.group_id
         }));
 
-        const isOrganizer = groupCheck.rows.length > 0;
-        const activeGroupId = isOrganizer ? groupCheck.rows[0].group_id : null;
-
-        res.json({ 
-            success: true, 
-            orders: userOrders,
-            isOrganizer: isOrganizer,
-            createdGroupId: activeGroupId
-        });
+        res.json({ success: true, orders: userOrders });
     } catch (error) {
         console.error('讀取紀錄失敗:', error);
         res.json({ success: false, message: '讀取歷史紀錄失敗', orders: [] });
