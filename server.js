@@ -154,13 +154,11 @@ async function checkIsCancelAllowed() {
 function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     if (!Array.isArray(stores) || stores.length === 0) return null;
 
-    // 1. 優先透過 storeId 精確匹配
     if (reqStoreId) {
         const found = stores.find(s => s && s.id === reqStoreId);
         if (found) return found;
     }
 
-    // 將字串中的 滷/魯 統一，以避免因異體字導致比對失敗
     const normalizeText = (str) => (str || '').replace(/滷/g, '魯').trim();
 
     const rawReqName = normalizeText(reqStoreName);
@@ -168,7 +166,6 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     const combinedText = `${rawReqName} ${rawMeal}`.trim();
     if (!combinedText) return null;
 
-    // 2. 完整名稱雙向包含比對
     for (const store of stores) {
         if (!store || !store.name) continue;
         const cleanName = normalizeText(store.name.replace(/\s*\([^)]*\)/g, ''));
@@ -182,7 +179,6 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
         }
     }
 
-    // 3. 核心品牌關鍵字提煉比對 (新增 魯味/滷味 剔除詞)
     const getBrandName = (str) => normalizeText(str)
         .replace(/(牛排|專賣|鍋|館|店|小吃|便當|快餐|餐盒|傳統|料理|食事處|排餐|飲料|茶飲|食堂|丼飯|麵館|炒飯|煲仔飯|滷味|魯味|\s)/g, '')
         .trim();
@@ -266,6 +262,16 @@ async function initDatabase() {
 
         await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;`);
         await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS group_id VARCHAR(100);`);
+
+        // 💡 新增 groups 揪團紀錄資料表
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS groups (
+                id SERIAL PRIMARY KEY,
+                group_id VARCHAR(100) UNIQUE NOT NULL,
+                card_id VARCHAR(50) NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -430,6 +436,30 @@ async function initDatabase() {
         throw err;
     }
 }
+
+// 💡 新增：發起揪團寫入資料庫 API
+app.post('/api/groups', async (req, res) => {
+    try {
+        const { groupId, cardId } = req.body;
+        const cleanGroupId = groupId ? String(groupId).trim().slice(0, 100) : '';
+        const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
+
+        if (!cleanGroupId || !cleanCardId) {
+            return res.status(400).json({ success: false, message: '缺少揪團編號或卡號參數！' });
+        }
+
+        await pool.query(`
+            INSERT INTO groups (group_id, card_id)
+            VALUES ($1, $2)
+            ON CONFLICT (group_id) DO UPDATE SET card_id = EXCLUDED.card_id;
+        `, [cleanGroupId, cleanCardId]);
+
+        res.json({ success: true, message: '揪團發起人登記成功！' });
+    } catch (err) {
+        console.error('儲存揪團資料失敗:', err);
+        res.status(500).json({ success: false, message: '伺服器寫入揪團發生錯誤。' });
+    }
+});
 
 // ==================== 取消訂單 API ====================
 
@@ -816,9 +846,11 @@ app.post('/api/active-store', async (req, res) => {
     }
 });
 
+// 💡 升級：支援依 cardId 篩選或傳入 all=true 回傳全部訂單
 app.get('/api/orders', async (req, res) => {
     try {
-        const result = await pool.query(`
+        const { cardId, all } = req.query;
+        let queryStr = `
             SELECT 
                 order_id AS "orderId", 
                 card_id AS "cardId", 
@@ -831,8 +863,17 @@ app.get('/api/orders', async (req, res) => {
                 group_id AS "groupId",
                 COALESCE(is_paid, false) AS "isPaid"
             FROM orders
-            ORDER BY order_id DESC;
-        `);
+        `;
+        const queryParams = [];
+
+        if (cardId && all !== 'true') {
+            queryStr += ` WHERE card_id = $1`;
+            queryParams.push(String(cardId).trim());
+        }
+
+        queryStr += ` ORDER BY order_id DESC;`;
+
+        const result = await pool.query(queryStr, queryParams);
 
         const formattedRows = result.rows.map(row => ({
             ...row,
@@ -1075,10 +1116,8 @@ app.post('/api/order', async (req, res) => {
             let stores = [];
             try { stores = JSON.parse(storeListRes.rows[0].value) || []; } catch(e) { stores = []; }
             
-            // 1. 進行店家智慧比對 (含 滷/魯 正規化)
             let matchedStore = findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal);
 
-            // 2. 嚴格白名單阻擋邏輯：
             if (!matchedStore) {
                 return res.status(403).json({
                     success: false,
@@ -1095,7 +1134,6 @@ app.post('/api/order', async (req, res) => {
             }
         }
 
-        // 檢查是否已達到截止鎖定狀態 (日期 + 時間)
         const lockStatus = await getLockStatus();
         if (lockStatus.isLocked) {
             return res.status(403).json({
@@ -1140,13 +1178,13 @@ app.post('/api/order', async (req, res) => {
     }
 });
 
-// 💡 取得個人訂單紀錄 API (已更新：支援跨日揪團模式，起算時間擴展至昨日 - INTERVAL '1 day')
+// 💡 升級：取得個人訂單紀錄 API (支援查詢是否為團長 isOrganizer)
 app.get('/api/order-history', async (req, res) => {
     const { cardId } = req.query;
     const cleanCardId = cardId ? String(cardId).trim().slice(0, 50) : '';
 
     if (!cleanCardId) {
-        return res.json({ success: false, message: '缺少員工卡號', orders: [] });
+        return res.json({ success: false, message: '缺少員工卡號', orders: [], isOrganizer: false });
     }
 
     try {
@@ -1160,6 +1198,17 @@ app.get('/api/order-history', async (req, res) => {
             [cleanCardId]
         );
 
+        // 檢查近 24 小時內該卡號是否曾在 groups 資料表中建立過揪團
+        const groupCheck = await pool.query(
+            `SELECT 1 FROM groups 
+             WHERE card_id = $1 
+               AND created_at >= ((date_trunc('day', NOW() AT TIME ZONE 'Asia/Taipei') - INTERVAL '1 day') AT TIME ZONE 'Asia/Taipei')
+             LIMIT 1;`,
+            [cleanCardId]
+        );
+
+        const isOrganizer = groupCheck.rows.length > 0;
+
         const userOrders = result.rows.map(order => ({
             time: order.timestamp ? String(order.timestamp) : '-',
             meal: order.meal,
@@ -1167,10 +1216,10 @@ app.get('/api/order-history', async (req, res) => {
             groupId: order.group_id
         }));
 
-        res.json({ success: true, orders: userOrders });
+        res.json({ success: true, orders: userOrders, isOrganizer });
     } catch (error) {
         console.error('讀取紀錄失敗:', error);
-        res.json({ success: false, message: '讀取歷史紀錄失敗', orders: [] });
+        res.json({ success: false, message: '讀取歷史紀錄失敗', orders: [], isOrganizer: false });
     }
 });
 
