@@ -2216,8 +2216,7 @@
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                <path d="M23 21v-2a4 4 0 0 1 0 7.75"></path>
             </svg>
         </button>
 
@@ -2413,7 +2412,7 @@
             </div>
             <div class="history-modal-body">
                 <div style="margin-bottom: 12px; font-size: 13px; color: #668062; font-weight: bold; text-align: right;">
-                    資料來源：orders.json 資料庫
+                    資料來源：Neon PostgreSQL 資料庫
                 </div>
                 <div class="history-table-wrapper">
                     <table class="history-table">
@@ -2751,7 +2750,7 @@
                     }
 
                     if (rawVal.includes(':')) {
-                        const match = rawVal.match(/([01]?\d|2[0-3]):[0-5]\d/);
+                        const match = rawVal.match(/ ([01]?\d|2[0-3]):[0-5]\d/);
                         if (match) {
                             latestTime = match[0];
                             break;
@@ -2871,7 +2870,7 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        function createGroupLink() {
+        async function createGroupLink() {
             const selectEl = document.getElementById('groupShopSelect');
             const selectedShop = selectEl?.value;
 
@@ -2887,7 +2886,6 @@
             }
 
             const groupId = 'GRP' + Date.now();
-            // 💡 統一進行 trim 處理
             const rawCardId = localStorage.getItem('currentCardId') || loggedInCardId || '';
             const currentCardId = rawCardId.trim();
             const empName = (localStorage.getItem('currentEmpName') || currentCardId || '團長').trim();
@@ -2897,6 +2895,17 @@
                 if (!myGroups.includes(groupId)) {
                     myGroups.push(groupId);
                     localStorage.setItem(`initiated_groups_${currentCardId}`, JSON.stringify(myGroups));
+                }
+
+                // 【同步 Neon 資料庫】發送 POST 請求寫入後端 groups 資料表
+                try {
+                    await fetch('/api/groups', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ groupId: groupId, cardId: currentCardId })
+                    });
+                } catch (err) {
+                    console.warn('同步揪團資訊至 Neon 後端失敗:', err);
                 }
             }
 
@@ -2944,7 +2953,22 @@
                 isInitiator = true;
             }
 
-            // 2. 💡 雙向備援驗證：若 LocalStorage 查無紀錄，自動查詢今日訂單資料庫
+            // 2. 💡 向 Neon 後端查詢是否為 24 小時內之揪團發起人 (解決清除瀏覽紀錄後身份丟失問題)
+            if (!isInitiator) {
+                try {
+                    const res = await fetch(`/api/order-history?cardId=${encodeURIComponent(savedCardId)}&_=${new Date().getTime()}`, { cache: 'no-store' });
+                    if (res.ok) {
+                        const historyData = await res.json();
+                        if (historyData.isOrganizer) {
+                            isInitiator = true;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Neon 後端團長身分查詢失敗:', e);
+                }
+            }
+
+            // 3. 雙向備援驗證：若 LocalStorage 與團長表均查無，自動查詢今日訂單資料庫
             if (!isInitiator) {
                 try {
                     let orders = [];
@@ -2974,7 +2998,7 @@
                 }
             }
 
-            // 3. 依據判定結果顯示或隱藏按鈕
+            // 4. 依據判定結果顯示或隱藏按鈕
             if (isInitiator) {
                 excelBtn.classList.remove('hidden');
             } else {
@@ -3903,20 +3927,26 @@
             }
 
             try {
-                const response = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
-                if (!response.ok) throw new Error('無法讀取 orders.json');
-
-                const allOrders = await response.json();
-                const orderArray = Array.isArray(allOrders) ? allOrders : (allOrders.orders || []);
+                let orderArray = [];
+                let response = await fetch(`/api/orders?all=true&_=${new Date().getTime()}`, { cache: 'no-store' });
+                if (response.ok) {
+                    orderArray = await response.json();
+                } else {
+                    response = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
+                    if (response.ok) {
+                        const allOrders = await response.json();
+                        orderArray = Array.isArray(allOrders) ? allOrders : (allOrders.orders || []);
+                    }
+                }
 
                 const userOrders = orderArray.filter(order => {
-                    const orderCard = String(order.cardId || '').trim().toLowerCase();
+                    const orderCard = String(order.cardId || order.card_id || '').trim().toLowerCase();
                     const loginCard = String(targetCardId).trim().toLowerCase();
                     return orderCard === loginCard;
                 });
 
                 if (userOrders.length === 0) {
-                    globalHistoryList.innerHTML = `<tr><td colspan="7" class="no-record">💡 您在歷年全系統資料庫中尚無任何點餐軌跡。</td></tr>`;
+                    globalHistoryList.innerHTML = `<tr><td colspan="7" class="no-record">💡 您在全系統資料庫中尚無任何點餐軌跡。</td></tr>`;
                     return;
                 }
 
@@ -3930,7 +3960,7 @@
                     
                     const tdUser = document.createElement('td');
                     tdUser.setAttribute('data-label', '卡號/姓名');
-                    tdUser.textContent = `${order.cardId || ''} ${order.empName || order.name || ''}`;
+                    tdUser.textContent = `${order.cardId || order.card_id || ''} ${order.empName || order.name || ''}`;
 
                     const tdDept = document.createElement('td');
                     tdDept.setAttribute('data-label', '部門');
@@ -4014,7 +4044,7 @@
                 });
             } catch (error) {
                 console.error(error);
-                globalHistoryList.innerHTML = `<tr><td colspan="7" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡或 orders.json 檔案不存在。</td></tr>`;
+                globalHistoryList.innerHTML = `<tr><td colspan="7" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡。</td></tr>`;
             }
         }
     </script>
