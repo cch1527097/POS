@@ -1273,8 +1273,8 @@
 </head>
 <body class="login-mode">
 
-    <!-- 1. 登入畫面區塊 -->
-    <div id="login-section" class="login-card hidden">
+    <!-- 1. 登入畫面區塊 (修正：移除預設 hidden 類別，避免 JS 載入前畫面閃爍或空白) -->
+    <div id="login-section" class="login-card">
         <img src="logo.gif" alt="Logo" class="login-logo">
         <div class="title">美食訂餐系統</div>
         <div class="subtitle">ORDERING SYSTEM LOGIN</div>
@@ -1390,12 +1390,12 @@
             </nav>
         </header>
 
-        <!-- 第一區塊：美味餐點 -->
+        <!-- 第一區塊：美味餐點 (修正：移除多餘的 this 參數) -->
         <div class="category-header" id="food-section">
             🍱 美味餐點
         </div>
         <div class="grid-container" id="food-container">
-            <div class="shop-card" onclick="redirectToShop('小妞滷味', this)">
+            <div class="shop-card" onclick="redirectToShop('小妞滷味')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">小妞滷味</span>
                     <img src="https://images.unsplash.com/photo-1622643944007-450264a5f9a9?fm=jpg&q=70&w=800" alt="小妞滷味">
@@ -1407,7 +1407,7 @@
                 </div>
             </div>            
 
-            <div class="shop-card" onclick="redirectToShop('咕雞 鹽水雞', this)">
+            <div class="shop-card" onclick="redirectToShop('咕雞 鹽水雞')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">咕雞 鹽水雞</span>
                     <img src="https://images.unsplash.com/photo-1708782342351-74f02e9a16c4?fm=webp&q=60&w=800" alt="咕雞 鹽水雞">
@@ -1419,7 +1419,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('李王麻辣專賣', this)">
+            <div class="shop-card" onclick="redirectToShop('李王麻辣專賣')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">李王麻辣專賣</span>
                     <img src="https://images.unsplash.com/photo-1719787770653-a4fefd859db1?auto=format&fit=crop&w=1200&q=80" alt="李王麻辣專賣">
@@ -1431,7 +1431,7 @@
                 </div>
             </div>
             
-            <div class="shop-card" onclick="redirectToShop('阿香師油飯', this)">
+            <div class="shop-card" onclick="redirectToShop('阿香師油飯')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">阿香師油飯</span>
                     <img src="https://images.unsplash.com/photo-1768326119244-6b7055143e5f?fm=webp&q=60&w=800" alt="阿香師油飯">
@@ -1443,7 +1443,7 @@
                 </div>
             </div>
             
-            <div class="shop-card" onclick="redirectToShop('榮郁香廣式燒臘', this)">
+            <div class="shop-card" onclick="redirectToShop('榮郁香廣式燒臘')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">榮郁香廣式燒臘</span>
                     <img src="https://images.unsplash.com/photo-1750379936970-05f47ce6961c?fm=webp&q=60&w=800" alt="榮郁香廣式燒臘">
@@ -1455,7 +1455,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('四海遊龍', this)">
+            <div class="shop-card" onclick="redirectToShop('四海遊龍')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">四海遊龍</span>
                     <img src="https://images.unsplash.com/photo-1674994135649-c99e03def54d?fm=webp&q=60&w=800" alt="四海遊龍">
@@ -1467,7 +1467,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('八方雲集', this)">
+            <div class="shop-card" onclick="redirectToShop('八方雲集')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">八方雲集</span>
                     <img src="https://images.unsplash.com/photo-1656759637464-7957df13d1d8?fm=webp&q=60&w=800" alt="八方雲集">
@@ -1479,7 +1479,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('熱浪小島', this)">
+            <div class="shop-card" onclick="redirectToShop('熱浪小島')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">熱浪小島</span>
                     <img src="https://images.unsplash.com/photo-1679541946014-a47f1ec0dc1a?fm=webp&q=60&w=500" alt="熱浪小島">
@@ -1491,7 +1491,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('鼎森泰式料理', this)">
+            <div class="shop-card" onclick="redirectToShop('鼎森泰式料理')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">鼎森泰式料理</span>
                     <img src="https://images.unsplash.com/photo-1722995690313-9ef561d30143?fm=webp&q=60&w=800" alt="鼎森泰式料理">
@@ -1503,19 +1503,20 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('竑食 泰式拌飯', this)">
+            <!-- 修正：竑食 泰式拌飯 圖片與簡介重複問題 -->
+            <div class="shop-card" onclick="redirectToShop('竑食 泰式拌飯')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">竑食 泰式拌飯</span>
-                    <img src="https://images.unsplash.com/photo-1679541946014-a47f1ec0dc1a?fm=webp&q=60&w=800" alt="竑食 泰式拌飯">
+                    <img src="https://images.unsplash.com/photo-1559847844-5315695dadae?fm=webp&q=60&w=800" alt="竑食 泰式拌飯">
                     <button class="img-overlay-btn">進入點餐 ➔</button>
                 </div>
                 <div class="shop-info">
                     <h3 class="shop-name">竑食 泰式拌飯</h3>
-                    <p class="shop-desc">酸辣開胃的道地泰式風味，配飯的最佳選擇。</p>
+                    <p class="shop-desc">主打特調泰式醬汁與豐富配料，酸甜微辣、清爽開胃的泰式拌飯首選。</p>
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('徊香麵線糊', this)">
+            <div class="shop-card" onclick="redirectToShop('徊香麵線糊')">
                 <div class="shop-img-wrapper">
                     <span class="badge private">徊香麵線糊</span>
                     <img src="https://images.unsplash.com/photo-1631709497146-a239ef373cf1?fm=webp&w=800&q=80" alt="徊香麵線糊">
@@ -1527,7 +1528,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('北斗賓肉圓', this)">
+            <div class="shop-card" onclick="redirectToShop('北斗賓肉圓')">
                 <div class="shop-img-wrapper">
                     <span class="badge local">北斗賓肉圓</span>
                     <img src="https://images.unsplash.com/photo-1598511726623-d2e9996892f0?auto=format&fm=webp&q=80" alt="北斗賓肉圓">
@@ -1539,7 +1540,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('飯大廚', this)">
+            <div class="shop-card" onclick="redirectToShop('飯大廚')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">飯大廚</span>
                     <img src="https://images.unsplash.com/photo-1700879839900-11e2fba80be6?fm=webp&q=60&w=800" alt="飯大廚">
@@ -1551,7 +1552,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('志氣雞飯', this)">
+            <div class="shop-card" onclick="redirectToShop('志氣雞飯')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">志氣雞飯</span>
                     <img src="https://images.unsplash.com/photo-1666613710154-116ffc658585?fm=webp&q=60&w=800" alt="志氣雞飯">
@@ -1563,7 +1564,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('明美快餐', this)">
+            <div class="shop-card" onclick="redirectToShop('明美快餐')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">明美快餐</span>
                     <img src="https://images.unsplash.com/photo-1627226650564-7830a5538a05?fm=webp&q=60&w=800" alt="明美快餐">
@@ -1575,7 +1576,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('老聃飲食', this)">
+            <div class="shop-card" onclick="redirectToShop('老聃飲食')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">老聃飲食</span>
                     <img src="https://images.unsplash.com/photo-1666613710106-e2fa7a908c3c?fm=webp&q=60&w=800" alt="老聃飲食">
@@ -1587,7 +1588,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('八廚職人弁当', this)">
+            <div class="shop-card" onclick="redirectToShop('八廚職人弁当')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">八廚職人弁当</span>
                     <img src="https://images.unsplash.com/photo-1786201188628-db52cdadb037?fm=webp&q=60&w=800" alt="八廚職人弁当">
@@ -1599,7 +1600,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('嵐 爌肉・豬腳飯', this)">
+            <div class="shop-card" onclick="redirectToShop('嵐 爌肉・豬腳飯')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">嵐 爌肉・豬腳飯</span>
                     <img src="https://images.unsplash.com/photo-1792767643741-7a6749a97dbd?auto=format&fm=webp&q=80" alt="嵐 爌肉・豬腳飯">
@@ -1611,7 +1612,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('旺春豐傳統小吃', this)">
+            <div class="shop-card" onclick="redirectToShop('旺春豐傳統小吃')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">旺春豐傳統小吃</span>
                     <img src="https://images.unsplash.com/photo-1682566509547-5961bc5ea394?w=1170&h=780&fm=webp&q=60" alt="旺春豐傳統小吃">
@@ -1623,7 +1624,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('家灶 傳統爌肉 豬腳專賣', this)">
+            <div class="shop-card" onclick="redirectToShop('家灶 傳統爌肉 豬腳專賣')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">家灶 傳統爌肉 豬腳專賣</span>
                     <img src="https://images.unsplash.com/photo-1682496178083-74db4a32e473?fm=webp&q=60&w=800" alt="家灶 傳統爌肉 豬腳專賣">
@@ -1635,7 +1636,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('秈鋤料理廚房', this)">
+            <div class="shop-card" onclick="redirectToShop('秈鋤料理廚房')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">秈鋤料理廚房</span>
                     <img src="https://images.unsplash.com/photo-1713671975136-67bc17006974?auto=format&fit=crop&w=687&q=75" alt="秈鋤料理廚房">
@@ -1647,7 +1648,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('老蕭土魠魚羹麵館', this)">
+            <div class="shop-card" onclick="redirectToShop('老蕭土魠魚羹麵館')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">老蕭土魠魚羹麵館</span>
                     <img src="https://images.unsplash.com/photo-1675105005357-cf06dac0793c?fm=webp&q=60&w=800" alt="老蕭土魠魚羹麵館">
@@ -1659,7 +1660,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('羹香鴨肉羹', this)">
+            <div class="shop-card" onclick="redirectToShop('羹香鴨肉羹')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">羹香鴨肉羹</span>
                     <img src="https://images.unsplash.com/photo-1766375888707-7c918059f64b?fm=webp&q=60&w=800" alt="羹香鴨肉羹">
@@ -1671,7 +1672,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('顏舍關東煮', this)">
+            <div class="shop-card" onclick="redirectToShop('顏舍關東煮')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">顏舍關東煮</span>
                     <img src="https://images.unsplash.com/photo-1538128844159-f08f41bfb169?fm=webp&q=60&w=800" alt="顏舍關東煮">
@@ -1683,7 +1684,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('小松丼丼食事處', this)">
+            <div class="shop-card" onclick="redirectToShop('小松丼丼食事處')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">小松丼丼食事處</span>
                     <img src="https://images.unsplash.com/photo-1608060146923-7b8ab13e22bb?fm=webp&q=60&w=800" alt="小松丼丼食事處">
@@ -1695,7 +1696,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('滿座燒肉丼飯屋', this)">
+            <div class="shop-card" onclick="redirectToShop('滿座燒肉丼飯屋')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">滿座燒肉丼飯屋</span>
                     <img src="https://images.unsplash.com/photo-1614563637806-1d0e645e0940?fm=webp&q=60&w=800" alt="滿座燒肉丼飯屋">
@@ -1707,7 +1708,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('麵匡匡', this)">
+            <div class="shop-card" onclick="redirectToShop('麵匡匡拉麵食堂')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">麵匡匡拉麵食堂</span>
                     <img src="https://images.unsplash.com/photo-1591325418441-ff678baf78ef?w=300&auto=format&fit=crop&q=80" alt="麵匡匡">
@@ -1719,7 +1720,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('丼滋丼滋', this)">
+            <div class="shop-card" onclick="redirectToShop('丼滋丼滋')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">丼滋丼滋</span>
                     <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?fm=webp&q=60&w=800" alt="丼滋丼滋">
@@ -1731,7 +1732,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('食光飯糰', this)">
+            <div class="shop-card" onclick="redirectToShop('食光飯糰')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">食光飯糰</span>
                     <img src="https://images.unsplash.com/photo-1562158074-d16650a22f83?auto=format&fit=crop&w=1000&q=75" alt="食光飯糰">
@@ -1743,7 +1744,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('秋本家', this)">
+            <div class="shop-card" onclick="redirectToShop('秋本家')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">秋本家</span>
                     <img src="https://images.unsplash.com/photo-1676037150294-837ff0c29599?auto=format&fit=crop&w=800&q=75&fm=webp" alt="秋本家">
@@ -1755,7 +1756,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('廈門沙茶麵', this)">
+            <div class="shop-card" onclick="redirectToShop('廈門沙茶麵')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">廈門沙茶麵</span>
                     <img src="https://images.unsplash.com/photo-1470114755716-3e1124c6c3bd?fm=webp&q=60&w=800" alt="廈門沙茶麵">
@@ -1767,7 +1768,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('員湘園', this)">
+            <div class="shop-card" onclick="redirectToShop('員湘園')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">員湘園</span>
                     <img src="https://images.unsplash.com/photo-1594798609310-6bfec6d467ac?fm=webp&q=60&w=800" alt="員湘園">
@@ -1779,7 +1780,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('森晴餐盒製所', this)">
+            <div class="shop-card" onclick="redirectToShop('森晴餐盒製所')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">森晴餐盒製所</span>
                     <img src="https://images.unsplash.com/photo-1592999771970-8628e51433c4?fm=webp&q=60&w=800" alt="森晴餐盒製所">
@@ -1791,7 +1792,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('一鳴', this)">
+            <div class="shop-card" onclick="redirectToShop('一鳴 義式料理')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">一鳴</span>
                     <img src="https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=400&q=80" alt="一鳴 義式料理">
@@ -1803,7 +1804,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('小宸義大利麵', this)">
+            <div class="shop-card" onclick="redirectToShop('小宸義大利麵')">
                 <div class="shop-img-wrapper">
                     <span class="badge smart">小宸義大利麵</span>
                     <img src="https://images.unsplash.com/photo-1556761223-4c4282c73f77?fm=webp&q=60&w=800" alt="小宸義大利麵">
@@ -1815,7 +1816,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('地6攤排餐', this)">
+            <div class="shop-card" onclick="redirectToShop('地6攤排餐')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">地6攤排餐</span>
                     <img src="https://images.unsplash.com/photo-1690983330536-3b0089d07cf9?fm=webp&q=60&w=800" alt="地6攤排餐">
@@ -1827,7 +1828,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('得利牛排', this)">
+            <div class="shop-card" onclick="redirectToShop('得利牛排')">
                 <div class="shop-img-wrapper">
                     <span class="badge local">得利牛排</span>
                     <img src="https://images.unsplash.com/photo-1727056353497-a5ee553727fa?auto=format&fm=webp&q=80" alt="得利牛排">
@@ -1839,7 +1840,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('江滬上海小籠湯包', this)">
+            <div class="shop-card" onclick="redirectToShop('江滬上海小籠湯包')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">江滬上海小籠湯包</span>
                     <img src="https://images.unsplash.com/photo-1657939728877-df03de19f9fe?fm=webp&fit=crop&w=800&q=65" alt="江滬上海小籠湯包">
@@ -1851,7 +1852,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('名家大餛飩', this)">
+            <div class="shop-card" onclick="redirectToShop('名家大餛飩')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">名家大餛飩</span>
                     <img src="https://images.unsplash.com/photo-1747628857853-770ab2f13166?auto=format&fit=crop&w=1170&q=75&fm=webp" alt="名家大餛飩">
@@ -1863,7 +1864,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('八鮮雲吞', this)">
+            <div class="shop-card" onclick="redirectToShop('八鮮雲吞')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">八鮮雲吞</span>
                     <img src="https://images.unsplash.com/photo-1568096889942-6eedde686635?auto=format&fm=webp&q=80" alt="八鮮雲吞">
@@ -1875,7 +1876,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('五路鍋聖', this)">
+            <div class="shop-card" onclick="redirectToShop('五路鍋聖')">
                 <div class="shop-img-wrapper">
                     <span class="badge main">五路鍋聖</span>
                     <img src="https://images.unsplash.com/photo-1773969416268-aa4c032d8de2?auto=format&fit=crop&w=1170&q=80" alt="五路鍋聖">
@@ -1893,7 +1894,7 @@
             🥤 喝涼涼
         </div>
         <div class="grid-container hidden" id="drink-container">
-            <div class="shop-card" onclick="redirectToShop('50嵐', this)">
+            <div class="shop-card" onclick="redirectToShop('50嵐')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">50嵐</span>
                     <img src="https://images.unsplash.com/photo-1633933329823-0c2677e2d8c6?fm=webp&q=60&w=800" alt="50嵐">
@@ -1905,7 +1906,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('TEA TOP', this)">
+            <div class="shop-card" onclick="redirectToShop('TEA TOP')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">TEA TOP</span>
                     <img src="https://images.unsplash.com/photo-1532269748385-a458d8ee473e?fm=webp&q=60&w=800" alt="TEA TOP">
@@ -1917,7 +1918,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('得正', this)">
+            <div class="shop-card" onclick="redirectToShop('得正')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">得正</span>
                     <img src="https://images.unsplash.com/photo-1558160074-4d7d8bdf4256?fm=webp&q=60&w=800" alt="得正">
@@ -1929,7 +1930,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('尚淳草本茶', this)">
+            <div class="shop-card" onclick="redirectToShop('尚淳草本茶')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">尚淳草本茶</span>
                     <img src="https://images.unsplash.com/photo-1507281549113-040fcfef650e?fm=webp&q=60&w=800" alt="尚淳草本茶">
@@ -1941,7 +1942,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('烏弄', this)">
+            <div class="shop-card" onclick="redirectToShop('烏弄原茶')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">烏弄原茶</span>
                     <img src="https://images.unsplash.com/photo-1631308492942-3a713d7fd02e?fm=webp&q=60&w=800" alt="烏弄">
@@ -1953,7 +1954,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('可不可熟成紅茶', this)">
+            <div class="shop-card" onclick="redirectToShop('可不可熟成紅茶')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">可不可熟成紅茶</span>
                     <img src="https://images.unsplash.com/photo-1613018274498-7fbbaa26d5d2?fm=webp&q=60&w=800" alt="可不可熟成紅茶">
@@ -1965,7 +1966,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('鹿兒角', this)">
+            <div class="shop-card" onclick="redirectToShop('鹿兒角')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">鹿兒角</span>
                     <img src="https://images.unsplash.com/photo-1514361659284-59851c90d011?fm=webp&q=60&w=800" alt="鹿兒角">
@@ -1977,7 +1978,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('八曜和茶', this)">
+            <div class="shop-card" onclick="redirectToShop('八曜和茶')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">八曜和茶</span>
                     <img src="https://images.unsplash.com/photo-1629186732800-825d8346a912?fm=webp&q=60&w=800" alt="八曜和茶">
@@ -1989,7 +1990,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('一沐日', this)">
+            <div class="shop-card" onclick="redirectToShop('一沐日')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">一沐日</span>
                     <img src="https://images.unsplash.com/photo-1457518919282-b199744eefd6?fm=webp&q=60&w=800" alt="一沐日">
@@ -2001,7 +2002,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('粉圓伯', this)">
+            <div class="shop-card" onclick="redirectToShop('粉圓伯')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">粉圓伯</span>
                     <img src="https://images.unsplash.com/photo-1633932934464-5420d4bc89e6?fm=webp&q=60&w=800" alt="粉圓伯">
@@ -2013,7 +2014,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('先喝道', this)">
+            <div class="shop-card" onclick="redirectToShop('先喝道')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">先喝道</span>
                     <img src="https://images.unsplash.com/photo-1656936632096-59fcacae533f?fm=webp&q=60&w=800" alt="先喝道">
@@ -2025,7 +2026,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('李珍心綠豆沙專門店', this)">
+            <div class="shop-card" onclick="redirectToShop('李珍心綠豆沙專門店')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">李珍心綠豆沙專門店</span>
                     <img src="https://images.unsplash.com/photo-1618724980108-a4d3856fd8f5?fm=webp&q=60&w=800" alt="李珍心綠豆沙專門店">
@@ -2037,7 +2038,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('吳家紅茶冰', this)">
+            <div class="shop-card" onclick="redirectToShop('吳家紅茶冰')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">吳家紅茶冰</span>
                     <img src="https://images.unsplash.com/photo-1582106245687-cbb466a9f07f?fm=webp&q=60&w=800" alt="吳家紅茶冰">
@@ -2049,7 +2050,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('有茶', this)">
+            <div class="shop-card" onclick="redirectToShop('有茶')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">有茶</span>
                     <img src="https://images.unsplash.com/photo-1507120366498-4656eaece7fa?fm=webp&q=60&w=800" alt="有茶">
@@ -2061,7 +2062,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('青山', this)">
+            <div class="shop-card" onclick="redirectToShop('青山')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">青山</span>
                     <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?fm=webp&q=60&w=800" alt="青山">
@@ -2073,7 +2074,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('迷客夏', this)">
+            <div class="shop-card" onclick="redirectToShop('迷客夏')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">迷客夏</span>
                     <img src="https://images.unsplash.com/photo-1620434167801-cdc4bb9f5e76?fm=webp&q=60&w=800" alt="迷客夏">
@@ -2085,7 +2086,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('茗沏', this)">
+            <div class="shop-card" onclick="redirectToShop('茗沏')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">茗沏</span>
                     <img src="https://images.unsplash.com/photo-1615616932948-2fc57b342a23?fm=webp&q=60&w=800" alt="茗沏">
@@ -2097,7 +2098,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('李記紅茶冰', this)">
+            <div class="shop-card" onclick="redirectToShop('李記紅茶冰')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">李記紅茶冰</span>
                     <img src="https://images.unsplash.com/photo-1737629872662-213d79a0afa1?fm=webp&q=60&w=800" alt="李記紅茶冰">
@@ -2109,7 +2110,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('旅人阿宏', this)">
+            <div class="shop-card" onclick="redirectToShop('旅人阿宏')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">旅人阿宏</span>
                     <img src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?fm=webp&q=60&w=800" alt="旅人阿宏">
@@ -2121,7 +2122,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('麻古茶坊', this)">
+            <div class="shop-card" onclick="redirectToShop('麻古茶坊')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">麻古茶坊</span>
                     <img src="https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?w=1200&q=75&auto=format&fit=crop" alt="麻古茶坊">
@@ -2133,7 +2134,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('茶湯會', this)">
+            <div class="shop-card" onclick="redirectToShop('茶湯會')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">茶湯會</span>
                     <img src="https://images.unsplash.com/photo-1601489310882-d2fb4451dbcc?auto=format&fit=crop&w=1200&q=80" alt="茶湯會">
@@ -2145,7 +2146,7 @@
                 </div>
             </div>
 
-            <div class="shop-card" onclick="redirectToShop('樂法', this)">
+            <div class="shop-card" onclick="redirectToShop('樂法')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">樂法</span>
                     <img src="https://images.unsplash.com/photo-1575549592564-4d50aa43b3af?auto=format&fit=crop&w=1200&q=80" alt="樂法">
@@ -2157,7 +2158,7 @@
                 </div>
             </div>
 
-             <div class="shop-card" onclick="redirectToShop('春耕', this)">
+             <div class="shop-card" onclick="redirectToShop('春耕仙草茶')">
                 <div class="shop-img-wrapper">
                     <span class="badge drink">春耕仙草茶</span>
                     <img src="https://images.unsplash.com/photo-1730908793483-7105c04e0dde?auto=format&fit=crop&q=75&w=600" alt="春耕">
@@ -2273,7 +2274,7 @@
         </div>
     </div>
 
-    <!-- 付款介紹彈窗 (Modal) -->
+    <!-- 付款介紹彈窗 (Modal) (修正：調整重複的標題文字) -->
     <div id="paymentModal" class="branch-modal-overlay hidden" onclick="closePaymentModal(event)">
         <div class="branch-modal-content" onclick="event.stopPropagation()">
             <div class="branch-modal-header">
@@ -2286,12 +2287,12 @@
                     <span class="payment-detail">請至現場櫃檯支付現金</span>
                 </div>
                 <div class="payment-item">
-                    <span class="payment-title">2. 電子支付</span>
+                    <span class="payment-title">2. 電子支付 (iPASS MONEY)</span>
                     <span class="payment-detail">現場支援 iPass money 掃碼支付</span>
                 </div>
                 <div class="payment-item">
-                    <span class="payment-title">3. 電子支付</span>
-                    <span class="payment-detail">現場支援 LINE PAY money 掃碼支付</span>
+                    <span class="payment-title">3. 電子支付 (LINE Pay)</span>
+                    <span class="payment-detail">現場支援 LINE Pay 掃碼支付</span>
                 </div>
             </div>
         </div>
@@ -2512,6 +2513,7 @@
         // 揪團變數
         let currentGroupGeneratedUrl = '';
 
+        // 修正：補全與統一店家映射 Key，防止匹配失效
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
             '飯大廚': 'aafang.html',
@@ -2547,6 +2549,7 @@
             '得正': '得正.html',
             '尚淳草本茶': '尚淳草本茶.html',
             '烏弄': '烏弄.html',
+            '烏弄原茶': '烏弄.html',
             '可不可熟成紅茶': '可不可熟成紅茶.html',
             '鹿兒角': '鹿兒角.html',
             '八曜和茶': '八曜和茶.html',
@@ -2565,18 +2568,21 @@
             '茶湯會': '茶湯會.html',
             '樂法': '樂法.html',
             '一鳴': '一鳴.html',
+            '一鳴 義式料理': '一鳴.html',
             '五路鍋聖': '五路鍋聖.html',
             '秈鋤料理廚房': '秈鋤料理廚房.html',
             '江滬上海小籠湯包': '江滬上海小籠湯包.html',
             '食光飯糰': '食光飯糰.html',
             '春耕': '春耕.html',
+            '春耕仙草茶': '春耕.html',
             '秋本家': '秋本家.html',
             '名家大餛飩': '名家大餛飩.html',
             '小宸義大利麵': '小宸義大利麵.html',
             '阿香師油飯': '阿香師油飯.html',
             '熱浪小島': '熱浪小島.html',
             '小妞滷味': '小妞滷味.html',
-            '麵匡匡': '麵匡匡.html'
+            '麵匡匡': '麵匡匡.html',
+            '麵匡匡拉麵食堂': '麵匡匡.html'
         };
 
         const branchUrls = {
@@ -3339,6 +3345,7 @@
             }
         }
 
+        // 修正：統一 SVG 線條粗細，移除與 CSS 衝突的 stroke-width="2"
         function showDrinkOnly() {
             currentCategoryView = 'drink';
             localStorage.setItem('selectedCategory', 'drink');
@@ -3362,6 +3369,7 @@
             resetSearch();
         }
 
+        // 修正：統一 SVG 線條粗細，移除與 CSS 衝突的 stroke-width="2"
         function showFoodOnly() {
             currentCategoryView = 'food';
             localStorage.setItem('selectedCategory', 'food');
@@ -3373,7 +3381,7 @@
 
             document.getElementById('nav-toggle-text').textContent = '喝涼涼';
             document.getElementById('nav-toggle-icon').innerHTML = `
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg viewBox="0 0 24 24">
                     <path d="M17 8h1a4 4 0 0 1 0 8h-1"/>
                     <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
                     <line x1="6" y1="2" x2="6" y2="5"/>
@@ -3569,6 +3577,7 @@
             requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
         }
 
+        // 修正：相容 Safari / iOS 的跨瀏覽器日期解析
         function getMilliTimestamp(obj) {
             if (!obj) return 0;
             
@@ -3593,7 +3602,9 @@
                         if (isPM && hrs < 12) hrs += 12;
                         if (!isPM && hrs === 12) hrs = 0;
                         
-                        const standardStr = `${datePart.replace(/\//g, '-')} ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
+                        // 修正：使用斜線 '/' 取代連字號 '-'，可確保跨瀏覽器與 Safari 正常解析
+                        const standardStr = `${datePart.replace(/-/g, '/')}` + 
+                            ` ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs || 0).padStart(2, '0')}`;
                         const parsed = Date.parse(standardStr);
                         if (!isNaN(parsed)) return parsed;
                     }
@@ -3602,7 +3613,8 @@
                 }
             }
 
-            const parsedStr = Date.parse(rawTime.replace(/ /g, 'T').replace(/\//g, '-'));
+            const cleanRaw = rawTime.replace(/-/g, '/');
+            const parsedStr = Date.parse(cleanRaw);
             return !isNaN(parsedStr) ? parsedStr : 0;
         }
 
@@ -3746,11 +3758,15 @@
 
                 const timeKey = order.timestamp || order.time || order.Time || '';
                 const orderId = order.orderId || order.order_id || order.id || '';
-                const safeShopName = shopName.replace(/'/g, "\\'");
+                
+                // 修正：轉義單引號與字串安全處理，避免 HTML onclick 語法中斷
+                const safeOrderId = String(orderId).replace(/'/g, "\\'");
+                const safeTimeKey = String(timeKey).replace(/'/g, "\\'");
+                const safeShopName = String(shopName).replace(/'/g, "\\'");
 
                 const actionHtml = isAllowCancel ? `
-                    <button class="order-action-btn btn-edit-order" onclick="editOrder('${orderId}', '${timeKey}', '${safeShopName}')">修改</button>
-                    <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${orderId}', '${timeKey}')">取消</button>
+                    <button class="order-action-btn btn-edit-order" onclick="editOrder('${safeOrderId}', '${safeTimeKey}', '${safeShopName}')">修改</button>
+                    <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${safeOrderId}', '${safeTimeKey}')">取消</button>
                 ` : `<span class="cart-cancel-disabled">🚫 關閉取消</span>`;
 
                 return `
@@ -3955,7 +3971,11 @@
 
                     const timeKey = order.timestamp || order.time || order.Time || '';
                     const orderId = order.orderId || order.order_id || order.id || '';
-                    const safeShopName = shopName.replace(/'/g, "\\'");
+
+                    // 修正：轉義單引號與字串安全處理，避免 HTML onclick 語法中斷
+                    const safeOrderId = String(orderId).replace(/'/g, "\\'");
+                    const safeTimeKey = String(timeKey).replace(/'/g, "\\'");
+                    const safeShopName = String(shopName).replace(/'/g, "\\'");
 
                     const tdAction = document.createElement('td');
                     tdAction.setAttribute('data-label', '控制操作');
@@ -3965,8 +3985,8 @@
                     const canModify = isTodayOrYesterdayOrder(order);
                     if (isAllowCancel && canModify) {
                         tdAction.innerHTML = `
-                            <button class="order-action-btn btn-edit-order" onclick="editOrder('${orderId}', '${timeKey}', '${safeShopName}')">修改</button>
-                            <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${orderId}', '${timeKey}')">取消</button>
+                            <button class="order-action-btn btn-edit-order" onclick="editOrder('${safeOrderId}', '${safeTimeKey}', '${safeShopName}')">修改</button>
+                            <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${safeOrderId}', '${safeTimeKey}')">取消</button>
                         `;
                     } else if (!isAllowCancel && canModify) {
                         tdAction.innerHTML = `<span class="cart-cancel-disabled">🚫 關閉取消</span>`;
