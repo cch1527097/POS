@@ -664,6 +664,7 @@
             }
         }
     </style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -885,10 +886,23 @@
 
         <!-- 分頁二：店家管理 -->
         <div id="store-mgr" class="tab-content">
-            <div class="mb-5">
-                <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🏪 店家開放與品項金額管理</h1>
-                <p class="text-xs text-slate-500 mt-1">即時開啟、關閉前台點餐店家，並可編輯各家菜單品項名稱與金額</p>
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🏪 店家開放與品項金額管理</h1>
+                    <p class="text-xs text-slate-500 mt-1">即時開啟、關閉前台點餐店家，並支援 Excel 批次匯入/匯出數百家門市菜單與金額</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <input type="file" id="excelFileInput" accept=".xlsx, .csv" style="display:none;" onchange="handleMenuExcelImport(event)">
+                    <button class="btn btn-secondary text-xs py-2 px-3 min-h-[38px]" onclick="document.getElementById('excelFileInput').click()">
+                        <i class="fa-solid fa-file-import text-emerald-600"></i> 批次匯入 Excel 菜單
+                    </button>
+                    <button class="btn btn-secondary text-xs py-2 px-3 min-h-[38px]" onclick="exportStoresToExcel()">
+                        <i class="fa-solid fa-file-excel text-emerald-600"></i> 匯出全門市菜單 Excel
+                    </button>
+                </div>
             </div>
+
 
             <div class="store-tab-bar">
                 <button type="button" class="store-subtab-btn active" onclick="switchStoreTab('food', this)">
@@ -1226,7 +1240,7 @@
             { id: 'store_25', name: '員湘園', category: '美味餐點', isOpen: false, items: [] },
             { id: 'store_26', name: '志氣雞飯', category: '美味餐點', isOpen: false, items: [] },
             { id: 'store_27', name: '竑食泰式拌飯', category: '美味餐點', isOpen: true, items: [] },
-            { id: 'store_28', name: '50嵐', category: '喝涼涼', isOpen: false, items: [{ name: '四季春青茶', price: 35 }, { name: '珍珠奶茶', price: 50 }] },
+            { id: 'store_28', name: '50嵐', category: '喝涼涼', isOpen: false, items: [{"name": "茉莉綠茶 (M)", "price": 30}, {"name": "茉莉綠茶 (L)", "price": 35}, {"name": "阿薩姆紅茶 (M)", "price": 30}, {"name": "阿薩姆紅茶 (L)", "price": 35}, {"name": "四季春青茶 (M)", "price": 30}, {"name": "四季春青茶 (L)", "price": 35}, {"name": "黃金烏龍 (M)", "price": 30}, {"name": "黃金烏龍 (L)", "price": 35}, {"name": "椰果紅茶 (M)", "price": 35}, {"name": "椰果紅茶 (L)", "price": 45}, {"name": "椰果綠茶 (M)", "price": 35}, {"name": "椰果綠茶 (L)", "price": 45}, {"name": "波霸紅茶 (M)", "price": 35}, {"name": "波霸紅茶 (L)", "price": 45}, {"name": "波霸綠茶 (M)", "price": 35}, {"name": "波霸綠茶 (L)", "price": 45}, {"name": "燕麥紅茶 (M)", "price": 35}, {"name": "燕麥紅茶 (L)", "price": 45}, {"name": "燕麥綠茶 (M)", "price": 35}, {"name": "燕麥綠茶 (L)", "price": 45}, {"name": "燕麥青茶 (M)", "price": 35}, {"name": "燕麥青茶 (L)", "price": 45}, {"name": "微檸檬紅茶 (M)", "price": 35}, {"name": "微檸檬紅茶 (L)", "price": 45}, {"name": "微檸檬青茶 (M)", "price": 35}, {"name": "微檸檬青茶 (L)", "price": 45}, {"name": "檸檬綠茶 (M)", "price": 40}, {"name": "檸檬綠茶 (L)", "price": 55}, {"name": "檸檬青茶 (M)", "price": 40}, {"name": "檸檬青茶 (L)", "price": 55}, {"name": "梅の綠 (M)", "price": 40}, {"name": "梅の綠 (L)", "price": 55}, {"name": "8冰綠茶 (M)", "price": 40}, {"name": "8冰綠茶 (L)", "price": 55}, {"name": "8冰情人茶 (M)", "price": 40}, {"name": "8冰情人茶 (L)", "price": 55}, {"name": "柚子紅茶 (M)", "price": 40}, {"name": "柚子紅茶 (L)", "price": 55}, {"name": "柚子綠茶 (M)", "price": 40}, {"name": "柚子綠茶 (L)", "price": 55}, {"name": "柚子青茶 (M)", "price": 40}, {"name": "柚子青茶 (L)", "price": 55}, {"name": "柚子烏龍茶 (M)", "price": 40}, {"name": "柚子烏龍茶 (L)", "price": 55}, {"name": "冰淇淋紅茶 (M)", "price": 40}, {"name": "冰淇淋紅茶 (L)", "price": 55}, {"name": "多多綠茶 (M)", "price": 40}, {"name": "多多綠茶 (L)", "price": 55}, {"name": "多多紅茶 (M)", "price": 40}, {"name": "多多紅茶 (L)", "price": 55}, {"name": "多多檸檬綠 (M)", "price": 50}, {"name": "多多檸檬綠 (L)", "price": 65}, {"name": "奶茶 (M)", "price": 40}, {"name": "奶茶 (L)", "price": 55}, {"name": "奶綠 (M)", "price": 40}, {"name": "奶綠 (L)", "price": 55}, {"name": "烏龍奶 (M)", "price": 40}, {"name": "烏龍奶 (L)", "price": 55}, {"name": "椰果奶茶 (M)", "price": 40}, {"name": "椰果奶茶 (L)", "price": 55}, {"name": "珍珠奶茶 (M)", "price": 40}, {"name": "珍珠奶茶 (L)", "price": 55}, {"name": "波霸奶茶 (M)", "price": 40}, {"name": "波霸奶茶 (L)", "price": 55}, {"name": "燕麥奶茶 (M)", "price": 40}, {"name": "燕麥奶茶 (L)", "price": 55}, {"name": "燕麥奶青 (M)", "price": 40}, {"name": "燕麥奶青 (L)", "price": 55}, {"name": "燕麥烏龍奶 (M)", "price": 40}, {"name": "燕麥烏龍奶 (L)", "price": 55}, {"name": "布丁奶茶 (M)", "price": 50}, {"name": "布丁奶茶 (L)", "price": 65}, {"name": "冰淇淋奶茶 (M)", "price": 50}, {"name": "冰淇淋奶茶 (L)", "price": 65}, {"name": "紅茶瑪奇朵 (M)", "price": 40}, {"name": "紅茶瑪奇朵 (L)", "price": 55}, {"name": "青茶瑪奇朵 (M)", "price": 40}, {"name": "青茶瑪奇朵 (L)", "price": 55}, {"name": "阿華田 (M)", "price": 45}, {"name": "阿華田 (L)", "price": 60}, {"name": "燕麥阿華田 (M)", "price": 45}, {"name": "燕麥阿華田 (L)", "price": 60}, {"name": "可可芭蕾 (M)", "price": 50}, {"name": "可可芭蕾 (L)", "price": 65}, {"name": "紅茶拿鐵 (M)", "price": 50}, {"name": "紅茶拿鐵 (L)", "price": 65}, {"name": "綠茶拿鐵 (M)", "price": 50}, {"name": "綠茶拿鐵 (L)", "price": 65}, {"name": "烏龍拿鐵 (M)", "price": 50}, {"name": "烏龍拿鐵 (L)", "price": 65}, {"name": "珍珠紅茶拿鐵 (M)", "price": 50}, {"name": "珍珠紅茶拿鐵 (L)", "price": 65}, {"name": "波霸紅茶拿鐵 (M)", "price": 50}, {"name": "波霸紅茶拿鐵 (L)", "price": 65}, {"name": "燕麥紅茶拿鐵 (M)", "price": 50}, {"name": "燕麥紅茶拿鐵 (L)", "price": 65}, {"name": "布丁紅茶拿鐵 (M)", "price": 55}, {"name": "布丁紅茶拿鐵 (L)", "price": 75}, {"name": "冰淇淋紅茶拿鐵 (M)", "price": 55}, {"name": "冰淇淋紅茶拿鐵 (L)", "price": 75}, {"name": "阿華田拿鐵 (M)", "price": 55}, {"name": "阿華田拿鐵 (L)", "price": 75}, {"name": "燕麥阿華田拿鐵 (M)", "price": 55}, {"name": "燕麥阿華田拿鐵 (L)", "price": 75}, {"name": "可可芭蕾拿鐵 (M)", "price": 55}, {"name": "可可芭蕾拿鐵 (L)", "price": 75}, {"name": "柚子茶 (M)", "price": 40}, {"name": "柚子茶 (L)", "price": 55}, {"name": "8冰茶 (M)", "price": 40}, {"name": "8冰茶 (L)", "price": 55}, {"name": "檸檬汁 (M)", "price": 50}, {"name": "檸檬汁 (L)", "price": 65}, {"name": "金桔檸檬 (M)", "price": 50}, {"name": "金桔檸檬 (L)", "price": 65}, {"name": "檸檬梅汁 (M)", "price": 50}, {"name": "檸檬梅汁 (L)", "price": 65}, {"name": "檸檬多多 (M)", "price": 55}, {"name": "檸檬多多 (L)", "price": 75}, {"name": "蜂蜜紅茶 (M)", "price": 40}, {"name": "蜂蜜紅茶 (L)", "price": 55}, {"name": "蜂蜜綠茶 (M)", "price": 40}, {"name": "蜂蜜綠茶 (L)", "price": 55}, {"name": "蜂蜜奶茶 (M)", "price": 50}, {"name": "蜂蜜奶茶 (L)", "price": 65}, {"name": "鮮柚綠茶 (M)", "price": 50}, {"name": "鮮柚綠茶 (L)", "price": 65}, {"name": "鮮柚葡萄柚茶 (M)", "price": 50}, {"name": "鮮柚葡萄柚茶 (L)", "price": 65}, {"name": "葡萄柚蜜 (M)", "price": 55}, {"name": "葡萄柚蜜 (L)", "price": 75}, {"name": "葡萄柚多多 (M)", "price": 55}, {"name": "葡萄柚多多 (L)", "price": 75}, {"name": "檸檬蜜 (M)", "price": 55}, {"name": "檸檬蜜 (L)", "price": 75}, {"name": "金桔檸檬蜜 (M)", "price": 55}, {"name": "金桔檸檬蜜 (L)", "price": 75}] },
             { id: 'store_29', name: 'TEA TOP', category: '喝涼涼', isOpen: false, items: [] },
             { id: 'store_30', name: '得正', category: '喝涼涼', isOpen: false, items: [] },
             { id: 'store_31', name: '尚淳草本茶', category: '喝涼涼', isOpen: false, items: [] },
@@ -1264,6 +1278,131 @@
             { id: 'store_63', name: '李王麻辣專賣', category: '美味餐點', isOpen: false, items: [] },
             { id: 'store_64', name: '麵匡匡', category: '美味餐點', isOpen: false, items: [] }
         ];
+
+        
+        // ------------------ Excel 批次匯入與匯出全門市菜單 ------------------
+        function handleMenuExcelImport(event) {
+            if (!checkPermission('manage_store')) return;
+
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonRows = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (!jsonRows || jsonRows.length === 0) {
+                        showCustomModal({ message: '⚠️ Excel 檔案內容為空，請確認檔案內容！' });
+                        return;
+                    }
+
+                    const storeMap = {};
+                    jsonRows.forEach(row => {
+                        const storeId = String(row['店家ID'] || row['store_id'] || '').trim();
+                        const storeName = String(row['店家名稱'] || row['store_name'] || '').trim();
+                        const category = String(row['分類'] || row['category'] || '美味餐點').trim();
+                        const itemName = String(row['品項名稱'] || row['item_name'] || '').trim();
+                        const price = Math.max(0, parseInt(row['金額'] || row['price'] || 0, 10));
+
+                        if (!storeId || !storeName || !itemName) return;
+
+                        if (!storeMap[storeId]) {
+                            storeMap[storeId] = {
+                                id: storeId,
+                                name: storeName,
+                                category: category,
+                                isOpen: false,
+                                items: []
+                            };
+                        }
+                        storeMap[storeId].items.push({ name: itemName, price: price });
+                    });
+
+                    const importedStoreList = Object.values(storeMap);
+                    if (importedStoreList.length === 0) {
+                        showCustomModal({ message: '⚠️ 未讀取到有效的店家與菜單格式，請確保欄位名稱包含：店家ID、店家名稱、分類、品項名稱、金額。' });
+                        return;
+                    }
+
+                    // 覆蓋或併入 storeList
+                    importedStoreList.forEach(impStore => {
+                        const existing = storeList.find(s => s.id === impStore.id);
+                        if (existing) {
+                            existing.name = impStore.name;
+                            existing.category = impStore.category;
+                            existing.items = impStore.items;
+                        } else {
+                            storeList.push(impStore);
+                        }
+                    });
+
+                    renderStoreTable();
+                    localStorage.setItem('active_store_config', JSON.stringify(storeList));
+
+                    // 發送至後端同步
+                    fetch('/api/stores', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ stores: storeList })
+                    }).catch(err => console.warn('後端連線儲存失敗，已暫存至本地', err));
+
+                    showCustomModal({
+                        title: '🎉 Excel 匯入成功',
+                        message: `成功匯入 / 同步了 <b>${importedStoreList.length}</b> 家門市的菜單與金額品項！`
+                    });
+                } catch (err) {
+                    console.error('Excel 解析失敗:', err);
+                    showCustomModal({ message: '❌ Excel 檔案解析失敗，請確保為標準 .xlsx 或 .csv 格式！' });
+                } finally {
+                    event.target.value = ''; // 清空 input 允許重複上傳
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function exportStoresToExcel() {
+            if (!storeList || storeList.length === 0) {
+                showCustomModal({ message: '目前尚無店家資料可匯出！' });
+                return;
+            }
+
+            const exportData = [];
+            storeList.forEach(store => {
+                if (store.items && store.items.length > 0) {
+                    store.items.forEach(item => {
+                        exportData.push({
+                            '店家ID': store.id,
+                            '店家名稱': store.name,
+                            '分類': store.category,
+                            '品項名稱': item.name,
+                            '金額': item.price,
+                            '開放狀態': store.isOpen ? '開放中' : '未開放'
+                        });
+                    });
+                } else {
+                    exportData.push({
+                        '店家ID': store.id,
+                        '店家名稱': store.name,
+                        '分類': store.category,
+                        '品項名稱': '無品項',
+                        '金額': 0,
+                        '開放狀態': store.isOpen ? '開放中' : '未開放'
+                    });
+                }
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "門市菜單總表");
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(workbook, `全門市菜單與金額清單_${dateStr}.xlsx`);
+        }
 
         function mergeStoreStates(savedStores) {
             if (!Array.isArray(savedStores)) return;
