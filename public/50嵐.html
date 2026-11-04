@@ -289,6 +289,7 @@
         .fab-exit { background-color: #a40e11; }
         .fab-btn svg { width: 26px; height: 26px; fill: #ffffff; }
 
+        /* 👥 新增：其他人點了什麼 懸浮按鈕樣式 */
         .others-float-btn {
             background-color: #0091ff;
             color: white;
@@ -297,6 +298,7 @@
             background-color: #0073e6;
         }
 
+        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
         .cutoff-float-badge {
             position: fixed;
             bottom: 220px;
@@ -381,6 +383,7 @@
             100% { transform: scale(1); }
         }
 
+        /* ==================== Modal 彈窗樣式 ==================== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -486,6 +489,7 @@
             margin-top: 2px;
         }
 
+        /* 👥 「其他人點了什麼」表格專用樣式 */
         .history-modal-content {
             width: 92vw !important;
             max-width: 1000px !important;
@@ -536,6 +540,7 @@
             font-style: italic;
         }
 
+        /* RWD 調整 */
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
@@ -582,6 +587,7 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
             .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
+        /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
             .history-modal-content {
                 width: 95vw !important;
                 max-height: 88vh !important;
@@ -634,6 +640,7 @@
                 border-bottom: none !important;
             }
 
+            /* 1. 卡號/姓名 (左上) */
             .history-table td:nth-child(1) {
                 font-size: 15px;
                 font-weight: 700;
@@ -641,11 +648,13 @@
                 order: 1;
             }
 
+            /* 2. 部門標籤 (右上) */
             .history-table td:nth-child(2) {
                 order: 2;
                 text-align: right;
             }
 
+            /* 3. 時間 (第二列) */
             .history-table td:nth-child(3) {
                 width: 100%;
                 order: 3;
@@ -655,6 +664,7 @@
                 margin-bottom: 6px;
             }
 
+            /* 4. 點餐內容 (第三列，突出框顯示) */
             .history-table td:nth-child(4) {
                 width: 100%;
                 order: 4;
@@ -667,6 +677,7 @@
                 line-height: 1.4;
             }
 
+            /* 5. 金額 (第四列，靠右紅字顯示) */
             .history-table td:nth-child(5) {
                 width: 100%;
                 order: 5;
@@ -677,6 +688,7 @@
                 margin-top: 4px;
             }
 
+            /* 無紀錄時的呈現 */
             .history-table td.no-record {
                 text-align: center !important;
                 background: transparent !important;
@@ -707,6 +719,7 @@
 
 <!-- 懸浮按鈕群 -->
 <div class="fab-container">
+    <!-- 👥 新增：其他人點了什麼懸浮按鈕 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -735,7 +748,7 @@
         <div class="store-info-left">
             <div class="store-logo">50嵐</div>
             <div class="store-details">
-                <h1 id="storeNameHeader">50嵐 鹿港店</h1>
+                <h1>50嵐 鹿港店</h1>
                 <div class="store-meta">
                     <span class="rating">⭐ 2.9 (177)</span>
                     <span>🕒 09:00 ~ 22:00</span>
@@ -775,7 +788,7 @@
     </div>
 </div>
 
-<!-- 👥 今日其他人點了什麼彈窗 (Modal) -->
+<!-- 👥 新增：今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -812,8 +825,7 @@ function goBack() {
     window.location.href = 'index.html'; 
 }
 
-// 預設預載菜單
-const defaultMenuItems = [
+const menuItems = [
     // === 找好茶 ===
     {name: "茉莉綠茶", priceM: 30, priceL: 35, category: "找好茶", icon:"🍵"},
     {name: "阿薩姆紅茶", priceM: 30, priceL: 35, category: "找好茶", icon:"🍂"},
@@ -893,7 +905,6 @@ const defaultMenuItems = [
     {name: "金桔檸檬蜜", priceM: 55, priceL: 75, category: "季節限定", icon:"🍯"}
 ];
 
-let menuItems = [...defaultMenuItems];
 let cart = {};
 let currentCardId = null;
 let currentFilteredItems = [...menuItems];
@@ -905,6 +916,7 @@ let finalTotal = 0;
 let finalSummary = "";
 let globalEmployeesMap = {};
 
+// ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
@@ -924,61 +936,15 @@ window.onload = async function() {
         statusDiv.style.color = "#991b1b";
     }
 
-    // 優先動態讀取後台維護的 50嵐 菜單品項與金額
-    await loadDynamicStoreMenu();
-
     renderMenu(menuItems);
     renderCart();
 
+    // 啟動倒數計時與全院員工清單載入
     fetchEmployeeList();
     startCutoffCountdown();
 };
 
-/* ------------------ 動態讀取後台設定之菜單品項與單價 ------------------ */
-async function loadDynamicStoreMenu() {
-    try {
-        let stores = [];
-        const response = await fetch(`/api/stores?_=${new Date().getTime()}`, { cache: 'no-store' });
-        if (response.ok) {
-            const data = await response.json();
-            stores = data.stores || (Array.isArray(data) ? data : []);
-        } else {
-            const localStores = localStorage.getItem('active_store_config');
-            if (localStores) stores = JSON.parse(localStores);
-        }
-
-        const store50 = stores.find(s => s && (s.id === 'store_28' || (s.name && s.name.includes('50嵐'))));
-        if (store50) {
-            if (store50.isOpen === false) {
-                const statusDiv = document.getElementById("card-status");
-                if (statusDiv) {
-                    statusDiv.innerHTML = `🔒 50嵐 目前未開放點餐，請至點餐首頁選擇其他開放店家！`;
-                    statusDiv.style.background = "#fef2f2";
-                    statusDiv.style.color = "#dc2626";
-                }
-            }
-
-            if (store50.items && Array.isArray(store50.items) && store50.items.length > 0) {
-                const customItems = store50.items.map(i => {
-                    const matchedDefault = defaultMenuItems.find(d => d.name === i.name);
-                    const basePrice = Math.max(0, parseInt(i.price, 10) || 0);
-                    return {
-                        name: i.name,
-                        priceM: matchedDefault ? matchedDefault.priceM : (basePrice || 35),
-                        priceL: basePrice || (matchedDefault ? matchedDefault.priceL : 50),
-                        category: matchedDefault ? matchedDefault.category : "熱門精選",
-                        icon: matchedDefault ? matchedDefault.icon : "🥤"
-                    };
-                });
-                menuItems = customItems;
-                currentFilteredItems = [...menuItems];
-            }
-        }
-    } catch (e) {
-        console.warn('動態讀取 50嵐 菜單失敗，使用內建預設品項', e);
-    }
-}
-
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -1139,6 +1105,7 @@ function updateCountdownUI() {
     }
 }
 
+/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1283,6 +1250,7 @@ function formatDisplayTime(obj) {
     return '-';
 }
 
+/* ==================== 菜單與點餐邏輯 ==================== */
 function renderMenu(items) {
     const categories = [...new Set(items.map(i => i.category))];
     
@@ -1376,6 +1344,7 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+// 點擊新增：跳出規格按鈕選單
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
@@ -1441,11 +1410,12 @@ function clickAddItem(name) {
             const sizeLabel = selectedSpecs.size === 'L' ? '大杯' : '中杯';
             let unitPrice = selectedSpecs.size === 'L' ? item.priceL : item.priceM;
             
+            // 加料金額計算邏輯
             const add15Toppings = ['布丁', '麵茶', '奶霜'];
             if (add15Toppings.includes(selectedSpecs.topping)) {
-                unitPrice += 15;
+                unitPrice += 15; // 所有品項加布丁/麵茶/奶霜加價 15 元
             } else if (item.category === '找好茶' && selectedSpecs.topping !== '不加料') {
-                unitPrice += 10;
+                unitPrice += 10; // 找好茶加其餘配料加價 10 元
             }
 
             const toppingText = selectedSpecs.topping === '不加料' ? '不加料' : `加${selectedSpecs.topping}`;
