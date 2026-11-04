@@ -936,7 +936,7 @@ window.onload = async function() {
 
     renderMenu(menuItems);
     
-    // 👇 新增後台同步機制
+    // 👇 全功能後台動態菜單與價格同步機制
     await syncPricesFromBackend();
     setInterval(syncPricesFromBackend, 10000);
 
@@ -969,7 +969,7 @@ async function startCutoffCountdown() {
     }, 1000);
 }
 
-// 全功能後台菜單與價格同步邏輯
+// 全功能後台菜單、價格與品項完整動態同步邏輯
 async function syncPricesFromBackend() {
     let stores = null;
     try {
@@ -991,31 +991,34 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「顏舍」或「關東煮」的目標門市
+    // 搜尋名稱包含「顏舍」或「關東煮」的門市
     const storeTarget = stores.find(s => s.name && (s.name.includes('顏舍') || s.name.includes('關東煮')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    // 將後台傳回的品項格式化並同步至前端菜單陣列
-    const backendItems = storeTarget.items.map((item, idx) => ({
-        id: item.id || (idx + 1),
-        name: item.name.trim(),
-        price: Number(item.price),
-        category: item.category || "暖心關東煮",
-        icon: item.icon || "🍢",
-        hasSoupOption: item.hasSoupOption ?? (item.category === "暖心關東煮" || item.name.includes("烏龍"))
-    }));
+    // 將後台傳回的品項即時格式化，同步至前端菜單陣列
+    const backendItems = storeTarget.items.map((item, idx) => {
+        const cleanName = item.name ? item.name.trim() : '';
+        const defaultCat = cleanName.includes("麵") || cleanName.includes("飯") || cleanName.includes("粥") || cleanName.includes("丼") ? "飽胃主食類" : 
+                          (cleanName.includes("茶") || cleanName.includes("湯") || cleanName.includes("肉片") || cleanName.includes("燒肉") ? "精選小菜與飲品" : "暖心關東煮");
+        const category = item.category || defaultCat;
+        
+        return {
+            id: item.id || (idx + 1),
+            name: cleanName,
+            subName: item.subName || item.description || '',
+            price: Number(item.price),
+            category: category,
+            icon: item.icon || (category === "飽胃主食類" ? "🍜" : (category === "精選小菜與飲品" ? "🍵" : "🍢")),
+            hasSoupOption: item.hasSoupOption ?? (category === "暖心關東煮" || cleanName.includes("烏龍") || cleanName.includes("豬舌") || cleanName.includes("粉腸") || cleanName.includes("骨仔肉"))
+        };
+    });
 
     if (backendItems.length > 0) {
-        // 清空並覆寫，實現與後台完全同步（包含新增、修改與刪除）
+        // 覆寫菜單陣列，達成新增、修改與下架之完整同步
         menuItems.length = 0;
         menuItems.push(...backendItems);
         
-        // 重新執行過濾與渲染
-        if (typeof filterMenu === 'function') {
-            filterMenu();
-        } else if (typeof renderMenu === 'function') {
-            renderMenu(menuItems);
-        }
+        filterMenu();
     }
 }
 
@@ -1061,7 +1064,7 @@ async function fetchCutoffSetting() {
             }
 
             if (rawVal.includes(':')) {
-                const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
+                const match = rawVal.match(/([01]?\d|2[0-3]):[0-5]\d/);
                 if (match) {
                     latestTime = match[0];
                     break;
