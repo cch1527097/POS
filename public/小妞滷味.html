@@ -1019,14 +1019,14 @@ async function startCutoffCountdown() {
     }, 1000);
 }
 
-// ------------------ 後台價格即時同步邏輯 ------------------
+// ------------------ 後台價格即時同步邏輯 (強化版) ------------------
 async function syncPricesFromBackend() {
     let stores = null;
     try {
         const res = await fetch(`/api/stores?_=${new Date().getTime()}`, { cache: 'no-store' });
         if (res.ok) {
             const data = await res.json();
-            stores = data.stores || data;
+            stores = data.stores || data.data || data;
         }
     } catch (e) {
         console.warn('無法連結 API 讀取門市菜單，嘗試讀取本地暫存...', e);
@@ -1039,30 +1039,52 @@ async function syncPricesFromBackend() {
         }
     }
 
-    if (!stores || !Array.isArray(stores)) return;
+    if (!stores || !Array.isArray(stores)) {
+        console.warn('[價格同步失敗] 無法取得門市陣列資料', stores);
+        return;
+    }
 
-    // 尋找 小妞滷味 門市 (支援 ID 或名稱對照)
-    const store = stores.find(s => s.id === 'store_xiaoniu' || (s.name && s.name.includes('小妞滷味')));
-    if (!store || !store.items || store.items.length === 0) return;
+    // 尋找 小妞滷味 門市 (放寬搜尋條件)
+    const store = stores.find(s => 
+        s.id === 'store_xiaoniu' || 
+        s.id === 'xiaoniu' || 
+        (s.name && (s.name.includes('小妞') || s.name.includes('滷味')))
+    );
 
-    // 建立後台品項對照表
+    if (!store || !store.items || !Array.isArray(store.items)) {
+        console.warn('[價格同步失敗] 找不到指定門市或門市內無品項資料', store);
+        return;
+    }
+
+    // 建立後台品項對照表（同時保留原始名稱與去括號名稱）
     const itemPriceMap = {};
     store.items.forEach(item => {
-        if (item.name && item.price !== undefined) {
-            itemPriceMap[item.name.trim()] = Number(item.price);
+        const name = item.name || item.item_name;
+        const price = item.price ?? item.unit_price;
+        if (name && price !== undefined) {
+            const cleanBackendName = String(name).replace(/\s*[\(\（].*?[\)\）]\s*/g, '').trim();
+            itemPriceMap[cleanBackendName] = Number(price);
+            itemPriceMap[String(name).trim()] = Number(price); // 原始名稱對照
         }
     });
 
     // 動態更新 menuItems 價格
-    let updated = false;
+    let hasRealUpdate = false;
     menuItems.forEach(item => {
-        if (itemPriceMap[item.name] !== undefined) {
-            item.price = itemPriceMap[item.name];
-            updated = true;
+        // 去除前台品項名稱的括號（如：菊花肉 (依大小時價價格不一定) -> 菊花肉）
+        const cleanFrontendName = item.name.replace(/\s*[\(\（].*?[\)\）]\s*/g, '').trim();
+        
+        const matchedPrice = itemPriceMap[item.name] ?? itemPriceMap[cleanFrontendName];
+
+        if (matchedPrice !== undefined && item.price !== matchedPrice) {
+            console.log(`[價格更新成功] ${item.name}: $${item.price} -> $${matchedPrice}`);
+            item.price = matchedPrice;
+            hasRealUpdate = true;
         }
     });
 
-    if (updated) {
+    // 只有價格真的有變更時才重繪畫面
+    if (hasRealUpdate) {
         renderMenu(currentFilteredItems);
     }
 }
