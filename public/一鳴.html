@@ -957,9 +957,10 @@ window.onload = async function() {
     }
 
     renderMenu(menuItems);
+    await syncPricesFromBackend();
+    setInterval(syncPricesFromBackend, 10000); // 每 10 秒自動同步後台最新價格
     renderCart();
 
-    // 啟動倒數計時與全院員工清單載入
     fetchEmployeeList();
     startCutoffCountdown();
 };
@@ -984,6 +985,53 @@ async function startCutoffCountdown() {
             await fetchCutoffSetting();
         }
     }, 1000);
+}
+
+async function syncPricesFromBackend() {
+    let stores = null;
+    try {
+        const res = await fetch(`/api/stores?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            stores = data.stores || data;
+        }
+    } catch (e) {
+        console.warn('無法連結 API 讀取門市菜單，嘗試讀取本地暫存...', e);
+    }
+
+    if (!stores) {
+        const saved = localStorage.getItem('active_store_config');
+        if (saved) {
+            try { stores = JSON.parse(saved); } catch (e) {}
+        }
+    }
+
+    if (!stores || !Array.isArray(stores)) return;
+
+    // 尋找 一鳴 門市 (支援店家 ID 或名稱對照)
+    const store = stores.find(s => s.id === 'store_yiming' || (s.name && s.name.includes('一鳴')));
+    if (!store || !store.items || store.items.length === 0) return;
+
+    // 建立後台品項對照表
+    const itemPriceMap = {};
+    store.items.forEach(item => {
+        if (item.name && item.price !== undefined) {
+            itemPriceMap[item.name.trim()] = Number(item.price);
+        }
+    });
+
+    // 動態更新 menuItems 價格
+    let updated = false;
+    menuItems.forEach(item => {
+        if (itemPriceMap[item.name] !== undefined) {
+            item.price = itemPriceMap[item.name];
+            updated = true;
+        }
+    });
+
+    if (updated) {
+        renderMenu(currentFilteredItems);
+    }
 }
 
 async function fetchCutoffSetting() {

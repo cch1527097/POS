@@ -939,9 +939,10 @@ window.onload = async function() {
     }
 
     renderMenu(menuItems);
+    await syncPricesFromBackend();
+    setInterval(syncPricesFromBackend, 10000); // 每 10 秒自動同步後台最新價格
     renderCart();
 
-    // 啟動倒數計時與全院員工清單載入
     fetchEmployeeList();
     startCutoffCountdown();
 };
@@ -966,6 +967,62 @@ async function startCutoffCountdown() {
             await fetchCutoffSetting();
         }
     }, 1000);
+}
+
+async function syncPricesFromBackend() {
+    let stores = null;
+    try {
+        const res = await fetch(`/api/stores?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            stores = data.stores || data;
+        }
+    } catch (e) {
+        console.warn('無法連結 API 讀取門市菜單，嘗試讀取本地暫存...', e);
+    }
+
+    if (!stores) {
+        const saved = localStorage.getItem('active_store_config');
+        if (saved) {
+            try { stores = JSON.parse(saved); } catch (e) {}
+        }
+    }
+
+    if (!stores || !Array.isArray(stores)) return;
+
+    // 搜尋 鹿兒角 門市
+    const store = stores.find(s => s.id === 'store_luerjiao' || (s.name && s.name.includes('鹿兒角')));
+    if (!store || !store.items || store.items.length === 0) return;
+
+    const itemPriceMap = {};
+    store.items.forEach(item => {
+        if (item.name) {
+            itemPriceMap[item.name.trim()] = item;
+        }
+    });
+
+    let updated = false;
+    menuItems.forEach(item => {
+        const matched = itemPriceMap[item.name];
+        if (matched) {
+            if (matched.price !== undefined && item.price !== Number(matched.price)) {
+                item.price = Number(matched.price);
+                updated = true;
+            }
+            if (matched.prices && item.prices) {
+                Object.keys(matched.prices).forEach(pKey => {
+                    if (item.prices[pKey] !== Number(matched.prices[pKey])) {
+                        item.prices[pKey] = Number(matched.prices[pKey]);
+                        updated = true;
+                    }
+                });
+            }
+        }
+    });
+
+    if (updated) {
+        renderMenu(currentFilteredItems);
+    }
 }
 
 async function fetchCutoffSetting() {

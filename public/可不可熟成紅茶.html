@@ -915,9 +915,10 @@ window.onload = async function() {
     }
 
     renderMenu(menuItems);
+    await syncPricesFromBackend();
+    setInterval(syncPricesFromBackend, 10000); // 每 10 秒自動同步後台最新價格
     renderCart();
 
-    // 啟動倒數計時與全院員工清單載入
     fetchEmployeeList();
     startCutoffCountdown();
 };
@@ -942,6 +943,65 @@ async function startCutoffCountdown() {
             await fetchCutoffSetting();
         }
     }, 1000);
+}
+
+// ------------------ 後台價格即時同步邏輯 ------------------
+async function syncPricesFromBackend() {
+    let stores = null;
+    try {
+        const res = await fetch(`/api/stores?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            stores = data.stores || data;
+        }
+    } catch (e) {
+        console.warn('無法連結 API 讀取門市菜單，嘗試讀取本地暫存...', e);
+    }
+
+    if (!stores) {
+        const saved = localStorage.getItem('active_store_config');
+        if (saved) {
+            try { stores = JSON.parse(saved); } catch (e) {}
+        }
+    }
+
+    if (!stores || !Array.isArray(stores)) return;
+
+    // 尋找 可不可熟成紅茶 門市 (支援 ID 或名稱對照)
+    const store = stores.find(s => s.id === 'store_kebuke' || (s.name && s.name.includes('可不可')));
+    if (!store || !store.items || store.items.length === 0) return;
+
+    // 建立後台品項對照表
+    const itemPriceMap = {};
+    store.items.forEach(item => {
+        if (item.name) {
+            itemPriceMap[item.name.trim()] = {
+                price: item.price !== undefined ? Number(item.price) : null,
+                priceM: item.priceM !== undefined ? Number(item.priceM) : null,
+                priceL: item.priceL !== undefined ? Number(item.priceL) : null
+            };
+        }
+    });
+
+    // 動態更新 menuItems 價格
+    let updated = false;
+    menuItems.forEach(item => {
+        const match = itemPriceMap[item.name];
+        if (match) {
+            if (match.priceM !== null) item.priceM = match.priceM;
+            if (match.priceL !== null) item.priceL = match.priceL;
+            // 若後台僅提供單一 price，且該品項有大杯價格則更新大杯
+            if (match.priceM === null && match.priceL === null && match.price !== null) {
+                if (item.priceL !== null) item.priceL = match.price;
+                else if (item.priceM !== null) item.priceM = match.price;
+            }
+            updated = true;
+        }
+    });
+
+    if (updated) {
+        renderMenu(currentFilteredItems);
+    }
 }
 
 async function fetchCutoffSetting() {

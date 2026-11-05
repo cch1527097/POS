@@ -932,9 +932,10 @@ window.onload = async function() {
     }
 
     renderMenu(menuItems);
+    await syncPricesFromBackend();
+    setInterval(syncPricesFromBackend, 10000); // 每 10 秒自動同步後台最新價格
     renderCart();
 
-    // 啟動倒數計時與全院員工清單載入
     fetchEmployeeList();
     startCutoffCountdown();
 };
@@ -959,6 +960,52 @@ async function startCutoffCountdown() {
             await fetchCutoffSetting();
         }
     }, 1000);
+}
+
+async function syncPricesFromBackend() {
+    let stores = null;
+    try {
+        const res = await fetch(`/api/stores?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            stores = data.stores || data;
+        }
+    } catch (e) {
+        console.warn('無法連結 API 讀取門市菜單，嘗試讀取本地暫存...', e);
+    }
+
+    if (!stores) {
+        const saved = localStorage.getItem('active_store_config');
+        if (saved) {
+            try { stores = JSON.parse(saved); } catch (e) {}
+        }
+    }
+
+    if (!stores || !Array.isArray(stores)) return;
+
+    // 搜尋 熱浪小島 門市
+    const store = stores.find(s => s.id === 'store_redang' || (s.name && (s.name.includes('熱浪') || s.name.toLowerCase().includes('redang'))));
+    if (!store || !store.items || store.items.length === 0) return;
+
+    const itemPriceMap = {};
+    store.items.forEach(item => {
+        if (item.name) {
+            itemPriceMap[item.name.trim()] = item;
+        }
+    });
+
+    let updated = false;
+    menuItems.forEach(item => {
+        const matched = itemPriceMap[item.name];
+        if (matched && matched.price !== undefined && item.price !== Number(matched.price)) {
+            item.price = Number(matched.price);
+            updated = true;
+        }
+    });
+
+    if (updated) {
+        renderMenu(currentFilteredItems);
+    }
 }
 
 async function fetchCutoffSetting() {
