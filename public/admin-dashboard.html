@@ -1564,7 +1564,7 @@ ${openStores}
         function renderMenuItemsModalContent(storeName) {
             let itemsHtml = '';
             if (tempStoreItems.length === 0) {
-                itemsHtml = `<div class="text-center text-slate-400 py-6 text-sm">目前尚無品項，請點擊下方按鈕新增品項與單價。</div>`;
+                itemsHtml = `<div class="text-center text-slate-400 py-6 text-sm">目前尚無品項。</div>`;
             } else {
                 itemsHtml = tempStoreItems.map((item, idx) => `
                     <div class="menu-item-row flex items-center gap-2 mb-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
@@ -1590,9 +1590,6 @@ ${openStores}
                     <div id="modalMenuItemsList" class="max-h-[320px] overflow-y-auto pr-1">
                         ${itemsHtml}
                     </div>
-                    <button type="button" class="btn btn-secondary text-xs py-2 w-full flex items-center justify-center gap-1.5 mt-1" onclick="addTempMenuItem()">
-                        <i class="fa-solid fa-plus text-emerald-600"></i> 新增品項與金額
-                    </button>
                 </div>
             `;
 
