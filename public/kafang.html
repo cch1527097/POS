@@ -197,6 +197,7 @@
         .item-price-zone { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
         .item-price { color: var(--text-dark); font-weight: 700; font-size: 15px; }
         
+        /* 💡 修正：移除 overflow: hidden 以便右上角 badge 浮現，加入內層 img 樣式 */
         .item-img-placeholder {
             width: 70px;
             height: 70px;
@@ -211,6 +212,12 @@
             cursor: pointer;
             position: relative;
             user-select: none;
+        }
+        .item-img-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
         }
 
         .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
@@ -727,7 +734,7 @@
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 3-3.87"></path>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
     </button>
@@ -887,14 +894,12 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋 ID 或名稱包含「北斗賓」或「肉圓」的門市
     const storeTarget = stores.find(s => 
         (s.id && s.id.includes('kafang')) || 
         (s.name && (s.name.includes('北斗賓') || s.name.includes('肉圓')))
     );
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    // 建立後台品項金額對照表
     const itemPriceMap = {};
     storeTarget.items.forEach(item => {
         if (item.name && item.price !== undefined) {
@@ -902,7 +907,6 @@ async function syncPricesFromBackend() {
         }
     });
 
-    // 動態更新菜單項目價格
     let updated = false;
     menuItems.forEach(item => {
         if (itemPriceMap[item.name] !== undefined) {
@@ -933,7 +937,6 @@ window.onload = async function() {
 
     renderMenu(menuItems);
     
-    // 初始化連線並定期 10 秒即時同步後台最新價格
     await syncPricesFromBackend();
     setInterval(syncPricesFromBackend, 10000);
 
@@ -1291,6 +1294,12 @@ function renderMenu(items) {
                 }
             });
 
+            /* 💡 修正 1：判斷是否為網址圖片，並調整右上角數量 Badge 的層級與定位 */
+            const isImgUrl = item.icon && (item.icon.startsWith('http://') || item.icon.startsWith('https://'));
+            const imgContent = isImgUrl 
+                ? `<img src="${item.icon}" alt="${item.name}" loading="lazy">` 
+                : (item.icon || '🍱');
+
             card.innerHTML = `
                 <div class="item-info">
                     <div class="item-name">${item.name}</div>
@@ -1298,9 +1307,9 @@ function renderMenu(items) {
                         <div class="item-price">$${item.price}</div>
                     </div>
                 </div>
-                <div class="item-img-placeholder">
-                    ${item.icon || '🍱'}
-                    ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
+                <div class="item-img-placeholder" onclick="clickAddItem('${item.name}')">
+                    ${imgContent}
+                    ${currentQty > 0 ? `<div style="position:absolute; top:-8px; right:-8px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px; z-index:10; border:2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">x${currentQty}</div>` : ''}
                 </div>
                 <div class="action-zone" style="margin-left: 10px;">
                     <button class="btn-qty" onclick="removeOneBaseItem('${item.name}')">-</button>
@@ -1344,9 +1353,15 @@ function clickAddItem(name) {
     const spicyOptions = ["不辣", "微辣", "小辣", "大辣"];
     const noteOptions = ["無特殊需求", "不加香菜", "醬多", "醬少"];
 
+    /* 💡 修正 2：彈窗 Header 中的圖示同樣支援圖片網址渲染 */
+    const isImgUrl = item.icon && (item.icon.startsWith('http://') || item.icon.startsWith('https://'));
+    const modalIconHtml = isImgUrl 
+        ? `<img src="${item.icon}" alt="${item.name}" style="width:70px; height:70px; object-fit:cover; border-radius:12px; margin-bottom:8px;">`
+        : `<div style="font-size: 48px; margin-bottom: 8px;">${item.icon || '🍱'}</div>`;
+
     let bodyHtml = `
         <div style="text-align:center; padding: 10px 0;">
-            <div style="font-size: 48px; margin-bottom: 8px;">${item.icon || '🍱'}</div>
+            ${modalIconHtml}
             <div style="font-size:20px; font-weight:800; color:var(--primary);">${item.name}</div>
             <div style="font-size:18px; font-weight:700; color:var(--accent); margin-top:4px;">$${item.price}</div>
         </div>
@@ -1503,13 +1518,19 @@ function renderModalCartList() {
         const item = cart[key];
         const sub = item.qty * item.price;
         const menuItem = menuItems.find(m => m.name === item.baseName);
-        const icon = menuItem ? menuItem.icon : '🍱';
+        
+        /* 💡 修正 3：購物車內部的圖片顯示同樣支援圖片 URL 判斷 */
+        const iconRaw = menuItem ? menuItem.icon : '🍱';
+        const isImgUrl = iconRaw && (iconRaw.startsWith('http://') || iconRaw.startsWith('https://'));
+        const iconHtml = isImgUrl 
+            ? `<img src="${iconRaw}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">`
+            : iconRaw;
 
         const div = document.createElement("div");
         div.className = "cart-item-card";
         div.innerHTML = `
-            <div style="font-size:28px; background:#f8fafc; padding:10px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-                ${icon}
+            <div style="font-size:24px; background:#f8fafc; padding:6px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                ${iconHtml}
             </div>
             <div style="flex:1; padding: 0 12px;">
                 <div style="font-weight:700; font-size:15px; color:var(--text-dark);">${item.baseName}</div>
