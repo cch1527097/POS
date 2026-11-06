@@ -213,6 +213,13 @@
             flex-shrink: 0;
             position: relative;
             user-select: none;
+            /* 移除 overflow: hidden 以防止數量徽章標籤被裁切 */
+        }
+        .item-img-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px; /* 圖片獨立套用圓角 */
         }
 
         .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
@@ -322,7 +329,6 @@
             background-color: #a40e11;
         }
 
-        /* 👥 新增：其他人點了什麼 懸浮按鈕樣式 */
         .others-float-btn {
             background-color: #0091ff;
             color: white;
@@ -331,7 +337,6 @@
             background-color: #0073e6;
         }
 
-        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
         .cutoff-float-badge {
             position: fixed;
             bottom: 220px;
@@ -515,7 +520,6 @@
         }
         .btn-modal-confirm:hover { background: #a02d22; }
 
-        /* 👥 「其他人點了什麼」表格專用樣式 */
         .history-modal-content {
             width: 92vw !important;
             max-width: 1000px !important;
@@ -566,7 +570,6 @@
             font-style: italic;
         }
 
-        /* RWD 調整 */
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
@@ -613,7 +616,7 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
             .cutoff-float-badge { right: 15px; bottom: 210px; padding: 8px 10px; min-width: 120px; }
-        /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
+
             .history-modal-content {
                 width: 95vw !important;
                 max-height: 88vh !important;
@@ -666,7 +669,6 @@
                 border-bottom: none !important;
             }
 
-            /* 1. 卡號/姓名 (左上) */
             .history-table td:nth-child(1) {
                 font-size: 15px;
                 font-weight: 700;
@@ -674,13 +676,11 @@
                 order: 1;
             }
 
-            /* 2. 部門標籤 (右上) */
             .history-table td:nth-child(2) {
                 order: 2;
                 text-align: right;
             }
 
-            /* 3. 時間 (第二列) */
             .history-table td:nth-child(3) {
                 width: 100%;
                 order: 3;
@@ -690,7 +690,6 @@
                 margin-bottom: 6px;
             }
 
-            /* 4. 點餐內容 (第三列，突出框顯示) */
             .history-table td:nth-child(4) {
                 width: 100%;
                 order: 4;
@@ -703,7 +702,6 @@
                 line-height: 1.4;
             }
 
-            /* 5. 金額 (第四列，靠右紅字顯示) */
             .history-table td:nth-child(5) {
                 width: 100%;
                 order: 5;
@@ -714,7 +712,6 @@
                 margin-top: 4px;
             }
 
-            /* 無紀錄時的呈現 */
             .history-table td.no-record {
                 text-align: center !important;
                 background: transparent !important;
@@ -736,16 +733,13 @@
 
 <!-- ⏱️ 右下角截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
-    <div class="cutoff-title">
-        ⏱️ 點餐截止時間
-    </div>
+    <div class="cutoff-title">⏱️ 點餐截止時間</div>
     <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
     <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
 </div>
 
 <!-- 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 👥 新增：其他人點了什麼懸浮按鈕 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -814,13 +808,11 @@
     </div>
 </div>
 
-<!-- 👥 新增：今日其他人點了什麼彈窗 (Modal) -->
+<!-- 👥 今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
-            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
-                👥 今日其他人點了什麼
-            </h3>
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">👥 今日其他人點了什麼</h3>
             <button class="modal-close" onclick="closeOthersModal()">&times;</button>
         </div>
         <div class="modal-body" style="padding: 20px;">
@@ -881,7 +873,7 @@ const menuItems = [
     {name: "豬舌 (依大小時價價格不一定)", price: 60, category: "肉類", icon:"https://images.pexels.com/photos/2676932/pexels-photo-2676932.jpeg?auto=compress&cs=tinysrgb&w=800"},
     {name: "豬心 (依大小時價價格不一定)", price: 40, category: "肉類", icon:"https://images.pexels.com/photos/2676932/pexels-photo-2676932.jpeg?auto=compress&cs=tinysrgb&w=800"},
 
-    // === 青菜類 (特價) ===
+    // === 青菜類 ===
     {name: "金針菇", price: 15, category: "青菜類", icon:"https://images.pexels.com/photos/5228106/pexels-photo-5228106.jpeg?auto=compress&cs=tinysrgb&w=800"},
     {name: "豆芽菜", price: 15, category: "青菜類", icon:"https://images.pexels.com/photos/8954067/pexels-photo-8954067.jpeg?auto=compress&cs=tinysrgb&w=800"},
     {name: "花椰菜", price: 20, category: "青菜類", icon:"https://images.pexels.com/photos/11333727/pexels-photo-11333727.jpeg?auto=compress&cs=tinysrgb&w=800"},
@@ -962,16 +954,12 @@ let finalTotal = 0;
 let finalSummary = "";
 let globalEmployeesMap = {};
 
-// ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
 
-// 購物車全單選擇設定（預設：藥膳湯 / 不辣）
 let globalSoup = "藥膳湯";
 let globalSpicy = "不辣";
-
-// 組合暫存狀態
 let comboSelections = {};
 
 window.onload = async function() {
@@ -991,13 +979,13 @@ window.onload = async function() {
 
     renderMenu(menuItems);
     await syncPricesFromBackend();
-    setInterval(syncPricesFromBackend, 10000); // 每 10 秒自動同步後台最新價格
+    setInterval(syncPricesFromBackend, 10000);
     renderCart();
 
     fetchEmployeeList();
     startCutoffCountdown();
 };
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -1019,7 +1007,6 @@ async function startCutoffCountdown() {
     }, 1000);
 }
 
-// ------------------ 後台價格即時同步邏輯 (強化版) ------------------
 async function syncPricesFromBackend() {
     let stores = null;
     try {
@@ -1040,11 +1027,9 @@ async function syncPricesFromBackend() {
     }
 
     if (!stores || !Array.isArray(stores)) {
-        console.warn('[價格同步失敗] 無法取得門市陣列資料', stores);
         return;
     }
 
-    // 尋找 小妞滷味 門市 (放寬搜尋條件)
     const store = stores.find(s => 
         s.id === 'store_xiaoniu' || 
         s.id === 'xiaoniu' || 
@@ -1052,11 +1037,9 @@ async function syncPricesFromBackend() {
     );
 
     if (!store || !store.items || !Array.isArray(store.items)) {
-        console.warn('[價格同步失敗] 找不到指定門市或門市內無品項資料', store);
         return;
     }
 
-    // 建立後台品項對照表（同時保留原始名稱與去括號名稱）
     const itemPriceMap = {};
     store.items.forEach(item => {
         const name = item.name || item.item_name;
@@ -1064,27 +1047,30 @@ async function syncPricesFromBackend() {
         if (name && price !== undefined) {
             const cleanBackendName = String(name).replace(/\s*[\(\（].*?[\)\）]\s*/g, '').trim();
             itemPriceMap[cleanBackendName] = Number(price);
-            itemPriceMap[String(name).trim()] = Number(price); // 原始名稱對照
+            itemPriceMap[String(name).trim()] = Number(price);
         }
     });
 
-    // 動態更新 menuItems 價格
     let hasRealUpdate = false;
     menuItems.forEach(item => {
-        // 去除前台品項名稱的括號（如：菊花肉 (依大小時價價格不一定) -> 菊花肉）
         const cleanFrontendName = item.name.replace(/\s*[\(\（].*?[\)\）]\s*/g, '').trim();
-        
         const matchedPrice = itemPriceMap[item.name] ?? itemPriceMap[cleanFrontendName];
 
         if (matchedPrice !== undefined && item.price !== matchedPrice) {
             console.log(`[價格更新成功] ${item.name}: $${item.price} -> $${matchedPrice}`);
             item.price = matchedPrice;
             hasRealUpdate = true;
+
+            Object.keys(cart).forEach(k => {
+                if (cart[k].baseName === item.name) {
+                    cart[k].price = matchedPrice;
+                }
+            });
         }
     });
 
-    // 只有價格真的有變更時才重繪畫面
     if (hasRealUpdate) {
+        renderCart();
         renderMenu(currentFilteredItems);
     }
 }
@@ -1131,7 +1117,7 @@ async function fetchCutoffSetting() {
             }
 
             if (rawVal.includes(':')) {
-                const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
+                const match = rawVal.match(/([01]?\d|2[0-3]):[0-5]\d/);
                 if (match) {
                     latestTime = match[0];
                     break;
@@ -1228,7 +1214,6 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1373,7 +1358,7 @@ function formatDisplayTime(obj) {
     return '-';
 }
 
-/* ==================== 菜單與點餐邏輯 ==================== */
+/* ==================== 菜單與點餐邏輯 (已完整修正遮擋、圖片與購物車邏輯) ==================== */
 function renderMenu(items) {
     const categories = [...new Set(items.map(i => i.category))];
     
@@ -1423,6 +1408,10 @@ function renderMenu(items) {
                 }
             });
 
+            const imgHtml = (item.icon && item.icon.startsWith('http'))
+                ? `<img src="${item.icon}" alt="${item.name}">`
+                : (item.icon || '🍲');
+
             card.innerHTML = `
                 <div class="item-info">
                     <div class="item-name">${item.name}</div>
@@ -1431,8 +1420,8 @@ function renderMenu(items) {
                     </div>
                 </div>
                 <div class="item-img-placeholder">
-                    ${item.icon || '🍲'}
-                    ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
+                    ${imgHtml}
+                    ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px; z-index:2; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${currentQty}</div>` : ''}
                 </div>
                 <div class="action-zone" style="margin-left: 10px;">
                     <button class="btn-qty" onclick="event.stopPropagation(); removeOneBaseItem('${item.name}')">-</button>
@@ -1470,13 +1459,11 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 超值組合區：開啟規格選單
     if (item.category === "超值組合區") {
         openComboModal(item);
         return;
     }
 
-    // 一般餐點：直接加入購物車
     const customKey = item.name;
 
     if (cart[customKey]) {
@@ -1485,6 +1472,7 @@ function clickAddItem(name) {
         cart[customKey] = {
             key: customKey,
             baseName: item.name,
+            displayName: item.name,
             price: item.price,
             qty: 1
         };
@@ -1548,7 +1536,8 @@ function openComboModal(item) {
             } else {
                 cart[fullName] = {
                     key: fullName,
-                    baseName: fullName,
+                    baseName: item.name,
+                    displayName: fullName,
                     price: item.price,
                     qty: 1
                 };
@@ -1573,7 +1562,7 @@ function openComboModal(item) {
 }
 
 function removeOneBaseItem(baseName) {
-    const keys = Object.keys(cart).filter(k => cart[k].baseName.startsWith(baseName));
+    const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
     if (keys.length === 0) return;
 
     const lastKey = keys[keys.length - 1];
@@ -1597,7 +1586,7 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        finalSummary += `${item.baseName}*${item.qty} `;
+        finalSummary += `${item.displayName}*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -1641,7 +1630,6 @@ function openCartModal() {
         </div>
         <div id="modal-cart-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px; padding-right: 4px;"></div>
         
-        <!-- 全單湯底與辣度詢問 -->
         <div class="cart-opt-section">
             <span class="cart-opt-label">🥣 選擇湯底 / 風味：</span>
             <div id="cart-soup-group" class="opt-btn-group">
@@ -1692,7 +1680,7 @@ function renderModalCartList() {
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
-                <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
+                <div style="font-weight:600; font-size:14px;">${item.displayName}</div>
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
@@ -1746,6 +1734,7 @@ function showCustomModal({ title, bodyHtml, confirmText = "確定", cancelText =
     const cancelBtn = document.getElementById("btn-modal-cancel");
 
     confirmBtn.innerText = confirmText;
+    confirmBtn.disabled = false;
     cancelBtn.innerText = cancelText;
 
     if (showCancel) {
@@ -1827,13 +1816,6 @@ async function submitOrderToServer() {
                 const resData = await response.json();
 
                 if (response.ok && resData.success) {
-                    showCustomModal({
-                        title: "提示",
-                        bodyHtml: "🎉 點餐成功！訂單已送到後端。",
-                        confirmText: "確定",
-                        showCancel: false
-                    });
-                    
                     const localKey = `orders_${currentCardId}`;
                     const existingOrders = JSON.parse(localStorage.getItem(localKey) || "[]");
                     existingOrders.push({ ...payload, timestamp: new Date().toISOString() });
@@ -1842,7 +1824,16 @@ async function submitOrderToServer() {
                     cart = {};
                     renderCart();
                     renderMenu(currentFilteredItems);
+
+                    showCustomModal({
+                        title: "提示",
+                        bodyHtml: "🎉 點餐成功！訂單已送到後端。",
+                        confirmText: "確定",
+                        showCancel: false
+                    });
                 } else {
+                    btn.disabled = false;
+                    btn.innerText = "確認無誤送出";
                     showCustomModal({
                         title: "提示",
                         bodyHtml: `⚠️ 送出失敗：${resData.message || '請稍後再試'}`,
@@ -1852,15 +1843,14 @@ async function submitOrderToServer() {
                 }
             } catch (err) {
                 console.error("發送失敗:", err);
+                btn.disabled = false;
+                btn.innerText = "確認無誤送出";
                 showCustomModal({
                     title: "提示",
                     bodyHtml: "❌ 網路發送失敗，請確認網路連線或改用人工點餐！",
                     confirmText: "確定",
                     showCancel: false
                 });
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "確認送出訂單";
             }
         }
     });
