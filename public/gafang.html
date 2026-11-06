@@ -195,7 +195,6 @@
         .item-price-zone { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
         .item-price { color: var(--text-dark); font-weight: 700; font-size: 15px; }
         
-        /* 💡 修正：移除 overflow: hidden; 確保右上角數量標籤完整浮現 */
         .item-img-placeholder {
             width: 70px;
             height: 70px;
@@ -251,9 +250,6 @@
             align-items: center;
             gap: 2px;
         }
-
-        .chip-btn .chip-icon { font-size: 16px; }
-        .chip-btn .chip-sub { font-size: 11px; color: var(--text-muted); font-weight: normal; }
 
         .chip-btn:hover {
             border-color: #cbd5e1;
@@ -840,11 +836,12 @@ function goBack() {
     window.location.href = 'index.html'; 
 }
 
+/* 💡 修正 1：餐點完全獨立，價格明確，不搭配 hasSize */
 const menuItems = [
-    {name: "麵線糊(小)", subName: "古早味麵線糊", price: 40, category: "招牌特色", icon: "https://images.pexels.com/photos/1406501/pexels-photo-1406501.jpeg?auto=compress&cs=tinysrgb&w=800", hasSize: true},
-    {name: "麵線糊(大)", subName: "古早味麵線糊", price:50, category: "招牌特色", icon: "https://images.pexels.com/photos/1406501/pexels-photo-1406501.jpeg?auto=compress&cs=tinysrgb&w=800", hasSize: true},
-    {name: "炒麵(小)", subName: "古早味炒麵", price: 40, category: "招牌特色", icon: "https://images.pexels.com/photos/1406501/pexels-photo-1406501.jpeg?auto=compress&cs=tinysrgb&w=800", hasSize: true},
-    {name: "炒麵(大)", subName: "古早味炒麵", price:50, category: "招牌特色", icon: "https://images.pexels.com/photos/1406501/pexels-photo-1406501.jpeg?auto=compress&cs=tinysrgb&w=800", hasSize: true},
+    {name: "麵線糊 (小)", subName: "古早味麵線糊", price: 40, category: "招牌特色", icon: "https://images.pexels.com/photos/1406501/pexels-photo-1406501.jpeg?auto=compress&cs=tinysrgb&w=800"},
+    {name: "麵線糊 (大)", subName: "古早味麵線糊", price: 50, category: "招牌特色", icon: "https://images.pexels.com/photos/1406501/pexels-photo-1406501.jpeg?auto=compress&cs=tinysrgb&w=800"},
+    {name: "炒麵 (小)", subName: "古早味炒麵", price: 40, category: "招牌特色", icon: "https://images.pexels.com/photos/1406501/pexels-photo-1406501.jpeg?auto=compress&cs=tinysrgb&w=800"},
+    {name: "炒麵 (大)", subName: "古早味炒麵", price: 50, category: "招牌特色", icon: "https://images.pexels.com/photos/1406501/pexels-photo-1406501.jpeg?auto=compress&cs=tinysrgb&w=800"},
     {name: "筒仔米糕", subName: "傳統經典米糕", price: 45, category: "招牌特色", icon: "https://images.pexels.com/photos/3727196/pexels-photo-3727196.jpeg?auto=compress&cs=tinysrgb&w=800"},
     {name: "味噌湯", subName: "濃郁味噌湯", price: 25, category: "招牌特色", icon: "https://images.pexels.com/photos/31393432/pexels-photo-31393432.jpeg?auto=compress&cs=tinysrgb&w=800"}
 ];
@@ -854,8 +851,6 @@ let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
 
-let selectedSize = "小";
-let selectedUnitPrice = 0;
 let selectedCilantro = "加香菜";
 let selectedSpicy = "不辣";
 let selectedNote = "無";
@@ -915,6 +910,7 @@ async function startCutoffCountdown() {
     }, 1000);
 }
 
+/* 💡 修正 2：安全的後端價格對應邏輯，不毀壞已拆分的菜單品項 */
 async function syncPricesFromBackend() {
     let stores = null;
     try {
@@ -939,28 +935,32 @@ async function syncPricesFromBackend() {
     const storeTarget = stores.find(s => s.name && (s.name.includes('徊香') || s.name.includes('麵線糊')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    const backendItems = storeTarget.items.map((item, idx) => {
+    const itemPriceMap = {};
+    storeTarget.items.forEach(item => {
         const cleanName = item.name ? item.name.trim() : '';
-        const category = item.category || "招牌特色";
-        const hasSize = item.hasSize ?? (cleanName.includes("麵線糊") || cleanName.includes("炒麵"));
-        
-        return {
-            id: item.id || (idx + 1),
-            name: cleanName,
-            subName: item.subName || item.description || '',
-            price: item.price !== undefined ? Number(item.price) : 0,
-            smallPrice: item.smallPrice !== undefined ? Number(item.smallPrice) : (item.price ? Number(item.price) : 40),
-            largePrice: item.largePrice !== undefined ? Number(item.largePrice) : 50,
-            category: category,
-            icon: item.icon || (cleanName.includes("米糕") ? "🍚" : (cleanName.includes("湯") ? "🥣" : "🍜")),
-            hasSize: hasSize
-        };
+        if (cleanName && item.price !== undefined) {
+            itemPriceMap[cleanName] = Number(item.price);
+        }
+        if (cleanName && item.smallPrice !== undefined) {
+            itemPriceMap[`${cleanName} (小)`] = Number(item.smallPrice);
+            itemPriceMap[`${cleanName}(小)`] = Number(item.smallPrice);
+        }
+        if (cleanName && item.largePrice !== undefined) {
+            itemPriceMap[`${cleanName} (大)`] = Number(item.largePrice);
+            itemPriceMap[`${cleanName}(大)`] = Number(item.largePrice);
+        }
     });
 
-    if (backendItems.length > 0) {
-        menuItems.length = 0;
-        menuItems.push(...backendItems);
-        filterMenu();
+    let updated = false;
+    menuItems.forEach(item => {
+        if (itemPriceMap[item.name] !== undefined) {
+            item.price = itemPriceMap[item.name];
+            updated = true;
+        }
+    });
+
+    if (updated && typeof renderMenu === 'function') {
+        renderMenu(currentFilteredItems);
     }
 }
 
@@ -1291,14 +1291,6 @@ function renderMenu(items) {
                 }
             });
 
-            let displayPrice = "";
-            if (item.hasSize) {
-                displayPrice = `小 $${item.smallPrice} / 大 $${item.largePrice}`;
-            } else {
-                displayPrice = `$${item.price}`;
-            }
-
-            /* 💡 修正 1：判斷是否為網址圖片 */
             const isImgUrl = item.icon && (item.icon.startsWith('http://') || item.icon.startsWith('https://'));
             const imgContent = isImgUrl 
                 ? `<img src="${item.icon}" alt="${item.name}" loading="lazy">` 
@@ -1309,7 +1301,7 @@ function renderMenu(items) {
                     <div class="item-name">${item.name}</div>
                     <div class="item-subname">${item.subName || ''}</div>
                     <div class="item-price-zone">
-                        <div class="item-price">${displayPrice}</div>
+                        <div class="item-price">$${item.price}</div>
                     </div>
                 </div>
                 <div class="item-img-placeholder" onclick="clickAddItem('${item.name}')">
@@ -1349,6 +1341,7 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
+/* 💡 修正 3：簡化彈窗，不再重複選擇大/小份 */
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
@@ -1357,40 +1350,23 @@ function clickAddItem(name) {
     selectedSpicy = "不辣";
     selectedNote = "無";
 
-    /* 💡 修正 2：彈窗 Header 圖示支援圖片網址 rendering */
     const isImgUrl = item.icon && (item.icon.startsWith('http://') || item.icon.startsWith('https://'));
     const modalIconHtml = isImgUrl 
         ? `<img src="${item.icon}" alt="${item.name}" style="width:70px; height:70px; object-fit:cover; border-radius:12px; margin-bottom:8px;">`
         : `<div style="font-size: 40px; margin-bottom: 4px;">${item.icon || '🍲'}</div>`;
 
+    const isNoodle = item.name.includes("麵線糊") || item.name.includes("炒麵");
+
     let bodyHtml = `
         <div style="text-align:center; margin-bottom:16px;">
             ${modalIconHtml}
             <div style="font-size:18px; font-weight:bold; color:var(--primary);">${item.name}</div>
+            <div style="font-size:16px; font-weight:bold; color:var(--accent); margin-top:2px;">$${item.price}</div>
         </div>
     `;
 
-    if (item.hasSize) {
-        selectedSize = "小";
-        selectedUnitPrice = item.smallPrice;
-
+    if (isNoodle) {
         bodyHtml += `
-            <div class="opt-group">
-                <label>📏 選擇份量</label>
-                <div class="chip-grid" style="grid-template-columns: repeat(2, 1fr);">
-                    <div class="chip-btn selected" onclick="selectChip('size', '小|${item.smallPrice}', this)">
-                        <span class="chip-icon">🥣</span>
-                        <span>小份</span>
-                        <span class="chip-sub">$${item.smallPrice}</span>
-                    </div>
-                    <div class="chip-btn" onclick="selectChip('size', '大|${item.largePrice}', this)">
-                        <span class="chip-icon">🍲</span>
-                        <span>大份</span>
-                        <span class="chip-sub">$${item.largePrice}</span>
-                    </div>
-                </div>
-            </div>
-
             <div class="opt-group">
                 <label>🌿 香菜需求</label>
                 <div class="chip-grid" style="grid-template-columns: repeat(2, 1fr);">
@@ -1411,9 +1387,6 @@ function clickAddItem(name) {
             </div>
         `;
     } else {
-        selectedSize = "標準";
-        selectedUnitPrice = item.price;
-
         bodyHtml += `
             <div class="opt-group">
                 <label>📝 備註需求</label>
@@ -1433,7 +1406,7 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const customKey = `${item.name}|${selectedSize}|${selectedCilantro}|${selectedSpicy}|${selectedNote}`;
+            const customKey = `${item.name}|${selectedCilantro}|${selectedSpicy}|${selectedNote}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -1441,13 +1414,12 @@ function clickAddItem(name) {
                 cart[customKey] = {
                     key: customKey,
                     baseName: item.name,
-                    price: selectedUnitPrice,
+                    price: item.price,
                     qty: 1,
-                    size: selectedSize,
                     cilantro: selectedCilantro,
                     spicy: selectedSpicy,
                     note: selectedNote,
-                    hasSize: !!item.hasSize
+                    isNoodle: isNoodle
                 };
             }
 
@@ -1463,11 +1435,7 @@ function selectChip(type, value, element) {
     parent.querySelectorAll('.chip-btn').forEach(btn => btn.classList.remove('selected'));
     element.classList.add('selected');
 
-    if (type === 'size') {
-        const parts = value.split('|');
-        selectedSize = parts[0];
-        selectedUnitPrice = parseInt(parts[1], 10);
-    } else if (type === 'cilantro') {
+    if (type === 'cilantro') {
         selectedCilantro = value;
     } else if (type === 'spicy') {
         selectedSpicy = value;
@@ -1503,11 +1471,11 @@ function renderCart() {
         finalTotal += sub;
         
         let optText = "";
-        if (item.hasSize) {
-            let opts = [item.size];
+        if (item.isNoodle) {
+            let opts = [];
             if (item.cilantro) opts.push(item.cilantro);
-            if (item.spicy !== "不辣") opts.push(item.spicy);
-            optText = opts.join(",");
+            if (item.spicy && item.spicy !== "不辣") opts.push(item.spicy);
+            optText = opts.length > 0 ? opts.join(",") : "標準";
         } else {
             optText = item.note !== "無" ? item.note : "標準";
         }
@@ -1576,8 +1544,8 @@ function renderModalCartList() {
         div.className = "cart-item";
 
         let optTag = "";
-        if (item.hasSize) {
-            optTag = `🍲 ${item.size} | ${item.cilantro} | 辣度: ${item.spicy}`;
+        if (item.isNoodle) {
+            optTag = `🌿 ${item.cilantro} | 🌶️ 辣度: ${item.spicy}`;
         } else {
             optTag = `📌 備註: ${item.note}`;
         }
