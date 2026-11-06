@@ -928,7 +928,6 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 比對「地6攤」或「排餐」關鍵字
     const storeTarget = stores.find(s => s.name && (s.name.includes('地6攤') || s.name.includes('排餐')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
@@ -1298,7 +1297,6 @@ function renderMenu(items) {
                 }
             });
 
-            // 💡 判斷 icon 是否為網址
             const isUrl = item.icon && item.icon.startsWith('http');
             const imgHtml = isUrl 
                 ? `<img src="${item.icon}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`
@@ -1313,7 +1311,7 @@ function renderMenu(items) {
                 </div>
                 <div class="item-img-placeholder" style="overflow:hidden;">
                     ${imgHtml}
-                    ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
+                    ${currentQty > 0 ? `<div style="position:absolute; top:4px; right:4px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px; z-index:2;">${currentQty}</div>` : ''}
                 </div>
                 <div class="action-zone" style="margin-left: 10px;">
                     <button class="btn-qty" onclick="removeOneBaseItem('${item.name}')">-</button>
