@@ -588,11 +588,11 @@
             .category-block { scroll-margin-top: 130px; }
         }
         
-        /* ==================== 📱 手機版專屬樣式 (統一固定底部導覽列與截止時間列) ==================== */
+        /* ==================== 📱 手機版專屬樣式 (拉高截止時間框與底部工作列的間距) ==================== */
         @media (max-width: 600px) {
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
-            .container { padding: 16px 12px 140px 12px; } /* 增加底部留白，確保內容不被底部兩層導覽列遮擋 */
+            .container { padding: 16px 12px 160px 12px; } /* 增加底部留白，確保內容不被遮擋 */
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
             .store-logo { width: 60px; height: 60px; font-size: 22px; border-radius: 12px; }
@@ -601,10 +601,10 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
 
-            /* ⏱️ 手機版統一將「截止時間」整合貼合於底部工作列正上方 */
+            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 */
             .cutoff-float-badge { 
                 position: fixed !important;
-                bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 8px) !important;
+                bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important; /* 原為 62px 緊貼，改為加 14px 間距 */
                 left: 12px !important;
                 right: 12px !important;
                 width: auto !important;
