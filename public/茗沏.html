@@ -262,7 +262,7 @@
             box-shadow: inset 0 0 0 1px var(--primary);
         }
 
-        /* 懸浮按鈕群與倒數計時元件 */
+        /* ==================== 懸浮按鈕群 & 截止時間懸浮元件 (電腦預設) ==================== */
         .fab-container {
             position: fixed;
             bottom: 24px;
@@ -289,29 +289,20 @@
             position: relative;
         }
 
-        .fab-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.28);
-        }
+        .fab-btn:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(0,0,0,0.28); }
         .fab-btn:active { transform: scale(0.95); }
+        .fab-btn svg { width: 26px; height: 26px; fill: #ffffff; }
 
         .fab-cart { background-color: var(--primary); }
         .fab-exit { background-color: #555; }
         .fab-menu { display: none; background-color: #475569; }
         .fab-text { display: none; }
-        .fab-btn svg { width: 26px; height: 26px; fill: #ffffff; }
 
-        /* 👥 新增：其他人點了什麼 懸浮按鈕樣式 */
-        .others-float-btn {
-            background-color: #0091ff;
-            color: white;
-        }
-        .others-float-btn:hover {
-            background-color: #0073e6;
-        }
+        .others-float-btn { background-color: #0091ff; color: white; }
+        .others-float-btn:hover { background-color: #0073e6; }
         .others-float-btn svg { fill: none !important; stroke: #ffffff; }
 
-        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
+        /* ⏱️ 截止時間懸浮元件 (電腦版右下角懸浮 - 同步最新規格) */
         .cutoff-float-badge {
             position: fixed;
             bottom: 305px;
@@ -359,7 +350,7 @@
         .cutoff-timer {
             font-size: 13px;
             font-weight: 800;
-            color: #d9381e;
+            color: #d9363e;
             background: #ffeef0;
             padding: 2px 8px;
             border-radius: 8px;
@@ -398,17 +389,12 @@
         /* Modal 彈窗樣式 */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             z-index: 10000;
-            opacity: 0;
-            visibility: hidden;
+            opacity: 0; visibility: hidden;
             transition: opacity 0.2s ease, visibility 0.2s ease;
         }
 
@@ -416,172 +402,49 @@
 
         .modal-container {
             background: #fff;
-            width: 90%;
-            max-width: 440px;
+            width: 90%; max-width: 440px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             overflow: hidden;
             transform: scale(0.95);
             transition: transform 0.2s ease;
             max-height: 90vh;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
         }
 
         .modal-overlay.active .modal-container { transform: scale(1); }
 
-        .modal-header {
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
+        .modal-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; }
         .modal-title { font-size: 17px; font-weight: 700; color: #1e293b; margin: 0; }
+        .modal-close { background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; line-height: 1; }
+        .modal-body { padding: 20px; font-size: 15px; color: #334155; line-height: 1.6; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 14px 20px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #f8fafc; }
 
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 22px;
-            color: #94a3b8;
-            cursor: pointer;
-            line-height: 1;
-        }
+        .btn-modal-cancel { background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 8px 20px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; }
+        .btn-modal-confirm { background: var(--primary); border: none; color: white; padding: 8px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; }
 
-        .modal-body {
-            padding: 20px;
-            font-size: 15px;
-            color: #334155;
-            line-height: 1.6;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .modal-footer {
-            padding: 14px 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            border-top: 1px solid #f8fafc;
-        }
-
-        .btn-modal-cancel {
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            padding: 8px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .btn-modal-confirm {
-            background: var(--primary);
-            border: none;
-            color: white;
-            padding: 8px 24px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .custom-item-tag {
-            font-size: 12px;
-            color: #64748b;
-            background: #f1f5f9;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 2px;
-        }
+        .custom-item-tag { font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px; }
 
         /* 👥 「其他人點了什麼」表格專用樣式 */
-        .history-modal-content {
-            width: 92vw !important;
-            max-width: 1000px !important;
-            max-height: 85vh !important;
-        }
-
-        .history-table-wrapper {
-            overflow-x: auto;
-        }
-
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 15px;
-            min-width: 550px;
-        }
-
-        .history-table th {
-            background-color: var(--primary-light);
-            color: var(--primary);
-            font-weight: bold;
-            padding: 12px 14px;
-            border-bottom: 2px solid var(--primary);
-        }
-
-        .history-table td {
-            padding: 12px 14px;
-            border-bottom: 1px solid #f1f5f9;
-            color: var(--text-dark);
-        }
-
-        .dept-badge {
-            background-color: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .no-record {
-            text-align: center;
-            color: #64748b;
-            padding: 30px !important;
-            font-style: italic;
-        }
+        .history-modal-content { width: 92vw !important; max-width: 1000px !important; max-height: 85vh !important; }
+        .history-table-wrapper { overflow-x: auto; }
+        .history-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 15px; min-width: 550px; }
+        .history-table th { background-color: var(--primary-light); color: var(--primary); font-weight: bold; padding: 12px 14px; border-bottom: 2px solid var(--primary); }
+        .history-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); }
+        .dept-badge { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .no-record { text-align: center; color: #64748b; padding: 30px !important; font-style: italic; }
 
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
-            .category-sidebar { 
-                display: flex;
-                flex: none;
-                width: 100%;
-                box-sizing: border-box;
-                overflow-x: auto;
-                white-space: nowrap;
-                position: sticky; 
-                top: 60px; 
-                z-index: 900;
-                background: #fff;
-                padding: 10px 12px;
-                margin-bottom: 16px;
-                border-radius: 0 0 12px 12px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            }
+            .category-sidebar { display: flex; flex: none; width: 100%; box-sizing: border-box; overflow-x: auto; white-space: nowrap; position: sticky; top: 60px; z-index: 900; background: #fff; padding: 10px 12px; margin-bottom: 16px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
             .category-sidebar::-webkit-scrollbar { display: none; }
-            .side-cat-item { 
-                flex: 0 0 auto; 
-                margin-right: 8px; 
-                margin-bottom: 0;
-                padding: 8px 16px;
-                font-size: 13px;
-                background: #f1f5f9;
-                border-radius: 20px;
-            }
+            .side-cat-item { flex: 0 0 auto; margin-right: 8px; margin-bottom: 0; padding: 8px 16px; font-size: 13px; background: #f1f5f9; border-radius: 20px; }
             .side-cat-item.active { background: var(--primary); color: #fff; }
             .category-block { scroll-margin-top: 130px; }
         }
         
+        /* ==================== 📱 手機版專屬樣式 ==================== */
         @media (max-width: 600px) {
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
@@ -594,7 +457,7 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
 
-            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 */
+            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 (同步最新規格) */
             .cutoff-float-badge { 
                 position: fixed !important;
                 bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important;
@@ -691,40 +554,17 @@
             .cart-icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
             .cart-badge { top: -6px; right: -10px; font-size: 10px; min-width: 16px; height: 16px; padding: 0 4px; border-width: 1px; }
 
-        /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
-            .history-modal-content {
-                width: 95vw !important;
-                max-height: 88vh !important;
-                border-radius: 16px !important;
-                margin: 0 auto;
+            /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
+            .history-modal-content { width: 95vw !important; max-height: 88vh !important; border-radius: 16px !important; margin: 0 auto; }
+            .history-modal-content .modal-body { padding: 12px 14px !important; }
+            .history-table-wrapper { overflow-x: visible !important; }
+
+            .history-table, .history-table thead, .history-table tbody, .history-table th, .history-table td, .history-table tr {
+                display: block; width: 100%; box-sizing: border-box;
             }
 
-            .history-modal-content .modal-body {
-                padding: 12px 14px !important;
-            }
-
-            .history-table-wrapper {
-                overflow-x: visible !important;
-            }
-
-            .history-table, 
-            .history-table thead, 
-            .history-table tbody, 
-            .history-table th, 
-            .history-table td, 
-            .history-table tr {
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-            }
-
-            .history-table {
-                min-width: 0 !important;
-            }
-
-            .history-table thead {
-                display: none;
-            }
+            .history-table { min-width: 0 !important; }
+            .history-table thead { display: none; }
 
             .history-table tbody tr {
                 background: #ffffff;
@@ -739,67 +579,13 @@
                 justify-content: space-between;
             }
 
-            .history-table td {
-                padding: 2px 0 !important;
-                border-bottom: none !important;
-            }
-
-            /* 1. 卡號/姓名 (左上) */
-            .history-table td:nth-child(1) {
-                font-size: 15px;
-                font-weight: 700;
-                color: #1e293b;
-                order: 1;
-            }
-
-            /* 2. 部門標籤 (右上) */
-            .history-table td:nth-child(2) {
-                order: 2;
-                text-align: right;
-            }
-
-            /* 3. 時間 (第二列) */
-            .history-table td:nth-child(3) {
-                width: 100%;
-                order: 3;
-                font-size: 12px;
-                color: #64748b;
-                margin-top: 2px;
-                margin-bottom: 6px;
-            }
-
-            /* 4. 點餐內容 (第三列，突出框顯示) */
-            .history-table td:nth-child(4) {
-                width: 100%;
-                order: 4;
-                font-size: 14px;
-                background: #f8fafc;
-                border: 1px solid #f1f5f9;
-                border-radius: 8px;
-                padding: 8px 10px !important;
-                margin: 4px 0;
-                line-height: 1.4;
-            }
-
-            /* 5. 金額 (第四列，靠右紅字顯示) */
-            .history-table td:nth-child(5) {
-                width: 100%;
-                order: 5;
-                text-align: right;
-                font-size: 15px;
-                font-weight: 800 !important;
-                color: #e74c3c !important;
-                margin-top: 4px;
-            }
-
-            /* 無紀錄時的呈現 */
-            .history-table td.no-record {
-                text-align: center !important;
-                background: transparent !important;
-                border: none !important;
-                padding: 30px 0 !important;
-                color: #88a085;
-            }
+            .history-table td { padding: 2px 0 !important; border-bottom: none !important; }
+            .history-table td:nth-child(1) { font-size: 15px; font-weight: 700; color: #1e293b; order: 1; }
+            .history-table td:nth-child(2) { order: 2; text-align: right; }
+            .history-table td:nth-child(3) { width: 100%; order: 3; font-size: 12px; color: #64748b; margin-top: 2px; margin-bottom: 6px; }
+            .history-table td:nth-child(4) { width: 100%; order: 4; font-size: 14px; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 8px 10px !important; margin: 4px 0; line-height: 1.4; }
+            .history-table td:nth-child(5) { width: 100%; order: 5; text-align: right; font-size: 15px; font-weight: 800 !important; color: #e74c3c !important; margin-top: 4px; }
+            .history-table td.no-record { text-align: center !important; background: transparent !important; border: none !important; padding: 30px 0 !important; color: #88a085; }
         }
     </style>
 </head>
@@ -903,7 +689,7 @@
     </div>
 </div>
 
-<!-- 👥 新增：今日其他人點了什麼彈窗 (Modal) -->
+<!-- 👥 今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -1145,7 +931,7 @@ window.onload = async function() {
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -1160,7 +946,7 @@ async function startCutoffCountdown() {
     cutoffTimerInterval = setInterval(async () => {
         updateCountdownUI();
         pollCounter++;
-        if (pollCounter >= 2) {
+        if (pollCounter >= 5) {
             pollCounter = 0;
             await fetchCutoffSetting();
         }
@@ -1280,18 +1066,8 @@ async function fetchCutoffSetting() {
         latestDate = localStorage.getItem('lockDate') || localStorage.getItem('cutoffDate') || null;
     }
 
-    if (latestTime) {
-        const cleanTime = latestTime.replace(/[^0-9:]/g, '');
-        targetCutoffStr = (cleanTime && cleanTime.includes(':')) ? cleanTime : null;
-    } else {
-        targetCutoffStr = null;
-    }
-
-    if (latestDate && typeof latestDate === 'string' && latestDate.includes('-')) {
-        targetCutoffDateStr = latestDate.trim();
-    } else {
-        targetCutoffDateStr = null;
-    }
+    targetCutoffStr = latestTime ? latestTime.replace(/[^0-9:]/g, '') : null;
+    targetCutoffDateStr = (latestDate && typeof latestDate === 'string' && latestDate.includes('-')) ? latestDate.trim() : null;
 }
 
 function updateCountdownUI() {
@@ -1308,34 +1084,21 @@ function updateCountdownUI() {
         return;
     }
 
-    if (targetCutoffDateStr) {
-        timeDisplay.textContent = `${targetCutoffDateStr} ${targetCutoffStr}`;
-        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 點餐截止時間';
-    } else {
-        timeDisplay.textContent = targetCutoffStr;
-        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 今日點餐截止';
-    }
+    timeDisplay.textContent = targetCutoffDateStr ? `${targetCutoffDateStr} ${targetCutoffStr}` : targetCutoffStr;
+    if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 點餐截止時間';
 
     const now = new Date();
     const timeParts = targetCutoffStr.split(':').map(Number);
-    const targetHours = timeParts[0] !== undefined ? timeParts[0] : 10;
-    const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
-    const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
-
-    let year = now.getFullYear();
-    let month = now.getMonth();
-    let day = now.getDate();
+    let year = now.getFullYear(), month = now.getMonth(), day = now.getDate();
 
     if (targetCutoffDateStr && targetCutoffDateStr.includes('-')) {
         const dateParts = targetCutoffDateStr.split('-').map(Number);
         if (dateParts.length === 3 && !dateParts.some(isNaN)) {
-            year = dateParts[0];
-            month = dateParts[1] - 1;
-            day = dateParts[2];
+            year = dateParts[0]; month = dateParts[1] - 1; day = dateParts[2];
         }
     }
 
-    const targetTime = new Date(year, month, day, targetHours, targetMinutes, targetSeconds);
+    const targetTime = new Date(year, month, day, timeParts[0] || 10, timeParts[1] || 30, timeParts[2] || 0);
     const diffMs = targetTime - now;
 
     if (diffMs <= 0) {
@@ -1349,16 +1112,10 @@ function updateCountdownUI() {
         const hrs = Math.floor(totalSecs / 3600);
         const mins = Math.floor((totalSecs % 3600) / 60);
         const secs = totalSecs % 60;
-
-        const hh = String(hrs).padStart(2, '0');
-        const mm = String(mins).padStart(2, '0');
-        const ss = String(secs).padStart(2, '0');
+        const hh = String(hrs).padStart(2, '0'), mm = String(mins).padStart(2, '0'), ss = String(secs).padStart(2, '0');
 
         if (hrs >= 24) {
-            const days = Math.floor(hrs / 24);
-            const remainHrs = hrs % 24;
-            const rh = String(remainHrs).padStart(2, '0');
-            countdownDisplay.textContent = `${days}天 ${rh}:${mm}:${ss}`;
+            countdownDisplay.textContent = `${Math.floor(hrs / 24)}天 ${String(hrs % 24).padStart(2, '0')}:${mm}:${ss}`;
         } else if (hrs > 0) {
             countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
         } else {
@@ -1367,7 +1124,7 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
+/* ==================== 👥 其他人點了什麼邏輯 ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
