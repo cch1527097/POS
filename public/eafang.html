@@ -27,7 +27,7 @@
             line-height: 1.5;
         }
 
-        /* ==================== 頂部 Header 樣式 ==================== */
+        /* Header 樣式 */
         .navbar {
             width: 100%;
             background-color: #ffffff;
@@ -225,7 +225,7 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        /* ==================== 圖形化選項卡片 ==================== */
+        /* 圖形化選項卡片 */
         .opt-group { margin-top: 14px; }
         .opt-group label { font-weight: 700; display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
         .opt-grid {
@@ -296,10 +296,10 @@
 
         .fab-cart { background-color: #278638; }
         .fab-exit { background-color: #a40e11; }
-        .fab-menu { display: none; background-color: #475569; } /* 電腦版隱藏「點購」首頁鈕 */
+        .fab-menu { display: none; background-color: #475569; }
         .fab-btn svg { width: 24px; height: 24px; fill: #ffffff; }
 
-        .fab-text { display: none; } /* 電腦版不顯示下方文字 */
+        .fab-text { display: none; }
 
         .others-float-btn {
             background-color: #0091ff;
@@ -316,26 +316,32 @@
         /* ⏱️ 截止時間懸浮元件 (電腦版右下角懸浮) */
         .cutoff-float-badge {
             position: fixed;
-            bottom: 220px;
+            bottom: 305px;
             right: 20px;
             background: #ffffff;
             border: 2px solid #4e803c;
-            border-radius: 14px;
-            padding: 10px 14px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            border-radius: 12px;
+            padding: 8px 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
             z-index: 9998;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 140px;
+            min-width: 130px;
             text-align: center;
             transition: all 0.2s ease;
             user-select: none;
         }
 
+        .cutoff-title-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .cutoff-title {
-            font-size: 12px;
+            font-size: 11px;
             color: #2b4c23;
             font-weight: bold;
             margin-bottom: 2px;
@@ -345,20 +351,20 @@
         }
 
         .cutoff-time-text {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 800;
             color: #2b4c23;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             line-height: 1.2;
         }
 
         .cutoff-timer {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: #d9363e;
             background: #ffeef0;
-            padding: 3px 10px;
-            border-radius: 10px;
+            padding: 2px 8px;
+            border-radius: 8px;
             letter-spacing: 0.5px;
             width: 100%;
             border: 1px solid #fca5a5;
@@ -593,11 +599,11 @@
             .category-block { scroll-margin-top: 130px; }
         }
         
-        /* ==================== 📱 手機版專屬樣式 (統一固定底部導覽列與截止時間列) ==================== */
+        /* ==================== 📱 手機版專屬樣式 ==================== */
         @media (max-width: 600px) {
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
-            .container { padding: 16px 12px 140px 12px; } /* 增加底部留白，確保內容不被底部兩層導覽列遮擋 */
+            .container { padding: 16px 12px 160px 12px; }
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
             .store-logo { width: 60px; height: 60px; font-size: 24px; border-radius: 12px; }
@@ -606,48 +612,54 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
 
-            /* ⏱️ 手機版統一將「截止時間」整合貼合於底部工作列正上方 */
+            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 */
             .cutoff-float-badge { 
-                position: fixed;
-                bottom: 62px; /* 緊貼底部工作欄 (高度 62px) */
-                left: 0;
-                right: 0;
-                width: 100%;
-                min-width: 0;
-                border: none;
-                border-top: 1px solid #e2e8f0;
-                border-bottom: 1px solid #cbd5e1;
-                border-radius: 0;
-                background: #f8fafc;
-                padding: 6px 16px;
-                box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                box-sizing: border-box;
-                z-index: 9998;
+                position: fixed !important;
+                bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important;
+                left: 12px !important;
+                right: 12px !important;
+                width: auto !important;
+                min-width: 0 !important;
+                border-radius: 12px !important;
+                padding: 8px 14px !important;
+                background: #ffffff !important;
+                border: 1.5px solid #4e803c !important;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+                z-index: 9998 !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 8px !important;
+            }
+
+            .cutoff-title-group {
+                flex-direction: row !important;
+                gap: 8px !important;
+                align-items: center !important;
             }
 
             .cutoff-title {
-                font-size: 12px;
-                color: #334155;
-                margin-bottom: 0;
+                margin-bottom: 0 !important;
+                font-size: 12px !important;
+                white-space: nowrap !important;
             }
 
             .cutoff-time-text {
-                font-size: 13px;
-                color: #0f172a;
-                margin-bottom: 0;
+                margin-bottom: 0 !important;
+                font-size: 13px !important;
+                white-space: nowrap !important;
             }
 
             .cutoff-timer {
-                width: auto;
-                font-size: 12px;
-                padding: 2px 10px;
-                border-radius: 12px;
+                width: auto !important;
+                padding: 3px 10px !important;
+                font-size: 13px !important;
+                text-align: center !important;
+                white-space: nowrap !important;
             }
 
-            /* 📱 底部固定工作導覽列 (Bottom Navigation Bar) */
+            /* 📱 底部固定導覽列 */
             .fab-container {
                 position: fixed;
                 bottom: 0;
@@ -711,7 +723,6 @@
                 stroke: var(--primary);
             }
 
-            /* 手機版顯示按鈕下方的文字標籤 */
             .fab-text {
                 display: block !important;
                 font-size: 11px;
@@ -720,7 +731,6 @@
                 color: inherit;
             }
 
-            /* 購物車 Badge 位置微調整 */
             .cart-icon-wrapper {
                 position: relative;
                 display: flex;
@@ -738,7 +748,6 @@
                 border-width: 1px;
             }
 
-            /* 手機版「今日其他人點了什麼」卡片化樣式 */
             .history-modal-content {
                 width: 95vw !important;
                 max-height: 88vh !important;
@@ -791,7 +800,6 @@
                 border-bottom: none !important;
             }
 
-            /* 1. 卡號/姓名 (左上) */
             .history-table td:nth-child(1) {
                 font-size: 15px;
                 font-weight: 700;
@@ -799,13 +807,11 @@
                 order: 1;
             }
 
-            /* 2. 部門標籤 (右上) */
             .history-table td:nth-child(2) {
                 order: 2;
                 text-align: right;
             }
 
-            /* 3. 時間 (第二列) */
             .history-table td:nth-child(3) {
                 width: 100%;
                 order: 3;
@@ -815,7 +821,6 @@
                 margin-bottom: 6px;
             }
 
-            /* 4. 點餐內容 (第三列，突出框顯示) */
             .history-table td:nth-child(4) {
                 width: 100%;
                 order: 4;
@@ -828,7 +833,6 @@
                 line-height: 1.4;
             }
 
-            /* 5. 金額 (第四列，靠右紅字顯示) */
             .history-table td:nth-child(5) {
                 width: 100%;
                 order: 5;
@@ -839,7 +843,6 @@
                 margin-top: 4px;
             }
 
-            /* 無紀錄時的呈現 */
             .history-table td.no-record {
                 text-align: center !important;
                 background: transparent !important;
@@ -861,14 +864,15 @@
 
 <!-- ⏱️ 右下角/手機底部截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
-    <div class="cutoff-title">⏱️ 點餐截止時間</div>
-    <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
+    <div class="cutoff-title-group">
+        <div class="cutoff-title">⏱️ 點餐截止時間</div>
+        <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
+    </div>
     <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
 </div>
 
 <!-- 📱 底部固定導覽列 / 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 1. 點購 (手機版顯示) -->
     <button class="fab-btn fab-menu" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="點購" aria-label="點購">
         <svg viewBox="0 0 24 24">
             <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.46 3.9 3.45 4.35L6.45 22h2.1L8.55 13.35C10.54 12.9 12 11.12 12 9V2h-1v7zm8-7h-2v6h-1V2h-2v6h-1V2h-1v7c0 2.21 1.79 4 4 4v9h2V13c2.21 0 4-1.79 4-4V2h-1v6z"/>
@@ -876,7 +880,6 @@
         <span class="fab-text">點購</span>
     </button>
 
-    <!-- 2. 其他人點了什麼 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -887,7 +890,6 @@
         <span class="fab-text">他人點餐</span>
     </button>
 
-    <!-- 3. 購物車 -->
     <button class="fab-btn fab-cart" onclick="openCartModal()" title="開啟購物車" aria-label="開啟購物車">
         <div class="cart-icon-wrapper">
             <svg viewBox="0 0 24 24">
@@ -898,7 +900,6 @@
         <span class="fab-text">購物車</span>
     </button>
 
-    <!-- 4. 離開點餐 -->
     <button class="fab-btn fab-exit" onclick="goBack()" title="離開點餐" aria-label="離開點餐">
         <svg viewBox="0 0 24 24">
             <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
@@ -936,7 +937,6 @@
     </div>
 </div>
 
-<!-- 客製化 / 購物車 Modal 彈窗 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -951,7 +951,6 @@
     </div>
 </div>
 
-<!-- 👥 今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -1052,11 +1051,9 @@ let finalTotal = 0;
 let finalSummary = "";
 let globalEmployeesMap = {};
 
-// 暫存當前彈窗的選項
 let currentTypeVal = "湯";
 let currentNoteVal = "無";
 
-// ⏱️ 倒數計時變數
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
@@ -1077,19 +1074,15 @@ window.onload = async function() {
     }
 
     renderMenu(menuItems);
-    
-    // 👇 全功能後台動態菜單與價格同步機制
     await syncPricesFromBackend();
     setInterval(syncPricesFromBackend, 10000);
 
     renderCart();
 
-    // 啟動倒數計時與全院員工清單載入
     fetchEmployeeList();
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -1111,7 +1104,6 @@ async function startCutoffCountdown() {
     }, 1000);
 }
 
-// 全功能後台菜單、價格與品項完整動態同步邏輯
 async function syncPricesFromBackend() {
     let stores = null;
     try {
@@ -1133,11 +1125,9 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋名稱包含「顏舍」或「關東煮」的門市
     const storeTarget = stores.find(s => s.name && (s.name.includes('顏舍') || s.name.includes('關東煮')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    // 將後台傳回的品項即時格式化，同步至前端菜單陣列
     const backendItems = storeTarget.items.map((item, idx) => {
         const cleanName = item.name ? item.name.trim() : '';
         const defaultCat = cleanName.includes("麵") || cleanName.includes("飯") || cleanName.includes("粥") || cleanName.includes("丼") ? "飽胃主食類" : 
@@ -1156,10 +1146,8 @@ async function syncPricesFromBackend() {
     });
 
     if (backendItems.length > 0) {
-        // 覆寫菜單陣列，達成新增、修改與下架之完整同步
         menuItems.length = 0;
         menuItems.push(...backendItems);
-        
         filterMenu();
     }
 }
@@ -1303,7 +1291,6 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1448,7 +1435,6 @@ function formatDisplayTime(obj) {
     return '-';
 }
 
-/* ==================== 菜單與點餐邏輯 ==================== */
 function renderMenu(items) {
     const categories = [...new Set(items.map(i => i.category))];
     
