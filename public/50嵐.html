@@ -305,7 +305,7 @@
             stroke: #ffffff;
         }
 
-        /* ⏱️ 截止時間與倒數計時懸浮元件樣式 */
+        /* ⏱️ 截止時間懸浮元件 (電腦版右下角懸浮) */
         .cutoff-float-badge {
             position: fixed;
             bottom: 220px;
@@ -582,11 +582,11 @@
             .category-block { scroll-margin-top: 130px; }
         }
         
-        /* ==================== 📱 手機版專屬樣式 (統一固定底部工作導覽列) ==================== */
+        /* ==================== 📱 手機版專屬樣式 (統一固定底部導覽列與截止時間列) ==================== */
         @media (max-width: 600px) {
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
-            .container { padding: 16px 12px 110px 12px; } /* 增加底部留白，避免內容被底部導覽列遮擋 */
+            .container { padding: 16px 12px 140px 12px; } /* 增加底部留白，確保內容不被底部兩層導覽列遮擋 */
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
             .store-logo { width: 60px; height: 60px; font-size: 22px; border-radius: 12px; }
@@ -595,13 +595,45 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
 
-            /* ⏱️ 倒數計時元件：往上移動避開底部導覽列 */
+            /* ⏱️ 手機版統一將「截止時間」整合貼合於底部工作列正上方 */
             .cutoff-float-badge { 
-                right: 12px; 
-                bottom: 75px; 
-                padding: 6px 12px; 
-                min-width: 120px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                position: fixed;
+                bottom: 62px; /* 緊貼底部工作欄 (高度 62px) */
+                left: 0;
+                right: 0;
+                width: 100%;
+                min-width: 0;
+                border: none;
+                border-top: 1px solid #e2e8f0;
+                border-bottom: 1px solid #cbd5e1;
+                border-radius: 0;
+                background: #f8fafc;
+                padding: 6px 16px;
+                box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                box-sizing: border-box;
+                z-index: 9998;
+            }
+
+            .cutoff-title {
+                font-size: 12px;
+                color: #334155;
+                margin-bottom: 0;
+            }
+
+            .cutoff-time-text {
+                font-size: 13px;
+                color: #0f172a;
+                margin-bottom: 0;
+            }
+
+            .cutoff-timer {
+                width: auto;
+                font-size: 12px;
+                padding: 2px 10px;
+                border-radius: 12px;
             }
 
             /* 📱 底部固定工作導覽列 (Bottom Navigation Bar) */
@@ -816,7 +848,7 @@
     </div>
 </div>
 
-<!-- ⏱️ 右下角截止時間與倒數計時懸浮元件 -->
+<!-- ⏱️ 右下角/手機底部截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
     <div class="cutoff-title">
         ⏱️ 點餐截止時間
@@ -1195,7 +1227,7 @@ async function fetchCutoffSetting() {
             }
 
             if (rawVal.includes(':')) {
-                const match = rawVal.match(/([01]?\d|2[0-3]):[0-5]\d/);
+                const match = rawVal.match(/ ([01]?\d|2[0-3]):[0-5]\d/);
                 if (match) {
                     latestTime = match[0];
                     break;
