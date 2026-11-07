@@ -311,32 +311,26 @@
         /* ⏱️ 截止時間懸浮元件 (電腦版右下角懸浮) */
         .cutoff-float-badge {
             position: fixed;
-            bottom: 305px;
+            bottom: 220px;
             right: 20px;
             background: #ffffff;
             border: 2px solid #4e803c;
-            border-radius: 12px;
-            padding: 8px 12px;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-            z-index: 1000;
+            border-radius: 14px;
+            padding: 10px 14px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            z-index: 9998;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 130px;
+            min-width: 140px;
             text-align: center;
             transition: all 0.2s ease;
             user-select: none;
         }
 
-        .cutoff-title-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
         .cutoff-title {
-            font-size: 11px;
+            font-size: 12px;
             color: #2b4c23;
             font-weight: bold;
             margin-bottom: 2px;
@@ -346,20 +340,20 @@
         }
 
         .cutoff-time-text {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 800;
             color: #2b4c23;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
             line-height: 1.2;
         }
 
         .cutoff-timer {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 800;
             color: #d9363e;
             background: #ffeef0;
-            padding: 2px 8px;
-            border-radius: 8px;
+            padding: 3px 10px;
+            border-radius: 10px;
             letter-spacing: 0.5px;
             width: 100%;
             border: 1px solid #fca5a5;
@@ -591,11 +585,11 @@
             .category-block { scroll-margin-top: 130px; }
         }
         
-        /* ==================== 📱 手機版專屬樣式 (統一固定底部導覽列與截止時間列) ==================== */
+        /* ==================== 📱 手機版專屬樣式 (拉高截止時間框與底部工作列的間距) ==================== */
         @media (max-width: 600px) {
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
-            .container { padding: 16px 12px 140px 12px; } /* 增加底部留白，確保內容不被底部兩層導覽列遮擋 */
+            .container { padding: 16px 12px 160px 12px; } /* 增加底部留白，確保內容不被遮擋 */
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
             .store-logo { width: 60px; height: 60px; font-size: 15px; border-radius: 12px; }
@@ -604,10 +598,10 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
 
-            /* ⏱️ 手機版統一將「截止時間」整合貼合於底部工作列正上方 */
+            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 */
             .cutoff-float-badge { 
                 position: fixed !important;
-                bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 8px) !important;
+                bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important; /* 原為 62px 緊貼，改為加 14px 間距 */
                 left: 12px !important;
                 right: 12px !important;
                 width: auto !important;
@@ -1269,9 +1263,9 @@ async function fetchCutoffSetting() {
             }
 
             if (rawVal.includes(':')) {
-                const match = rawVal.match(/\b([01]?\d|2[0-3]):[0-5]\d/);
-                if (match) {
-                    latestTime = match[0];
+                const timeMatch = String(rawVal).match(/\b([01]?\d|2[0-3]):[0-5]\d/);
+                if (timeMatch) {
+                    latestTime = timeMatch[0];
                     break;
                 }
             }
