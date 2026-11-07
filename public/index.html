@@ -586,7 +586,7 @@
             font-style: italic;
         }
 
-        /* 懸浮按鈕群組 (電腦版維持原狀) */
+        /* 懸浮按鈕群組 (桌面端顯示) */
         .logout-btn {
             position: fixed;
             bottom: 25px;
@@ -732,6 +732,12 @@
             user-select: none;
         }
 
+        .cutoff-title-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .cutoff-title {
             font-size: 11px;
             color: #2b4c23;
@@ -810,6 +816,124 @@
             font-size: 12px;
             font-weight: bold;
             white-space: nowrap;
+        }
+
+        /* ==================== 手機版固定底部導覽列與倒數計時標籤標準化 ==================== */
+        .mobile-bottom-nav {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            /* 1. 防內容被擋住：增加底部位移邊距 */
+            body.order-mode {
+                padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+
+            /* 2. 隱藏桌面端圓形懸浮按鈕群 */
+            .logout-btn,
+            .cart-float-btn,
+            .others-float-btn,
+            .group-float-btn,
+            .excel-float-btn {
+                display: none !important;
+            }
+
+            /* 3. 截止時間與倒數計時標籤：橫向放置並貼合於底部導覽列正上方 */
+            .cutoff-float-badge {
+                position: fixed !important;
+                bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 8px) !important;
+                left: 12px !important;
+                right: 12px !important;
+                width: auto !important;
+                min-width: 0 !important;
+                border-radius: 12px !important;
+                padding: 8px 14px !important;
+                background: #ffffff !important;
+                border: 1.5px solid #4e803c !important;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+                z-index: 9998 !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 8px !important;
+            }
+
+            .cutoff-title-group {
+                flex-direction: row !important;
+                gap: 8px !important;
+                align-items: center !important;
+            }
+
+            .cutoff-title {
+                margin-bottom: 0 !important;
+                font-size: 12px !important;
+                white-space: nowrap !important;
+            }
+
+            .cutoff-time-text {
+                margin-bottom: 0 !important;
+                font-size: 13px !important;
+                white-space: nowrap !important;
+            }
+
+            .cutoff-timer {
+                width: auto !important;
+                padding: 3px 10px !important;
+                font-size: 13px !important;
+                text-align: center !important;
+                white-space: nowrap !important;
+            }
+
+            /* 4. 手機版固定底部導覽列 (5個功能分頁) */
+            .mobile-bottom-nav {
+                display: flex !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 60px;
+                background: #ffffff;
+                border-top: 1px solid #e0e0e0;
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+                z-index: 9999;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+                justify-content: space-around;
+                align-items: center;
+            }
+
+            .nav-tab {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 6px 0;
+                color: #333333;
+                text-decoration: none;
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 11px;
+                font-weight: 600;
+                position: relative;
+                gap: 2px;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .nav-tab svg {
+                width: 22px;
+                height: 22px;
+                stroke: currentColor;
+                fill: none;
+                stroke-width: 2;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+
+            .nav-tab.active {
+                color: #4e803c;
+            }
         }
 
         /* ==================== 4. Modal 彈窗樣式 ==================== */
@@ -1107,7 +1231,7 @@
             color: #4a5568 !important;
         }
 
-        /* 📱 手機版 RWD 適應：電腦版保持原樣，僅調整手機版底部堆疊高度 */
+        /* 📱 手機版 RWD 適應優化 */
         @media (max-width: 768px) {
             .nidin-top-bar {
                 flex-direction: column;
@@ -1166,49 +1290,6 @@
             .footer-info-row {
                 flex-direction: column;
                 gap: 6px;
-            }
-
-            /* 🔻 手機版右下角懸浮按鈕群組與截止時間對齊 */
-            .logout-btn {
-                right: 14px;
-                bottom: 14px;
-                width: 42px;
-                height: 42px;
-            }
-
-            .cart-float-btn {
-                right: 14px;
-                bottom: 64px;
-                width: 42px;
-                height: 42px;
-            }
-
-            .others-float-btn {
-                right: 14px;
-                bottom: 114px;
-                width: 42px;
-                height: 42px;
-            }
-
-            .group-float-btn {
-                right: 14px;
-                bottom: 164px;
-                width: 42px;
-                height: 42px;
-            }
-
-            .excel-float-btn {
-                right: 14px;
-                bottom: 214px;
-                width: 42px;
-                height: 42px;
-            }
-
-            .cutoff-float-badge {
-                right: 14px;
-                bottom: 268px;
-                padding: 6px 10px;
-                min-width: 115px;
             }
 
             .history-table-wrapper {
@@ -2183,16 +2264,16 @@
             </div>
         </footer>
 
-        <!-- ⏱️ 右下角截止時間與倒數計時懸浮元件 -->
+        <!-- ⏱️ 右下角/手機版固定底部倒數計時標籤 (標準化結構) -->
         <div id="cutoffBadge" class="cutoff-float-badge">
-            <div class="cutoff-title">
-                ⏱️ 點餐截止時間
+            <div class="cutoff-title-group">
+                <div class="cutoff-title">⏱️ 點餐截止時間</div>
+                <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
             </div>
-            <div class="cutoff-time-text" id="cutoffTimeDisplay">09:30</div>
             <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
         </div>
 
-        <!-- 📊 匯出 Excel 懸浮按鈕（永久顯示） -->
+        <!-- 📊 匯出 Excel 懸浮按鈕（桌面端顯示） -->
         <button id="excelExportBtn" class="excel-float-btn" title="匯出揪團 Excel" aria-label="匯出 Excel" onclick="exportGroupOrdersToExcel()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -2203,7 +2284,7 @@
             </svg>
         </button>
 
-        <!-- 🎉 揪團懸浮按鈕 -->
+        <!-- 🎉 揪團懸浮按鈕（桌面端顯示） -->
         <button class="group-float-btn" title="發起 / 參加揪團" aria-label="揪團" onclick="openGroupModal()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -2212,7 +2293,7 @@
             </svg>
         </button>
 
-        <!-- 👥 購物車按鈕上面的「其他人點了什麼」懸浮按鈕 -->
+        <!-- 👥 其他人點了什麼懸浮按鈕（桌面端顯示） -->
         <button class="others-float-btn" title="其他人點了什麼" aria-label="其他人點了什麼" onclick="openOthersModal()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -2221,6 +2302,7 @@
             </svg>
         </button>
 
+        <!-- 🛒 購物車懸浮按鈕（桌面端顯示） -->
         <button class="cart-float-btn" title="查看購物車" aria-label="購物車" onclick="openCartModal()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="9" cy="21" r="1"></circle>
@@ -2229,6 +2311,7 @@
             </svg>
         </button>
 
+        <!-- 🚪 登出系統懸浮按鈕（桌面端顯示） -->
         <button class="logout-btn" title="登出系統" aria-label="登出系統" onclick="executeLogout()">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -2236,6 +2319,30 @@
                 <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
         </button>
+
+        <!-- 📱 手機版固定底部導覽列 (5個分頁標準化) -->
+        <nav class="mobile-bottom-nav">
+            <button class="nav-tab active" onclick="showAllCategories()">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>點餐首頁</span>
+            </button>
+            <button class="nav-tab" onclick="openGroupModal()">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg>
+                <span>揪團點餐</span>
+            </button>
+            <button class="nav-tab" onclick="openOthersModal()">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 1 0 7.75"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>他人點餐</span>
+            </button>
+            <button class="nav-tab" onclick="openCartModal()">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                <span>購物車</span>
+            </button>
+            <button class="nav-tab" onclick="executeLogout()">
+                <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <span>登出</span>
+            </button>
+        </nav>
     </div>
 
     <!-- 選擇院區彈窗 (Modal) -->
@@ -2768,7 +2875,6 @@
                 latestDate = localStorage.getItem('lockDate') || localStorage.getItem('cutoffDate') || null;
             }
 
-            // 修正：改用正規表示式精準擷取 HH:MM，避免含有日期連字號時 replace/split 錯誤
             if (latestTime) {
                 const timeMatch = String(latestTime).match(/([01]?\d|2[0-3]):[0-5]\d/);
                 targetCutoffStr = timeMatch ? timeMatch[0] : null;
@@ -2925,7 +3031,6 @@
             checkIsGroupInitiator();
         }
 
-        // 修正：移除無用之 async 宣告
         function checkIsGroupInitiator() {
             const excelBtn = document.getElementById('excelExportBtn');
             if (!excelBtn) return;
@@ -2954,7 +3059,6 @@
         async function exportGroupOrdersToExcel() {
             let orders = [];
 
-            // 修正：加入陣列格式安全檢查，防護物件格式回傳導致 filter 報錯
             try {
                 const res = await fetch(`/api/orders?_=${new Date().getTime()}`, { cache: 'no-store' });
                 if (res.ok) {
@@ -2982,7 +3086,8 @@
             }
 
             let csvContent = "﻿";
-            csvContent += "卡號,姓名,部門,訂單時間,點餐店家與內容,金額,備註\n";
+            csvContent += "卡號,姓名,部門,訂單時間,點餐店家與內容,金額,備註
+";
 
             activeOrders.forEach(order => {
                 const cardId = order.cardId || order.card_id || '';
@@ -2999,7 +3104,8 @@
 
                 const noteText = (order.note || '').replace(/"/g, '""');
 
-                csvContent += `"${cardId}","${empName}","${dept}","${timeStr}","${mealText}","${totalAmount}","${noteText}"\n`;
+                csvContent += `"${cardId}","${empName}","${dept}","${timeStr}","${mealText}","${totalAmount}","${noteText}"
+`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -3453,7 +3559,6 @@
                     }
                     const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : '未劃分';
                     
-                    // 修正：登入成功時將登入按鈕與 isSubmitting 狀態還原
                     isSubmitting = false;
                     if (loginBtn) loginBtn.disabled = false;
                     showOrderSection(cardId, data.empName || cardId, dept, false);
@@ -3758,10 +3863,9 @@
                 const timeKey = order.timestamp || order.time || order.Time || '';
                 const orderId = order.orderId || order.order_id || order.id || '';
                 
-                // 修正：補全雙引號與單引號轉義，避免 onclick HTML 屬性解析錯誤
-                const safeOrderId = String(orderId).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                const safeTimeKey = String(timeKey).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                const safeShopName = String(shopName).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeOrderId = String(orderId).replace(/'/g, "\'").replace(/"/g, '&quot;');
+                const safeTimeKey = String(timeKey).replace(/'/g, "\'").replace(/"/g, '&quot;');
+                const safeShopName = String(shopName).replace(/'/g, "\'").replace(/"/g, '&quot;');
 
                 const actionHtml = isAllowCancel ? `
                     <button class="order-action-btn btn-edit-order" onclick="editOrder('${safeOrderId}', '${safeTimeKey}', '${safeShopName}')">修改</button>
@@ -3827,7 +3931,7 @@
             try {
                 const response = await fetch('/api/orders/cancel', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ cardId: cardId, orderId: orderId, timestamp: timestamp })
                 });
                 if (response.ok) {
@@ -3971,10 +4075,9 @@
                     const timeKey = order.timestamp || order.time || order.Time || '';
                     const orderId = order.orderId || order.order_id || order.id || '';
 
-                    // 修正：補全雙引號與單引號轉義，避免 onclick HTML 屬性解析錯誤
-                    const safeOrderId = String(orderId).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    const safeTimeKey = String(timeKey).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                    const safeShopName = String(shopName).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeOrderId = String(orderId).replace(/'/g, "\'").replace(/"/g, '&quot;');
+                    const safeTimeKey = String(timeKey).replace(/'/g, "\'").replace(/"/g, '&quot;');
+                    const safeShopName = String(shopName).replace(/'/g, "\'").replace(/"/g, '&quot;');
 
                     const tdAction = document.createElement('td');
                     tdAction.setAttribute('data-label', '控制操作');
