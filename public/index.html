@@ -586,7 +586,7 @@
             font-style: italic;
         }
 
-        /* 懸浮按鈕群組 */
+        /* 懸浮按鈕群組 (電腦版維持原狀) */
         .logout-btn {
             position: fixed;
             bottom: 25px;
@@ -1107,7 +1107,7 @@
             color: #4a5568 !important;
         }
 
-        /* 📱 手機版 RWD 適應優化 */
+        /* 📱 手機版 RWD 適應：電腦版保持原樣，僅調整手機版底部堆疊高度 */
         @media (max-width: 768px) {
             .nidin-top-bar {
                 flex-direction: column;
@@ -1168,46 +1168,47 @@
                 gap: 6px;
             }
 
-            .cutoff-float-badge {
+            /* 🔻 手機版右下角懸浮按鈕群組與截止時間對齊 */
+            .logout-btn {
                 right: 14px;
-                bottom: 280px;
-                padding: 6px 10px;
-                min-width: 115px;
-            }
-
-            .excel-float-btn {
-                right: 14px;
-                bottom: 226px;
-                width: 42px;
-                height: 42px;
-            }
-
-            .group-float-btn {
-                right: 14px;
-                bottom: 176px;
-                width: 42px;
-                height: 42px;
-            }
-
-            .others-float-btn {
-                right: 14px;
-                bottom: 126px;
+                bottom: 14px;
                 width: 42px;
                 height: 42px;
             }
 
             .cart-float-btn {
                 right: 14px;
-                bottom: 76px;
+                bottom: 64px;
                 width: 42px;
                 height: 42px;
             }
 
-            .logout-btn {
+            .others-float-btn {
                 right: 14px;
-                bottom: 24px;
+                bottom: 114px;
                 width: 42px;
                 height: 42px;
+            }
+
+            .group-float-btn {
+                right: 14px;
+                bottom: 164px;
+                width: 42px;
+                height: 42px;
+            }
+
+            .excel-float-btn {
+                right: 14px;
+                bottom: 214px;
+                width: 42px;
+                height: 42px;
+            }
+
+            .cutoff-float-badge {
+                right: 14px;
+                bottom: 268px;
+                padding: 6px 10px;
+                min-width: 115px;
             }
 
             .history-table-wrapper {
@@ -2980,7 +2981,7 @@
                 return;
             }
 
-            let csvContent = "\uFEFF";
+            let csvContent = "﻿";
             csvContent += "卡號,姓名,部門,訂單時間,點餐店家與內容,金額,備註\n";
 
             activeOrders.forEach(order => {
