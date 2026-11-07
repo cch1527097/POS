@@ -2127,7 +2127,7 @@
                 </div>
                 <div class="shop-info">
                     <h3 class="shop-name">吳家紅茶冰</h3>
-                    <p class="shop-desc">吳家紅茶冰多年堅持，無防腐劑、無人工香精的純天然飲品，我們給予消費者的健康飲品。</p>
+                    <p class="shop-desc">吳家紅茶冰多年堅持，無防腐線、無人工香精的純天然飲品，我們給予消費者的健康飲品。</p>
                 </div>
             </div>
 
@@ -3085,9 +3085,8 @@
                 return;
             }
 
-            let csvContent = "﻿";
-            csvContent += "卡號,姓名,部門,訂單時間,點餐店家與內容,金額,備註
-";
+            let csvContent = "\uFEFF";
+            csvContent += "卡號,姓名,部門,訂單時間,點餐店家與內容,金額,備註\n";
 
             activeOrders.forEach(order => {
                 const cardId = order.cardId || order.card_id || '';
@@ -3104,8 +3103,7 @@
 
                 const noteText = (order.note || '').replace(/"/g, '""');
 
-                csvContent += `"${cardId}","${empName}","${dept}","${timeStr}","${mealText}","${totalAmount}","${noteText}"
-`;
+                csvContent += `"${cardId}","${empName}","${dept}","${timeStr}","${mealText}","${totalAmount}","${noteText}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -3696,13 +3694,18 @@
                 return ts < 9999999999 ? ts * 1000 : ts;
             }
 
+            const directTs = Date.parse(rawTime);
+            if (!isNaN(directTs)) return directTs;
+
             if (rawTime.includes('上午') || rawTime.includes('下午')) {
                 try {
                     const isPM = rawTime.includes('下午');
                     let cleanStr = rawTime.replace(/[上下]午/, ' ').replace(/\s+/g, ' ');
                     
-                    let [datePart, timePart] = cleanStr.trim().split(' ');
-                    if (datePart && timePart) {
+                    let parts = cleanStr.trim().split(' ');
+                    if (parts.length >= 2) {
+                        let datePart = parts[0];
+                        let timePart = parts[1];
                         let [hrs, mins, secs] = timePart.split(':').map(Number);
                         
                         if (isPM && hrs < 12) hrs += 12;
@@ -3863,9 +3866,9 @@
                 const timeKey = order.timestamp || order.time || order.Time || '';
                 const orderId = order.orderId || order.order_id || order.id || '';
                 
-                const safeOrderId = String(orderId).replace(/'/g, "\'").replace(/"/g, '&quot;');
-                const safeTimeKey = String(timeKey).replace(/'/g, "\'").replace(/"/g, '&quot;');
-                const safeShopName = String(shopName).replace(/'/g, "\'").replace(/"/g, '&quot;');
+                const safeOrderId = String(orderId).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeTimeKey = String(timeKey).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeShopName = String(shopName).replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                 const actionHtml = isAllowCancel ? `
                     <button class="order-action-btn btn-edit-order" onclick="editOrder('${safeOrderId}', '${safeTimeKey}', '${safeShopName}')">修改</button>
@@ -4075,9 +4078,9 @@
                     const timeKey = order.timestamp || order.time || order.Time || '';
                     const orderId = order.orderId || order.order_id || order.id || '';
 
-                    const safeOrderId = String(orderId).replace(/'/g, "\'").replace(/"/g, '&quot;');
-                    const safeTimeKey = String(timeKey).replace(/'/g, "\'").replace(/"/g, '&quot;');
-                    const safeShopName = String(shopName).replace(/'/g, "\'").replace(/"/g, '&quot;');
+                    const safeOrderId = String(orderId).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeTimeKey = String(timeKey).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeShopName = String(shopName).replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                     const tdAction = document.createElement('td');
                     tdAction.setAttribute('data-label', '控制操作');
