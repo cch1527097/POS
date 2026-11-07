@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>森晴餐盒製所 - 智慧點餐系統</title>
+    <title>樂法 - 智慧點餐系統</title>
     <style>
         html { scroll-behavior: smooth; }
 
         :root { 
-            --primary: #4a7c59;       /* 森林綠 */
-            --primary-light: #eaf2ed; /* 淡綠底色 */
-            --secondary: #85a98f;     /* 輔助綠色 */
-            --accent: #e67e22;        /* 橘色點綴 */
-            --bg-main: #fcfbfa;       /* 柔和輕灰底色 */
+            --primary: #2d5a27;       /* 質感森林綠 */
+            --primary-light: #edf4ed; /* 淡綠背景 */
+            --secondary: #d4a359;     /* 金黃點綴 */
+            --accent: #d9381e;        /* 亮紅標籤 */
+            --bg-main: #f8f9fa;       /* 輕灰底色 */
             --text-dark: #2c3e50;      /* 深色文字 */
             --text-muted: #7f8c8d;    /* 輔助灰色 */
-            --border-color: #e2e8f0;  /* 邊框線條 */
+            --border-color: #cbd5e1;  /* 邊框線條 */
         }
 
         body { 
@@ -103,9 +103,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(74, 124, 89, 0.25);
+            box-shadow: 0 4px 10px rgba(45, 90, 39, 0.2);
             flex-shrink: 0;
             text-align: center;
             line-height: 1.2;
@@ -113,6 +113,32 @@
         .store-details h1 { margin: 0 0 8px 0; font-size: 22px; font-weight: 700; }
         .store-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--text-muted); }
         .store-meta span { display: flex; align-items: center; gap: 4px; }
+        .store-meta .rating { color: #f1c40f; font-weight: bold; }
+
+        .promo-banner {
+            background: var(--primary-light);
+            border-radius: 8px;
+            padding: 10px 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .promo-badge {
+            background: var(--primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .promo-text { color: #2c3e50; }
+        .promo-text b { font-weight: 800; }
 
         .info-banner { 
             background: #e0f2fe; 
@@ -160,71 +186,72 @@
         .item-card {
             background: #fff;
             border-radius: 12px;
-            border: 1px solid var(--border-color);
+            border: 1px solid #e2e8f0;
             padding: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.01);
             transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
         }
         .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
         .item-info { flex: 1; padding-right: 12px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
         .item-name { font-weight: 700; color: var(--text-dark); font-size: 15px; margin-bottom: 6px; word-break: break-all; }
-        .item-price-zone { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
-        .item-price { color: var(--text-dark); font-weight: 700; font-size: 15px; }
+        .item-price-zone { display: flex; align-items: center; gap: 8px; margin-top: auto; flex-wrap: wrap; }
+        .item-price { color: var(--text-dark); font-weight: 700; font-size: 13px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
         
         .item-img-placeholder {
-            width: 70px;
-            height: 70px;
+            width: 50px;
+            height: 50px;
             background: #f8fafc;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 22px;
             border: 1px solid #f1f5f9;
             flex-shrink: 0;
-            cursor: pointer;
             position: relative;
             user-select: none;
         }
 
         .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; }
         
         .action-zone { display: flex; align-items: center; gap: 8px; }
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        /* 圖形化選項按鈕樣式 */
-        .option-group-title { font-weight: 600; margin-top: 14px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
-        .option-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
-        .opt-btn {
-            background: #f8fafc;
-            border: 1.5px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px 6px;
-            text-align: center;
+        /* 規格按鈕樣式 */
+        .spec-group { margin-bottom: 18px; }
+        .spec-title { font-weight: 700; font-size: 14px; color: #334155; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+        .spec-title::before { content: "*"; color: #e11d48; margin-right: 2px; }
+        .spec-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .spec-options.col-2 { grid-template-columns: repeat(2, 1fr); }
+        .spec-options.col-3 { grid-template-columns: repeat(3, 1fr); }
+        
+        .spec-btn {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 10px 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
             cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
+            text-align: center;
+            transition: all 0.15s ease;
             user-select: none;
         }
-        .opt-btn .opt-icon { font-size: 20px; }
-        .opt-btn .opt-text { font-size: 12px; font-weight: 600; color: #334155; }
-        .opt-btn .opt-price { font-size: 11px; color: var(--accent); font-weight: 700; }
-        .opt-btn:hover { border-color: var(--secondary); background: #fff; }
-        .opt-btn.selected {
+        .spec-btn:hover { border-color: var(--primary); }
+        .spec-btn.active {
+            background-color: var(--primary-light);
             border-color: var(--primary);
-            background: var(--primary-light);
-            box-shadow: 0 0 0 2px var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: inset 0 0 0 1px var(--primary);
         }
-        .opt-btn.selected .opt-text { color: var(--primary); }
 
         /* ==================== 懸浮按鈕群 & 截止時間懸浮元件 (電腦預設) ==================== */
         .fab-container {
@@ -314,7 +341,7 @@
         .cutoff-timer {
             font-size: 13px;
             font-weight: 800;
-            color: #d9363e;
+            color: #d9381e;
             background: #ffeef0;
             padding: 2px 8px;
             border-radius: 8px;
@@ -334,7 +361,7 @@
             position: absolute;
             top: -4px;
             right: -4px;
-            background-color: #e74c3c;
+            background-color: var(--accent);
             color: white;
             font-size: 12px;
             font-weight: bold;
@@ -348,47 +375,6 @@
             box-sizing: border-box;
             border: 2px solid #ffffff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            animation: badge-pop 0.2s ease-out;
-        }
-
-        @keyframes badge-pop {
-            0% { transform: scale(0.6); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-
-        /* 低消訊息橫條樣式 */
-        .promo-banner {
-            background: #fff7ed;
-            border: 1px solid #ffedd5;
-            border-radius: 10px;
-            padding: 10px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-        }
-
-        .promo-badge {
-            background: #ea580c;
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 6px;
-            letter-spacing: 1px;
-            flex-shrink: 0;
-        }
-
-        .promo-text {
-            font-size: 14px;
-            color: #9a3412;
-        }
-
-        .promo-text b {
-            color: #c2410c;
-            font-size: 16px;
         }
 
         /* Modal 彈窗樣式 */
@@ -408,10 +394,7 @@
             transition: opacity 0.2s ease, visibility 0.2s ease;
         }
 
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
 
         .modal-container {
             background: #fff;
@@ -437,20 +420,19 @@
             border-bottom: 1px solid #f1f5f9;
         }
 
-        .modal-title { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; }
+        .modal-title { font-size: 17px; font-weight: 700; color: #1e293b; margin: 0; }
 
         .modal-close {
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 22px;
             color: #94a3b8;
             cursor: pointer;
             line-height: 1;
         }
-        .modal-close:hover { color: #475569; }
 
         .modal-body {
-            padding: 16px 20px;
+            padding: 20px;
             font-size: 15px;
             color: #334155;
             line-height: 1.6;
@@ -470,25 +452,23 @@
             background: #fff;
             border: 1px solid #cbd5e1;
             color: #334155;
-            padding: 8px 16px;
+            padding: 8px 20px;
             font-size: 14px;
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
         }
-        .btn-modal-cancel:hover { background: #f8fafc; }
 
         .btn-modal-confirm {
             background: var(--primary);
             border: none;
             color: white;
-            padding: 8px 16px;
+            padding: 8px 24px;
             font-size: 14px;
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
         }
-        .btn-modal-confirm:hover { background: #385e43; }
 
         .custom-item-tag {
             font-size: 12px;
@@ -569,7 +549,6 @@
                 margin-bottom: 16px;
                 border-radius: 0 0 12px 12px;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                -webkit-overflow-scrolling: touch;
             }
             .category-sidebar::-webkit-scrollbar { display: none; }
             .side-cat-item { 
@@ -592,7 +571,7 @@
             .container { padding: 16px 12px 160px 12px; }
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
-            .store-logo { width: 60px; height: 60px; font-size: 15px; border-radius: 12px; }
+            .store-logo { width: 60px; height: 60px; font-size: 16px; border-radius: 12px; }
             .store-details h1 { font-size: 18px; }
             .menu-grid { grid-template-columns: 1fr; }
             .category-sidebar { top: 98px; }
@@ -812,7 +791,7 @@
 <div class="navbar">
     <a href="index.html" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋餐點 (例如：雞腿排、咖哩、鮭魚)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋飲品 (例如：蘋果、歐蕾、鐵觀音)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -820,7 +799,7 @@
 <div id="cutoffBadge" class="cutoff-float-badge">
     <div class="cutoff-title-group">
         <div class="cutoff-title">⏱️ 點餐截止時間</div>
-        <div class="cutoff-time-text" id="cutoffTimeDisplay">10:30</div>
+        <div class="cutoff-time-text" id="cutoffTimeDisplay">10:00</div>
     </div>
     <div class="cutoff-timer" id="cutoffCountdownDisplay">載入中...</div>
 </div>
@@ -865,14 +844,14 @@
 <div class="container">
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">森晴<br>餐盒</div>
+            <div class="store-logo">樂法</div>
             <div class="store-details">
-                <h1>森晴餐盒製所 鹿港店</h1>
+                <h1>樂法 Le Phare - 鹿港店</h1>
                 <div class="store-meta">
-                    <span class="rating">⭐ 4.1 (43)</span>
-                    <span>🕒 11:00 ~ 20:30</span>
-                    <span>📍 彰化縣鹿港鎮東隆路236-6號</span>
-                    <span>📞 04-777-3799</span>
+                    <span class="rating">⭐ 4.1 (167)</span>
+                    <span>🕒 10:00 ~ 21:00</span>
+                    <span>📍 505彰化縣鹿港鎮順興里中山路281號</span>
+                    <span>📞 04-778-0617</span>
                 </div>
             </div>
         </div>
@@ -881,7 +860,7 @@
     <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
-        <span class="promo-text">外送最低金額 <b>800</b> 元</span>
+        <span class="promo-text">外送最低金額 <b>500</b> 元</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -896,13 +875,13 @@
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
-            <h3 id="modal-title" class="modal-title">請確認您的訂單內容</h3>
+            <h3 id="modal-title" class="modal-title">規格選擇</h3>
             <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
         <div id="modal-body" class="modal-body"></div>
         <div class="modal-footer" id="modal-footer">
             <button class="btn-modal-cancel" id="btn-modal-cancel" onclick="closeModal()">取消</button>
-            <button class="btn-modal-confirm" id="btn-modal-confirm">確認送出</button>
+            <button class="btn-modal-confirm" id="btn-modal-confirm">確定</button>
         </div>
     </div>
 </div>
@@ -945,65 +924,97 @@ function goBack() {
 }
 
 const menuItems = [
-    // === 話題の超值弁當 ($99 限定) ===
-    {name: "碳烤雞腿排餐盒", price: 99, category: "話題の超值弁當", icon: "🍗"},
-    {name: "日式雞排餐盒", price: 99, category: "話題の超值弁當", icon: "🍱"},
-    {name: "打拋豬餐盒 🌶️", price: 99, category: "話題の超值弁當", icon: "🍛"},
+    // === 老饕蘋果系列 ===
+    {name: "蘋果鮮綠", priceM: 70, priceL: 90, priceH: 70, category: "老饕蘋果系列", icon:"🍎"},
+    {name: "蘋果鮮紅", priceM: 70, priceL: 90, priceH: 70, category: "老饕蘋果系列", icon:"🍎"},
+    {name: "蘋果優利卡", priceM: 75, priceL: 95, priceH: 75, category: "老饕蘋果系列", icon:"🍎"},
+    {name: "蘋果柳橙", priceM: 75, priceL: 95, priceH: null, category: "老饕蘋果系列", icon:"🍊"},
+    {name: "蘋果那堤", priceM: 75, priceL: 95, priceH: null, category: "老饕蘋果系列", icon:"🥛"},
+    {name: "蘋果舞凍", priceM: null, priceL: 80, priceH: null, category: "老饕蘋果系列", icon:"🧋"},
 
-    // === 職人餐盒 ===
-    {name: "BBQ燒肉餐盒", price: 110, category: "職人餐盒", icon: "🥩"},
-    {name: "炙燒豬肉餐盒", price: 125, category: "職人餐盒", icon: "🥩"},
-    {name: "薄鹽鯖魚餐盒", price: 125, category: "職人餐盒", icon: "🐟"},
-    {name: "舒肥雞肉餐盒 (胡椒海鹽)", price: 130, category: "職人餐盒", icon: "🐔"},
-    {name: "舒肥雞肉餐盒 (檸檬迷迭香)", price: 130, category: "職人餐盒", icon: "🐔"},
-    {name: "台味鹽酥雞餐盒", price: 130, category: "職人餐盒", icon: "🍗"},
-    {name: "雪花牛肉餐盒", price: 135, category: "職人餐盒", icon: "🥩"},
-    {name: "唐揚雞塊餐盒", price: 140, category: "職人餐盒", icon: "🍗"},
-    {name: "糖醋魚塊餐盒", price: 140, category: "職人餐盒", icon: "🐟"},
-    {name: "厚切豬排餐盒", price: 150, category: "職人餐盒", icon: "🥩"},
-    {name: "炸蝦天婦羅餐盒", price: 150, category: "職人餐盒", icon: "🍤"},
-    {name: "香檸烤鮭魚餐盒", price: 160, category: "職人餐盒", icon: "🐟"},
-    {name: "泰式檸檬魚餐盒 🌶️", price: 170, category: "職人餐盒", icon: "🐟"},
+    // === 蘋果系列 ===
+    {name: "蘋果蜂蜜綠茶", priceM: null, priceL: 70, priceH: null, category: "蘋果系列", icon:"🍯"},
+    {name: "蘋果芭樂綠茶", priceM: null, priceL: 70, priceH: null, category: "蘋果系列", icon:"🍏"},
+    {name: "蘋果柳橙青茶", priceM: null, priceL: 70, priceH: null, category: "蘋果系列", icon:"🍊"},
+    {name: "蘋果紅茶舞凍", priceM: null, priceL: 70, priceH: null, category: "蘋果系列", icon:"🧋"},
 
-    // === 和風咖哩 ===
-    {name: "咖哩雞排", price: 120, category: "和風咖哩", icon: "🍛"},
-    {name: "咖哩鹽酥雞", price: 150, category: "和風咖哩", icon: "🍛"},
-    {name: "咖哩唐揚雞", price: 160, category: "和風咖哩", icon: "🍛"},
-    {name: "咖哩豬排", price: 170, category: "和風咖哩", icon: "🍛"},
-    {name: "咖哩炸蝦天婦羅", price: 170, category: "和風咖哩", icon: "🍛"},
+    // === ITI台灣茶系列 ===
+    {name: "琥珀高山青", priceM: null, priceL: 40, priceH: 40, category: "ITI台灣茶系列", icon:"🍵"},
+    {name: "大葉烏龍", priceM: null, priceL: 40, priceH: 40, category: "ITI台灣茶系列", icon:"☕"},
+    {name: "紅韻紅茶", priceM: null, priceL: 40, priceH: 40, category: "ITI台灣茶系列", icon:"🍂"},
+    {name: "東方美人", priceM: null, priceL: 40, priceH: 40, category: "ITI台灣茶系列", icon:"🌱"},
 
-    // === 人氣加點推薦 (美味單點) ===
-    {name: "厚切豬排 (單點)", price: 80, category: "美味單點", icon: "🥩"},
-    {name: "唐揚雞 5塊 (單點)", price: 100, category: "美味單點", icon: "🍗"},
-    {name: "台味鹽酥雞 (單點)", price: 100, category: "美味單點", icon: "🍗"},
-    {name: "薯條", price: 50, category: "美味單點", icon: "🍟"},
-    {name: "地瓜", price: 50, category: "美味單點", icon: "🍠"},
-    {name: "銀絲卷", price: 50, category: "美味單點", icon: "🥖"},
-    {name: "碳烤雞腿 (單點)", price: 60, category: "美味單點", icon: "🍗"},
-    {name: "舒肥雞肉-胡椒海鹽 (單點)", price: 70, category: "美味單點", icon: "🐔"},
-    {name: "舒肥雞肉-檸檬迷迭香 (單點)", price: 70, category: "美味單點", icon: "🐔"},
-    {name: "炙燒豬肉 (單點)", price: 70, category: "美味單點", icon: "🥩"},
-    {name: "薄鹽鯖魚 (單點)", price: 60, category: "美味單點", icon: "🐟"},
-    {name: "日式雞排 (單點)", price: 60, category: "美味單點", icon: "🍗"},
-    {name: "BBQ燒肉 (單點)", price: 60, category: "美味單點", icon: "🥩"},
-    {name: "雪花牛肉 (單點)", price: 80, category: "美味單點", icon: "🥩"},
-    {name: "香檸烤鮭魚 (單點)", price: 100, category: "美味單點", icon: "🐟"},
-    {name: "泰式檸檬魚 (單點) 🌶️", price: 110, category: "美味單點", icon: "🐟"},
+    // === 水果風味系列 - 芒果 ===
+    {name: "芒果優格飲", priceM: null, priceL: 95, priceH: null, category: "水果風味系列", icon:"🥭"},
+    {name: "冰淇淋芒果(冰沙)", priceM: null, priceL: 80, priceH: null, category: "水果風味系列", icon:"🍨"},
+    {name: "楊枝甘露酪酪2.0", priceM: null, priceL: 80, priceH: null, category: "水果風味系列", icon:"🥭"},
+    {name: "芒果鮮奶(含椰果)", priceM: null, priceL: 80, priceH: null, category: "水果風味系列", icon:"🥛"},
+    {name: "芒果奶蓋(含晶球/冰沙)", priceM: null, priceL: 75, priceH: null, category: "水果風味系列", icon:"🥭"},
+    {name: "芒果綠茶", priceM: null, priceL: 65, priceH: null, category: "水果風味系列", icon:"🥭"},
 
-    // === 滿足加點 ===
-    {name: "升級紫米飯", price: 15, category: "滿足加點", icon: "🍚"},
-    {name: "特選白飯", price: 15, category: "滿足加點", icon: "🍚"},
-    {name: "每日例湯", price: 20, category: "滿足加點", icon: "🥣"},
-    {name: "紫米飯", price: 25, category: "滿足加點", icon: "🍚"},
-    {name: "咖哩醬", price: 30, category: "滿足加點", icon: "🍛"},
-    {name: "溏心蛋", price: 30, category: "滿足加點", icon: "🥚"}
+    // === 水果風味系列 - 芭樂 ===
+    {name: "芭樂紅茶", priceM: null, priceL: 70, priceH: null, category: "水果風味系列", icon:"🍏"},
+    {name: "芭樂梅", priceM: null, priceL: 70, priceH: null, category: "水果風味系列", icon:"🍏"},
+    {name: "芭樂檸檬綠", priceM: null, priceL: 65, priceH: null, category: "水果風味系列", icon:"🍋"},
+    {name: "芭樂柳橙", priceM: null, priceL: 75, priceH: null, category: "水果風味系列", icon:"🍊"},
+    {name: "芭樂芒果", priceM: null, priceL: 75, priceH: null, category: "水果風味系列", icon:"🥭"},
+
+    // === 水果風味系列 - 草莓/藍莓 ===
+    {name: "藍莓奶昔", priceM: null, priceL: 95, priceH: null, category: "水果風味系列", icon:"🫐"},
+    {name: "草莓奶昔", priceM: null, priceL: 90, priceH: null, category: "水果風味系列", icon:"🍓"},
+    {name: "草莓鮮奶(含椰果)", priceM: null, priceL: 80, priceH: null, category: "水果風味系列", icon:"🍓"},
+    {name: "草莓柳橙酪酪2.0", priceM: null, priceL: 80, priceH: null, category: "水果風味系列", icon:"🍓"},
+    {name: "草莓多多", priceM: null, priceL: 75, priceH: null, category: "水果風味系列", icon:"🍼"},
+    {name: "草莓奶蓋青(含晶球)", priceM: null, priceL: 75, priceH: null, category: "水果風味系列", icon:"🍓"},
+
+    // === 水果風味系列 - 蜜桃/柳橙 ===
+    {name: "冰淇淋蜜桃", priceM: null, priceL: 90, priceH: null, category: "水果風味系列", icon:"🍑"},
+    {name: "蜜桃青檸酪酪", priceM: null, priceL: 85, priceH: null, category: "水果風味系列", icon:"🍑"},
+    {name: "蜜桃四季青", priceM: null, priceL: 70, priceH: null, category: "水果風味系列", icon:"🍑"},
+    {name: "蜜桃鮮奶(含椰果)", priceM: null, priceL: 80, priceH: null, category: "水果風味系列", icon:"🍑"},
+    {name: "梅好橙柚青", priceM: null, priceL: 70, priceH: null, category: "水果風味系列", icon:"🍊"},
+    {name: "橙柚青", priceM: null, priceL: 60, priceH: 60, category: "水果風味系列", icon:"🍊"},
+    {name: "柳橙鮮綠", priceM: null, priceL: 65, priceH: null, category: "水果風味系列", icon:"🍊"},
+
+    // === 仙草系列 ===
+    {name: "仙草蜂蜜", priceM: null, priceL: 50, priceH: 50, category: "仙草系列", icon:"🍯"},
+    {name: "仙草鐵觀音", priceM: null, priceL: 50, priceH: 50, category: "仙草系列", icon:"☕"},
+    {name: "仙草鮮奶", priceM: null, priceL: 65, priceH: 65, category: "仙草系列", icon:"🥛"},
+
+    // === 茶系列 - 鐵觀音 ===
+    {name: "林華泰 鐵觀音", priceM: null, priceL: 40, priceH: 40, category: "茶系列", icon:"☕"},
+    {name: "林華泰 梅子鐵觀音", priceM: null, priceL: 50, priceH: 50, category: "茶系列", icon:"🧹"},
+    {name: "林華泰 鐵觀音歐蕾", priceM: 65, priceL: 75, priceH: 65, category: "茶系列", icon:"🥛"},
+    {name: "林華泰 鐵觀音奶茶", priceM: null, priceL: 55, priceH: 55, category: "茶系列", icon:"🧋"},
+    {name: "林華泰 鐵觀音珍奶", priceM: null, priceL: 60, priceH: 60, category: "茶系列", icon:"🧋"},
+
+    // === 茶系列 - 四季青 ===
+    {name: "林華泰 四季青茶", priceM: null, priceL: 35, priceH: 35, category: "茶系列", icon:"🌱"},
+    {name: "林華泰 蜂蜜四季青", priceM: null, priceL: 50, priceH: 50, category: "茶系列", icon:"🍯"},
+    {name: "林華泰 四季寒天波波", priceM: null, priceL: 45, priceH: 45, category: "茶系列", icon:"🧋"},
+
+    // === 茶系列 - 紅茶/綠茶/歐蕾 ===
+    {name: "阿薩姆熟成紅茶", priceM: null, priceL: 30, priceH: 30, category: "茶系列", icon:"🍂"},
+    {name: "茉莉綠茶", priceM: null, priceL: 30, priceH: 30, category: "茶系列", icon:"🍵"},
+    {name: "熟成紅茶歐蕾", priceM: 55, priceL: 65, priceH: 55, category: "茶系列", icon:"🥛"},
+    {name: "熟成紅茶奶蓋", priceM: null, priceL: 50, priceH: null, category: "茶系列", icon:"🧁"},
+    {name: "熟成奶茶", priceM: null, priceL: 45, priceH: 45, category: "茶系列", icon:"🧋"},
+    {name: "熟成珍奶", priceM: null, priceL: 50, priceH: 50, category: "茶系列", icon:"🧋"},
+
+    // === 多多系列 ===
+    {name: "多多綠茶", priceM: null, priceL: 50, priceH: null, category: "多多系列", icon:"🍼"},
+    {name: "檸檬多多", priceM: null, priceL: 60, priceH: null, category: "多多系列", icon:"🍋"},
+    {name: "蘋果多多", priceM: null, priceL: 95, priceH: null, category: "多多系列", icon:"🍎"},
+    {name: "芒果多多", priceM: null, priceL: 75, priceH: null, category: "多多系列", icon:"🥭"},
+    {name: "芭樂多多", priceM: null, priceL: 75, priceH: null, category: "多多系列", icon:"🍏"}
 ];
 
 let cart = {};
 let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
-let selectedRiceOption = "正常飯";
+
+let selectedSpecs = { size: '', sugar: '', ice: '', topping: '', extraPrice: 0 };
 
 let finalTotal = 0;
 let finalSummary = "";
@@ -1082,8 +1093,8 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 搜尋 森晴餐盒製所 門市
-    const store = stores.find(s => s.id === 'store_senqing' || (s.name && s.name.includes('森晴')));
+    // 搜尋 樂法 門市
+    const store = stores.find(s => s.id === 'store_lephare' || (s.name && (s.name.includes('樂法') || s.name.toLowerCase().includes('le phare'))));
     if (!store || !store.items || store.items.length === 0) return;
 
     const itemPriceMap = {};
@@ -1096,9 +1107,19 @@ async function syncPricesFromBackend() {
     let updated = false;
     menuItems.forEach(item => {
         const matched = itemPriceMap[item.name];
-        if (matched && matched.price !== undefined && item.price !== Number(matched.price)) {
-            item.price = Number(matched.price);
-            updated = true;
+        if (matched) {
+            if (matched.priceM !== undefined && item.priceM !== (matched.priceM === null ? null : Number(matched.priceM))) {
+                item.priceM = matched.priceM === null ? null : Number(matched.priceM);
+                updated = true;
+            }
+            if (matched.priceL !== undefined && item.priceL !== (matched.priceL === null ? null : Number(matched.priceL))) {
+                item.priceL = matched.priceL === null ? null : Number(matched.priceL);
+                updated = true;
+            }
+            if (matched.priceH !== undefined && item.priceH !== (matched.priceH === null ? null : Number(matched.priceH))) {
+                item.priceH = matched.priceH === null ? null : Number(matched.priceH);
+                updated = true;
+            }
         }
     });
 
@@ -1194,7 +1215,7 @@ function updateCountdownUI() {
         }
     }
 
-    const targetTime = new Date(year, month, day, timeParts[0] || 10, timeParts[1] || 30, timeParts[2] || 0);
+    const targetTime = new Date(year, month, day, timeParts[0] || 10, timeParts[1] || 0, timeParts[2] || 0);
     const diffMs = targetTime - now;
 
     if (diffMs <= 0) {
@@ -1402,6 +1423,11 @@ function renderMenu(items) {
         items.filter(i => i.category === cat).forEach(item => {
             const card = document.createElement("div");
             card.className = "item-card";
+            card.onclick = (e) => {
+                if(!e.target.classList.contains('btn-qty')) {
+                    clickAddItem(item.name);
+                }
+            };
             
             let currentQty = 0;
             Object.keys(cart).forEach(key => {
@@ -1410,21 +1436,28 @@ function renderMenu(items) {
                 }
             });
 
+            let priceTags = [];
+            if (item.priceM !== null) priceTags.push(`M $${item.priceM}`);
+            if (item.priceL !== null) priceTags.push(`L $${item.priceL}`);
+            if (item.priceH !== null) priceTags.push(`熱 $${item.priceH}`);
+
+            let priceDisplay = priceTags.map(p => `<span class="item-price">${p}</span>`).join(" ");
+
             card.innerHTML = `
                 <div class="item-info">
                     <div class="item-name">${item.name}</div>
                     <div class="item-price-zone">
-                        <div class="item-price">$${item.price}</div>
+                        ${priceDisplay}
                     </div>
                 </div>
                 <div class="item-img-placeholder">
-                    ${item.icon || '🍱'}
+                    ${item.icon || '🥤'}
                     ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
                 </div>
                 <div class="action-zone" style="margin-left: 10px;">
-                    <button class="btn-qty" onclick="removeOneBaseItem('${item.name}')">-</button>
+                    <button class="btn-qty" onclick="event.stopPropagation(); removeOneBaseItem('${item.name}')">-</button>
                     <span class="qty-num">${currentQty}</span>
-                    <button class="btn-qty" onclick="clickAddItem('${item.name}')">+</button>
+                    <button class="btn-qty" onclick="event.stopPropagation(); clickAddItem('${item.name}')">+</button>
                 </div>
             `;
             grid.appendChild(card);
@@ -1453,59 +1486,91 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-function selectRiceBtn(el, val) {
-    document.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedRiceOption = val;
-}
-
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    selectedRiceOption = "正常飯";
+    // 預設選擇容量
+    let defaultSize = 'L';
+    if (item.priceL !== null) defaultSize = 'L';
+    else if (item.priceM !== null) defaultSize = 'M';
+    else if (item.priceH !== null) defaultSize = '熱飲';
+
+    selectedSpecs = { size: defaultSize, sugar: '正常糖', ice: '正常冰', topping: '無加料', extraPrice: 0 };
+
+    let sizeOptionsHtml = "";
+    if (item.priceM !== null) {
+        sizeOptionsHtml += `<button type="button" class="spec-btn ${defaultSize === 'M' ? 'active' : ''}" data-type="size" data-val="M" onclick="selectSpec(this)">中杯 M ($${item.priceM})</button>`;
+    }
+    if (item.priceL !== null) {
+        sizeOptionsHtml += `<button type="button" class="spec-btn ${defaultSize === 'L' ? 'active' : ''}" data-type="size" data-val="L" onclick="selectSpec(this)">大杯 L ($${item.priceL})</button>`;
+    }
+    if (item.priceH !== null) {
+        sizeOptionsHtml += `<button type="button" class="spec-btn ${defaultSize === '熱飲' ? 'active' : ''}" data-type="size" data-val="熱飲" onclick="selectSpec(this)">熱飲 ($${item.priceH})</button>`;
+    }
+
+    let isOulei = item.name.includes("歐蕾") || item.name.includes("奶畫");
 
     let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
-            ${item.icon || '🍱'} ${item.name} ($${item.price})
+        <div class="spec-group">
+            <div class="spec-title">容量 / 溫熱</div>
+            <div class="spec-options col-2">
+                ${sizeOptionsHtml}
+            </div>
         </div>
-        
-        <div class="option-group-title">🍚 飯量選項調整</div>
-        <div class="option-grid">
-            <div class="opt-btn selected" onclick="selectRiceBtn(this, '正常飯')">
-                <span class="opt-icon">🍚</span>
-                <span class="opt-text">正常飯</span>
-                <span class="opt-price">+$0</span>
+
+        <div class="spec-group">
+            <div class="spec-title">甜度</div>
+            <div class="spec-options">
+                <button type="button" class="spec-btn active" data-type="sugar" data-val="正常糖" onclick="selectSpec(this)">正常糖</button>
+                <button type="button" class="spec-btn" data-type="sugar" data-val="七分糖" onclick="selectSpec(this)">七分糖</button>
+                <button type="button" class="spec-btn" data-type="sugar" data-val="半糖" onclick="selectSpec(this)">半糖</button>
+                <button type="button" class="spec-btn" data-type="sugar" data-val="三分糖" onclick="selectSpec(this)">三分糖</button>
+                <button type="button" class="spec-btn" data-type="sugar" data-val="一分糖" onclick="selectSpec(this)">一分糖</button>
+                <button type="button" class="spec-btn" data-type="sugar" data-val="無糖" onclick="selectSpec(this)">無糖</button>
             </div>
-            <div class="opt-btn" onclick="selectRiceBtn(this, '飯少')">
-                <span class="opt-icon">🥣</span>
-                <span class="opt-text">飯少</span>
-                <span class="opt-price">+$0</span>
+        </div>
+
+        <div class="spec-group">
+            <div class="spec-title">冰塊</div>
+            <div class="spec-options">
+                <button type="button" class="spec-btn active" data-type="ice" data-val="正常冰" onclick="selectSpec(this)">正常冰</button>
+                <button type="button" class="spec-btn" data-type="ice" data-val="七分冰" onclick="selectSpec(this)">七分冰</button>
+                <button type="button" class="spec-btn" data-type="ice" data-val="三分冰" onclick="selectSpec(this)">三分冰</button>
+                <button type="button" class="spec-btn" data-type="ice" data-val="去冰" onclick="selectSpec(this)">去冰</button>
+                <button type="button" class="spec-btn" data-type="ice" data-val="溫" onclick="selectSpec(this)">溫</button>
+                <button type="button" class="spec-btn" data-type="ice" data-val="熱" onclick="selectSpec(this)">熱</button>
             </div>
-            <div class="opt-btn" onclick="selectRiceBtn(this, '換紫米飯 (+15元)')">
-                <span class="opt-icon">🌾</span>
-                <span class="opt-text">換紫米飯</span>
-                <span class="opt-price">+$15</span>
+        </div>
+
+        <div class="spec-group">
+            <div class="spec-title" style="color: #64748b; font-weight: 600;">加料服務</div>
+            <div class="spec-options col-2">
+                <button type="button" class="spec-btn active" data-type="topping" data-val="無加料" data-price="0" onclick="selectSpec(this)">不加料</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="珍珠" data-price="${isOulei ? 0 : 5}" onclick="selectSpec(this)">珍珠 (${isOulei ? '免費' : '+5元'})</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="綠茶凍" data-price="10" onclick="selectSpec(this)">綠茶凍 (+10元)</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="椰果" data-price="10" onclick="selectSpec(this)">椰果 (+10元)</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="寒天晶球" data-price="10" onclick="selectSpec(this)">寒天晶球 (+10元)</button>
+                <button type="button" class="spec-btn" data-type="topping" data-val="仙草凍" data-price="10" onclick="selectSpec(this)">仙草凍 (+10元)</button>
             </div>
         </div>
     `;
 
     showCustomModal({
-        title: "請選擇餐點客製化選項",
+        title: `請選擇「${item.name}」的規格`,
         bodyHtml: bodyHtml,
-        confirmText: "加入購物車",
+        confirmText: "確定",
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            const riceOpt = selectedRiceOption;
+            let basePrice = 0;
+            if (selectedSpecs.size === 'M') basePrice = item.priceM;
+            else if (selectedSpecs.size === 'L') basePrice = item.priceL;
+            else if (selectedSpecs.size === '熱飲') basePrice = item.priceH;
 
-            let extraPrice = 0;
-            if (riceOpt.includes("+15")) extraPrice += 15;
-
-            const unitPrice = item.price + extraPrice;
-            const customKey = `${item.name}|${riceOpt}`;
-
-            const finalRiceStr = riceOpt !== "正常飯" ? riceOpt : "正常飯";
+            let finalUnitPrice = basePrice + (selectedSpecs.extraPrice || 0);
+            const toppingText = selectedSpecs.topping === '無加料' ? '無加料' : `加${selectedSpecs.topping}`;
+            const customKey = `${item.name}|${selectedSpecs.size}|${selectedSpecs.sugar}|${selectedSpecs.ice}|${toppingText}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -1513,9 +1578,12 @@ function clickAddItem(name) {
                 cart[customKey] = {
                     key: customKey,
                     baseName: item.name,
-                    price: unitPrice,
+                    price: finalUnitPrice,
                     qty: 1,
-                    rice: finalRiceStr
+                    size: selectedSpecs.size,
+                    sugar: selectedSpecs.sugar,
+                    ice: selectedSpecs.ice,
+                    topping: toppingText
                 };
             }
 
@@ -1524,6 +1592,21 @@ function clickAddItem(name) {
             closeModal();
         }
     });
+}
+
+function selectSpec(btnEl) {
+    const type = btnEl.getAttribute("data-type");
+    const val = btnEl.getAttribute("data-val");
+
+    selectedSpecs[type] = val;
+
+    if (type === 'topping') {
+        selectedSpecs.extraPrice = parseInt(btnEl.getAttribute("data-price") || "0", 10);
+    }
+
+    const parent = btnEl.parentElement;
+    parent.querySelectorAll(".spec-btn").forEach(el => el.classList.remove("active"));
+    btnEl.classList.add("active");
 }
 
 function removeOneBaseItem(baseName) {
@@ -1551,12 +1634,7 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        
-        let details = [];
-        if (item.rice && item.rice !== "正常飯") details.push(item.rice);
-        
-        const detailStr = details.length > 0 ? `(${details.join('/')})` : '';
-        finalSummary += `${item.baseName}${detailStr}*${item.qty} `;
+        finalSummary += `${item.baseName}(${item.size}/${item.sugar}/${item.ice}/${item.topping})*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -1584,7 +1662,7 @@ function openCartModal() {
 
     let cartContentHtml = `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #f1f5f9;">
-            <span style="font-weight:bold; font-size:15px;">已點餐點明細</span>
+            <span style="font-weight:bold; font-size:15px;">已點飲料明細</span>
             <button class="btn-clear-all" onclick="clearCartModal()">🗑️ 清空購物車</button>
         </div>
         <div id="modal-cart-list" style="max-height: 280px; overflow-y: auto; margin-bottom: 12px; padding-right: 4px;"></div>
@@ -1618,15 +1696,11 @@ function renderModalCartList() {
         const sub = item.qty * item.price;
         const div = document.createElement("div");
         div.className = "cart-item";
-        
-        let tags = [];
-        if (item.rice && item.rice !== "正常飯") tags.push(`🍚 ${item.rice}`);
-
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
-                <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                ${tags.length > 0 ? `<div class="custom-item-tag">${tags.join(' | ')}</div>` : ''}
-                <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
+                <div style="font-weight:600; font-size:14px;">${item.baseName} (${item.size})</div>
+                <div class="custom-item-tag">🍬 ${item.sugar} | 🧊 ${item.ice} | 🧋 ${item.topping}</div>
+                <div style="color:var(--primary); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
                 <button class="btn-qty" onclick="changeQtyByKey('${key}', -1)">-</button>
@@ -1715,7 +1789,7 @@ async function submitOrderToServer() {
     if (Object.keys(cart).length === 0) {
         return showCustomModal({
             title: "提示",
-            bodyHtml: "⚠️ 購物車是空的，請先挑選餐點！",
+            bodyHtml: "⚠️ 購物車是空的，請先挑選飲料！",
             confirmText: "確定",
             showCancel: false
         });
@@ -1731,8 +1805,8 @@ async function submitOrderToServer() {
     }
 
     let summaryDetailHtml = `<div style="margin-bottom:6px;">💳 卡號：<b>${currentCardId}</b></div>`;
-    summaryDetailHtml += `<div style="margin-bottom:6px;">📝 餐點明細：<br><span style="color:#475569; font-size:14px;">${finalSummary}</span></div>`;
-    summaryDetailHtml += `<div style="font-size:18px; font-weight:bold; margin-top:10px; color:var(--accent);">💰 總金額：$${finalTotal}</div>`;
+    summaryDetailHtml += `<div style="margin-bottom:6px;">📝 飲品明細：<br><span style="color:#475569; font-size:14px;">${finalSummary}</span></div>`;
+    summaryDetailHtml += `<div style="font-size:18px; font-weight:bold; margin-top:10px; color:var(--primary);">💰 總金額：$${finalTotal}</div>`;
 
     showCustomModal({
         title: "最後訂單確認",
@@ -1747,10 +1821,12 @@ async function submitOrderToServer() {
 
             const payload = {
                 cardId: currentCardId,
-                category: "food",
-                type: "food",
-                meal: `森晴餐盒製所：${finalSummary.trim()}`,
-                total: finalTotal
+                category: "drink",
+                type: "drink",
+                meal: `樂法：${finalSummary.trim()}`,
+                spicy: "依飲品客製化選擇",
+                total: finalTotal,
+                note: `總計：$${finalTotal}`
             };
 
             try {
