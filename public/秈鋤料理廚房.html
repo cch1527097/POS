@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>江滬上海小籠湯包 - 智慧點餐系統</title>
+    <title>私鋤料理廚房 - 智慧點餐系統</title>
     <style>
         html { scroll-behavior: smooth; }
 
         :root { 
-            --primary: #991b1b;       /* 品牌主題色：深紅 */
-            --primary-light: #fef2f2; /* 淺紅底色 */
-            --primary-hover: #b91c1c; /* 深紅 Hover */
-            --accent: #991b1b;        
+            --primary: #1e3a8a;       /* 品牌主題色：深藍 */
+            --primary-light: #eff6ff; /* 淺藍底色 */
+            --primary-hover: #1e40af; /* 深藍 Hover */
+            --accent: #1e3a8a;        
             --bg-main: #f8fafc;       
             --text-dark: #0f172a;      
             --text-muted: #64748b;    
@@ -105,37 +105,44 @@
             justify-content: center;
             font-size: 32px;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(153, 27, 27, 0.25);
+            box-shadow: 0 4px 10px rgba(30, 58, 138, 0.25);
             flex-shrink: 0;
         }
         .store-details h1 { margin: 0 0 8px 0; font-size: 22px; font-weight: 700; color: var(--text-dark); }
         .store-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--text-muted); }
         .store-meta span { display: flex; align-items: center; gap: 4px; }
 
+        /* 低消提示橫條樣式 */
         .promo-banner {
-            background: var(--primary-light);
+            background: #fff7ed;
+            border: 1px solid #ffedd5;
+            border-left: 5px solid #f97316;
+            padding: 12px 16px;
             border-radius: 8px;
-            padding: 10px 16px;
-            margin-bottom: 24px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 14px;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(249, 115, 22, 0.05);
         }
-
         .promo-badge {
-            background: var(--primary);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
+            background-color: #f97316;
+            color: #ffffff;
             font-size: 12px;
             font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
             letter-spacing: 0.5px;
             flex-shrink: 0;
         }
-
-        .promo-text { color: #1e293b; }
-        .promo-text b { font-weight: 800; color: var(--primary); }
+        .promo-text {
+            color: #9a3412;
+            font-size: 14px;
+        }
+        .promo-text b {
+            color: #c2410c;
+            font-size: 15px;
+        }
 
         .info-banner { 
             background: #e0f2fe; 
@@ -448,7 +455,7 @@
             font-weight: 600;
             border-radius: 10px;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(153, 27, 27, 0.3);
+            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.3);
         }
         .btn-modal-confirm:hover { background: var(--primary-hover); }
 
@@ -465,12 +472,6 @@
             display: flex;
             align-items: center;
             gap: 4px;
-        }
-
-        .option-section-title span.required {
-            color: var(--primary);
-            font-size: 16px;
-            margin-right: 2px;
         }
 
         .option-grid {
@@ -498,9 +499,7 @@
             box-sizing: border-box;
         }
 
-        .opt-card:hover {
-            border-color: #94a3b8;
-        }
+        .opt-card:hover { border-color: #94a3b8; }
 
         .opt-card.selected {
             border: 2px solid var(--primary);
@@ -611,7 +610,7 @@
             .container { padding: 16px 12px 160px 12px; }
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
-            .store-logo { width: 60px; height: 60px; font-size: 20px; border-radius: 12px; }
+            .store-logo { width: 60px; height: 60px; font-size: 24px; border-radius: 12px; }
             .store-details h1 { font-size: 18px; }
             .menu-grid { grid-template-columns: 1fr; }
             .category-sidebar { top: 98px; }
@@ -832,7 +831,7 @@
 <div class="navbar">
     <a href="index.html" class="navbar-brand">智慧點餐系統</a>
     <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (例如：小籠包、排骨酥、牛肉麵)..." oninput="debounceFilterMenu()">
+        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (例如：炒麵、蛤仔湯、功夫米血)..." oninput="debounceFilterMenu()">
     </div>
 </div>
 
@@ -885,14 +884,14 @@
 <div class="container">
     <div class="store-banner">
         <div class="store-info-left">
-            <div class="store-logo">江滬</div>
+            <div class="store-logo">私</div>
             <div class="store-details">
-                <h1>江滬上海小籠湯包 彰化鹿港店</h1>
+                <h1>私鋤料理廚房 鹿港店</h1>
                 <div class="store-meta">
-                    <span class="rating">⭐ 4.3 (236)</span>
-                    <span>🕒 11:00 ~ 14:00，16:30 ~ 20:30</span>
-                    <span>📍 505彰化縣鹿港鎮泰興里復興路7號</span>
-                    <span>📞 04-778-79857</span>
+                    <span class="rating">⭐ 4.8 (20)</span>
+                    <span>🕒 11:00 ~ 13:30，16:30 ~ 19:30</span>
+                    <span>📍 505彰化縣鹿港鎮興化里美市街52號</span>
+                    <span>📞 0979-166-467</span>
                 </div>
             </div>
         </div>
@@ -901,7 +900,7 @@
     <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
-        <span class="promo-text">外送最低金額 <b>500</b> 元</span>
+        <span class="promo-text">外送最低金額 <b>800</b> 元</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -965,45 +964,61 @@ function goBack() {
 }
 
 const menuItems = [
-    // === 爆汁湯包.蒸餃 ===
-    {name: "干貝高湯絲瓜湯包 (7粒)", price: 90, category: "爆汁湯包.蒸餃", icon: "🥟", isMain: true},
-    {name: "蔬菜鮮肉湯包 (7粒)", price: 80, category: "爆汁湯包.蒸餃", icon: "🥟", isMain: true},
-    {name: "鮮肉小籠湯包 (7粒)", price: 75, category: "爆汁湯包.蒸餃", icon: "🥟", isMain: true},
-    {name: "高麗菜鮮肉蒸餃 (7粒)", price: 75, category: "爆汁湯包.蒸餃", icon: "🥟", isMain: true},
+    // === 麵類 ===
+    {name: "海鮮湯麵", price: 120, category: "麵類", icon: "🍜", allowSpicy: true},
+    {name: "海鮮炒麵", price: 120, category: "麵類", icon: "🍝", allowSpicy: true},
+    {name: "肉絲炒麵", price: 85, category: "麵類", icon: "🍝", allowSpicy: true},
+    {name: "雞肉炒麵", price: 85, category: "麵類", icon: "🍝", allowSpicy: true},
+    {name: "蝦仁炒麵", price: 90, category: "麵類", icon: "🍝", allowSpicy: true},
+    {name: "羊肉炒麵", price: 100, category: "麵類", icon: "🍝", allowSpicy: true},
 
-    // === 滬味麵食 ===
-    {name: "紅燒牛肉麵", price: 120, category: "滬味麵食", icon: "🍜", isMain: true},
-    {name: "蘿蔔排骨酥麵", price: 98, category: "滬味麵食", icon: "🍜", isMain: true},
-    {name: "芋頭排骨酥麵", price: 98, category: "滬味麵食", icon: "🍜", isMain: true},
-    {name: "蒜頭蛤蠣雞麵", price: 95, category: "滬味麵食", icon: "🍜", isMain: true},
-    {name: "剁椒皮蛋拌麵", price: 80, category: "滬味麵食", icon: "🌶️", isMain: true},
-    {name: "鹿港麵茶辣拌麵", price: 75, category: "滬味麵食", icon: "🌶️", isMain: true},
-    {name: "虎媽香辣麵", price: 65, category: "滬味麵食", icon: "🌶️", isMain: true},
-    {name: "古早味肉燥乾麵", price: 50, category: "滬味麵食", icon: "🍜", isMain: true},
+    // === 飯類 ===
+    {name: "海鮮粥", price: 130, category: "飯類", icon: "🥣", allowSpicy: true},
+    {name: "海鮮燴飯", price: 130, category: "飯類", icon: "🍛", allowSpicy: true},
+    {name: "豬肉燴飯", price: 85, category: "飯類", icon: "🍛", allowSpicy: true},
+    {name: "雞肉燴飯", price: 85, category: "飯類", icon: "🍛", allowSpicy: true},
+    {name: "蝦仁燴飯", price: 90, category: "飯類", icon: "🍛", allowSpicy: true},
+    {name: "羊肉燴飯", price: 100, category: "飯類", icon: "🍛", allowSpicy: true},
 
-    // === 慢熬湯盅 ===
-    {name: "蒜頭蛤蠣雞湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
-    {name: "雙菇蛤蠣雞湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
-    {name: "白玉蘿蔔排骨湯", price: 60, category: "慢熬湯盅", icon: "🥣"},
-    {name: "蘿蔔排骨酥湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
-    {name: "芋頭排骨酥湯", price: 78, category: "慢熬湯盅", icon: "🥣"},
-    {name: "當令時蔬排骨湯", price: 65, category: "慢熬湯盅", icon: "🥣"},
+    // === 炒飯類 ===
+    {name: "肉絲炒飯", price: 85, category: "炒飯類", icon: "🍚", allowSpicy: true},
+    {name: "雞肉炒飯", price: 85, category: "炒飯類", icon: "🍚", allowSpicy: true},
+    {name: "蝦仁炒飯", price: 90, category: "炒飯類", icon: "🍚", allowSpicy: true},
+    {name: "羊肉炒飯", price: 100, category: "炒飯類", icon: "🍚", allowSpicy: true},
 
-    // === 飯食 ===
-    {name: "紅燒牛肉泡飯", price: 120, category: "飯食", icon: "🍚", isMain: true},
-    {name: "蒜頭蛤蠣雞泡飯", price: 95, category: "飯食", icon: "🍚", isMain: true},
-    {name: "秘製滷肉飯", price: 50, category: "飯食", icon: "🍚", isMain: true},
+    // === 烏龍麵 ===
+    {name: "海鮮烏龍湯麵", price: 130, category: "烏龍麵", icon: "🍜", allowSpicy: true},
+    {name: "海鮮炒烏龍麵", price: 130, category: "烏龍麵", icon: "🍝", allowSpicy: true},
+    {name: "肉絲炒烏龍麵", price: 95, category: "烏龍麵", icon: "🍝", allowSpicy: true},
+    {name: "雞肉炒烏龍麵", price: 95, category: "烏龍麵", icon: "🍝", allowSpicy: true},
+    {name: "蝦仁炒烏龍麵", price: 100, category: "烏龍麵", icon: "🍝", allowSpicy: true},
+    {name: "羊肉炒烏龍麵", price: 110, category: "烏龍麵", icon: "🍝", allowSpicy: true},
 
-    // === 單點 ===
-    {name: "汆燙當令青菜", price: 40, category: "單點", icon: "🥬"},
-    {name: "滷蛋 (單顆)", price: 15, category: "單點", icon: "🥚"},
-    {name: "油豆腐 (單塊)", price: 10, category: "單點", icon: "🧊"},
+    // === 米粉類 ===
+    {name: "海鮮炒米粉", price: 120, category: "米粉類", icon: "🍝", allowSpicy: true},
+    {name: "海鮮米粉湯", price: 120, category: "米粉類", icon: "🍜", allowSpicy: true},
+    {name: "肉絲炒米粉", price: 85, category: "米粉類", icon: "🍝", allowSpicy: true},
+    {name: "雞肉炒米粉", price: 85, category: "米粉類", icon: "🍝", allowSpicy: true},
+    {name: "羊肉炒米粉", price: 100, category: "米粉類", icon: "🍝", allowSpicy: true},
 
-    // === 去冰飲品 ===
-    {name: "黑芝麻堅果飲 (微糖)", price: 35, category: "去冰飲品", icon: "🥤"},
-    {name: "天后豆漿 (非基改黃豆/微糖)", price: 25, category: "去冰飲品", icon: "🥛"},
-    {name: "小鎮奶茶 (微糖)", price: 25, category: "去冰飲品", icon: "🧋"},
-    {name: "鹿港紅茶 (微糖)", price: 20, category: "去冰飲品", icon: "🥤"}
+    // === 湯品 ===
+    {name: "蛤仔湯", price: 50, category: "湯品", icon: "🥣", allowSpicy: false},
+    {name: "豬肝湯", price: 50, category: "湯品", icon: "🥣", allowSpicy: false},
+    {name: "紫菜蛋花湯", price: 40, category: "湯品", icon: "🥣", allowSpicy: false},
+    {name: "貢丸湯", price: 40, category: "湯品", icon: "🥣", allowSpicy: false},
+    {name: "米血湯", price: 40, category: "湯品", icon: "🥣", allowSpicy: false},
+    {name: "油豆腐湯", price: 35, category: "湯品", icon: "🥣", allowSpicy: false},
+    {name: "黑輪湯", price: 35, category: "湯品", icon: "🥣", allowSpicy: false},
+
+    // === 小菜類 ===
+    {name: "功夫米血", price: 70, category: "小菜類", icon: "🍢", allowSpicy: true},
+    {name: "炒青菜", price: 70, category: "小菜類", icon: "🥬", allowSpicy: true},
+
+    // === 加點項目 ===
+    {name: "加飯", price: 10, category: "單點加量", icon: "➕", allowSpicy: false},
+    {name: "加麵", price: 10, category: "單點加量", icon: "➕", allowSpicy: false},
+    {name: "加米粉", price: 10, category: "單點加量", icon: "➕", allowSpicy: false},
+    {name: "加烏龍麵", price: 20, category: "單點加量", icon: "➕", allowSpicy: false}
 ];
 
 let cart = {};
@@ -1089,8 +1104,8 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 尋找 江滬上海小籠湯包 門市 (支援 ID 或名稱對照)
-    const store = stores.find(s => s.id === 'store_jianghu' || s.id === 'store_xiaolongbao' || (s.name && s.name.includes('江滬')));
+    // 尋找 秈鋤/私鋤料理廚房 門市 (支援 ID 或名稱對照)
+    const store = stores.find(s => s.id === 'store_xianchu' || (s.name && (s.name.includes('私鋤') || s.name.includes('秈鋤'))));
     if (!store || !store.items || store.items.length === 0) return;
 
     // 建立後台品項對照表
@@ -1426,7 +1441,7 @@ function renderMenu(items) {
                     </div>
                 </div>
                 <div class="item-img-placeholder">
-                    ${item.icon || '🥣'}
+                    ${item.icon || '🍲'}
                     ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
                 </div>
                 <div class="action-zone" style="margin-left: 10px;">
@@ -1465,28 +1480,20 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    let bodyHtml = "";
-    let hasOption = false;
-
-    // 若為主餐，則顯示升級套餐選項
-    if (item.isMain) {
-        hasOption = true;
-        bodyHtml += `
-            <div class="option-section">
-                <div class="option-section-title">搭配套餐</div>
-                <div class="option-grid">
-                    <div class="opt-card selected" data-group="set-meal" data-value="單點" data-price="0">單點</div>
-                    <div class="opt-card" data-group="set-meal" data-value="A套餐(紅茶+小菜+開胃菜)" data-price="49">A套餐(+$49)</div>
-                    <div class="opt-card" data-group="set-meal" data-value="B套餐(例湯+小菜*2+開胃菜)" data-price="79">B套餐(+$79)</div>
-                </div>
-            </div>
-        `;
-    }
-
-    if (!hasOption) {
+    if (!item.allowSpicy) {
         addItemToCart(item, 0, []);
         return;
     }
+
+    let bodyHtml = `
+        <div class="option-section">
+            <div class="option-section-title">辣度選擇</div>
+            <div class="option-grid">
+                <div class="opt-card selected" data-group="spicy" data-value="不辣" data-price="0">不辣</div>
+                <div class="opt-card" data-group="spicy" data-value="加辣" data-price="0">加辣</div>
+            </div>
+        </div>
+    `;
 
     showCustomModal({
         title: `請選擇「${item.name}」的客製選項`,
@@ -1495,21 +1502,17 @@ function clickAddItem(name) {
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
-            let addPrice = 0;
+            let extraPrice = 0;
             let options = [];
 
             document.querySelectorAll('#modal-body .opt-card.selected').forEach(card => {
-                const group = card.getAttribute('data-group');
                 const val = card.getAttribute('data-value');
-                const price = parseInt(card.getAttribute('data-price') || 0);
-
-                addPrice += price;
-                if (val !== '單點') {
+                if (val !== '不辣') {
                     options.push(val);
                 }
             });
 
-            addItemToCart(item, addPrice, options);
+            addItemToCart(item, extraPrice, options);
             closeModal();
         }
     });
@@ -1761,10 +1764,9 @@ async function submitOrderToServer() {
 
             const payload = {
                 cardId: currentCardId,
-                category: "xiaolongbao",
+                category: "xianchu",
                 type: "food",
-                meal: `江滬上海小籠湯包：${finalSummary.trim()}`,
-                spicy: "依餐點選擇",
+                meal: `私鋤料理廚房：${finalSummary.trim()}`,
                 total: finalTotal,
                 note: `總計：$${finalTotal}`
             };
