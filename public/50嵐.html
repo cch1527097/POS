@@ -278,19 +278,44 @@
         }
 
         .fab-btn:hover {
-            transform: scale(1.08);
+            transform: scale(1.05);
             box-shadow: 0 6px 16px rgba(0,0,0,0.28);
-        }
-
-        .fab-btn:active {
-            transform: scale(0.95);
         }
 
         .fab-cart { background-color: var(--primary); }
         .fab-exit { background-color: #a40e11; }
-        .fab-menu { display: none; background-color: #475569; } /* 電腦版隱藏「點購」首頁鈕 */
-        .fab-btn svg { width: 24px; height: 24px; fill: #ffffff; }
+        
+        /* 電腦版：累計金額圓框（純顯示，不需點擊） */
+        .fab-menu { 
+            display: flex; 
+            background-color: #0284c7; 
+            cursor: default; 
+        }
+        .fab-menu:hover {
+            transform: none; /* 純顯示框不縮放 */
+        }
 
+        .desktop-accumulated-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            text-align: center;
+            user-select: none;
+            padding: 2px;
+            box-sizing: border-box;
+            letter-spacing: 0.5px;
+        }
+
+        .mobile-menu-wrapper {
+            display: none;
+        }
+
+        .fab-btn svg { width: 24px; height: 24px; fill: #ffffff; }
         .fab-text { display: none; } /* 電腦版不顯示下方文字 */
 
         .others-float-btn {
@@ -588,11 +613,11 @@
             .category-block { scroll-margin-top: 130px; }
         }
         
-        /* ==================== 📱 手機版專屬樣式 (拉高截止時間框與底部工作列的間距) ==================== */
+        /* ==================== 📱 手機版專屬樣式 ==================== */
         @media (max-width: 600px) {
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
-            .container { padding: 16px 12px 160px 12px; } /* 增加底部留白，確保內容不被遮擋 */
+            .container { padding: 16px 12px 160px 12px; }
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
             .store-logo { width: 60px; height: 60px; font-size: 22px; border-radius: 12px; }
@@ -601,10 +626,10 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
 
-            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 */
+            /* ⏱️ 手機版：拉高「截止時間懸浮框」 */
             .cutoff-float-badge { 
                 position: fixed !important;
-                bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important; /* 原為 62px 緊貼，改為加 14px 間距 */
+                bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important;
                 left: 12px !important;
                 right: 12px !important;
                 width: auto !important;
@@ -648,7 +673,7 @@
                 white-space: nowrap !important;
             }
 
-            /* 📱 底部固定工作導覽列 (Bottom Navigation Bar) */
+            /* 📱 底部固定工作導覽列 */
             .fab-container {
                 position: fixed;
                 bottom: 0;
@@ -689,7 +714,25 @@
                 color: var(--primary);
             }
 
-            .fab-menu { display: flex !important; }
+            .fab-menu { 
+                display: flex !important; 
+                cursor: pointer !important;
+            }
+
+            /* 手機版隱藏圓框內的文字，改為顯示底部 Icon & 標籤 */
+            .desktop-accumulated-text {
+                display: none !important;
+            }
+
+            .mobile-menu-wrapper {
+                display: flex !important;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                gap: 2px;
+            }
 
             .fab-btn svg {
                 width: 22px;
@@ -712,7 +755,6 @@
                 stroke: var(--primary);
             }
 
-            /* 手機版顯示按鈕下方的文字標籤 */
             .fab-text {
                 display: block !important;
                 font-size: 11px;
@@ -721,7 +763,6 @@
                 color: inherit;
             }
 
-            /* 購物車 Badge 位置微調整 */
             .cart-icon-wrapper {
                 position: relative;
                 display: flex;
@@ -739,7 +780,6 @@
                 border-width: 1px;
             }
 
-            /* 手機版「今日其他人點了什麼」卡片化樣式 */
             .history-modal-content {
                 width: 95vw !important;
                 max-height: 88vh !important;
@@ -766,13 +806,8 @@
                 box-sizing: border-box;
             }
 
-            .history-table {
-                min-width: 0 !important;
-            }
-
-            .history-table thead {
-                display: none;
-            }
+            .history-table { min-width: 0 !important; }
+            .history-table thead { display: none; }
 
             .history-table tbody tr {
                 background: #ffffff;
@@ -792,7 +827,6 @@
                 border-bottom: none !important;
             }
 
-            /* 1. 卡號/姓名 (左上) */
             .history-table td:nth-child(1) {
                 font-size: 15px;
                 font-weight: 700;
@@ -800,13 +834,11 @@
                 order: 1;
             }
 
-            /* 2. 部門標籤 (右上) */
             .history-table td:nth-child(2) {
                 order: 2;
                 text-align: right;
             }
 
-            /* 3. 時間 (第二列) */
             .history-table td:nth-child(3) {
                 width: 100%;
                 order: 3;
@@ -816,7 +848,6 @@
                 margin-bottom: 6px;
             }
 
-            /* 4. 點餐內容 (第三列，突出框顯示) */
             .history-table td:nth-child(4) {
                 width: 100%;
                 order: 4;
@@ -829,7 +860,6 @@
                 line-height: 1.4;
             }
 
-            /* 5. 金額 (第四列，靠右紅字顯示) */
             .history-table td:nth-child(5) {
                 width: 100%;
                 order: 5;
@@ -840,7 +870,6 @@
                 margin-top: 4px;
             }
 
-            /* 無紀錄時的呈現 */
             .history-table td.no-record {
                 text-align: center !important;
                 background: transparent !important;
@@ -871,13 +900,19 @@
 
 <!-- 📱 底部固定導覽列 / 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 1. 點購 (手機版顯示) -->
-    <button class="fab-btn fab-menu" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="點購" aria-label="點購">
-        <svg viewBox="0 0 24 24">
-            <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.46 3.9 3.45 4.35L6.45 22h2.1L8.55 13.35C10.54 12.9 12 11.12 12 9V2h-1v7zm8-7h-2v6h-1V2h-2v6h-1V2h-1v7c0 2.21 1.79 4 4 4v9h2V13c2.21 0 4-1.79 4-4V2h-1v6z"/>
-        </svg>
-        <span class="fab-text">點購</span>
-    </button>
+    <!-- 1. 累計金額 (電腦版圓框內直接顯示金額；手機版顯示於底部導覽列) -->
+    <div class="fab-btn fab-menu" title="目前累計金額" aria-label="累計金額">
+        <!-- 電腦版圓框置中金額 -->
+        <span class="desktop-accumulated-text" id="desktop-accumulated-total">$0</span>
+
+        <!-- 手機版底部工作導覽列區塊 -->
+        <div class="mobile-menu-wrapper" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <svg viewBox="0 0 24 24">
+                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+            <span class="fab-text" id="mobile-accumulated-total">累計 $0</span>
+        </div>
+    </div>
 
     <!-- 2. 其他人點了什麼 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
@@ -1111,11 +1146,9 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 尋找 50嵐 (store_28 或名稱包含 50嵐 的店家)
     const store50 = stores.find(s => s.id === 'store_28' || (s.name && s.name.includes('50嵐')));
     if (!store50 || !store50.items || store50.items.length === 0) return;
 
-    // 建立後台品項對照表
     const itemPriceMap = {};
     store50.items.forEach(item => {
         if (item.name && item.price !== undefined) {
@@ -1123,7 +1156,6 @@ async function syncPricesFromBackend() {
         }
     });
 
-    // 動態更新 menuItems 價格
     let updated = false;
     menuItems.forEach(item => {
         const mKey = `${item.name} (M)`;
@@ -1137,7 +1169,6 @@ async function syncPricesFromBackend() {
             item.priceL = itemPriceMap[lKey];
             updated = true;
         }
-        // 若後台為單一品項名稱對照
         if (itemPriceMap[item.name] !== undefined) {
             item.priceM = itemPriceMap[item.name];
             item.priceL = itemPriceMap[item.name];
@@ -1167,15 +1198,14 @@ window.onload = async function() {
 
     renderMenu(menuItems);
     await syncPricesFromBackend();
-    setInterval(syncPricesFromBackend, 10000); // 每 10 秒自動同步後台最新價格
+    setInterval(syncPricesFromBackend, 10000);
     renderCart();
 
-    // 啟動倒數計時與全院員工清單載入
     fetchEmployeeList();
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 (完整支援日期+時間同步) ==================== */
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -1336,7 +1366,7 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 (同步自 index.html) ==================== */
+/* ==================== 👥 其他人點了什麼邏輯 ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1641,12 +1671,11 @@ function clickAddItem(name) {
             const sizeLabel = selectedSpecs.size === 'L' ? '大杯' : '中杯';
             let unitPrice = selectedSpecs.size === 'L' ? item.priceL : item.priceM;
             
-            // 加料金額計算邏輯
             const add15Toppings = ['布丁', '麵茶', '奶霜'];
             if (add15Toppings.includes(selectedSpecs.topping)) {
-                unitPrice += 15; // 所有品項加布丁/麵茶/奶霜加價 15 元
+                unitPrice += 15;
             } else if (item.category === '找好茶' && selectedSpecs.topping !== '不加料') {
-                unitPrice += 10; // 找好茶加其餘配料加價 10 元
+                unitPrice += 10;
             }
 
             const toppingText = selectedSpecs.topping === '不加料' ? '不加料' : `加${selectedSpecs.topping}`;
@@ -1721,6 +1750,17 @@ function renderCart() {
         } else {
             badgeEl.style.display = "none";
         }
+    }
+
+    // 📱 同步手機版與電腦版累計金額
+    const mobileTotalEl = document.getElementById("mobile-accumulated-total");
+    if (mobileTotalEl) {
+        mobileTotalEl.innerText = `累計 $${finalTotal}`;
+    }
+
+    const desktopTotalEl = document.getElementById("desktop-accumulated-total");
+    if (desktopTotalEl) {
+        desktopTotalEl.innerText = `$${finalTotal}`;
     }
 }
 
