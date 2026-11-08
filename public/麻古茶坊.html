@@ -251,7 +251,7 @@
             box-shadow: inset 0 0 0 1px var(--primary);
         }
 
-        /* ==================== 桌面端懸浮按鈕群與倒數計時 ==================== */
+        /* ==================== 懸浮按鈕群 & 截止時間懸浮元件 (電腦預設) ==================== */
         .fab-container {
             position: fixed;
             bottom: 24px;
@@ -294,21 +294,22 @@
             background-color: #0073e6;
         }
 
+        /* ⏱️ 截止時間懸浮元件 (電腦版右下角懸浮 - 同步最新規格) */
         .cutoff-float-badge {
             position: fixed;
-            bottom: 220px;
+            bottom: 305px;
             right: 20px;
             background: #ffffff;
             border: 2px solid var(--primary);
-            border-radius: 14px;
-            padding: 10px 14px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+            border-radius: 12px;
+            padding: 8px 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
             z-index: 9998;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 140px;
+            min-width: 130px;
             text-align: center;
             transition: all 0.2s ease;
             user-select: none;
@@ -321,7 +322,7 @@
         }
 
         .cutoff-title {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--primary);
             font-weight: bold;
             margin-bottom: 2px;
@@ -331,20 +332,20 @@
         }
 
         .cutoff-time-text {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 800;
             color: var(--primary);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             line-height: 1.2;
         }
 
         .cutoff-timer {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: #d9381e;
             background: #ffeef0;
-            padding: 3px 10px;
-            border-radius: 10px;
+            padding: 2px 8px;
+            border-radius: 8px;
             letter-spacing: 0.5px;
             width: 100%;
             border: 1px solid #fca5a5;
@@ -393,51 +394,51 @@
                 display: none !important; 
             }
 
-            /* 3. 截止時間與倒數計時標籤：橫向放置並貼合於底部導覽列正上方 */
+            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 (同步最新規格) */
             .cutoff-float-badge {
-                position: fixed;
-                bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 8px);
-                left: 12px;
-                right: 12px;
-                width: auto;
-                min-width: 0;
-                border-radius: 12px;
-                padding: 8px 14px;
-                background: #ffffff;
-                border: 1.5px solid var(--primary);
-                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-                z-index: 9998;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                gap: 8px;
+                position: fixed !important;
+                bottom: calc(60px + env(safe-area-inset-bottom, 0px) + 8px) !important;
+                left: 12px !important;
+                right: 12px !important;
+                width: auto !important;
+                min-width: 0 !important;
+                border-radius: 12px !important;
+                padding: 8px 14px !important;
+                background: #ffffff !important;
+                border: 1.5px solid var(--primary) !important;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+                z-index: 9998 !important;
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 8px !important;
             }
 
             .cutoff-title-group {
-                flex-direction: row;
-                gap: 8px;
-                align-items: center;
+                flex-direction: row !important;
+                gap: 8px !important;
+                align-items: center !important;
             }
 
             .cutoff-title {
-                margin-bottom: 0;
-                font-size: 12px;
-                white-space: nowrap;
+                margin-bottom: 0 !important;
+                font-size: 12px !important;
+                white-space: nowrap !important;
             }
 
             .cutoff-time-text {
-                margin-bottom: 0;
-                font-size: 13px;
-                white-space: nowrap;
+                margin-bottom: 0 !important;
+                font-size: 13px !important;
+                white-space: nowrap !important;
             }
 
             .cutoff-timer {
-                width: auto;
-                padding: 3px 10px;
-                font-size: 13px;
-                text-align: center;
-                white-space: nowrap;
+                width: auto !important;
+                padding: 3px 10px !important;
+                font-size: 13px !important;
+                text-align: center !important;
+                white-space: nowrap !important;
             }
 
             /* 4. 手機版 4 個功能分頁固定底部工作欄 */
@@ -814,7 +815,7 @@
     </div>
 </div>
 
-<!-- ⏱️ 右下角/手機版底部截止時間與倒數計時懸浮元件 -->
+<!-- ⏱️ 右下角/手機版底部截止時間與倒數計時懸浮元件 (同步最新 DOM 結構) -->
 <div id="cutoffBadge" class="cutoff-float-badge">
     <div class="cutoff-title-group">
         <div class="cutoff-title">⏱️ 點餐截止時間</div>
@@ -1051,10 +1052,11 @@ let finalTotal = 0;
 let finalSummary = "";
 let globalEmployeesMap = {};
 
-// ⏱️ 倒數計時變數
+// ⏱️ 倒數計時與截止判定變數
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
+let isExpiredFlag = false;
 
 window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1095,7 +1097,7 @@ async function startCutoffCountdown() {
     cutoffTimerInterval = setInterval(async () => {
         updateCountdownUI();
         pollCounter++;
-        if (pollCounter >= 2) {
+        if (pollCounter >= 5) {
             pollCounter = 0;
             await fetchCutoffSetting();
         }
@@ -1208,18 +1210,8 @@ async function fetchCutoffSetting() {
         latestDate = localStorage.getItem('lockDate') || localStorage.getItem('cutoffDate') || null;
     }
 
-    if (latestTime) {
-        const cleanTime = latestTime.replace(/[^0-9:]/g, '');
-        targetCutoffStr = (cleanTime && cleanTime.includes(':')) ? cleanTime : null;
-    } else {
-        targetCutoffStr = null;
-    }
-
-    if (latestDate && typeof latestDate === 'string' && latestDate.includes('-')) {
-        targetCutoffDateStr = latestDate.trim();
-    } else {
-        targetCutoffDateStr = null;
-    }
+    targetCutoffStr = latestTime ? latestTime.replace(/[^0-9:]/g, '') : null;
+    targetCutoffDateStr = (latestDate && typeof latestDate === 'string' && latestDate.includes('-')) ? latestDate.trim() : null;
 }
 
 function updateCountdownUI() {
@@ -1232,58 +1224,42 @@ function updateCountdownUI() {
         timeDisplay.textContent = '--:--';
         countdownDisplay.textContent = '尚未設定點餐截止';
         countdownDisplay.classList.remove('expired');
+        isExpiredFlag = false;
         return;
     }
 
-    if (targetCutoffDateStr) {
-        timeDisplay.textContent = `${targetCutoffDateStr} ${targetCutoffStr}`;
-        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 點餐截止時間';
-    } else {
-        timeDisplay.textContent = targetCutoffStr;
-        if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 今日點餐截止';
-    }
+    timeDisplay.textContent = targetCutoffDateStr ? `${targetCutoffDateStr} ${targetCutoffStr}` : targetCutoffStr;
+    if (cutoffTitle) cutoffTitle.innerHTML = '⏱️ 點餐截止時間';
 
     const now = new Date();
     const timeParts = targetCutoffStr.split(':').map(Number);
-    const targetHours = timeParts[0] !== undefined ? timeParts[0] : 10;
-    const targetMinutes = timeParts[1] !== undefined ? timeParts[1] : 30;
-    const targetSeconds = timeParts[2] !== undefined ? timeParts[2] : 0;
-
-    let year = now.getFullYear();
-    let month = now.getMonth();
-    let day = now.getDate();
+    let year = now.getFullYear(), month = now.getMonth(), day = now.getDate();
 
     if (targetCutoffDateStr && targetCutoffDateStr.includes('-')) {
         const dateParts = targetCutoffDateStr.split('-').map(Number);
         if (dateParts.length === 3 && !dateParts.some(isNaN)) {
-            year = dateParts[0];
-            month = dateParts[1] - 1;
-            day = dateParts[2];
+            year = dateParts[0]; month = dateParts[1] - 1; day = dateParts[2];
         }
     }
 
-    const targetTime = new Date(year, month, day, targetHours, targetMinutes, targetSeconds);
+    const targetTime = new Date(year, month, day, timeParts[0] || 10, timeParts[1] || 30, timeParts[2] || 0);
     const diffMs = targetTime - now;
 
     if (diffMs <= 0) {
         countdownDisplay.textContent = '已截止點餐';
         countdownDisplay.classList.add('expired');
+        isExpiredFlag = true;
     } else {
         countdownDisplay.classList.remove('expired');
+        isExpiredFlag = false;
         const totalSecs = Math.floor(diffMs / 1000);
         const hrs = Math.floor(totalSecs / 3600);
         const mins = Math.floor((totalSecs % 3600) / 60);
         const secs = totalSecs % 60;
-
-        const hh = String(hrs).padStart(2, '0');
-        const mm = String(mins).padStart(2, '0');
-        const ss = String(secs).padStart(2, '0');
+        const hh = String(hrs).padStart(2, '0'), mm = String(mins).padStart(2, '0'), ss = String(secs).padStart(2, '0');
 
         if (hrs >= 24) {
-            const days = Math.floor(hrs / 24);
-            const remainHrs = hrs % 24;
-            const rh = String(remainHrs).padStart(2, '0');
-            countdownDisplay.textContent = `${days}天 ${rh}:${mm}:${ss}`;
+            countdownDisplay.textContent = `${Math.floor(hrs / 24)}天 ${String(hrs % 24).padStart(2, '0')}:${mm}:${ss}`;
         } else if (hrs > 0) {
             countdownDisplay.textContent = `${hh}:${mm}:${ss}`;
         } else {
@@ -1819,6 +1795,15 @@ async function submitOrderToServer() {
             title: "提示",
             bodyHtml: "⚠️ 購物車是空的，請先挑選飲料！",
             confirmText: "確定",
+            showCancel: false
+        });
+    }
+
+    if (isExpiredFlag) {
+        return showCustomModal({
+            title: "點餐已截止",
+            bodyHtml: "⏱️ 抱歉，今日點餐已過截止時間！無法送出新訂單。",
+            confirmText: "我知道了",
             showCancel: false
         });
     }
