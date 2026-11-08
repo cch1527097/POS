@@ -285,14 +285,14 @@
         .fab-cart { background-color: var(--primary); }
         .fab-exit { background-color: #a40e11; }
         
-        /* 電腦版：累計金額圓框（純顯示，不需點擊） */
+        /* 電腦版：累計金額圓框（純顯示） */
         .fab-menu { 
             display: flex; 
             background-color: #0284c7; 
             cursor: default; 
         }
         .fab-menu:hover {
-            transform: none; /* 純顯示框不縮放 */
+            transform: none;
         }
 
         .desktop-accumulated-text {
@@ -316,7 +316,7 @@
         }
 
         .fab-btn svg { width: 24px; height: 24px; fill: #ffffff; }
-        .fab-text { display: none; } /* 電腦版不顯示下方文字 */
+        .fab-text { display: none; }
 
         .others-float-btn {
             background-color: #0091ff;
@@ -719,7 +719,7 @@
                 cursor: pointer !important;
             }
 
-            /* 手機版隱藏圓框內的文字，改為顯示底部 Icon & 標籤 */
+            /* 手機版隱藏圓框內的文字，改為大字金額區塊 */
             .desktop-accumulated-text {
                 display: none !important;
             }
@@ -731,7 +731,21 @@
                 justify-content: center;
                 width: 100%;
                 height: 100%;
-                gap: 2px;
+                gap: 1px;
+            }
+
+            .mobile-accumulated-label {
+                font-size: 10px;
+                color: #64748b;
+                font-weight: 600;
+                line-height: 1;
+            }
+
+            .mobile-accumulated-val {
+                font-size: 17px !important;
+                font-weight: 800 !important;
+                color: var(--primary) !important;
+                line-height: 1.1;
             }
 
             .fab-btn svg {
@@ -900,17 +914,15 @@
 
 <!-- 📱 底部固定導覽列 / 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 1. 累計金額 (電腦版圓框內直接顯示金額；手機版顯示於底部導覽列) -->
+    <!-- 1. 累計金額 (電腦版圓框顯示金額；手機版直接醒目大字顯示，無 Icon) -->
     <div class="fab-btn fab-menu" title="目前累計金額" aria-label="累計金額">
         <!-- 電腦版圓框置中金額 -->
         <span class="desktop-accumulated-text" id="desktop-accumulated-total">$0</span>
 
-        <!-- 手機版底部工作導覽列區塊 -->
+        <!-- 手機版大字金額區塊 -->
         <div class="mobile-menu-wrapper" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
-            <svg viewBox="0 0 24 24">
-                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
-            </svg>
-            <span class="fab-text" id="mobile-accumulated-total">累計 $0</span>
+            <span class="mobile-accumulated-label">累計金額</span>
+            <span class="mobile-accumulated-val" id="mobile-accumulated-total">$0</span>
         </div>
     </div>
 
@@ -1752,10 +1764,10 @@ function renderCart() {
         }
     }
 
-    // 📱 同步手機版與電腦版累計金額
+    // 📱 同步手機版大字與電腦版圓框金額
     const mobileTotalEl = document.getElementById("mobile-accumulated-total");
     if (mobileTotalEl) {
-        mobileTotalEl.innerText = `累計 $${finalTotal}`;
+        mobileTotalEl.innerText = `$${finalTotal}`;
     }
 
     const desktopTotalEl = document.getElementById("desktop-accumulated-total");
