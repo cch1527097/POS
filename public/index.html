@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>美食訂餐系統</title>
+    <title>醫米之鄉</title>
     <style>
         /* ==================== 全局與基礎樣式 ==================== */
         * { 
@@ -1358,7 +1358,7 @@
     <!-- 1. 登入畫面區塊 -->
     <div id="login-section" class="login-card">
         <img src="logo.gif" alt="Logo" class="login-logo">
-        <div class="title">美食訂餐系統</div>
+        <div class="title">醫米之鄉</div>
         <div class="subtitle">ORDERING SYSTEM LOGIN</div>
          
         <div class="input-group">
@@ -1380,7 +1380,7 @@
             <!-- 第一層：頂部工具列 -->
             <div class="nidin-top-bar">
                 <div class="nidin-top-left">
-                    <div class="nidin-logo" onclick="showAllCategories()">智慧點餐系統<span class="dot">.</span></div>
+                    <div class="nidin-logo" onclick="showAllCategories()">醫米之鄉<span class="dot">.</span></div>
                     <div class="nidin-divider"></div>
                     
                     <button class="nidin-location-btn" onclick="openBranchModal()">
@@ -3933,7 +3933,7 @@
 
             try {
                 const response = await fetch('/api/orders/cancel', {
-                    method: 'POST',
+                    method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ cardId: cardId, orderId: orderId, timestamp: timestamp })
                 });
