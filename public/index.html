@@ -963,6 +963,18 @@
             animation: modalFadeIn 0.25s ease-out;
         }
 
+        /* 💡 修正彈窗內套用 .login-btn 類別導致的按鈕跑版與固定寬度限制 */
+        .branch-modal-content .login-btn {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+        }
+
+        .branch-modal-content div[style*="display: flex"] .login-btn {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
         .cart-modal-content,
         .history-modal-content {
             width: 95vw !important;
@@ -1355,7 +1367,10 @@
             .title { font-size: 24px; margin-bottom: 2px; }
             .subtitle { font-size: 12px; margin-bottom: 24px; letter-spacing: 2px; }
             .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
-            .login-btn { width: 100%; max-width: 280px; }
+            
+            /* 💡 僅將寬度限制作用於登入卡片內的按鈕 */
+            .login-card .login-btn { width: 100%; max-width: 280px; }
+            
             /* 修正「後台管理系統」按鈕在極小螢幕下的寬度 */
             .login-admin-link { 
                 width: 100%; 
@@ -2485,11 +2500,11 @@
                     </span>
                     <input type="text" id="groupGeneratedUrl" readonly style="width: 100%; padding: 9px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; background: #ffffff; color: #333;" onclick="this.select()">
                     
-                    <div style="display: flex; gap: 10px; margin-top: 4px;">
-                        <button class="login-btn" style="flex: 1; padding: 9px 0; font-size: 14px; background-color: #52c41a;" onclick="copyGroupUrl()">
+                    <div style="display: flex; gap: 10px; margin-top: 4px; flex-wrap: wrap;">
+                        <button class="login-btn" style="flex: 1; min-width: 120px; padding: 9px 0; font-size: 14px; background-color: #52c41a;" onclick="copyGroupUrl()">
                             📋 複製網址
                         </button>
-                        <button class="login-btn" style="flex: 1; padding: 9px 0; font-size: 14px; background-color: #1890ff;" onclick="goToGroupShop()">
+                        <button class="login-btn" style="flex: 1; min-width: 120px; padding: 9px 0; font-size: 14px; background-color: #1890ff;" onclick="goToGroupShop()">
                             🚀 自己先去點餐
                         </button>
                     </div>
