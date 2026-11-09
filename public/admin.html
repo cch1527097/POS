@@ -210,7 +210,7 @@
             transform: translateY(-1px);
         }
 
-        /* ==================== 登入卡片區塊 (修正位移問題) ==================== */
+        /* ==================== 登入卡片區塊 ==================== */
         .login-card {
             background-color: #ffffff; 
             border-radius: 16px;       
@@ -260,7 +260,7 @@
             gap: 16px;
         }
 
-        /* 修正 1：指定固定的外框容器寬度並置中 */
+        /* 外層容器 */
         .input-group {
             position: relative;
             display: flex;
@@ -270,16 +270,16 @@
             margin: 0 auto;
         }
 
-        /* 修正 2：改為靠左對齊，右側留出 45px 防止文字與指標撞到眼睛按鈕 */
+        /* 輸入框設定：文字置中，左右保留對稱的 45px 邊距 */
         .input-group input {
             background: #f7faf6;
             border: 1px solid #d0e3ce; 
             border-radius: 10px;
             font-size: 16px;
             width: 100%;
-            text-align: left;
+            text-align: center; /* 保持文字與提示字置中 */
             outline: none;
-            padding: 14px 45px 14px 20px;
+            padding: 14px 45px; /* 左右邊距皆為 45px，確保中央可寫字區域對稱且不撞到眼睛圖示 */
             color: #2b4c23;
             transition: all 0.25s ease;
         }
@@ -300,7 +300,7 @@
             font-weight: normal;
         }
 
-        /* 修正 3：使用絕對定位 right: 15px 與 translateY(-50%) 居中，不再硬開 translateX */
+        /* 眼睛按鈕：靠右固定 15px，垂直居中 */
         .toggle-password {
             position: absolute;
             right: 15px;
@@ -424,7 +424,6 @@
             .title { font-size: 24px; margin-bottom: 2px; }
             .subtitle { font-size: 12px; margin-bottom: 24px; letter-spacing: 2px; }
             
-            /* 修正 4：手機版容器適應 RWD 寬度 */
             .input-group { 
                 width: 100%; 
                 max-width: 280px; 
