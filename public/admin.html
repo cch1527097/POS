@@ -210,7 +210,7 @@
             transform: translateY(-1px);
         }
 
-        /* ==================== 登入卡片區塊 (與 index 結構一致) ==================== */
+        /* ==================== 登入卡片區塊 (修正位移問題) ==================== */
         .login-card {
             background-color: #ffffff; 
             border-radius: 16px;       
@@ -260,23 +260,26 @@
             gap: 16px;
         }
 
+        /* 修正 1：指定固定的外框容器寬度並置中 */
         .input-group {
             position: relative;
             display: flex;
             align-items: center;
-            width: 100%;
-            justify-content: center;
+            width: 320px;
+            max-width: 100%;
+            margin: 0 auto;
         }
 
+        /* 修正 2：改為靠左對齊，右側留出 45px 防止文字與指標撞到眼睛按鈕 */
         .input-group input {
             background: #f7faf6;
             border: 1px solid #d0e3ce; 
             border-radius: 10px;
             font-size: 16px;
-            width: 320px;
-            text-align: center;
+            width: 100%;
+            text-align: left;
             outline: none;
-            padding: 14px 20px;
+            padding: 14px 45px 14px 20px;
             color: #2b4c23;
             transition: all 0.25s ease;
         }
@@ -297,10 +300,12 @@
             font-weight: normal;
         }
 
+        /* 修正 3：使用絕對定位 right: 15px 與 translateY(-50%) 居中，不再硬開 translateX */
         .toggle-password {
             position: absolute;
-            right: auto;
-            transform: translateX(130px);
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
             font-size: 18px;
             user-select: none;
@@ -367,7 +372,7 @@
             display: block;
         }
 
-        /* ==================== 📱 手機版 RWD 適應 (與 index 完全一致) ==================== */
+        /* ==================== 📱 手機版 RWD 適應 ==================== */
         @media (max-width: 768px) {
             .nidin-top-bar {
                 flex-direction: column;
@@ -418,8 +423,16 @@
             }
             .title { font-size: 24px; margin-bottom: 2px; }
             .subtitle { font-size: 12px; margin-bottom: 24px; letter-spacing: 2px; }
-            .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
-            .toggle-password { transform: translateX(110px); }
+            
+            /* 修正 4：手機版容器適應 RWD 寬度 */
+            .input-group { 
+                width: 100%; 
+                max-width: 280px; 
+            }
+            .input-group input { 
+                width: 100%; 
+                font-size: 16px; 
+            }
             .login-btn, .login-admin-link { 
                 width: 100%; 
                 max-width: 280px; 
