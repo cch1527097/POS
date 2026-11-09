@@ -928,14 +928,13 @@
                                 <tr>
                                     <th>店家名稱</th>
                                     <th>餐點類別</th>
-                                    <th>菜單品項</th>
                                     <th>目前開放狀態</th>
                                     <th>前台權限</th>
                                     <th>控制操作</th>
                                 </tr>
                             </thead>
                             <tbody id="foodStoreTableBody">
-                                <tr><td colspan="6" class="text-center py-8 text-slate-400">載入中...</td></tr>
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400">載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -957,14 +956,13 @@
                                 <tr>
                                     <th>店家名稱</th>
                                     <th>餐點類別</th>
-                                    <th>菜單品項</th>
                                     <th>目前開放狀態</th>
                                     <th>前台權限</th>
                                     <th>控制操作</th>
                                 </tr>
                             </thead>
                             <tbody id="drinkStoreTableBody">
-                                <tr><td colspan="6" class="text-center py-8 text-slate-400">載入中...</td></tr>
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400">載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1483,11 +1481,9 @@ ${openStores}
 
             const buildRows = (list) => {
                 if (list.length === 0) {
-                    return `<tr><td colspan="6" class="text-center py-8 text-slate-400">尚無店家資料</td></tr>`;
+                    return `<tr><td colspan="5" class="text-center py-8 text-slate-400">尚無店家資料</td></tr>`;
                 }
                 return list.map(store => {
-                    const itemCount = (store.items && Array.isArray(store.items)) ? store.items.length : 0;
-                    
                     const statusBadge = store.isOpen 
                         ? `<span class="badge badge-paid"><i class="fa-solid fa-circle text-[8px]"></i> 開放點餐中</span>` 
                         : `<span class="badge badge-unpaid"><i class="fa-solid fa-circle text-[8px]"></i> 尚未開放</span>`;
@@ -1506,15 +1502,9 @@ ${openStores}
                         <tr>
                             <td data-label="店家名稱"><strong>${store.name}</strong></td>
                             <td data-label="餐點類別"><span class="badge ${categoryBadgeClass}">${store.category}</span></td>
-                            <td data-label="菜單品項">
-                                <span class="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-slate-200">
-                                    <i class="fa-solid fa-utensils mr-1 text-emerald-600"></i>${itemCount} 個品項
-                                </span>
-                            </td>
                             <td data-label="開放狀態">${statusBadge}</td>
                             <td data-label="前台權限">${permissionText}</td>
                             <td data-label="控制操作">
-                                <button class="btn-edit" onclick="openStoreMenuModal('${store.id}')"><i class="fa-solid fa-list-check mr-1"></i>品項菜單</button>
                                 ${actionBtn}
                             </td>
                         </tr>
