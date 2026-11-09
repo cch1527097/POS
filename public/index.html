@@ -1344,11 +1344,31 @@
         }
 
         @media (max-width: 480px) {
-            .login-card { width: 92%; height: auto; padding: 36px 18px; border-radius: 16px; }
+            .login-card { 
+                width: 90%; 
+                height: auto; 
+                min-height: auto; 
+                padding: 32px 20px 24px 20px; 
+                border-radius: 16px; 
+            }
             .title { font-size: 24px; margin-bottom: 2px; }
             .subtitle { font-size: 12px; margin-bottom: 24px; letter-spacing: 2px; }
             .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
             .login-btn { width: 100%; max-width: 280px; }
+            /* 修正「後台管理系統」按鈕在極小螢幕下的寬度 */
+            .login-admin-link { 
+                width: 100%; 
+                max-width: 280px; 
+                margin-top: 16px; 
+            }
+            /* 修正「版權所有」宣告位置，防壓卡片底部 */
+            .login-footer-copy { 
+                position: absolute; 
+                bottom: 12px; 
+                font-size: 12px; 
+                width: 90%; 
+                left: 5%; 
+            }
             .history-modal-body { padding: 12px !important; }
         }
     </style>
