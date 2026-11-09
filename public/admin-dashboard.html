@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>後台管理系統 | Admin Dashboard</title>
+    <!-- 設定分頁 Favicon 圖示 -->
+    <link rel="icon" href="logo.gif" type="image/gif">
+    <link rel="shortcut icon" href="logo.gif" type="image/gif">
     <!-- 引入 Google Fonts & Font Awesome 圖示庫 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- 引入 Tailwind CSS 進行加速佈局 -->
+    <!-- 引入 Tailwind CSS 加速佈局 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -69,25 +72,12 @@
             overflow-x: hidden;
         }
 
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 99px;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 
         .sidebar {
             width: 270px;
@@ -184,9 +174,7 @@
             transition: var(--transition-smooth);
         }
 
-        .card-accent {
-            border-top: 4px solid #10b981;
-        }
+        .card-accent { border-top: 4px solid #10b981; }
 
         .segmented-control-wrapper {
             overflow-x: auto;
@@ -269,9 +257,7 @@
             height: 44px;
         }
 
-        #orderSearchInput {
-            padding-left: 40px !important;
-        }
+        #orderSearchInput { padding-left: 40px !important; }
 
         input:focus, select:focus {
             border-color: #10b981;
@@ -298,11 +284,7 @@
             flex-shrink: 0;
         }
 
-        .btn:hover {
-            filter: brightness(1.08);
-            transform: translateY(-1px);
-        }
-
+        .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
         .btn:active { transform: translateY(0); }
 
         .btn-secondary {
@@ -356,9 +338,7 @@
             letter-spacing: 0.5px;
         }
 
-        tr:hover td {
-            background-color: #f8fafc;
-        }
+        tr:hover td { background-color: #f8fafc; }
 
         .col-meal-detail { white-space: normal; min-width: 240px; }
         .time-stacked { display: flex; flex-direction: column; line-height: 1.35; }
@@ -552,9 +532,7 @@
                 padding: 24px 20px;
             }
 
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
+            .sidebar.mobile-open { transform: translateX(0); }
 
             .sidebar-overlay {
                 display: none;
@@ -567,20 +545,12 @@
                 transition: opacity 0.3s ease;
             }
 
-            .sidebar-overlay.active {
-                display: block;
-                opacity: 1;
-            }
-
-            .main-content {
-                padding: 16px;
-            }
+            .sidebar-overlay.active { display: block; opacity: 1; }
+            .main-content { padding: 16px; }
         }
 
         @media (max-width: 768px) {
-            input, select, button {
-                font-size: 16px !important;
-            }
+            input, select, button { font-size: 16px !important; }
 
             .card {
                 padding: 14px;
@@ -648,20 +618,12 @@
                 text-align: left;
             }
 
-            .table-responsive td.col-meal-detail::before {
-                margin-bottom: 2px;
-            }
-
-            .scrollable-table-container {
-                max-height: none;
-                border: none;
-            }
+            .table-responsive td.col-meal-detail::before { margin-bottom: 2px; }
+            .scrollable-table-container { max-height: none; border: none; }
         }
 
         @media (max-width: 480px) {
-            .grid-cols-2 {
-                grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
-            }
+            .grid-cols-2 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
         }
     </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -670,8 +632,8 @@
 
     <!-- 手機版頂部 Header -->
     <div class="mobile-header hidden">
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-utensils text-emerald-400 text-lg"></i>
+        <div class="flex items-center gap-2.5">
+            <img src="logo.gif" alt="Logo" class="w-8 h-8 object-contain">
             <span class="font-bold text-base tracking-wide">訂餐後台管理</span>
         </div>
         <button class="text-white text-xl p-2.5 focus:outline-none min-w-[44px] min-h-[44px] flex items-center justify-center" onclick="toggleMobileSidebar()" aria-label="選單">
@@ -685,9 +647,7 @@
     <!-- 側邊欄選單 -->
     <div class="sidebar" id="sidebar">
         <div class="flex items-center gap-3 px-2 mb-6">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 text-lg shadow-inner">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
+            <img src="logo.gif" alt="Logo" class="w-10 h-10 object-contain rounded-xl bg-white/10 border border-emerald-400/30 p-1 shadow-inner">
             <div>
                 <h2 class="font-bold text-base text-white leading-tight">後台管理系統</h2>
                 <span class="text-xs text-emerald-300 font-medium">Enterprise Portal</span>
