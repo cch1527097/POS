@@ -348,7 +348,7 @@
             color: #0a5c41;
         }
 
-        /* 頁尾宣靠 (預設隱藏，僅在 login-mode 顯示) */
+        /* 頁尾宣告 (預設隱藏，僅在 login-mode 顯示) */
         .login-footer-copy {
             display: none;
             position: absolute;
@@ -408,15 +408,27 @@
         @media (max-width: 480px) {
             .login-card { 
                 width: 90%; 
+                height: auto; 
                 min-height: auto; 
-                padding: 40px 20px; 
+                padding: 32px 20px 24px 20px; 
                 border-radius: 16px; 
             }
-            .title { font-size: 26px; margin-bottom: 2px; }
-            .subtitle { font-size: 12px; margin-bottom: 25px; letter-spacing: 2px; }
+            .title { font-size: 24px; margin-bottom: 2px; }
+            .subtitle { font-size: 12px; margin-bottom: 24px; letter-spacing: 2px; }
             .input-group input { width: 100%; max-width: 280px; font-size: 16px; }
             .toggle-password { transform: translateX(110px); }
-            .login-btn, .login-admin-link { width: 100%; max-width: 280px; }
+            .login-btn, .login-admin-link { 
+                width: 100%; 
+                max-width: 280px; 
+                margin-top: 12px;
+            }
+            .login-footer-copy { 
+                position: absolute; 
+                bottom: 12px; 
+                font-size: 12px; 
+                width: 90%; 
+                left: 5%; 
+            }
         }
     </style>
 </head>
