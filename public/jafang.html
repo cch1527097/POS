@@ -291,7 +291,37 @@
 
         .fab-cart { background-color: #278638; }
         .fab-exit { background-color: #a40e11; }
-        .fab-menu { display: none; background-color: #475569; }
+        
+        /* 電腦版：累計金額圓框（純顯示） */
+        .fab-menu { 
+            display: flex; 
+            background-color: #0284c7; 
+            cursor: default; 
+        }
+        .fab-menu:hover {
+            transform: none;
+        }
+
+        .desktop-accumulated-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            text-align: center;
+            user-select: none;
+            padding: 2px;
+            box-sizing: border-box;
+            letter-spacing: 0.5px;
+        }
+
+        .mobile-menu-wrapper {
+            display: none;
+        }
+
         .fab-btn svg { width: 24px; height: 24px; fill: #ffffff; }
 
         .fab-text { display: none; }
@@ -693,7 +723,39 @@
                 color: var(--primary);
             }
 
-            .fab-menu { display: flex !important; }
+            .fab-menu { 
+                display: flex !important; 
+                cursor: pointer !important;
+            }
+
+            /* 手機版隱藏圓框內的文字，改為大字金額區塊 */
+            .desktop-accumulated-text {
+                display: none !important;
+            }
+
+            .mobile-menu-wrapper {
+                display: flex !important;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                gap: 1px;
+            }
+
+            .mobile-accumulated-label {
+                font-size: 10px;
+                color: #64748b;
+                font-weight: 600;
+                line-height: 1;
+            }
+
+            .mobile-accumulated-val {
+                font-size: 17px !important;
+                font-weight: 800 !important;
+                color: var(--primary) !important;
+                line-height: 1.1;
+            }
 
             .fab-btn svg {
                 width: 22px;
@@ -849,7 +911,7 @@
 <body>
 
 <div class="navbar">
-    <a href="index.html" class="navbar-brand">智慧點餐系統</a>
+    <a href="index.html" class="navbar-brand">得利牛排</a>
     <div class="search-wrapper">
         <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋餐點 (例如：沙朗牛排、雞腿排)..." oninput="debounceFilterMenu()">
     </div>
@@ -866,13 +928,17 @@
 
 <!-- 📱 底部固定導覽列 / 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 1. 點購 (手機版顯示) -->
-    <button class="fab-btn fab-menu" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="點購" aria-label="點購">
-        <svg viewBox="0 0 24 24">
-            <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.46 3.9 3.45 4.35L6.45 22h2.1L8.55 13.35C10.54 12.9 12 11.12 12 9V2h-1v7zm8-7h-2v6h-1V2h-2v6h-1V2h-1v7c0 2.21 1.79 4 4 4v9h2V13c2.21 0 4-1.79 4-4V2h-1v6z"/>
-        </svg>
-        <span class="fab-text">點購</span>
-    </button>
+    <!-- 1. 累計金額 (電腦版圓框顯示金額；手機版直接醒目大字顯示，無 Icon) -->
+    <div class="fab-btn fab-menu" title="目前累計金額" aria-label="累計金額">
+        <!-- 電腦版圓框置中金額 -->
+        <span class="desktop-accumulated-text" id="desktop-accumulated-total">$0</span>
+
+        <!-- 手機版大字金額區塊 -->
+        <div class="mobile-menu-wrapper" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <span class="mobile-accumulated-label">累計金額</span>
+            <span class="mobile-accumulated-val" id="mobile-accumulated-total">$0</span>
+        </div>
+    </div>
 
     <!-- 2. 其他人點了什麼 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
@@ -1643,6 +1709,17 @@ function renderCart() {
         } else {
             badgeEl.style.display = "none";
         }
+    }
+
+    // 📱 同步手機版大字與電腦版圓框金額
+    const mobileTotalEl = document.getElementById("mobile-accumulated-total");
+    if (mobileTotalEl) {
+        mobileTotalEl.innerText = `$${finalTotal}`;
+    }
+
+    const desktopTotalEl = document.getElementById("desktop-accumulated-total");
+    if (desktopTotalEl) {
+        desktopTotalEl.innerText = `$${finalTotal}`;
     }
 }
 
