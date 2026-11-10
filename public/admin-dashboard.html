@@ -704,7 +704,8 @@
             <button type="button" class="menu-item" onclick="refreshCurrentTab()">
                 <i class="fa-solid fa-rotate text-base"></i> 重新整理
             </button>
-            <a href="admin.html" class="menu-item logout mt-auto">
+            <!-- 🛡️ 修改登出按鈕：綁定 executeAdminLogout 函式 -->
+            <a href="javascript:void(0);" onclick="executeAdminLogout(event)" class="menu-item logout mt-auto">
                 <i class="fa-solid fa-right-from-bracket text-base"></i> 登出系統
             </a>
         </div>
@@ -1594,60 +1595,60 @@ ${openStores}
             }
         }
 
-        // ==================== 1. 後台權限與登入驗證機制 ====================
-function verifyAdminAuthOrRedirect() {
-    const adminRole = localStorage.getItem('currentAdminRole');
-    const adminName = localStorage.getItem('currentAdminName');
-    
-    // 若未登入或缺少管理員憑證，強制跳轉回 admin.html 登入頁
-    if (!adminRole || !adminName) {
-        // 清除殘留快取
-        localStorage.removeItem('currentAdminRole');
-        localStorage.removeItem('currentAdminName');
-        sessionStorage.clear();
-        
-        // 使用 replace 防止使用者透過「下一頁」返回控制台
-        window.location.replace('admin.html');
-        return false;
-    }
-    return true;
-}
-
-// 監聽 pageshow（包含瀏覽器上一頁/快取還原情況）
-window.addEventListener('pageshow', (event) => {
-    verifyAdminAuthOrRedirect();
-});
-
-// 監聽 popstate（歷史紀錄變更）
-window.addEventListener('popstate', () => {
-    verifyAdminAuthOrRedirect();
-});
-
-// 頁面載入時立即執行驗證
-verifyAdminAuthOrRedirect();
-
-// ==================== 2. 後台登出系統函式 ====================
-function executeAdminLogout(event) {
-    if (event) event.preventDefault();
-    
-    showCustomModal({
-        title: '系統提示',
-        message: '🚪 確定要登出管理系統嗎？',
-        isConfirm: true,
-        onConfirm: () => {
-            // 清除管理員登入憑證
-            localStorage.removeItem('currentAdminName');
-            localStorage.removeItem('currentAdminRole');
-            sessionStorage.clear();
-
-            // 替換歷史紀錄並強制重定向至登入頁
-            if (window.history && window.history.replaceState) {
-                window.history.replaceState(null, '', 'admin.html');
+        // ==================== 🛡️ 1. 後台權限與登入驗證機制 ====================
+        function verifyAdminAuthOrRedirect() {
+            const adminRole = localStorage.getItem('currentAdminRole');
+            const adminName = localStorage.getItem('currentAdminName');
+            
+            // 若未登入或缺少管理員憑證，強制跳轉回 admin.html 登入頁
+            if (!adminRole || !adminName) {
+                localStorage.removeItem('currentAdminRole');
+                localStorage.removeItem('currentAdminName');
+                sessionStorage.clear();
+                
+                // 使用 replace 防止使用者透過「下一頁」返回控制台
+                window.location.replace('admin.html');
+                return false;
             }
-            window.location.replace('admin.html');
+            return true;
         }
-    });
-}
+
+        // 監聽 pageshow（包含瀏覽器上一頁/快取還原情況）
+        window.addEventListener('pageshow', (event) => {
+            verifyAdminAuthOrRedirect();
+        });
+
+        // 監聽 popstate（歷史紀錄變更）
+        window.addEventListener('popstate', () => {
+            verifyAdminAuthOrRedirect();
+        });
+
+        // 頁面載入腳本時立即執行驗證
+        verifyAdminAuthOrRedirect();
+
+        // ==================== 🚪 2. 後台登出系統函式 ====================
+        function executeAdminLogout(event) {
+            if (event) event.preventDefault();
+            
+            showCustomModal({
+                title: '系統提示',
+                message: '🚪 確定要登出管理系統嗎？',
+                isConfirm: true,
+                onConfirm: () => {
+                    // 清除管理員登入憑證
+                    localStorage.removeItem('currentAdminName');
+                    localStorage.removeItem('currentAdminRole');
+                    sessionStorage.clear();
+
+                    // 替換歷史紀錄並強制重定向至登入頁
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, '', 'admin.html');
+                    }
+                    window.location.replace('admin.html');
+                }
+            });
+        }
+
         async function saveLockTime() {
             if (!checkPermission('change_status')) return;
 
@@ -2335,6 +2336,9 @@ function executeAdminLogout(event) {
         }
 
         window.onload = async function() {
+            // 🛡️ 初次進入頁面立即執行身份認證，未認證者終止執行後續載入
+            if (!verifyAdminAuthOrRedirect()) return;
+
             applyRolePermissionsUI();
 
             try {
