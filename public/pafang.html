@@ -998,7 +998,8 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    const storeTarget = stores.find(s => s.id === 'store_chiazao' || (s.name && (s.name.includes('家灶') || s.name.includes('爌肉') || s.name.includes('豬腳'))));
+    // 修正：精準匹配 store_15 或名稱包含「家灶」的門市
+    const storeTarget = stores.find(s => s.id === 'store_15' || s.id === 'store_chiazao' || (s.name && s.name.includes('家灶')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
     const itemPriceMap = {};
