@@ -8,7 +8,7 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 允許跨網域存取 (CORS) 處理
+// 允許跨網域存取 (CORS) 處理 - 支援 Cloudflare Pages 跨網域呼叫
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
@@ -23,14 +23,19 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 自動解析並剔除 DATABASE_URL 中的 sslmode 參數，避免 pg 模組觸發警告
+// Render 健康檢查路由
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// 自動解析並剔除 DATABASE_URL 中的 sslmode 參數
 const rawDbUrl = process.env.DATABASE_URL || '';
 let cleanDbUrl = rawDbUrl;
 
 if (rawDbUrl) {
     try {
         const parsedUrl = new URL(rawDbUrl);
-        parsedUrl.searchParams.delete('sslmode'); // 自動過濾掉 sslmode 參數
+        parsedUrl.searchParams.delete('sslmode');
         cleanDbUrl = parsedUrl.toString();
     } catch (err) {
         cleanDbUrl = rawDbUrl.replace(/([?&])sslmode=[^&]*/g, '');
@@ -203,7 +208,7 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     return null;
 }
 
-// 同步寫入 public/orders.json
+// 同步寫入 public/orders.json（包含目錄建立與快取錯誤排除）
 async function syncOrdersJsonFile() {
     try {
         const publicDir = path.join(__dirname, 'public');
@@ -446,7 +451,6 @@ async function initDatabase() {
 
 // ------------------ API 路由定義 ------------------
 
-// 取得訂單列表常式 (支援單複數別名 /api/orders 與 /api/order)
 const handleGetOrders = async (req, res) => {
     try {
         const { cardId, all } = req.query;
@@ -491,7 +495,7 @@ const handleGetOrders = async (req, res) => {
 };
 
 app.get('/api/orders', handleGetOrders);
-app.get('/api/order', handleGetOrders); // 增加別名相容性
+app.get('/api/order', handleGetOrders);
 
 app.post('/api/groups', async (req, res) => {
     try {
