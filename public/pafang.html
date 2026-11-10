@@ -223,39 +223,6 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        /* 圖形化客製化選項 UI */
-        .opt-group { margin-top: 14px; }
-        .opt-group label { font-weight: 700; display: block; margin-top: 12px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
-        .opt-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-        .opt-card {
-            flex: 1 1 calc(33.333% - 8px);
-            min-width: 80px;
-            background: #f8fafc;
-            border: 1.5px solid var(--border-color);
-            border-radius: 10px;
-            padding: 8px 4px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 600;
-            color: #475569;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-        }
-        .opt-card:hover { border-color: var(--primary); background: #f1f5f9; }
-        .opt-card.selected {
-            background: #e0f2fe;
-            border-color: #0284c7;
-            color: #0369a1;
-            font-weight: 700;
-            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15);
-        }
-
         /* ==================== 懸浮按鈕群 & 截止時間懸浮元件 (電腦預設) ==================== */
         .fab-container {
             position: fixed;
@@ -457,8 +424,6 @@
         .btn-modal-cancel:hover { background: #f8fafc; }
         .btn-modal-confirm { background: var(--primary); border: none; color: white; padding: 8px 16px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; }
         .btn-modal-confirm:hover { background: #1a252f; }
-
-        .custom-item-tag { font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px; }
 
         .history-modal-content { width: 92vw !important; max-width: 1000px !important; max-height: 85vh !important; }
         .history-table-wrapper { overflow-x: auto; }
@@ -773,7 +738,7 @@
     </div>
 </div>
 
-<!-- ⏱️ 右下角/手機底部截止時間與倒數計時懸浮元件 (同步最新 DOM 結構) -->
+<!-- ⏱️ 右下角/手機底部截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
     <div class="cutoff-title-group">
         <div class="cutoff-title">⏱️ 點餐截止時間</div>
@@ -784,19 +749,14 @@
 
 <!-- 📱 底部固定導覽列 / 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 1. 累計金額 (電腦版圓框顯示金額；手機版直接醒目大字顯示，無 Icon) -->
     <div class="fab-btn fab-menu" title="目前累計金額" aria-label="累計金額">
-        <!-- 電腦版圓框置中金額 -->
         <span class="desktop-accumulated-text" id="desktop-accumulated-total">$0</span>
-
-        <!-- 手機版大字金額區塊 -->
         <div class="mobile-menu-wrapper" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
             <span class="mobile-accumulated-label">累計金額</span>
             <span class="mobile-accumulated-val" id="mobile-accumulated-total">$0</span>
         </div>
     </div>
 
-    <!-- 2. 其他人點了什麼 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -807,7 +767,6 @@
         <span class="fab-text">他人點餐</span>
     </button>
 
-    <!-- 3. 購物車 -->
     <button class="fab-btn fab-cart" onclick="openCartModal()" title="開啟購物車" aria-label="開啟購物車">
         <div class="cart-icon-wrapper">
             <svg viewBox="0 0 24 24">
@@ -818,7 +777,6 @@
         <span class="fab-text">購物車</span>
     </button>
 
-    <!-- 4. 離開點餐 -->
     <button class="fab-btn fab-exit" onclick="goBack()" title="離開點餐" aria-label="離開點餐">
         <svg viewBox="0 0 24 24">
             <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
@@ -857,7 +815,7 @@
     </div>
 </div>
 
-<!-- 客製化 / 購物車 Modal 彈窗 -->
+<!-- Modal 彈窗 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -970,9 +928,6 @@ let targetCutoffStr = null;
 let targetCutoffDateStr = null;
 let isExpiredFlag = false;
 
-// 儲存當前點擊彈窗的選擇狀態
-let currentOptions = { egg: '不加蛋', spicy: '不辣' };
-
 window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
@@ -1043,11 +998,9 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 尋找 家灶傳統爌肉豬腳專賣 門市
     const storeTarget = stores.find(s => s.id === 'store_chiazao' || (s.name && (s.name.includes('家灶') || s.name.includes('爌肉') || s.name.includes('豬腳'))));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
-    // 建立後台品項金額對照表
     const itemPriceMap = {};
     storeTarget.items.forEach(item => {
         if (item.name && item.price !== undefined) {
@@ -1055,7 +1008,6 @@ async function syncPricesFromBackend() {
         }
     });
 
-    // 動態更新菜單項目價格
     let updated = false;
     menuItems.forEach(item => {
         if (itemPriceMap[item.name] !== undefined) {
@@ -1394,12 +1346,7 @@ function renderMenu(items) {
             const card = document.createElement("div");
             card.className = "item-card";
             
-            let currentQty = 0;
-            Object.keys(cart).forEach(key => {
-                if (cart[key].baseName === item.name) {
-                    currentQty += cart[key].qty;
-                }
-            });
+            let currentQty = cart[item.name] ? cart[item.name].qty : 0;
 
             card.innerHTML = `
                 <div class="item-info">
@@ -1444,92 +1391,35 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-function selectOptionCard(group, val, el) {
-    currentOptions[group] = val;
-    const parentContainer = el.parentElement;
-    parentContainer.querySelectorAll('.opt-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    el.classList.add('selected');
-}
-
+// 直接點擊新增，不彈窗
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    currentOptions = { egg: '不加蛋', spicy: '不辣' };
+    if (cart[name]) {
+        cart[name].qty += 1;
+    } else {
+        cart[name] = {
+            key: name,
+            baseName: item.name,
+            price: item.price,
+            qty: 1
+        };
+    }
 
-    let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
-            ${item.icon || '🍱'} ${item.name} ($${item.price})
-        </div>
-        
-        <div class="opt-group">
-            <label>🥚 加蛋選項</label>
-            <div class="opt-grid">
-                <div class="opt-card selected" onclick="selectOptionCard('egg', '不加蛋', this)">🚫 不加蛋</div>
-                <div class="opt-card" onclick="selectOptionCard('egg', '加魯蛋 (+15元)', this)">🥚 加魯蛋<br><span style="font-size:11px; color:#e67e22;">+$15</span></div>
-            </div>
-
-            <label>🌶️ 辣度調整</label>
-            <div class="opt-grid">
-                <div class="opt-card selected" onclick="selectOptionCard('spicy', '不辣', this)">🌱 不辣</div>
-                <div class="opt-card" onclick="selectOptionCard('spicy', '微辣', this)">🌶️ 微辣</div>
-                <div class="opt-card" onclick="selectOptionCard('spicy', '小辣', this)">🌶️🌶️ 小辣</div>
-                <div class="opt-card" onclick="selectOptionCard('spicy', '大辣', this)">🔥 大辣</div>
-            </div>
-        </div>
-    `;
-
-    showCustomModal({
-        title: "請選擇餐點客製化選項",
-        bodyHtml: bodyHtml,
-        confirmText: "加入購物車",
-        cancelText: "取消",
-        showCancel: true,
-        onConfirm: () => {
-            const eggOpt = currentOptions.egg;
-            const spicy = currentOptions.spicy;
-
-            let addPrice = 0;
-            if (eggOpt.includes("+15元")) {
-                addPrice = 15;
-            }
-
-            const unitPrice = item.price + addPrice;
-            const customKey = `${item.name}|${eggOpt}|${spicy}`;
-
-            if (cart[customKey]) {
-                cart[customKey].qty += 1;
-            } else {
-                cart[customKey] = {
-                    key: customKey,
-                    baseName: item.name,
-                    price: unitPrice,
-                    qty: 1,
-                    egg: eggOpt,
-                    spicy: spicy
-                };
-            }
-
-            renderCart();
-            renderMenu(currentFilteredItems);
-            closeModal();
-        }
-    });
+    renderCart();
+    renderMenu(currentFilteredItems);
 }
 
 function removeOneBaseItem(baseName) {
-    const keys = Object.keys(cart).filter(k => cart[k].baseName === baseName);
-    if (keys.length === 0) return;
-
-    const lastKey = keys[keys.length - 1];
-    cart[lastKey].qty -= 1;
-    if (cart[lastKey].qty <= 0) {
-        delete cart[lastKey];
+    if (cart[baseName]) {
+        cart[baseName].qty -= 1;
+        if (cart[baseName].qty <= 0) {
+            delete cart[baseName];
+        }
+        renderCart();
+        renderMenu(currentFilteredItems);
     }
-    renderCart();
-    renderMenu(currentFilteredItems);
 }
 
 function renderCart() {
@@ -1544,7 +1434,7 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        finalSummary += `${item.baseName}(${item.egg}/${item.spicy})*${item.qty} `;
+        finalSummary += `${item.baseName}*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -1557,7 +1447,6 @@ function renderCart() {
         }
     }
 
-    // 📱 同步手機版大字與電腦版圓框金額
     const mobileTotalEl = document.getElementById("mobile-accumulated-total");
     if (mobileTotalEl) {
         mobileTotalEl.innerText = `$${finalTotal}`;
@@ -1620,7 +1509,6 @@ function renderModalCartList() {
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                <div class="custom-item-tag">🥚 ${item.egg} | 🌶️ ${item.spicy}</div>
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
