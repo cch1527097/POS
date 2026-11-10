@@ -19,6 +19,14 @@ app.use((req, res, next) => {
     next();
 });
 
+// 💡 防快取標頭 Middleware：禁止瀏覽器快取 HTML/網頁內容，防登出後按「上一頁」返回舊頁面
+app.use((req, res, next) => {
+    res.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.header('Pragma', 'no-cache');
+    res.header('Expires', '0');
+    next();
+});
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -790,7 +798,7 @@ app.post('/api/lock-time', async (req, res) => {
             `, [newLockDate]);
         }
 
-        const displayStr = newLockDate ? `${newLockDate} ${newLockTime}` : newLockTime;
+        const displayStr = newDate ? `${newDate} ${newLockTime}` : newLockTime;
 
         return res.json({ 
             success: true, 
@@ -1318,7 +1326,7 @@ app.get('/api/export-excel', async (req, res) => {
         });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=orders_${Date.now()}.xlsx`);
+        res.setHeader('Content-Disposition', `attachment; filename=orders_\${Date.now()}.xlsx`);
 
         await workbook.xlsx.write(res);
         res.end();
@@ -1334,7 +1342,7 @@ async function startServer() {
         await initDatabase();
         app.listen(PORT, () => {
             console.log(`================================================================`);
-            console.log(` 🚀 訂餐系統後端已啟動！Port: ${PORT}`);
+            console.log(` 🚀 訂餐系統後端已啟動！Port: \${PORT}`);
             console.log(`================================================================`);
         });
     } catch (err) {
