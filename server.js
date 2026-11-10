@@ -14,12 +14,12 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
+        return res.sendStatus(204);
     }
     next();
 });
 
-// 💡 防快取標頭 Middleware：禁止瀏覽器快取 HTML/網頁內容，防登出後按「上一頁」返回舊頁面
+// 防快取標頭 Middleware：禁止瀏覽器快取 HTML/網頁內容，防登出後按「上一頁」返回舊頁面
 app.use((req, res, next) => {
     res.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.header('Pragma', 'no-cache');
@@ -64,6 +64,11 @@ const pool = new Pool({
     connectionTimeoutMillis: 10000
 });
 
+// 防止閒置連線中斷引發未捕獲例外
+pool.on('error', (err) => {
+    console.error('⚠️ PostgreSQL 連線池發生背景錯誤:', err.message);
+});
+
 // 預設員工資料
 const INITIAL_USER_DB = {
     "4860": "呂佳玟", "4931": "陳佳文", "5514": "張淑娟", "5853": "許家綾",
@@ -78,7 +83,7 @@ const INITIAL_USER_DB = {
     "601473": "李羽茹", "TEST": "測試員"
 };
 
-// 💡 核心輔助函式：檢查目前是否處於點餐鎖定狀態
+// 核心輔助函式：檢查目前是否處於點餐鎖定狀態
 async function getLockStatus() {
     try {
         const lockRes = await pool.query("SELECT key, value FROM settings WHERE key IN ('order_lock_time', 'order_lock_date');");
@@ -147,7 +152,7 @@ async function getLockStatus() {
     }
 }
 
-// 💡 核心輔助函式：檢查取消/修改訂單功能是否開放
+// 核心輔助函式：檢查取消/修改訂單功能是否開放
 async function checkIsCancelAllowed() {
     try {
         const checkAllow = await pool.query("SELECT value FROM settings WHERE key = 'allow_order_cancel';");
@@ -170,7 +175,7 @@ async function checkIsCancelAllowed() {
     }
 }
 
-// 💡 核心輔助函式：智慧比對點餐店家
+// 核心輔助函式：智慧比對點餐店家
 function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     if (!Array.isArray(stores) || stores.length === 0) return null;
 
@@ -798,7 +803,7 @@ app.post('/api/lock-time', async (req, res) => {
             `, [newLockDate]);
         }
 
-        const displayStr = newDate ? `${newDate} ${newLockTime}` : newLockTime;
+        const displayStr = newLockDate ? `${newLockDate} ${newLockTime}` : newLockTime;
 
         return res.json({ 
             success: true, 
@@ -1326,7 +1331,7 @@ app.get('/api/export-excel', async (req, res) => {
         });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=orders_\${Date.now()}.xlsx`);
+        res.setHeader('Content-Disposition', `attachment; filename=orders_${Date.now()}.xlsx`);
 
         await workbook.xlsx.write(res);
         res.end();
@@ -1342,7 +1347,7 @@ async function startServer() {
         await initDatabase();
         app.listen(PORT, () => {
             console.log(`================================================================`);
-            console.log(` 🚀 訂餐系統後端已啟動！Port: \${PORT}`);
+            console.log(` 🚀 訂餐系統後端已啟動！Port: ${PORT}`);
             console.log(`================================================================`);
         });
     } catch (err) {
