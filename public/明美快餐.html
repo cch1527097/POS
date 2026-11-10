@@ -202,7 +202,7 @@
 
         /* 圖形化選項按鈕樣式 */
         .option-group-title { font-weight: 600; margin-top: 14px; margin-bottom: 8px; font-size: 14px; color: var(--text-dark); }
-        .option-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+        .option-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px; }
         .opt-btn {
             background: #f8fafc;
             border: 1.5px solid var(--border-color);
@@ -1017,7 +1017,7 @@ let searchDebounceTimer = null;
 
 // 選項暫存變數
 let selectedRice = "正常";
-let selectedVegPrice = 0;
+let selectedVegCount = 0; // 加菜份數累計 (可複選/加選多份)
 let selectedSideItem = "照燒豬 (單點)";
 
 let finalTotal = 0;
@@ -1478,10 +1478,10 @@ function selectRiceOption(el, val) {
     selectedRice = val;
 }
 
-function selectVegOption(el, price) {
+function selectVegOption(el, count) {
     el.parentElement.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('selected'));
     el.classList.add('selected');
-    selectedVegPrice = price;
+    selectedVegCount = count;
 }
 
 function selectSideOption(el, val) {
@@ -1515,7 +1515,7 @@ function clickAddItem(name) {
 
     // 重設客製化選項預設值
     selectedRice = "正常";
-    selectedVegPrice = 0;
+    selectedVegCount = 0;
     selectedSideItem = "照燒豬 (單點)";
 
     let isPromoItem = (item.name.includes("【雙11特惠】"));
@@ -1548,15 +1548,11 @@ function clickAddItem(name) {
     }
 
     bodyHtml += `
-        <div class="option-group-title">🍚 飯量選擇</div>
-        <div class="option-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="option-group-title">🍚 飯量選擇 (單選)</div>
+        <div class="option-grid" style="grid-template-columns: repeat(2, 1fr);">
             <div class="opt-btn selected" onclick="selectRiceOption(this, '正常')">
                 <span class="opt-icon">👌</span>
                 <span class="opt-text">正常</span>
-            </div>
-            <div class="opt-btn" onclick="selectRiceOption(this, '飯少')">
-                <span class="opt-icon">🍚</span>
-                <span class="opt-text">飯少</span>
             </div>
             <div class="opt-btn" onclick="selectRiceOption(this, '半飯')">
                 <span class="opt-icon">🥣</span>
@@ -1564,15 +1560,19 @@ function clickAddItem(name) {
             </div>
         </div>
 
-        <div class="option-group-title">🥬 加菜服務</div>
-        <div class="option-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="option-group-title">🥬 加菜服務 (可複選/多份)</div>
+        <div class="option-grid" style="grid-template-columns: repeat(3, 1fr);">
             <div class="opt-btn selected" onclick="selectVegOption(this, 0)">
                 <span class="opt-icon">❌</span>
                 <span class="opt-text">不加菜</span>
             </div>
-            <div class="opt-btn" onclick="selectVegOption(this, 10)">
+            <div class="opt-btn" onclick="selectVegOption(this, 1)">
                 <span class="opt-icon">🥦</span>
-                <span class="opt-text">加菜 (+10元)</span>
+                <span class="opt-text">加菜 1份 (+10)</span>
+            </div>
+            <div class="opt-btn" onclick="selectVegOption(this, 2)">
+                <span class="opt-icon">🥦🥦</span>
+                <span class="opt-text">加菜 2份 (+20)</span>
             </div>
         </div>
     `;
@@ -1594,12 +1594,12 @@ function clickAddItem(name) {
                 optionParts.push(selectedRice);
             }
 
-            if (selectedVegPrice > 0) {
-                optionParts.push("加菜(+10)");
+            if (selectedVegCount > 0) {
+                optionParts.push(`加菜x${selectedVegCount}(+${selectedVegCount * 10}元)`);
             }
 
             const optStr = optionParts.length > 0 ? optionParts.join('/') : "正常";
-            const unitPrice = item.price + selectedVegPrice;
+            const unitPrice = item.price + (selectedVegCount * 10);
             const customKey = `${item.name}|${optStr}`;
 
             if (cart[customKey]) {
