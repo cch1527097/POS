@@ -1594,75 +1594,60 @@ ${openStores}
             }
         }
 
-        // ==================== 1. 全局登入狀態驗證機制 ====================
-function verifyAuthOrRedirect() {
-    const savedCardId = localStorage.getItem('currentCardId');
-    if (!savedCardId) {
-        showLoginSection();
+        // ==================== 1. 後台權限與登入驗證機制 ====================
+function verifyAdminAuthOrRedirect() {
+    const adminRole = localStorage.getItem('currentAdminRole');
+    const adminName = localStorage.getItem('currentAdminName');
+    
+    // 若未登入或缺少管理員憑證，強制跳轉回 admin.html 登入頁
+    if (!adminRole || !adminName) {
+        // 清除殘留快取
+        localStorage.removeItem('currentAdminRole');
+        localStorage.removeItem('currentAdminName');
+        sessionStorage.clear();
+        
+        // 使用 replace 防止使用者透過「下一頁」返回控制台
+        window.location.replace('admin.html');
         return false;
     }
     return true;
 }
 
-// 監聽 pageshow 事件（包含瀏覽器上一頁/快取還原情況）
+// 監聽 pageshow（包含瀏覽器上一頁/快取還原情況）
 window.addEventListener('pageshow', (event) => {
-    verifyAuthOrRedirect();
+    verifyAdminAuthOrRedirect();
 });
 
-// 監聽 popstate 事件（歷史紀錄變更）
+// 監聽 popstate（歷史紀錄變更）
 window.addEventListener('popstate', () => {
-    verifyAuthOrRedirect();
+    verifyAdminAuthOrRedirect();
 });
 
-// ==================== 2. 修正後的 showLoginSection 登出清理邏輯 ====================
-function showLoginSection() {
-    window.scrollTo(0, 0);
-    loggedInCardId = '';
-    isSubmitting = false;
-    
-    // 清除所有登入與暫存資料
-    localStorage.removeItem('currentCardId');
-    localStorage.removeItem('currentEmpName');
-    localStorage.removeItem('currentDepartment');
-    localStorage.removeItem('isOfflineMode');
-    sessionStorage.clear();
+// 頁面載入時立即執行驗證
+verifyAdminAuthOrRedirect();
 
-    // 重置網址（清除 GET 參數如 ?groupId=...），防止上一頁紀錄殘留
-    if (window.history && window.history.replaceState) {
-        window.history.replaceState(null, '', window.location.pathname);
-    }
+// ==================== 2. 後台登出系統函式 ====================
+function executeAdminLogout(event) {
+    if (event) event.preventDefault();
+    
+    showCustomModal({
+        title: '系統提示',
+        message: '🚪 確定要登出管理系統嗎？',
+        isConfirm: true,
+        onConfirm: () => {
+            // 清除管理員登入憑證
+            localStorage.removeItem('currentAdminName');
+            localStorage.removeItem('currentAdminRole');
+            sessionStorage.clear();
 
-    // UI 重置
-    const userNameEl = document.getElementById('user-name');
-    if (userNameEl) userNameEl.innerText = ''; 
-    
-    const userDeptEl = document.getElementById('user-department');
-    if (userDeptEl) userDeptEl.innerText = '未劃分';
-    
-    const loginBtn = document.getElementById('submit-login-btn');
-    if (loginBtn) { loginBtn.disabled = false; }
-    
-    const cardInput = document.getElementById('cardId');
-    if (cardInput) { 
-        cardInput.value = ''; 
-        cardInput.disabled = false; 
-        cardInput.setCustomValidity(''); 
-    }
-    
-    document.getElementById('offline-tag').style.display = 'none';
-    document.getElementById('order-section').classList.add('hidden');
-    document.getElementById('login-section').classList.remove('hidden');
-    document.body.classList.remove('order-mode');
-    document.body.classList.add('login-mode');
-
-    requestAnimationFrame(() => { 
-        if (cardInput) { 
-            cardInput.focus(); 
-            cardInput.select(); 
-        } 
+            // 替換歷史紀錄並強制重定向至登入頁
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', 'admin.html');
+            }
+            window.location.replace('admin.html');
+        }
     });
 }
-
         async function saveLockTime() {
             if (!checkPermission('change_status')) return;
 
