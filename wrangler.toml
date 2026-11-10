@@ -1,0 +1,8 @@
+name = "pos"
+main = "server.js"
+compatibility_date = "2026-11-10"
+compatibility_flags = [ "nodejs_compat" ]
+
+# 如果同時需要 Cloudflare 託管 public 內的靜態網頁
+[site]
+bucket = "./public"
