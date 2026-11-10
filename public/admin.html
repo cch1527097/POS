@@ -23,7 +23,7 @@
             transition: background-color 0.3s ease;
         }
 
-        /* ==================== 登入版面全螢幕背景與裝飾 (與 index 一致) ==================== */
+        /* ==================== 登入版面全螢幕背景與裝飾 ==================== */
         body.login-mode {
             display: flex;
             justify-content: center;
@@ -71,7 +71,7 @@
 
         .hidden { display: none !important; }
 
-        /* ==================== 頂部 Header 樣式 (與 index 完全一致) ==================== */
+        /* ==================== 頂部 Header 樣式 ==================== */
         .nidin-header {
             width: 100%;
             background-color: #ffffff;
@@ -277,9 +277,9 @@
             border-radius: 10px;
             font-size: 16px;
             width: 100%;
-            text-align: center; /* 保持文字與提示字置中 */
+            text-align: center;
             outline: none;
-            padding: 14px 45px; /* 左右邊距皆為 45px，確保中央可寫字區域對稱且不撞到眼睛圖示 */
+            padding: 14px 45px;
             color: #2b4c23;
             transition: all 0.25s ease;
         }
@@ -356,7 +356,7 @@
             color: #0a5c41;
         }
 
-        /* 頁尾宣告 (預設隱藏，僅在 login-mode 顯示) */
+        /* 頁尾宣告 */
         .login-footer-copy {
             display: none;
             position: absolute;
@@ -477,6 +477,23 @@
     <script>
         let isSubmitting = false;
 
+        // 🛡️ 頁面載入與 BFCache 快取還原時的防護與自動導向機制
+        window.addEventListener('pageshow', () => {
+            const adminRole = localStorage.getItem('currentAdminRole');
+            const adminName = localStorage.getItem('currentAdminName');
+            
+            // 若已經是登入狀態，直接導向控制台 (防止按下上一頁停留於登入頁)
+            if (adminRole && adminName) {
+                window.location.replace('admin-dashboard.html');
+                return;
+            }
+
+            // 清除網址列異動參數與歷史紀錄
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname);
+            }
+        });
+
         function navigateToHome() {
             window.location.href = 'index.html'; 
         }
@@ -575,7 +592,7 @@
 
                     loginBtn.innerText = '認證成功';
                     setTimeout(() => {
-                        window.location.href = 'admin-dashboard.html';
+                        window.location.replace('admin-dashboard.html');
                     }, 600);
                     return; 
                 } 
@@ -599,7 +616,7 @@
 
                         loginBtn.innerText = '認證成功';
                         setTimeout(() => {
-                            window.location.href = 'admin-dashboard.html';
+                            window.location.replace('admin-dashboard.html');
                         }, 600);
                         return; 
                     } else {
