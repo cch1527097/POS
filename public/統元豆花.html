@@ -30,7 +30,7 @@
             line-height: 1.5;
         }
 
-        /* ==================== 頂部 Header 樣式 ==================== */
+        /* Header 樣式 */
         .navbar {
             width: 100%;
             background-color: #ffffff;
@@ -231,7 +231,7 @@
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
 
-        /* ==================== 規格按鈕樣式 ==================== */
+        /* 規格按鈕樣式 */
         .spec-group { margin-bottom: 18px; }
         .spec-title { font-weight: 700; font-size: 14px; color: #334155; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
         .spec-title::before { content: "*"; color: #e11d48; margin-right: 2px; }
@@ -261,7 +261,7 @@
             box-shadow: inset 0 0 0 1px var(--primary);
         }
 
-        /* ==================== 懸浮按鈕群 ==================== */
+        /* 懸浮按鈕群 */
         .fab-container {
             position: fixed;
             bottom: 24px;
@@ -523,7 +523,6 @@
 
 <!-- 📱 底部固定導覽列 / 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 1. 累計金額 -->
     <div class="fab-btn fab-menu" title="目前累計金額" aria-label="累計金額">
         <span class="desktop-accumulated-text" id="desktop-accumulated-total">$0</span>
         <div class="mobile-menu-wrapper" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
@@ -532,7 +531,6 @@
         </div>
     </div>
 
-    <!-- 2. 其他人點了什麼 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -543,7 +541,6 @@
         <span class="fab-text">他人點餐</span>
     </button>
 
-    <!-- 3. 購物車 -->
     <button class="fab-btn fab-cart" onclick="openCartModal()" title="開啟購物車" aria-label="開啟購物車">
         <div class="cart-icon-wrapper">
             <svg viewBox="0 0 24 24">
@@ -554,7 +551,6 @@
         <span class="fab-text">購物車</span>
     </button>
 
-    <!-- 4. 離開點餐 -->
     <button class="fab-btn fab-exit" onclick="goBack()" title="離開點餐" aria-label="離開點餐">
         <svg viewBox="0 0 24 24">
             <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
@@ -579,7 +575,6 @@
         </div>
     </div>
 
-    <!-- 低消與優惠訊息橫幅 -->
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
         <span class="promo-text">外送最低金額 <b>500</b> 元</span>
@@ -593,7 +588,7 @@
     </div>
 </div>
 
-<!-- 客製化 / 購物車 Modal 彈窗 -->
+<!-- 客製化 Modal 彈窗 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -608,7 +603,7 @@
     </div>
 </div>
 
-<!-- 👥 今日其他人點了什麼彈窗 (Modal) -->
+<!-- 他人點餐 Modal -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -658,7 +653,7 @@ function isShavedIceSeason() {
     return currentMonth >= 3 && currentMonth <= 11;
 }
 
-// 2. 薑汁限定 11月到4月 選擇 (11, 12, 1, 2, 3, 4月)
+// 2. 薑母/薑汁僅限 11月到4月 (11, 12, 1, 2, 3, 4月)
 function isGingerSeason() {
     const currentMonth = new Date().getMonth() + 1; // 1 ~ 12
     return currentMonth >= 11 || currentMonth <= 4;
@@ -750,7 +745,7 @@ let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
 
-let selectedSpecs = { base: '傳統', size: '', sugar: '', ice: '', topping: '' };
+let selectedSpecs = { base: '傳統', size: '', sugar: '', ice: '', freeToppings: [], addons: [] };
 
 let finalTotal = 0;
 let finalSummary = "";
@@ -799,7 +794,6 @@ window.onload = async function() {
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
@@ -985,7 +979,6 @@ function updateCountdownUI() {
     }
 }
 
-/* ==================== 👥 其他人點了什麼邏輯 ==================== */
 async function fetchEmployeeList() {
     try {
         const response = await fetch('/api/employees');
@@ -1236,17 +1229,38 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
-    // 📌 規則驗證 1：刨冰僅限 3月至11月 販售，非販售期間鎖定不給加入購物車
+    // 📌 規則驗證 1：刨冰僅限 3月至11月 販售，其餘月份鎖定不給加入購物車
     if (item.category === "剉冰" && !isShavedIceSeason()) {
         return showCustomModal({
             title: "非販售季節",
-            bodyHtml: "<p style='text-align:center; color:#e11d48; font-weight:bold;'>🍧 刨冰僅限 3月至 11月 販售！<br><span style='font-size:13px; color:#64748b;'>目前月份系統鎖定不開放加入購物車。</span></p>",
+            bodyHtml: "<p style='text-align:center; color:#e11d48; font-weight:bold;'>🍧 刨冰僅限 3月至 11月 販售！<br><span style='font-size:13px; color:#64748b;'>目前月份系統鎖定不可加入購物車。</span></p>",
             confirmText: "我知道了",
             showCancel: false
         });
     }
 
-    // 根據品項類別設置預設選項
+    // 📌 規則驗證 2：薑母系列僅限 11月至4月 販售，其餘月份不可加入購物車
+    if (item.name.includes("薑母") && !isGingerSeason()) {
+        return showCustomModal({
+            title: "非販售季節",
+            bodyHtml: "<p style='text-align:center; color:#e11d48; font-weight:bold;'>☕ 薑母系列僅限 11月至 4月 販售！<br><span style='font-size:13px; color:#64748b;'>目前月份系統鎖定不可加入購物車。</span></p>",
+            confirmText: "我知道了",
+            showCancel: false
+        });
+    }
+
+    // 判斷是否為「四大允許任選配料」的綜合品項
+    const comboNames = [
+        "綜合豆花 (任選3配料)",
+        "綜合仙草 (任選3配料)",
+        "綜合薏仁 (任選3配料)",
+        "綜合四種冰 (任選4配料)"
+    ];
+    const isCombo = comboNames.includes(item.name);
+    const maxToppings = item.name.includes("四種冰") ? 4 : 3;
+    const allowTopping11 = item.name.includes("四種冰");
+
+    // 預設規格重置
     let sizeDefault = '標準';
     if (item.priceXL) sizeDefault = 'M(500cc)';
     else if (item.priceM !== item.priceL) {
@@ -1256,7 +1270,14 @@ function clickAddItem(name) {
     let iceDefault = (item.category === "飲品" || item.category === "剉冰") ? '少冰' : '冷';
     let sugarDefault = '正常甜';
 
-    selectedSpecs = { base: '傳統', size: sizeDefault, sugar: sugarDefault, ice: iceDefault, topping: '不加料' };
+    selectedSpecs = { 
+        base: '傳統', 
+        size: sizeDefault, 
+        sugar: sugarDefault, 
+        ice: iceDefault, 
+        freeToppings: [], 
+        addons: [] 
+    };
 
     // 1. 豆花底體選擇 HTML (傳統/布丁/抹茶 三選一)
     let baseOptionsHtml = '';
@@ -1297,7 +1318,7 @@ function clickAddItem(name) {
         sizeOptionsHtml = `<button type="button" class="spec-btn active" data-type="size" data-val="標準" onclick="selectSpec(this)">標準 ($${item.priceL})</button>`;
     }
 
-    // 3. 📌 規則驗證 2：薑汁僅限 11月到4月 選擇 (適用：豆花、仙草、薏仁湯、飲品、湯圓甜湯)
+    // 3. 溫度/冰塊 (+薑汁僅限 11月~4月)
     const gingerAllowedCategories = ["豆花", "嫩仙草凍/燒仙草", "招牌薏仁湯", "飲品", "湯圓/甜湯"];
     const allowGingerOption = gingerAllowedCategories.includes(item.category) && isGingerSeason();
 
@@ -1334,36 +1355,74 @@ function clickAddItem(name) {
         <button type="button" class="spec-btn" data-type="sugar" data-val="無糖" onclick="selectSpec(this)">無糖</button>
     `;
 
-    // 5. 📌 規則驗證 3：配料選擇 (豆花/仙草選1~10，刨冰選1~11，選芋頭加價+5元)
-    let toppingTitleText = "加購/配料選擇";
-    if (item.category === "豆花" || item.category === "嫩仙草凍/燒仙草") {
-        toppingTitleText = "配料選擇 (1~10任選3種，選芋頭額外+5元)";
-    } else if (item.category === "剉冰") {
-        toppingTitleText = "配料選擇 (1~11任選4種，選芋頭額外+5元)";
-    }
+    // 5. 📌 配料與加購區邏輯分拆：僅限四大綜合品項可選 1~10 / 1~11 配料，其餘只給加購
+    let toppingSectionHtml = '';
 
-    let toppingOptionsHtml = `
-        <button type="button" class="spec-btn active" data-type="topping" data-val="不加料" onclick="selectSpec(this)">不加料</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="1.花生" onclick="selectSpec(this)">1.花生</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="2.紅豆" onclick="selectSpec(this)">2.紅豆</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="3.綠豆" onclick="selectSpec(this)">3.綠豆</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="4.彎豆" onclick="selectSpec(this)">4.彎豆</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="5.粉圓" onclick="selectSpec(this)">5.粉圓</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="6.芋圓" onclick="selectSpec(this)">6.芋圓</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="7.湯圓" onclick="selectSpec(this)">7.湯圓</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="8.芋頭(+$5)" onclick="selectSpec(this)">8.芋頭(+$5)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="9.仙草" onclick="selectSpec(this)">9.仙草</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="10.薏仁湯" onclick="selectSpec(this)">10.薏仁湯</button>
-        ${item.category === "剉冰" ? '<button type="button" class="spec-btn" data-type="topping" data-val="11.鳳梨" onclick="selectSpec(this)">11.鳳梨</button>' : ''}
-        <button type="button" class="spec-btn" data-type="topping" data-val="奶油球(+$5)" onclick="selectSpec(this)">奶油球(+$5)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="改豆漿湯底(+$5)" onclick="selectSpec(this)">改豆漿湯底(+$5)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="煉乳(+$10)" onclick="selectSpec(this)">煉乳(+$10)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="紫米(+$15)" onclick="selectSpec(this)">紫米(+$15)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="老麵茶(+$15)" onclick="selectSpec(this)">老麵茶(+$15)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="硬花生(+$15)" onclick="selectSpec(this)">硬花生(+$15)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="香草冰淇淋(+$30)" onclick="selectSpec(this)">香草冰淇淋(+$30)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="抹茶冰淇淋(+$30)" onclick="selectSpec(this)">抹茶冰淇淋(+$30)</button>
-    `;
+    if (isCombo) {
+        let comboToppingsBtnsHtml = `
+            <button type="button" class="spec-btn" data-val="1.花生" onclick="toggleMultiTopping(this, ${maxToppings})">1.花生</button>
+            <button type="button" class="spec-btn" data-val="2.紅豆" onclick="toggleMultiTopping(this, ${maxToppings})">2.紅豆</button>
+            <button type="button" class="spec-btn" data-val="3.綠豆" onclick="toggleMultiTopping(this, ${maxToppings})">3.綠豆</button>
+            <button type="button" class="spec-btn" data-val="4.彎豆" onclick="toggleMultiTopping(this, ${maxToppings})">4.彎豆</button>
+            <button type="button" class="spec-btn" data-val="5.粉圓" onclick="toggleMultiTopping(this, ${maxToppings})">5.粉圓</button>
+            <button type="button" class="spec-btn" data-val="6.芋圓" onclick="toggleMultiTopping(this, ${maxToppings})">6.芋圓</button>
+            <button type="button" class="spec-btn" data-val="7.湯圓" onclick="toggleMultiTopping(this, ${maxToppings})">7.湯圓</button>
+            <button type="button" class="spec-btn" data-val="8.芋頭(+$5)" onclick="toggleMultiTopping(this, ${maxToppings})">8.芋頭(+$5)</button>
+            <button type="button" class="spec-btn" data-val="9.仙草" onclick="toggleMultiTopping(this, ${maxToppings})">9.仙草</button>
+            <button type="button" class="spec-btn" data-val="10.薏仁" onclick="toggleMultiTopping(this, ${maxToppings})">10.薏仁</button>
+            ${allowTopping11 ? `<button type="button" class="spec-btn" data-val="11.鳳梨" onclick="toggleMultiTopping(this, ${maxToppings})">11.鳳梨</button>` : ''}
+        `;
+
+        let extraAddonsHtml = `
+            <button type="button" class="spec-btn" data-val="12.麵茶(+$15)" onclick="toggleAddon(this)">12.麵茶(+$15)</button>
+            <button type="button" class="spec-btn" data-val="13.硬花生(+$15)" onclick="toggleAddon(this)">13.硬花生(+$15)</button>
+            <button type="button" class="spec-btn" data-val="14.紫米(+$15)" onclick="toggleAddon(this)">14.紫米(+$15)</button>
+            <button type="button" class="spec-btn" data-val="奶油球(+$5)" onclick="toggleAddon(this)">奶油球(+$5)</button>
+            <button type="button" class="spec-btn" data-val="改豆漿湯底(+$5)" onclick="toggleAddon(this)">改豆漿湯底(+$5)</button>
+            <button type="button" class="spec-btn" data-val="煉乳(+$10)" onclick="toggleAddon(this)">煉乳(+$10)</button>
+            <button type="button" class="spec-btn" data-val="鮮奶(+$15)" onclick="toggleAddon(this)">鮮奶(+$15)</button>
+            <button type="button" class="spec-btn" data-val="香草冰淇淋(+$30)" onclick="toggleAddon(this)">香草冰淇淋(+$30)</button>
+            <button type="button" class="spec-btn" data-val="抹茶冰淇淋(+$30)" onclick="toggleAddon(this)">抹茶冰淇淋(+$30)</button>
+        `;
+
+        toppingSectionHtml = `
+            <div class="spec-group">
+                <div class="spec-title">任選配料 (1~${allowTopping11 ? 11 : 10}號，可複選最多 ${maxToppings} 種，選芋頭+$5)</div>
+                <div class="spec-options">
+                    ${comboToppingsBtnsHtml}
+                </div>
+            </div>
+            <div class="spec-group">
+                <div class="spec-title" style="color: #64748b; font-weight: 600;">額外加購區 (12~14號及加價項目)</div>
+                <div class="spec-options">
+                    ${extraAddonsHtml}
+                </div>
+            </div>
+        `;
+    } else {
+        // 非綜合品項：隱藏 1~11 任選配料，只能選 12~14 與加購區
+        let extraAddonsHtml = `
+            <button type="button" class="spec-btn" data-val="12.麵茶(+$15)" onclick="toggleAddon(this)">12.麵茶(+$15)</button>
+            <button type="button" class="spec-btn" data-val="13.硬花生(+$15)" onclick="toggleAddon(this)">13.硬花生(+$15)</button>
+            <button type="button" class="spec-btn" data-val="14.紫米(+$15)" onclick="toggleAddon(this)">14.紫米(+$15)</button>
+            <button type="button" class="spec-btn" data-val="奶油球(+$5)" onclick="toggleAddon(this)">奶油球(+$5)</button>
+            <button type="button" class="spec-btn" data-val="改豆漿湯底(+$5)" onclick="toggleAddon(this)">改豆漿湯底(+$5)</button>
+            <button type="button" class="spec-btn" data-val="煉乳(+$10)" onclick="toggleAddon(this)">煉乳(+$10)</button>
+            <button type="button" class="spec-btn" data-val="鮮奶(+$15)" onclick="toggleAddon(this)">鮮奶(+$15)</button>
+            <button type="button" class="spec-btn" data-val="芋頭(+$20)" onclick="toggleAddon(this)">芋頭(+$20)</button>
+            <button type="button" class="spec-btn" data-val="香草冰淇淋(+$30)" onclick="toggleAddon(this)">香草冰淇淋(+$30)</button>
+            <button type="button" class="spec-btn" data-val="抹茶冰淇淋(+$30)" onclick="toggleAddon(this)">抹茶冰淇淋(+$30)</button>
+        `;
+
+        toppingSectionHtml = `
+            <div class="spec-group">
+                <div class="spec-title" style="color: #64748b; font-weight: 600;">加購區 (僅限 12~14號 與加購項目)</div>
+                <div class="spec-options">
+                    ${extraAddonsHtml}
+                </div>
+            </div>
+        `;
+    }
 
     let bodyHtml = `
         ${baseOptionsHtml}
@@ -1389,12 +1448,7 @@ function clickAddItem(name) {
             </div>
         </div>
 
-        <div class="spec-group">
-            <div class="spec-title" style="color: #64748b; font-weight: 600;">${toppingTitleText}</div>
-            <div class="spec-options">
-                ${toppingOptionsHtml}
-            </div>
-        </div>
+        ${toppingSectionHtml}
     `;
 
     showCustomModal({
@@ -1411,16 +1465,25 @@ function clickAddItem(name) {
                 unitPrice = item.priceXL || item.priceL;
             }
 
-            // 📌 芋頭選加額外 +5 元 / 其他標準加價
-            if (selectedSpecs.topping.includes('8.芋頭') || selectedSpecs.topping.includes('芋頭(+$5)')) unitPrice += 5;
-            if (selectedSpecs.topping.includes('+$5') && !selectedSpecs.topping.includes('芋頭')) unitPrice += 5;
-            if (selectedSpecs.topping.includes('+$10')) unitPrice += 10;
-            if (selectedSpecs.topping.includes('+$15')) unitPrice += 15;
-            if (selectedSpecs.topping.includes('+$20')) unitPrice += 20;
-            if (selectedSpecs.topping.includes('+$30')) unitPrice += 30;
+            // 1. 任選配料中選到 8.芋頭 +5元
+            if (selectedSpecs.freeToppings.includes('8.芋頭(+$5)')) {
+                unitPrice += 5;
+            }
+
+            // 2. 額外加購區金額累加
+            selectedSpecs.addons.forEach(addon => {
+                if (addon.includes('+$5')) unitPrice += 5;
+                if (addon.includes('+$10')) unitPrice += 10;
+                if (addon.includes('+$15')) unitPrice += 15;
+                if (addon.includes('+$20')) unitPrice += 20;
+                if (addon.includes('+$30')) unitPrice += 30;
+            });
+
+            const allSelectedToppingsList = [...selectedSpecs.freeToppings, ...selectedSpecs.addons];
+            const toppingDisplay = allSelectedToppingsList.length > 0 ? allSelectedToppingsList.join('+') : '不加料';
 
             const baseTag = (item.category === "豆花") ? `底體:${selectedSpecs.base}|` : '';
-            const customKey = `${item.name}|${baseTag}${selectedSpecs.size}|${selectedSpecs.sugar}|${selectedSpecs.ice}|${selectedSpecs.topping}`;
+            const customKey = `${item.name}|${baseTag}${selectedSpecs.size}|${selectedSpecs.sugar}|${selectedSpecs.ice}|${toppingDisplay}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -1434,7 +1497,7 @@ function clickAddItem(name) {
                     size: selectedSpecs.size,
                     sugar: selectedSpecs.sugar,
                     ice: selectedSpecs.ice,
-                    topping: selectedSpecs.topping
+                    topping: toppingDisplay
                 };
             }
 
@@ -1443,6 +1506,34 @@ function clickAddItem(name) {
             closeModal();
         }
     });
+}
+
+// 複選配料點擊（限制上限）
+function toggleMultiTopping(btnEl, maxAllowed) {
+    const val = btnEl.getAttribute("data-val");
+    if (btnEl.classList.contains("active")) {
+        btnEl.classList.remove("active");
+        selectedSpecs.freeToppings = selectedSpecs.freeToppings.filter(t => t !== val);
+    } else {
+        if (selectedSpecs.freeToppings.length >= maxAllowed) {
+            alert(`⚠️ 任選配料最多只能選擇 ${maxAllowed} 種喔！`);
+            return;
+        }
+        btnEl.classList.add("active");
+        selectedSpecs.freeToppings.push(val);
+    }
+}
+
+// 額外加購點擊（可複選）
+function toggleAddon(btnEl) {
+    const val = btnEl.getAttribute("data-val");
+    if (btnEl.classList.contains("active")) {
+        btnEl.classList.remove("active");
+        selectedSpecs.addons = selectedSpecs.addons.filter(a => a !== val);
+    } else {
+        btnEl.classList.add("active");
+        selectedSpecs.addons.push(val);
+    }
 }
 
 function selectSpec(btnEl) {
