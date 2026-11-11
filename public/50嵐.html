@@ -1196,9 +1196,50 @@ async function syncPricesFromBackend() {
     }
 }
 
-window.onload = async function() {
+    // ===== 1. 權限檢查與防返回邏輯 =====
+function checkAccess() {
     const urlParams = new URLSearchParams(window.location.search);
-    currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
+    let cardId = urlParams.get('card_id') || urlParams.get('cardId');
+
+    if (cardId) {
+        // 從 index.html 帶卡號點入時，紀錄至 Session
+        sessionStorage.setItem('currentCardId', cardId);
+        localStorage.setItem('currentCardId', cardId);
+    } else {
+        // 讀取當前 Session 的卡號
+        cardId = sessionStorage.getItem('currentCardId');
+    }
+
+    // 若沒有卡號（如直接輸入網址或卡號遺失），強制踢回 index.html
+    if (!cardId || cardId === "null" || cardId === "undefined") {
+        window.location.replace('index.html');
+        return null;
+    }
+    return cardId;
+}
+
+function goBack() {
+    // 保留卡號，使用 replace 替換頁面，讓上一頁歷史紀錄無法回此頁
+    window.location.replace('index.html'); 
+}
+
+// 攔截快取頁面 (BFCache)
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+        checkAccess();
+    }
+});
+
+// 鎖住頁面，按瀏覽器上一頁時自動觸發退回 index.html
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+    goBack();
+};
+
+window.onload = async function() {
+    // 執行進入驗證 (若無權限會自動踢回 index.html)
+    currentCardId = checkAccess();
+    if (!currentCardId) return;
 
     const statusDiv = document.getElementById("card-status");
     if (currentCardId) {
