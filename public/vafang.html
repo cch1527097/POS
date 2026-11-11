@@ -195,6 +195,7 @@
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.01);
             transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
         }
         .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
         .item-info { flex: 1; padding-right: 12px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
@@ -213,7 +214,6 @@
             font-size: 24px;
             border: 1px solid #f1f5f9;
             flex-shrink: 0;
-            cursor: pointer;
             position: relative;
             user-select: none;
         }
@@ -336,7 +336,7 @@
         .others-float-btn:hover { background-color: #0073e6; }
         .others-float-btn svg { fill: none !important; stroke: #ffffff; }
 
-        /* ⏱️ 截止時間懸浮元件 (電腦版右下角懸浮 - 同步最新規格) */
+        /* ⏱️ 截止時間懸浮元件 */
         .cutoff-float-badge {
             position: fixed;
             bottom: 305px;
@@ -502,7 +502,7 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
 
-            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 (同步最新規格) */
+            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 */
             .cutoff-float-badge { 
                 position: fixed !important;
                 bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important;
@@ -549,7 +549,7 @@
                 white-space: nowrap !important;
             }
 
-            /* 📱 底部固定工作導覽列 (Bottom Navigation Bar) */
+            /* 📱 底部固定工作導覽列 */
             .fab-container {
                 position: fixed;
                 bottom: 0;
@@ -595,7 +595,6 @@
                 cursor: pointer !important;
             }
 
-            /* 手機版隱藏圓框內的文字，改為大字金額區塊 */
             .desktop-accumulated-text {
                 display: none !important;
             }
@@ -784,7 +783,7 @@
     </div>
 </div>
 
-<!-- ⏱️ 右下角/手機底部截止時間與倒數計時懸浮元件 (同步最新 DOM 結構) -->
+<!-- ⏱️ 右下角/手機底部截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
     <div class="cutoff-title-group">
         <div class="cutoff-title">⏱️ 點餐截止時間</div>
@@ -795,19 +794,14 @@
 
 <!-- 📱 底部固定導覽列 / 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 1. 累計金額 (電腦版圓框顯示金額；手機版直接醒目大字顯示，無 Icon) -->
     <div class="fab-btn fab-menu" title="目前累計金額" aria-label="累計金額">
-        <!-- 電腦版圓框置中金額 -->
         <span class="desktop-accumulated-text" id="desktop-accumulated-total">$0</span>
-
-        <!-- 手機版大字金額區塊 -->
         <div class="mobile-menu-wrapper" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
             <span class="mobile-accumulated-label">累計金額</span>
             <span class="mobile-accumulated-val" id="mobile-accumulated-total">$0</span>
         </div>
     </div>
 
-    <!-- 2. 其他人點了什麼 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -818,7 +812,6 @@
         <span class="fab-text">他人點餐</span>
     </button>
 
-    <!-- 3. 購物車 -->
     <button class="fab-btn fab-cart" onclick="openCartModal()" title="開啟購物車" aria-label="開啟購物車">
         <div class="cart-icon-wrapper">
             <svg viewBox="0 0 24 24">
@@ -829,7 +822,6 @@
         <span class="fab-text">購物車</span>
     </button>
 
-    <!-- 4. 離開點餐 -->
     <button class="fab-btn fab-exit" onclick="goBack()" title="離開點餐" aria-label="離開點餐">
         <svg viewBox="0 0 24 24">
             <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
@@ -910,11 +902,9 @@
 
 <script>
 function goBack() {
-    // 點擊「離開點餐」：使用 replace 替換當前頁面歷史紀錄退回 index.html
     window.location.replace('index.html');
 }
 
-// 攔截瀏覽器快取 (BFCache) 與上一頁載入
 window.addEventListener('pageshow', function (event) {
     if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
         checkAccess();
@@ -969,33 +959,21 @@ let targetCutoffStr = null;
 let targetCutoffDateStr = null;
 let isExpiredFlag = false;
 
-let currentOptions = {
-    style: "湯麵",
-    spicy: "正常辣"
-};
-
 function checkAccess() {
     const urlParams = new URLSearchParams(window.location.search);
     const cardId = urlParams.get('card_id') || urlParams.get('cardId');
 
     if (cardId) {
-        // 從 index.html 帶卡號點入：驗證成功！暫存卡號供當前頁面點餐使用
         sessionStorage.setItem('currentCardId', cardId);
-        
-        // 關鍵：立刻擦除網址列上的 ?card_id 參數，防止按上一頁時重新載入卡號
         history.replaceState(null, '', window.location.pathname);
-        
         return cardId;
     }
 
-    // 若網址沒有卡號（代表是按瀏覽器「上一頁/下一頁」回到此頁）：
-    // 強制踢回 index.html，不留歷史紀錄
     window.location.replace('index.html');
     return null;
 }
 
 window.onload = async function() {
-    // 執行進入權限檢查 (無 URL 卡號會自動踢回 index.html)
     currentCardId = checkAccess();
     if (!currentCardId) return;
 
@@ -1045,7 +1023,6 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    // 比對「八鮮」或「雲吞」關鍵字
     const storeTarget = stores.find(s => s.name && (s.name.includes('八鮮') || s.name.includes('雲吞')));
     if (!storeTarget || !storeTarget.items || storeTarget.items.length === 0) return;
 
@@ -1378,6 +1355,11 @@ function renderMenu(items) {
         items.filter(i => i.category === cat).forEach(item => {
             const card = document.createElement("div");
             card.className = "item-card";
+            card.onclick = (e) => {
+                if(!e.target.classList.contains('btn-qty')) {
+                    clickAddItem(item.name);
+                }
+            };
             
             let currentQty = 0;
             Object.keys(cart).forEach(key => {
@@ -1398,9 +1380,9 @@ function renderMenu(items) {
                     ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
                 </div>
                 <div class="action-zone" style="margin-left: 10px;">
-                    <button class="btn-qty" onclick="removeOneBaseItem('${item.name}')">-</button>
+                    <button class="btn-qty" onclick="event.stopPropagation(); removeOneBaseItem('${item.name}')">-</button>
                     <span class="qty-num">${currentQty}</span>
-                    <button class="btn-qty" onclick="clickAddItem('${item.name}')">+</button>
+                    <button class="btn-qty" onclick="event.stopPropagation(); clickAddItem('${item.name}')">+</button>
                 </div>
             `;
             grid.appendChild(card);
@@ -1429,13 +1411,7 @@ function filterMenu() {
     renderMenu(currentFilteredItems);
 }
 
-function selectOptCard(group, val, el) {
-    currentOptions[group] = val;
-    const parent = el.parentElement;
-    parent.querySelectorAll('.opt-card').forEach(card => card.classList.remove('selected'));
-    el.classList.add('selected');
-}
-
+// 📌 移除彈出視窗，點擊餐點直接加入購物車
 function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
@@ -1443,87 +1419,25 @@ function clickAddItem(name) {
     let isNoodle = item.category.includes("餛飩麵");
     let isChaoShou = item.name.includes("抄手");
 
-    if (!isNoodle && !isChaoShou) {
-        const customKey = `${item.name}|-|-`;
-        if (cart[customKey]) {
-            cart[customKey].qty += 1;
-        } else {
-            cart[customKey] = {
-                key: customKey,
-                baseName: item.name,
-                price: item.price,
-                qty: 1,
-                style: "-",
-                spicy: "-"
-            };
-        }
-        renderCart();
-        renderMenu(currentFilteredItems);
-        return;
+    const styleStr = isNoodle ? "湯麵" : "-";
+    const spicyStr = isChaoShou ? "正常辣" : "-";
+    const customKey = `${item.name}|${styleStr}|${spicyStr}`;
+
+    if (cart[customKey]) {
+        cart[customKey].qty += 1;
+    } else {
+        cart[customKey] = {
+            key: customKey,
+            baseName: item.name,
+            price: item.price,
+            qty: 1,
+            style: styleStr,
+            spicy: spicyStr
+        };
     }
 
-    currentOptions = {
-        style: isNoodle ? "湯麵" : "-",
-        spicy: isChaoShou ? "正常辣" : "-"
-    };
-
-    let bodyHtml = `
-        <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
-            ${item.icon || '🥟'} ${item.name} ($${item.price})
-        </div>
-        
-        <div class="opt-group">
-            ${isNoodle ? `
-            <label>🍜 麵類做法</label>
-            <div class="option-grid">
-                <div class="opt-card selected" onclick="selectOptCard('style', '湯麵', this)">🥣 湯麵</div>
-                <div class="opt-card" onclick="selectOptCard('style', '乾麵', this)">🍜 乾麵</div>
-            </div>
-            ` : ''}
-
-            ${isChaoShou ? `
-            <label>🌶️ 辣度選擇</label>
-            <div class="option-grid">
-                <div class="opt-card selected" onclick="selectOptCard('spicy', '正常辣', this)">🌶️ 正常辣</div>
-                <div class="opt-card" onclick="selectOptCard('spicy', '微辣', this)">🤏 微辣</div>
-                <div class="opt-card" onclick="selectOptCard('spicy', '大辣', this)">🔥 大辣</div>
-                <div class="opt-card" onclick="selectOptCard('spicy', '不辣', this)">🚫 不辣</div>
-            </div>
-            ` : ''}
-        </div>
-    `;
-
-    showCustomModal({
-        title: "請選擇餐點做法",
-        bodyHtml: bodyHtml,
-        confirmText: "加入購物車",
-        cancelText: "取消",
-        showCancel: true,
-        onConfirm: () => {
-            const style = currentOptions.style;
-            const spicy = currentOptions.spicy;
-
-            const unitPrice = item.price;
-            const customKey = `${item.name}|${style}|${spicy}`;
-
-            if (cart[customKey]) {
-                cart[customKey].qty += 1;
-            } else {
-                cart[customKey] = {
-                    key: customKey,
-                    baseName: item.name,
-                    price: unitPrice,
-                    qty: 1,
-                    style: style,
-                    spicy: spicy
-                };
-            }
-
-            renderCart();
-            renderMenu(currentFilteredItems);
-            closeModal();
-        }
-    });
+    renderCart();
+    renderMenu(currentFilteredItems);
 }
 
 function removeOneBaseItem(baseName) {
@@ -1570,7 +1484,6 @@ function renderCart() {
         }
     }
 
-    // 📱 同步手機版大字與電腦版圓框金額
     const mobileTotalEl = document.getElementById("mobile-accumulated-total");
     if (mobileTotalEl) {
         mobileTotalEl.innerText = `$${finalTotal}`;
