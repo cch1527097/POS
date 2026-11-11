@@ -467,7 +467,7 @@
             .cutoff-timer { width: auto !important; padding: 3px 10px !important; font-size: 13px !important; text-align: center !important; white-space: nowrap !important; }
 
             .fab-container {
-                position: fixed; bottom: 0; left: 0; right: 0; width: 100%; height: 62px; background: #ffffff; border-top: 1px solid #e2e8f0; box-shadow: 0 -2px 10px rgba(0,0,0,0.06); flex-direction: row; justify-content: space-around; align-items: center; gap: 0; padding: 4px 0 calc(4px + env(safe-area-inset-bottom)) 0; z-index: 9999;
+                position: fixed; bottom: 0; left: 0; right: 0; width: 100%; height: 62px; background: #ffffff; border-top: 1px solid #e2e8f0; box-shadow: 0 -2px 10px rgba(0,0,0,0.06); flex-direction: row; justify-around; align-items: center; gap: 0; padding: 4px 0 calc(4px + env(safe-area-inset-bottom)) 0; z-index: 9999;
             }
 
             .fab-btn { width: auto; height: 100%; flex: 1; border-radius: 0; background: transparent !important; box-shadow: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #64748b; padding: 0; transition: color 0.15s ease; }
@@ -1265,7 +1265,7 @@ function clickAddItem(name) {
     const isCombo = comboNames.includes(item.name);
     const maxToppings = item.name.includes("四種冰") ? 4 : 3;
 
-    // 📌 精確設定各綜合品項可選的最高配料編號上限
+    // 📌 設定各綜合品項可選的最高配料編號上限
     let maxToppingNum = 10;
     if (item.name.includes("綜合仙草")) {
         maxToppingNum = 8; // 限 1~8 號
@@ -1377,23 +1377,22 @@ function clickAddItem(name) {
         <button type="button" class="spec-btn" data-type="sugar" data-val="無糖" onclick="selectSpec(this)">無糖</button>
     `;
 
-    // 5. 📌 「湯圓/甜湯」類別專屬詢問（純 / +芋圓 / +湯圓 / +芋圓及湯圓）
+    // 5. 📌 「湯圓/甜湯」類別專屬詢問（純 / +芋圓 (+$5) / +湯圓 (+$5)）
     let soupOptionsHtml = '';
     if (item.category === "湯圓/甜湯") {
         soupOptionsHtml = `
             <div class="spec-group">
                 <div class="spec-title">湯底配料選擇 (純 / 加料)</div>
-                <div class="spec-options col-2">
+                <div class="spec-options">
                     <button type="button" class="spec-btn active" data-type="soupOption" data-val="純" onclick="selectSpec(this)">純 (不加料)</button>
-                    <button type="button" class="spec-btn" data-type="soupOption" data-val="+芋圓" onclick="selectSpec(this)">+芋圓</button>
-                    <button type="button" class="spec-btn" data-type="soupOption" data-val="+湯圓" onclick="selectSpec(this)">+湯圓</button>
-                    <button type="button" class="spec-btn" data-type="soupOption" data-val="+芋圓及湯圓(+$5)" onclick="selectSpec(this)">+芋圓及湯圓 (+$5)</button>
+                    <button type="button" class="spec-btn" data-type="soupOption" data-val="+芋圓(+$5)" onclick="selectSpec(this)">+芋圓 (+$5)</button>
+                    <button type="button" class="spec-btn" data-type="soupOption" data-val="+湯圓(+$5)" onclick="selectSpec(this)">+湯圓 (+$5)</button>
                 </div>
             </div>
         `;
     }
 
-    // 6. 📌 配料動態渲染 (仙草: 1~8, 薏仁: 1~9, 豆花: 1~10, 冰: 1~11)
+    // 6. 配料動態渲染 (仙草: 1~8, 薏仁: 1~9, 豆花: 1~10, 冰: 1~11)
     let toppingSectionHtml = '';
     const allToppings = [
         "1.花生", "2.紅豆", "3.綠豆", "4.彎豆", "5.粉圓",
@@ -1503,7 +1502,7 @@ function clickAddItem(name) {
                 unitPrice += 5;
             }
 
-            // 2. 湯圓/甜湯 雙加 +芋圓及湯圓 (+$5)
+            // 2. 湯圓/甜湯類別：選 +芋圓 或 +湯圓 自動 +5 元
             if (item.category === "湯圓/甜湯" && selectedSpecs.soupOption.includes('+$5')) {
                 unitPrice += 5;
             }
