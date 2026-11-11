@@ -1039,20 +1039,8 @@
 
 <script>
 function goBack() {
-    // 1. 清空卡號權限
-    sessionStorage.removeItem('currentCardId');
-    localStorage.removeItem('currentCardId');
-    
-    // 2. 使用 replace 替換當前歷史紀錄，瀏覽器「上一頁」將無法再回到此點餐頁
-    window.location.replace('index.html');
+    window.location.href = 'index.html'; 
 }
-
-// 監聽瀏覽器「上一頁 / 下一頁」與快取 (BFCache) 載入
-window.addEventListener('pageshow', function (event) {
-    if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-        checkAccess();
-    }
-});
 
 const menuItems = [
     // === 找好茶 ===
@@ -1208,38 +1196,20 @@ async function syncPricesFromBackend() {
     }
 }
 
-    // ==================== 1. 進入權限驗證與離開/防返回機制 ====================
-function checkAccess() {
-    const urlParams = new URLSearchParams(window.location.search);
-    let cardId = urlParams.get('card_id') || urlParams.get('cardId');
-
-    if (cardId) {
-        // 從 index.html 正常點入並帶有卡號，寫入當次 Session
-        sessionStorage.setItem('currentCardId', cardId);
-        localStorage.setItem('currentCardId', cardId);
-    } else {
-        // 若 URL 無卡號，嘗試讀取當前 session
-        cardId = sessionStorage.getItem('currentCardId');
-    }
-
-    // 若無卡號（如：已按離開或直接按返回鍵回此頁），強制替換頁面退回 index.html
-    if (!cardId || cardId === "null" || cardId === "undefined") {
-        window.location.replace('index.html');
-        return null;
-    }
-    return cardId;
-}
-
-// ==================== 2. 初始化載入 ====================
 window.onload = async function() {
-    // 執行進入權限檢查
-    currentCardId = checkAccess();
-    if (!currentCardId) return;
+    const urlParams = new URLSearchParams(window.location.search);
+    currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
 
     const statusDiv = document.getElementById("card-status");
-    statusDiv.innerHTML = `💳 目前感應卡號：<b>${currentCardId}</b>`;
-    statusDiv.style.background = "#e0f2fe";
-    statusDiv.style.color = "#0369a1";
+    if (currentCardId) {
+        statusDiv.innerHTML = `💳 目前感應卡號：<b>${currentCardId}</b>`;
+        statusDiv.style.background = "#e0f2fe";
+        statusDiv.style.color = "#0369a1";
+    } else {
+        statusDiv.innerHTML = `⚠️ 未偵測到卡號！請確認是透過感應卡開單。`;
+        statusDiv.style.background = "#fee2e2";
+        statusDiv.style.color = "#991b1b";
+    }
 
     renderMenu(menuItems);
     await syncPricesFromBackend();
