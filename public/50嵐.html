@@ -1196,6 +1196,18 @@ async function syncPricesFromBackend() {
     }
 }
 
+    // ==================== 防止網頁返回 (上一頁) ====================
+(function preventBack() {
+    // 進入頁面時先推入一筆歷史紀錄
+    history.pushState(null, null, location.href);
+
+    // 當使用者按下瀏覽器返回鍵時觸發
+    window.onpopstate = function () {
+        // 再次推入歷史紀錄，將頁面鎖在當前頁
+        history.pushState(null, null, location.href);
+    };
+})();
+
 window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
     currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
