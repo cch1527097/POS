@@ -878,7 +878,7 @@
 <body>
 
 <div class="navbar">
-    <a href="index.html" class="navbar-brand">醫鹿訂餐系統</a>
+    <a href="javascript:void(0)" onclick="goBack()" class="navbar-brand">醫鹿訂餐系統</a>
     <div class="search-wrapper">
         <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋飲品（例如：高山青、青草茶、冬瓜...）" oninput="debounceFilterMenu()">
     </div>
@@ -1016,6 +1016,27 @@
 </div>
 
 <script>
+// ==================== 1. 權限檢查與單次網址驗證機制 ====================
+function checkAccess() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardId = urlParams.get('card_id') || urlParams.get('cardId');
+
+    if (cardId) {
+        // 從 index.html 帶卡號點入：驗證成功！暫存卡號供當前頁面點餐使用
+        sessionStorage.setItem('currentCardId', cardId);
+        
+        // 關鍵：立刻擦除網址列上的 ?card_id 參數，防止按上一頁時重新載入卡號
+        history.replaceState(null, '', window.location.pathname);
+        
+        return cardId;
+    }
+
+    // 若網址沒有卡號（代表是按瀏覽器「上一頁/下一頁」回到此頁）：
+    // 強制踢回 index.html，不留歷史紀錄
+    window.location.replace('index.html');
+    return null;
+}
+
 function goBack() {
     // 點擊「離開點餐」：使用 replace 替換當前頁面歷史紀錄退回 index.html
     window.location.replace('index.html');
@@ -1027,6 +1048,12 @@ window.addEventListener('pageshow', function (event) {
         checkAccess();
     }
 });
+
+// 鎖住頁面歷史，按瀏覽器返回鍵時自動重定向至 index.html
+history.pushState(null, null, location.href);
+window.onpopstate = function () {
+    goBack();
+};
 
 const menuItems = [
     // === 找好茶 ===
@@ -1125,27 +1152,6 @@ let globalEmployeesMap = {};
 let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
-
-// ==================== 1. 權限檢查與單次網址驗證機制 ====================
-function checkAccess() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const cardId = urlParams.get('card_id') || urlParams.get('cardId');
-
-    if (cardId) {
-        // 從 index.html 帶卡號點入：驗證成功！暫存卡號供當前頁面點餐使用
-        sessionStorage.setItem('currentCardId', cardId);
-        
-        // 關鍵：立刻擦除網址列上的 ?card_id 參數，防止按上一頁時重新載入卡號
-        history.replaceState(null, '', window.location.pathname);
-        
-        return cardId;
-    }
-
-    // 若網址沒有卡號（代表是按瀏覽器「上一頁/下一頁」回到此頁）：
-    // 強制踢回 index.html，不留歷史紀錄
-    window.location.replace('index.html');
-    return null;
-}
 
 window.onload = async function() {
     // 執行進入權限檢查 (無 URL 卡號會自動踢回 index.html)
@@ -1752,14 +1758,18 @@ function clickAddItem(name) {
     });
 }
 
+// 跨容器選擇規格：確保甜度/冰塊即使跨列也能單選
 function selectSpec(btnEl) {
     const type = btnEl.getAttribute("data-type");
     const val = btnEl.getAttribute("data-val");
 
     selectedSpecs[type] = val;
 
-    const parent = btnEl.parentElement;
-    parent.querySelectorAll(".spec-btn").forEach(el => el.classList.remove("active"));
+    // 尋找外層整個 spec-group，跨區塊清除同類型的 active 樣式
+    const group = btnEl.closest('.spec-group') || btnEl.parentElement;
+    group.querySelectorAll(`.spec-btn[data-type="${type}"]`).forEach(el => el.classList.remove("active"));
+    
+    // 將當前點選的選項設為選取
     btnEl.classList.add("active");
 }
 
