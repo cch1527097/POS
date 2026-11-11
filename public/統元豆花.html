@@ -821,6 +821,7 @@ async function startCutoffCountdown() {
     }, 1000);
 }
 
+/* 🛠️ 優化後台價格同步函式 (支援後台 price 轉換至前台 priceM / priceL / priceXL，並自動匹配分尺寸品項名稱) */
 async function syncPricesFromBackend() {
     let stores = null;
     try {
@@ -842,7 +843,8 @@ async function syncPricesFromBackend() {
 
     if (!stores || !Array.isArray(stores)) return;
 
-    const store = stores.find(s => s.name && (s.name.includes('豆花') || s.name.includes('仙草')));
+    // 精準搜尋「統元豆花」店家設定
+    const store = stores.find(s => s.name && (s.name.includes('統元') || s.name.includes('豆花')));
     if (!store || !store.items || store.items.length === 0) return;
 
     const itemPriceMap = {};
@@ -854,15 +856,47 @@ async function syncPricesFromBackend() {
 
     let updated = false;
     menuItems.forEach(item => {
-        const matched = itemPriceMap[item.name];
+        const baseName = item.name.trim();
+
+        // 1. 直接精準匹配 (品項名稱完全一致，如 "綜合豆花 (任選3配料)")
+        let matched = itemPriceMap[baseName];
+
         if (matched) {
-            if (matched.priceM !== undefined && item.priceM !== (matched.priceM === null ? null : Number(matched.priceM))) {
-                item.priceM = matched.priceM === null ? null : Number(matched.priceM);
+            const valM = matched.priceM !== undefined ? matched.priceM : matched.price;
+            const valL = matched.priceL !== undefined ? matched.priceL : matched.price;
+            const valXL = matched.priceXL !== undefined ? matched.priceXL : matched.price;
+
+            if (valM !== undefined && valM !== null && item.priceM !== Number(valM)) {
+                item.priceM = Number(valM);
                 updated = true;
             }
-            if (matched.priceL !== undefined && item.priceL !== (matched.priceL === null ? null : Number(matched.priceL))) {
-                item.priceL = matched.priceL === null ? null : Number(matched.priceL);
+            if (valL !== undefined && valL !== null && item.priceL !== Number(valL)) {
+                item.priceL = Number(valL);
                 updated = true;
+            }
+            if (valXL !== undefined && valXL !== null && item.priceXL !== undefined && item.priceXL !== Number(valXL)) {
+                item.priceXL = Number(valXL);
+                updated = true;
+            }
+        } else {
+            // 2. 自動匹配匯入時帶有尺寸括號的變體名稱 (如: "綠豆汁(M)", "綠豆汁(L)", "綠豆汁(瓶)", "綜合四種冰(小)", "綜合四種冰(大)")
+            const shortName = baseName.split('(')[0].trim().split(' ')[0].trim();
+
+            const matchM = itemPriceMap[`${shortName}(M)`] || itemPriceMap[`${shortName} (M)`] || itemPriceMap[`${shortName}(小)`] || itemPriceMap[`${shortName} (小)`];
+            const matchL = itemPriceMap[`${shortName}(L)`] || itemPriceMap[`${shortName} (L)`] || itemPriceMap[`${shortName}(大)`] || itemPriceMap[`${shortName} (大)`];
+            const matchXL = itemPriceMap[`${shortName}(瓶)`] || itemPriceMap[`${shortName} (瓶)`];
+
+            if (matchM && (matchM.price !== undefined || matchM.priceM !== undefined)) {
+                const priceM = Number(matchM.priceM ?? matchM.price);
+                if (item.priceM !== priceM) { item.priceM = priceM; updated = true; }
+            }
+            if (matchL && (matchL.price !== undefined || matchL.priceL !== undefined)) {
+                const priceL = Number(matchL.priceL ?? matchL.price);
+                if (item.priceL !== priceL) { item.priceL = priceL; updated = true; }
+            }
+            if (matchXL && (matchXL.price !== undefined || matchXL.priceXL !== undefined)) {
+                const priceXL = Number(matchXL.priceXL ?? matchXL.price);
+                if (item.priceXL !== priceXL) { item.priceXL = priceXL; updated = true; }
             }
         }
     });
