@@ -262,18 +262,6 @@
             font-size: 16px;
         }
 
-        /* 雙11限時優惠活動橫條 */
-        .double11-banner {
-            background: #fff0f6;
-            border: 1px solid #ffadd2;
-        }
-        .double11-badge {
-            background: #c41d7f;
-        }
-        .double11-text {
-            color: #820014;
-        }
-
         /* ==================== 懸浮按鈕群 & 截止時間懸浮元件 (電腦預設) ==================== */
         .fab-container {
             position: fixed;
@@ -931,12 +919,6 @@
         </div>
     </div>
 
-    <!-- 🔥 雙11限時優惠活動告示橫條 -->
-    <div class="promo-banner double11-banner">
-        <span class="promo-badge double11-badge">🔥 雙11優惠 (11/10~11/11)</span>
-        <span class="promo-text double11-text">點選 <b>排骨便當 + 單點（照燒豬 / 腐乳豬 / 高鈣雞軟骨）三選一</b> 組合只要 <b>111</b> 元！</span>
-    </div>
-
     <div class="promo-banner">
         <span class="promo-badge">低消</span>
         <span class="promo-text">外送最低金額 <b>800</b> 元</span>
@@ -1005,8 +987,6 @@ window.addEventListener('pageshow', function (event) {
 });
 
 const menuItems = [
-    {name: "【雙11特惠】排骨便當+單點三選一", price: 111, category: "🔥 限時特惠", icon:"https://images.pexels.com/photos/2689421/pexels-photo-2689421.jpeg?auto=compress&cs=tinysrgb&w=800"},
-    {name: "排骨便當", price: 111, category: "快餐便當", icon:"https://images.pexels.com/photos/2689421/pexels-photo-2689421.jpeg?auto=compress&cs=tinysrgb&w=800"},
     {name: "腐乳豬便當", price: 100, category: "快餐便當", icon:"https://images.pexels.com/photos/2689421/pexels-photo-2689421.jpeg?auto=compress&cs=tinysrgb&w=800"},
     {name: "照燒豬便當", price: 100, category: "快餐便當", icon:"https://images.pexels.com/photos/2689421/pexels-photo-2689421.jpeg?auto=compress&cs=tinysrgb&w=800"},
     {name: "雞排便當", price: 110, category: "快餐便當", icon:"https://images.pexels.com/photos/6249394/pexels-photo-6249394.jpeg?auto=compress&cs=tinysrgb&w=800"},
@@ -1549,34 +1529,11 @@ function clickAddItem(name) {
     selectedVegCount = 0;
     selectedSideItem = "照燒豬 (單點)";
 
-    let isPromoItem = (item.name.includes("【雙11特惠】"));
-
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
             ${item.name} ($${item.price})
         </div>
     `;
-
-    // 雙11特惠選單專屬：單點三選一
-    if (isPromoItem) {
-        bodyHtml += `
-            <div class="option-group-title">🎁 優惠搭配單點（三選一）</div>
-            <div class="option-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="opt-btn selected" onclick="selectSideOption(this, '照燒豬 (單點)')">
-                    <span class="opt-icon">🥓</span>
-                    <span class="opt-text">照燒豬</span>
-                </div>
-                <div class="opt-btn" onclick="selectSideOption(this, '腐乳豬 (單點)')">
-                    <span class="opt-icon">🥩</span>
-                    <span class="opt-text">腐乳豬</span>
-                </div>
-                <div class="opt-btn" onclick="selectSideOption(this, '高鈣雞軟骨 (單點)')">
-                    <span class="opt-icon">🍗</span>
-                    <span class="opt-text">雞軟骨</span>
-                </div>
-            </div>
-        `;
-    }
 
     bodyHtml += `
         <div class="option-group-title">🍚 飯量選擇 (單選)</div>
@@ -1616,10 +1573,6 @@ function clickAddItem(name) {
         showCancel: true,
         onConfirm: () => {
             let optionParts = [];
-
-            if (isPromoItem) {
-                optionParts.push(`搭配:${selectedSideItem}`);
-            }
 
             if (selectedRice !== "正常") {
                 optionParts.push(selectedRice);
