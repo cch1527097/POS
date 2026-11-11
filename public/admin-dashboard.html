@@ -456,13 +456,13 @@
         .modal-window {
             background-color: #ffffff;
             width: 92%;
-            max-width: 560px;
+            max-width: 620px;
             border-radius: var(--radius-lg);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             overflow: hidden;
             transform: scale(0.95);
             transition: var(--transition-smooth);
-            max-height: 85vh;
+            max-height: 88vh;
             display: flex;
             flex-direction: column;
             border: 1px solid #e2e8f0;
@@ -704,7 +704,7 @@
             <button type="button" class="menu-item" onclick="refreshCurrentTab()">
                 <i class="fa-solid fa-rotate text-base"></i> 重新整理
             </button>
-            <!-- 🛡️ 修改登出按鈕：綁定 executeAdminLogout 函式 -->
+            <!-- 🛡️ 登出按鈕：綁定 executeAdminLogout 函式 -->
             <a href="javascript:void(0);" onclick="executeAdminLogout(event)" class="menu-item logout mt-auto">
                 <i class="fa-solid fa-right-from-bracket text-base"></i> 登出系統
             </a>
@@ -875,7 +875,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🏪 店家開放與品項金額管理</h1>
-                    <p class="text-xs text-slate-500 mt-1">即時開啟或關閉前台點餐店家、設定各店家餐點與飲品金額</p>
+                    <p class="text-xs text-slate-500 mt-1">即時開啟或關閉前台點餐店家、設定各店家餐點與飲品金額及品項</p>
                 </div>
             </div>
 
@@ -903,13 +903,14 @@
                                 <tr>
                                     <th>店家名稱</th>
                                     <th>餐點類別</th>
+                                    <th>已設定品項</th>
                                     <th>目前開放狀態</th>
                                     <th>前台權限</th>
                                     <th>控制操作</th>
                                 </tr>
                             </thead>
                             <tbody id="foodStoreTableBody">
-                                <tr><td colspan="5" class="text-center py-8 text-slate-400">載入中...</td></tr>
+                                <tr><td colspan="6" class="text-center py-8 text-slate-400">載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -931,13 +932,14 @@
                                 <tr>
                                     <th>店家名稱</th>
                                     <th>餐點類別</th>
+                                    <th>已設定品項</th>
                                     <th>目前開放狀態</th>
                                     <th>前台權限</th>
                                     <th>控制操作</th>
                                 </tr>
                             </thead>
                             <tbody id="drinkStoreTableBody">
-                                <tr><td colspan="5" class="text-center py-8 text-slate-400">載入中...</td></tr>
+                                <tr><td colspan="6" class="text-center py-8 text-slate-400">載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1263,7 +1265,7 @@
             storeList.forEach(s => {
                 if (stateMap[s.id] !== undefined) {
                     s.isOpen = stateMap[s.id].isOpen;
-                    if (stateMap[s.id].items && stateMap[s.id].items.length > 0) {
+                    if (stateMap[s.id].items && Array.isArray(stateMap[s.id].items)) {
                         s.items = stateMap[s.id].items;
                     }
                 }
@@ -1330,7 +1332,7 @@ ${openStores}
 
             const buildRows = (list) => {
                 if (list.length === 0) {
-                    return `<tr><td colspan="5" class="text-center py-8 text-slate-400">尚無店家資料</td></tr>`;
+                    return `<tr><td colspan="6" class="text-center py-8 text-slate-400">尚無店家資料</td></tr>`;
                 }
                 return list.map(store => {
                     const statusBadge = store.isOpen 
@@ -1345,14 +1347,19 @@ ${openStores}
                         ? `<button class="btn-delete" onclick="closeStore('${store.id}')"><i class="fa-solid fa-lock mr-1"></i>關閉</button>`
                         : `<button class="btn text-xs py-1.5 px-3 min-h-[36px]" onclick="openStore('${store.id}')"><i class="fa-solid fa-unlock mr-1"></i>開放</button>`;
 
-                    const editMenuBtn = `<button class="btn-edit" onclick="openStoreMenuModal('${store.id}')"><i class="fa-solid fa-pen-to-square mr-1"></i>品項金額</button>`;
+                    const editMenuBtn = `<button class="btn-edit" onclick="openStoreMenuModal('${store.id}')"><i class="fa-solid fa-pen-to-square mr-1"></i>品項金額 (${(store.items || []).length})</button>`;
 
                     const categoryBadgeClass = store.category === '喝涼涼' ? 'badge-drink' : 'badge-food';
+
+                    const itemCountBadge = (store.items && store.items.length > 0)
+                        ? `<span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200">${store.items.length} 項品項</span>`
+                        : `<span class="badge bg-amber-50 text-amber-700 border border-amber-200">尚未設定</span>`;
 
                     return `
                         <tr>
                             <td data-label="店家名稱"><strong>${store.name}</strong></td>
                             <td data-label="餐點類別"><span class="badge ${categoryBadgeClass}">${store.category}</span></td>
+                            <td data-label="已設定品項">${itemCountBadge}</td>
                             <td data-label="開放狀態">${statusBadge}</td>
                             <td data-label="前台權限">${permissionText}</td>
                             <td data-label="控制操作">
@@ -1370,7 +1377,7 @@ ${openStores}
             if (drinkTbody) drinkTbody.innerHTML = buildRows(drinkStores);
         }
 
-        // ------------------ 編輯店家品項與金額 Modal 控制 ------------------
+        // ------------------ 🍱 編輯店家品項與金額 Modal 強化控制 ------------------
         let currentEditingStoreId = null;
         let tempStoreItems = [];
 
@@ -1390,86 +1397,283 @@ ${openStores}
             const listContainer = document.getElementById('modalMenuItemsList');
             if (!listContainer) return;
             const rows = listContainer.querySelectorAll('.menu-item-row');
-            const items = [];
+            if (rows.length === 0) return;
+
             rows.forEach(row => {
+                const idx = parseInt(row.getAttribute('data-index'), 10);
                 const nameInput = row.querySelector('.item-name-input');
                 const priceInput = row.querySelector('.item-price-input');
-                if (nameInput && priceInput) {
-                    items.push({
-                        name: nameInput.value.trim(),
-                        price: Math.max(0, parseInt(priceInput.value, 10) || 0)
-                    });
+                if (!isNaN(idx) && tempStoreItems[idx]) {
+                    if (nameInput) tempStoreItems[idx].name = nameInput.value;
+                    if (priceInput) tempStoreItems[idx].price = Math.max(0, parseInt(priceInput.value, 10) || 0);
                 }
             });
-            tempStoreItems = items;
+        }
+
+        function updateTempItemName(index, val) {
+            if (tempStoreItems[index]) {
+                tempStoreItems[index].name = val;
+            }
+        }
+
+        function updateTempItemPrice(index, val) {
+            if (tempStoreItems[index]) {
+                tempStoreItems[index].price = Math.max(0, parseInt(val, 10) || 0);
+            }
+        }
+
+        function parseBatchMenuItemsText(rawText) {
+            if (!rawText) return [];
+            const lines = rawText.split('\n');
+            const parsedItems = [];
+            
+            lines.forEach(line => {
+                let str = line.trim();
+                if (!str) return;
+                
+                str = str.replace(/[$＄元]/g, '').trim();
+                
+                const match = str.match(/^(.+?)[\s\t,，:：\-—]+(\d+)\s*$/);
+                if (match) {
+                    const name = match[1].trim();
+                    const price = parseInt(match[2], 10) || 0;
+                    if (name) parsedItems.push({ name, price });
+                } else {
+                    const altMatch = str.match(/^(.+?)\s+(\d+)$/);
+                    if (altMatch) {
+                        const name = altMatch[1].trim();
+                        const price = parseInt(altMatch[2], 10) || 0;
+                        if (name) parsedItems.push({ name, price });
+                    } else {
+                        parsedItems.push({ name: str, price: 0 });
+                    }
+                }
+            });
+            return parsedItems;
         }
 
         function renderMenuItemsModalContent(storeName) {
-            let itemsHtml = '';
-            if (tempStoreItems.length === 0) {
-                itemsHtml = `<div class="text-center text-slate-400 py-6 text-sm">目前尚無品項。點擊上方「新增品項」即可開始設定！</div>`;
-            } else {
-                itemsHtml = tempStoreItems.map((item, idx) => `
-                    <div class="menu-item-row flex items-center gap-2 mb-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
-                        <div class="flex-1">
-                            <input type="text" value="${item.name || ''}" placeholder="品項名稱"
-                                   class="item-name-input text-sm h-10 px-3 border border-slate-300 rounded-md w-full bg-white text-slate-700 font-medium focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div class="flex items-center gap-1 w-32 shrink-0">
-                            <span class="text-xs text-slate-500 font-bold">$</span>
-                            <input type="number" min="0" step="1" placeholder="金額" value="${item.price ?? 0}" 
-                                   class="item-price-input text-sm h-10 px-2 border border-slate-300 rounded-md w-full font-semibold focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <button type="button" class="btn-delete px-3 py-2 text-xs shrink-0" onclick="removeTempMenuItem(${idx})">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                `).join('');
-            }
-
             const modalMsg = `
                 <div class="flex flex-col gap-3">
-                    <div class="flex justify-between items-center mb-1">
-                        <p class="text-xs text-slate-500">請設定「<strong>${storeName}</strong>」前台餐點/飲料品項與單價：</p>
-                        <button type="button" class="btn btn-secondary text-xs py-1 px-2.5 min-h-[32px]" onclick="addTempMenuItem()">
-                            <i class="fa-solid fa-plus mr-1"></i>新增品項
-                        </button>
+                    <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-200">
+                        <div class="flex gap-1 bg-slate-100 p-1 rounded-xl">
+                            <button type="button" id="btnModeList" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-emerald-700 shadow-sm border border-slate-200" onclick="switchMenuEditMode('list')">
+                                <i class="fa-solid fa-list-check mr-1"></i>列表編輯 (<span id="menuItemCountDisplay">${tempStoreItems.length}</span>)
+                            </button>
+                            <button type="button" id="btnModeBatch" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900" onclick="switchMenuEditMode('batch')">
+                                <i class="fa-solid fa-file-import mr-1"></i>批次貼上匯入
+                            </button>
+                        </div>
+                        <div id="listModeActions" class="flex items-center gap-1.5">
+                            <button type="button" class="btn btn-secondary text-xs py-1.5 px-2.5 min-h-[32px]" onclick="addTempMenuItem()">
+                                <i class="fa-solid fa-plus mr-1"></i>新增單項
+                            </button>
+                            <button type="button" class="btn btn-danger-light text-xs py-1.5 px-2.5 min-h-[32px]" onclick="clearTempMenuItems()">
+                                <i class="fa-solid fa-trash-can mr-1"></i>清空品項
+                            </button>
+                        </div>
                     </div>
-                    <div id="modalMenuItemsList" class="max-h-[320px] overflow-y-auto pr-1">
-                        ${itemsHtml}
+
+                    <div id="menuItemListContainer" class="flex flex-col gap-2">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="modalMenuSearchInput" placeholder="快速搜尋品項名稱..." class="text-xs h-9 pl-8 border border-slate-200 rounded-lg w-full" oninput="filterModalMenuItems()">
+                        </div>
+                        <div id="modalMenuItemsList" class="max-h-[320px] overflow-y-auto pr-1 flex flex-col gap-2">
+                            <!-- 動態渲染品項列表 -->
+                        </div>
+                    </div>
+
+                    <div id="menuItemBatchContainer" class="hidden flex-col gap-2.5">
+                        <div class="bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg text-xs text-emerald-800 leading-relaxed">
+                            <i class="fa-solid fa-circle-info mr-1 text-emerald-600"></i>
+                            <strong>批次貼上說明：</strong>每行輸入一個品項，格式可為「品項名稱 金額」或「品項名稱, 金額」。
+                            <br>範例：<code class="bg-white px-1 py-0.5 rounded border border-emerald-200 font-mono text-emerald-900">招牌肉燥飯 45</code> 或 <code class="bg-white px-1 py-0.5 rounded border border-emerald-200 font-mono text-emerald-900">珍珠奶茶, 55</code>
+                        </div>
+                        <textarea id="batchMenuInput" rows="7" class="w-full text-xs p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 font-mono" placeholder="招牌牛肉麵 120&#10;古早味排骨飯 90&#10;香酥雞腿飯 100&#10;珍珠奶茶 50&#10;四季春茶 30"></textarea>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" class="btn btn-secondary text-xs py-2 w-full" onclick="applyBatchMenuItems(false)">
+                                <i class="fa-solid fa-plus-circle mr-1"></i>追加至原清單
+                            </button>
+                            <button type="button" class="btn text-xs py-2 w-full" onclick="applyBatchMenuItems(true)">
+                                <i class="fa-solid fa-arrows-rotate mr-1"></i>覆蓋替換原清單
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
 
             showCustomModal({
-                title: `🍱 修改品項金額 - ${storeName}`,
+                title: `🍱 修改店家品項與金額 - ${storeName}`,
                 message: modalMsg,
                 isConfirm: true,
                 onConfirm: () => saveStoreMenuItems()
             });
+
+            renderMenuItemsList();
+        }
+
+        function renderMenuItemsList() {
+            const listContainer = document.getElementById('modalMenuItemsList');
+            const countDisplay = document.getElementById('menuItemCountDisplay');
+            if (!listContainer) return;
+
+            if (countDisplay) countDisplay.innerText = tempStoreItems.length;
+
+            const filterKeyword = (document.getElementById('modalMenuSearchInput')?.value || '').trim().toLowerCase();
+
+            if (tempStoreItems.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center text-slate-400 py-8 text-xs bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                        <i class="fa-solid fa-utensils text-2xl mb-2 text-slate-300 block"></i>
+                        目前尚無品項。點擊右上角「新增單項」或切換「批次貼上匯入」快速建置菜單！
+                    </div>`;
+                return;
+            }
+
+            let itemsToRender = tempStoreItems.map((item, originalIndex) => ({ item, originalIndex }));
+
+            if (filterKeyword) {
+                itemsToRender = itemsToRender.filter(({ item }) => (item.name || '').toLowerCase().includes(filterKeyword));
+            }
+
+            if (itemsToRender.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center text-slate-400 py-6 text-xs bg-slate-50 rounded-lg border border-slate-200">
+                        找不到符合「${filterKeyword}」的品項
+                    </div>`;
+                return;
+            }
+
+            listContainer.innerHTML = itemsToRender.map(({ item, originalIndex }) => `
+                <div class="menu-item-row flex items-center gap-2 p-2 bg-slate-50 hover:bg-slate-100/80 rounded-lg border border-slate-200 transition-colors" data-index="${originalIndex}">
+                    <div class="flex-1">
+                        <input type="text" value="${item.name || ''}" placeholder="品項名稱 (如: 珍珠奶茶)"
+                               class="item-name-input text-xs h-9 px-3 border border-slate-300 rounded-md w-full bg-white text-slate-800 font-medium focus:ring-2 focus:ring-emerald-500"
+                               oninput="updateTempItemName(${originalIndex}, this.value)">
+                    </div>
+                    <div class="flex items-center gap-1 w-28 shrink-0">
+                        <span class="text-xs text-slate-500 font-bold">$</span>
+                        <input type="number" min="0" step="1" placeholder="金額" value="${item.price ?? 0}" 
+                               class="item-price-input text-xs h-9 px-2 border border-slate-300 rounded-md w-full font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500"
+                               oninput="updateTempItemPrice(${originalIndex}, this.value)">
+                    </div>
+                    <button type="button" class="btn-delete px-2.5 py-1.5 text-xs shrink-0 rounded-md" onclick="removeTempMenuItem(${originalIndex})" title="刪除品項">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function switchMenuEditMode(mode) {
+            syncInputsToTempStoreItems();
+
+            const listContainer = document.getElementById('menuItemListContainer');
+            const batchContainer = document.getElementById('menuItemBatchContainer');
+            const listActions = document.getElementById('listModeActions');
+            const btnList = document.getElementById('btnModeList');
+            const btnBatch = document.getElementById('btnModeBatch');
+
+            if (mode === 'list') {
+                if (listContainer) listContainer.classList.remove('hidden');
+                if (batchContainer) batchContainer.classList.add('hidden');
+                if (listActions) listActions.classList.remove('hidden');
+
+                if (btnList) {
+                    btnList.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-emerald-700 shadow-sm border border-slate-200";
+                }
+                if (btnBatch) {
+                    btnBatch.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900";
+                }
+                renderMenuItemsList();
+            } else {
+                if (listContainer) listContainer.classList.add('hidden');
+                if (batchContainer) batchContainer.classList.remove('hidden');
+                if (listActions) listActions.classList.add('hidden');
+
+                if (btnList) {
+                    btnList.className = "px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900";
+                }
+                if (btnBatch) {
+                    btnBatch.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-emerald-700 shadow-sm border border-slate-200";
+                }
+            }
+        }
+
+        function applyBatchMenuItems(replace = false) {
+            const batchInput = document.getElementById('batchMenuInput');
+            if (!batchInput) return;
+
+            const rawText = batchInput.value.trim();
+            if (!rawText) {
+                showCustomModal({ message: '請在文字框中輸入要匯入的品項與金額！' });
+                return;
+            }
+
+            const parsedItems = parseBatchMenuItemsText(rawText);
+            if (parsedItems.length === 0) {
+                showCustomModal({ message: '無法解析任何有效的品項，請檢查輸入格式。' });
+                return;
+            }
+
+            if (replace) {
+                tempStoreItems = parsedItems;
+            } else {
+                tempStoreItems = [...tempStoreItems, ...parsedItems];
+            }
+
+            batchInput.value = '';
+            const store = storeList.find(s => s.id === currentEditingStoreId);
+            renderMenuItemsModalContent(store ? store.name : '店家');
+        }
+
+        function filterModalMenuItems() {
+            renderMenuItemsList();
         }
 
         function addTempMenuItem() {
             syncInputsToTempStoreItems();
-            tempStoreItems.push({ name: '', price: 0 });
-            const store = storeList.find(s => s.id === currentEditingStoreId);
-            renderMenuItemsModalContent(store ? store.name : '');
+            tempStoreItems.unshift({ name: '', price: 0 });
+            renderMenuItemsList();
+            const listContainer = document.getElementById('modalMenuItemsList');
+            if (listContainer) {
+                const firstInput = listContainer.querySelector('.item-name-input');
+                if (firstInput) firstInput.focus();
+            }
         }
 
-        function removeTempMenuItem(idx) {
+        function removeTempMenuItem(index) {
             syncInputsToTempStoreItems();
-            tempStoreItems.splice(idx, 1);
-            const store = storeList.find(s => s.id === currentEditingStoreId);
-            renderMenuItemsModalContent(store ? store.name : '');
+            if (index >= 0 && index < tempStoreItems.length) {
+                tempStoreItems.splice(index, 1);
+            }
+            renderMenuItemsList();
+        }
+
+        function clearTempMenuItems() {
+            if (tempStoreItems.length === 0) return;
+            tempStoreItems = [];
+            renderMenuItemsList();
         }
 
         async function saveStoreMenuItems() {
-            syncInputsToTempStoreItems();
+            const batchContainer = document.getElementById('menuItemBatchContainer');
+            if (batchContainer && !batchContainer.classList.contains('hidden')) {
+                const batchInput = document.getElementById('batchMenuInput');
+                if (batchInput && batchInput.value.trim()) {
+                    const parsed = parseBatchMenuItemsText(batchInput.value.trim());
+                    if (parsed.length > 0) {
+                        tempStoreItems = [...tempStoreItems, ...parsed];
+                    }
+                }
+            } else {
+                syncInputsToTempStoreItems();
+            }
 
             const store = storeList.find(s => s.id === currentEditingStoreId);
             if (!store) return;
 
-            store.items = tempStoreItems.filter(i => i.name.trim() !== '');
+            store.items = tempStoreItems.filter(i => i && i.name && i.name.trim() !== '');
 
             renderStoreTable();
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
@@ -1481,9 +1685,9 @@ ${openStores}
                     body: JSON.stringify({ stores: storeList })
                 });
                 const result = await response.json();
-                showCustomModal({ message: `已成功儲存「<b>${store.name}</b>」的菜單品項與金額！` });
+                showCustomModal({ title: '儲存成功', message: `已成功儲存「<b>${store.name}</b>」的 ${store.items.length} 項菜單品項與金額！` });
             } catch (e) {
-                showCustomModal({ message: `已儲存「<b>${store.name}</b>」菜單品項（本地暫存）。` });
+                showCustomModal({ title: '儲存完成', message: `已儲存「<b>${store.name}</b>」的 ${store.items.length} 項菜單品項（已同步至本地暫存）。` });
             }
         }
 
@@ -1610,30 +1814,25 @@ ${openStores}
             const adminRole = localStorage.getItem('currentAdminRole');
             const adminName = localStorage.getItem('currentAdminName');
             
-            // 若未登入或缺少管理員憑證，強制跳轉回 admin.html 登入頁
             if (!adminRole || !adminName) {
                 localStorage.removeItem('currentAdminRole');
                 localStorage.removeItem('currentAdminName');
                 sessionStorage.clear();
                 
-                // 使用 replace 防止使用者透過「下一頁」返回控制台
                 window.location.replace('admin.html');
                 return false;
             }
             return true;
         }
 
-        // 監聽 pageshow（包含瀏覽器上一頁/快取還原情況）
         window.addEventListener('pageshow', (event) => {
             verifyAdminAuthOrRedirect();
         });
 
-        // 監聽 popstate（歷史紀錄變更）
         window.addEventListener('popstate', () => {
             verifyAdminAuthOrRedirect();
         });
 
-        // 頁面載入腳本時立即執行驗證
         verifyAdminAuthOrRedirect();
 
         // ==================== 🚪 2. 後台登出系統函式 ====================
@@ -1645,12 +1844,10 @@ ${openStores}
                 message: '🚪 確定要登出管理系統嗎？',
                 isConfirm: true,
                 onConfirm: () => {
-                    // 清除管理員登入憑證
                     localStorage.removeItem('currentAdminName');
                     localStorage.removeItem('currentAdminRole');
                     sessionStorage.clear();
 
-                    // 替換歷史紀錄並強制重定向至登入頁
                     if (window.history && window.history.replaceState) {
                         window.history.replaceState(null, '', 'admin.html');
                     }
@@ -2346,7 +2543,6 @@ ${openStores}
         }
 
         window.onload = async function() {
-            // 🛡️ 初次進入頁面立即執行身份認證，未認證者終止執行後續載入
             if (!verifyAdminAuthOrRedirect()) return;
 
             applyRolePermissionsUI();
