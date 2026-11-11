@@ -191,6 +191,7 @@
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.01);
             transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
         }
         .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
         .item-info { flex: 1; padding-right: 12px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
@@ -210,7 +211,6 @@
             font-size: 24px;
             border: 1px solid #f1f5f9;
             flex-shrink: 0;
-            cursor: pointer;
             position: relative;
             user-select: none;
         }
@@ -684,7 +684,7 @@
                 border-top: 1px solid #e2e8f0;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
                 flex-direction: row;
-                justify-content: space-around;
+                justify-around;
                 align-items: center;
                 gap: 0;
                 padding: 4px 0 calc(4px + env(safe-area-inset-bottom)) 0;
@@ -1037,7 +1037,6 @@ window.addEventListener('pageshow', function (event) {
     }
 });
 
-// 📌 已將原本整合大/小份的品項，拆分為獨立的菜單品項
 const menuItems = [
     {name: "鴨肉羹 (小)", subName: "招牌生炒鴨肉羹", price: 60, category: "招牌鴨肉羹", icon: "🥣"},
     {name: "鴨肉羹 (大)", subName: "招牌生炒鴨肉羹", price: 70, category: "招牌鴨肉羹", icon: "🥣"},
@@ -1519,6 +1518,11 @@ function renderMenu(items) {
         items.filter(i => i.category === cat).forEach(item => {
             const card = document.createElement("div");
             card.className = "item-card";
+            card.onclick = (e) => {
+                if(!e.target.classList.contains('btn-qty')) {
+                    clickAddItem(item.name);
+                }
+            };
             
             let currentQty = 0;
             Object.keys(cart).forEach(key => {
@@ -1540,9 +1544,9 @@ function renderMenu(items) {
                     ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
                 </div>
                 <div class="action-zone" style="margin-left: 10px;">
-                    <button class="btn-qty" onclick="removeOneBaseItem('${item.name}')">-</button>
+                    <button class="btn-qty" onclick="event.stopPropagation(); removeOneBaseItem('${item.name}')">-</button>
                     <span class="qty-num">${currentQty}</span>
-                    <button class="btn-qty" onclick="clickAddItem('${item.name}')">+</button>
+                    <button class="btn-qty" onclick="event.stopPropagation(); clickAddItem('${item.name}')">+</button>
                 </div>
             `;
             grid.appendChild(card);
@@ -1581,48 +1585,46 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
+    const isMainFood = (item.category === "招牌鴨肉羹" || item.category === "其它飯麵");
+
+    // 📌 若非主食類（如小菜、家庭份量等），無辣度選擇，直接加入購物車
+    if (!isMainFood) {
+        const customKey = `${item.name}|不辣`;
+        if (cart[customKey]) {
+            cart[customKey].qty += 1;
+        } else {
+            cart[customKey] = {
+                key: customKey,
+                baseName: item.name,
+                price: item.price || 0,
+                qty: 1,
+                spicy: "不辣"
+            };
+        }
+        renderCart();
+        renderMenu(currentFilteredItems);
+        return;
+    }
+
+    // 📌 主食類：彈窗僅保留辣度需求選項
     let bodyHtml = `
         <div style="text-align:center; font-size:18px; font-weight:bold; margin-bottom:12px; color:var(--primary);">
             ${item.icon || '🍲'} ${item.name}
         </div>
+        <div class="opt-group">
+            <label>🌶️ 辣度需求</label>
+            <div class="opt-pills" id="pop-spicy-group">
+                <div class="opt-pill pill-spicy active" data-value="不辣" onclick="selectPill('pill-spicy', this)">不辣</div>
+                <div class="opt-pill pill-spicy" data-value="微辣" onclick="selectPill('pill-spicy', this)">微辣</div>
+                <div class="opt-pill pill-spicy" data-value="小辣" onclick="selectPill('pill-spicy', this)">小辣</div>
+                <div class="opt-pill pill-spicy" data-value="中辣" onclick="selectPill('pill-spicy', this)">中辣</div>
+                <div class="opt-pill pill-spicy" data-value="大辣" onclick="selectPill('pill-spicy', this)">大辣</div>
+            </div>
+        </div>
     `;
 
-    const isMainFood = (item.category === "招牌鴨肉羹" || item.category === "其它飯麵");
-
-    if (isMainFood) {
-        bodyHtml += `
-            <div class="opt-group">
-                <label>🌶️ 辣度需求</label>
-                <div class="opt-pills" id="pop-spicy-group">
-                    <div class="opt-pill pill-spicy active" data-value="不辣" onclick="selectPill('pill-spicy', this)">不辣</div>
-                    <div class="opt-pill pill-spicy" data-value="微辣" onclick="selectPill('pill-spicy', this)">微辣</div>
-                    <div class="opt-pill pill-spicy" data-value="小辣" onclick="selectPill('pill-spicy', this)">小辣</div>
-                    <div class="opt-pill pill-spicy" data-value="中辣" onclick="selectPill('pill-spicy', this)">中辣</div>
-                    <div class="opt-pill pill-spicy" data-value="大辣" onclick="selectPill('pill-spicy', this)">大辣</div>
-                </div>
-
-                <label>📝 備註需求</label>
-                <div class="opt-pills" id="pop-note-group">
-                    <div class="opt-pill pill-note active" data-value="無" onclick="selectPill('pill-note', this)">無特別需求</div>
-                    <div class="opt-pill pill-note" data-value="外帶分開裝" onclick="selectPill('pill-note', this)">外帶分開裝</div>
-                </div>
-            </div>
-        `;
-    } else {
-        bodyHtml += `
-            <div class="opt-group">
-                <label>📝 備註需求</label>
-                <div class="opt-pills" id="pop-note-group">
-                    <div class="opt-pill pill-note active" data-value="無" onclick="selectPill('pill-note', this)">無特別需求</div>
-                    <div class="opt-pill pill-note" data-value="加辣" onclick="selectPill('pill-note', this)">加辣</div>
-                    <div class="opt-pill pill-note" data-value="外帶分開裝" onclick="selectPill('pill-note', this)">外帶分開裝</div>
-                </div>
-            </div>
-        `;
-    }
-
     showCustomModal({
-        title: "請選擇餐點客製化選項",
+        title: "請選擇辣度選項",
         bodyHtml: bodyHtml,
         confirmText: "加入購物車",
         cancelText: "取消",
@@ -1630,25 +1632,13 @@ function clickAddItem(name) {
         onConfirm: () => {
             let unitPrice = item.price || 0;
             let spicyVal = "不辣";
-            let noteVal = "無";
 
-            if (isMainFood) {
-                const activeSpicy = document.querySelector("#pop-spicy-group .pill-spicy.active");
-                if (activeSpicy) {
-                    spicyVal = activeSpicy.getAttribute("data-value");
-                }
-                const activeNote = document.querySelector("#pop-note-group .pill-note.active");
-                if (activeNote) {
-                    noteVal = activeNote.getAttribute("data-value");
-                }
-            } else {
-                const activeNote = document.querySelector("#pop-note-group .pill-note.active");
-                if (activeNote) {
-                    noteVal = activeNote.getAttribute("data-value");
-                }
+            const activeSpicy = document.querySelector("#pop-spicy-group .pill-spicy.active");
+            if (activeSpicy) {
+                spicyVal = activeSpicy.getAttribute("data-value");
             }
 
-            const customKey = `${item.name}|${spicyVal}|${noteVal}`;
+            const customKey = `${item.name}|${spicyVal}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -1658,8 +1648,7 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    spicy: spicyVal,
-                    note: noteVal
+                    spicy: spicyVal
                 };
             }
 
@@ -1696,11 +1685,7 @@ function renderCart() {
         const sub = item.qty * item.price;
         finalTotal += sub;
         
-        let opts = [];
-        if (item.spicy && item.spicy !== "不辣") opts.push(item.spicy);
-        if (item.note && item.note !== "無") opts.push(item.note);
-        let optText = opts.length > 0 ? opts.join(",") : "標準";
-
+        let optText = (item.spicy && item.spicy !== "不辣") ? item.spicy : "不辣";
         finalSummary += `${item.baseName}(${optText})*${item.qty} `;
     });
 
@@ -1774,15 +1759,12 @@ function renderModalCartList() {
         const div = document.createElement("div");
         div.className = "cart-item";
 
-        let opts = [];
-        if (item.spicy && item.spicy !== "不辣") opts.push(`辣度: ${item.spicy}`);
-        if (item.note && item.note !== "無") opts.push(`備註: ${item.note}`);
-        let optTag = opts.length > 0 ? opts.join(" | ") : "無特別需求";
+        let optTag = (item.spicy && item.spicy !== "不辣") ? `🌶️ 辣度: ${item.spicy}` : "🌶️ 辣度: 不辣";
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                <div class="custom-item-tag">📌 ${optTag}</div>
+                <div class="custom-item-tag">${optTag}</div>
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
