@@ -659,6 +659,12 @@ function isGingerSeason() {
     return currentMonth >= 11 || currentMonth <= 4;
 }
 
+// 3. 抹茶豆花底體僅限 5月到9月 選擇
+function isMatchaSeason() {
+    const currentMonth = new Date().getMonth() + 1; // 1 ~ 12
+    return currentMonth >= 5 && currentMonth <= 9;
+}
+
 const menuItems = [
     // === 豆花 ===
     {name: "綜合豆花 (任選3配料)", priceM: 55, priceL: 55, category: "豆花", icon:"🥣"},
@@ -1279,16 +1285,20 @@ function clickAddItem(name) {
         addons: [] 
     };
 
-    // 1. 豆花底體選擇 HTML (傳統/布丁/抹茶 三選一)
+    // 1. 📌 豆花底體選擇 HTML (傳統/布丁/抹茶 抹茶僅限5月到9月)
     let baseOptionsHtml = '';
     if (item.category === "豆花") {
+        const allowMatcha = isMatchaSeason();
         baseOptionsHtml = `
             <div class="spec-group">
-                <div class="spec-title">豆花底體 (三選一)</div>
+                <div class="spec-title">豆花底體 (三選一${allowMatcha ? '' : '，抹茶限5~9月'})</div>
                 <div class="spec-options">
                     <button type="button" class="spec-btn active" data-type="base" data-val="傳統" onclick="selectSpec(this)">傳統豆花</button>
                     <button type="button" class="spec-btn" data-type="base" data-val="布丁" onclick="selectSpec(this)">布丁豆花</button>
-                    <button type="button" class="spec-btn" data-type="base" data-val="抹茶" onclick="selectSpec(this)">抹茶豆花</button>
+                    ${allowMatcha ? 
+                        '<button type="button" class="spec-btn" data-type="base" data-val="抹茶" onclick="selectSpec(this)">抹茶豆花</button>' : 
+                        '<button type="button" class="spec-btn" style="opacity:0.4; cursor:not-allowed; background:#f1f5f9; color:#94a3b8; border-color:#cbd5e1;" disabled title="抹茶僅限5月至9月供應">抹茶 (限5~9月)</button>'
+                    }
                 </div>
             </div>
         `;
@@ -1355,7 +1365,7 @@ function clickAddItem(name) {
         <button type="button" class="spec-btn" data-type="sugar" data-val="無糖" onclick="selectSpec(this)">無糖</button>
     `;
 
-    // 5. 📌 配料與加購區邏輯分拆：僅限四大綜合品項可選 1~10 / 1~11 配料，其餘只給加購
+    // 5. 配料與加購區邏輯分拆：僅限四大綜合品項可選 1~10 / 1~11 配料，其餘只給加購
     let toppingSectionHtml = '';
 
     if (isCombo) {
