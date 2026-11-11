@@ -795,7 +795,17 @@
 </div>
 
 <script>
-function goBack() { window.location.href = 'index.html'; }
+function goBack() {
+    // 點擊「離開點餐」：使用 replace 替換當前頁面歷史紀錄退回 index.html
+    window.location.replace('index.html');
+}
+
+// 攔截瀏覽器快取 (BFCache) 與上一頁載入
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+        checkAccess();
+    }
+});
 
 const menuItems = [
     // === 滿足系飯碗 ===
@@ -871,15 +881,36 @@ let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
 
-window.onload = async function() {
+function checkAccess() {
     const urlParams = new URLSearchParams(window.location.search);
-    currentCardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId') || "TEST";
+    const cardId = urlParams.get('card_id') || urlParams.get('cardId');
+
+    if (cardId) {
+        // 從 index.html 帶卡號點入：驗證成功！暫存卡號供當前頁面點餐使用
+        sessionStorage.setItem('currentCardId', cardId);
+        
+        // 關鍵：立刻擦除網址列上的 ?card_id 參數，防止按上一頁時重新載入卡號
+        history.replaceState(null, '', window.location.pathname);
+        
+        return cardId;
+    }
+
+    // 若網址沒有卡號（代表是按瀏覽器「上一頁/下一頁」回到此頁）：
+    // 強制踢回 index.html，不留歷史紀錄
+    window.location.replace('index.html');
+    return null;
+}
+
+window.onload = async function() {
+    // 執行進入權限檢查 (無 URL 卡號會自動踢回 index.html)
+    currentCardId = checkAccess();
+    if (!currentCardId) return;
 
     const statusDiv = document.getElementById("card-status");
     if (currentCardId) {
         statusDiv.innerHTML = `💳 目前感應卡號：<b>${currentCardId}</b>`;
-        statusDiv.style.background = "#fffbeb";
-        statusDiv.style.color = "#b45309";
+        statusDiv.style.background = "#e0f2fe";
+        statusDiv.style.color = "#0369a1";
     } else {
         statusDiv.innerHTML = `⚠️ 未偵測到卡號！請確認是透過感應卡開單。`;
         statusDiv.style.background = "#fee2e2";
