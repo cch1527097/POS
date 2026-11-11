@@ -261,7 +261,7 @@
             box-shadow: inset 0 0 0 1px var(--primary);
         }
 
-        /* ==================== 懸浮按鈕群 & 截止時間懸浮元件 (電腦預設) ==================== */
+        /* ==================== 懸浮按鈕群 ==================== */
         .fab-container {
             position: fixed;
             bottom: 24px;
@@ -288,24 +288,14 @@
             position: relative;
         }
 
-        .fab-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.28);
-        }
+        .fab-btn:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(0,0,0,0.28); }
         .fab-btn:active { transform: scale(0.95); }
 
         .fab-cart { background-color: var(--primary); }
         .fab-exit { background-color: #a40e11; }
         
-        /* 電腦版：累計金額圓框（純顯示） */
-        .fab-menu { 
-            display: flex; 
-            background-color: #8b4513; 
-            cursor: default; 
-        }
-        .fab-menu:hover {
-            transform: none;
-        }
+        .fab-menu { display: flex; background-color: #8b4513; cursor: default; }
+        .fab-menu:hover { transform: none; }
 
         .desktop-accumulated-text {
             display: flex;
@@ -323,23 +313,14 @@
             letter-spacing: 0.5px;
         }
 
-        .mobile-menu-wrapper {
-            display: none;
-        }
-
+        .mobile-menu-wrapper { display: none; }
         .fab-text { display: none; }
         .fab-btn svg { width: 26px; height: 26px; fill: #ffffff; }
 
-        .others-float-btn {
-            background-color: #d2691e;
-            color: white;
-        }
-        .others-float-btn:hover {
-            background-color: #b85c1a;
-        }
+        .others-float-btn { background-color: #d2691e; color: white; }
+        .others-float-btn:hover { background-color: #b85c1a; }
         .others-float-btn svg { fill: none !important; stroke: #ffffff; }
 
-        /* ⏱️ 截止時間懸浮元件 (電腦版右下角懸浮) */
         .cutoff-float-badge {
             position: fixed;
             bottom: 305px;
@@ -360,29 +341,9 @@
             user-select: none;
         }
 
-        .cutoff-title-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .cutoff-title {
-            font-size: 11px;
-            color: var(--primary);
-            font-weight: bold;
-            margin-bottom: 2px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .cutoff-time-text {
-            font-size: 12px;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 3px;
-            line-height: 1.2;
-        }
+        .cutoff-title-group { display: flex; flex-direction: column; align-items: center; }
+        .cutoff-title { font-size: 11px; color: var(--primary); font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+        .cutoff-time-text { font-size: 12px; font-weight: 800; color: var(--primary); margin-bottom: 3px; line-height: 1.2; }
 
         .cutoff-timer {
             font-size: 13px;
@@ -397,11 +358,7 @@
             box-sizing: border-box;
         }
 
-        .cutoff-timer.expired {
-            color: #666666;
-            background: #f0f0f0;
-            border-color: #d0d0d0;
-        }
+        .cutoff-timer.expired { color: #666666; background: #f0f0f0; border-color: #d0d0d0; }
 
         .cart-badge {
             position: absolute;
@@ -457,160 +414,37 @@
         }
 
         .modal-overlay.active .modal-container { transform: scale(1); }
-
-        .modal-header {
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
+        .modal-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; }
         .modal-title { font-size: 17px; font-weight: 700; color: #1e293b; margin: 0; }
+        .modal-close { background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; line-height: 1; }
+        .modal-body { padding: 20px; font-size: 15px; color: #334155; line-height: 1.6; overflow-y: auto; flex: 1; }
+        .modal-footer { padding: 14px 20px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #f8fafc; }
 
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 22px;
-            color: #94a3b8;
-            cursor: pointer;
-            line-height: 1;
-        }
+        .btn-modal-cancel { background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 8px 20px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; }
+        .btn-modal-confirm { background: var(--primary); border: none; color: white; padding: 8px 24px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; }
 
-        .modal-body {
-            padding: 20px;
-            font-size: 15px;
-            color: #334155;
-            line-height: 1.6;
-            overflow-y: auto;
-            flex: 1;
-        }
+        .custom-item-tag { font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px; }
 
-        .modal-footer {
-            padding: 14px 20px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            border-top: 1px solid #f8fafc;
-        }
-
-        .btn-modal-cancel {
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            padding: 8px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .btn-modal-confirm {
-            background: var(--primary);
-            border: none;
-            color: white;
-            padding: 8px 24px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .custom-item-tag {
-            font-size: 12px;
-            color: #64748b;
-            background: #f1f5f9;
-            padding: 2px 6px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 2px;
-        }
-
-        /* 👥 「其他人點了什麼」表格專用樣式 */
-        .history-modal-content {
-            width: 92vw !important;
-            max-width: 1000px !important;
-            max-height: 85vh !important;
-        }
-
-        .history-table-wrapper {
-            overflow-x: auto;
-        }
-
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 15px;
-            min-width: 550px;
-        }
-
-        .history-table th {
-            background-color: var(--primary-light);
-            color: var(--primary);
-            font-weight: bold;
-            padding: 12px 14px;
-            border-bottom: 2px solid var(--primary);
-        }
-
-        .history-table td {
-            padding: 12px 14px;
-            border-bottom: 1px solid #f1f5f9;
-            color: var(--text-dark);
-        }
-
-        .dept-badge {
-            background-color: #fdf5e6;
-            color: var(--primary);
-            border: 1px solid #e2d8cd;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .no-record {
-            text-align: center;
-            color: #64748b;
-            padding: 30px !important;
-            font-style: italic;
-        }
+        .history-modal-content { width: 92vw !important; max-width: 1000px !important; max-height: 85vh !important; }
+        .history-table-wrapper { overflow-x: auto; }
+        .history-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 15px; min-width: 550px; }
+        .history-table th { background-color: var(--primary-light); color: var(--primary); font-weight: bold; padding: 12px 14px; border-bottom: 2px solid var(--primary); }
+        .history-table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); }
+        .dept-badge { background-color: #fdf5e6; color: var(--primary); border: 1px solid #e2d8cd; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .no-record { text-align: center; color: #64748b; padding: 30px !important; font-style: italic; }
 
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
             .category-sidebar { 
-                display: flex;
-                flex: none;
-                width: 100%;
-                box-sizing: border-box;
-                overflow-x: auto;
-                white-space: nowrap;
-                position: sticky; 
-                top: 60px; 
-                z-index: 900;
-                background: #fff;
-                padding: 10px 12px;
-                margin-bottom: 16px;
-                border-radius: 0 0 12px 12px;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+                display: flex; flex: none; width: 100%; box-sizing: border-box; overflow-x: auto; white-space: nowrap; position: sticky; top: 60px; z-index: 900; background: #fff; padding: 10px 12px; margin-bottom: 16px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             }
             .category-sidebar::-webkit-scrollbar { display: none; }
-            .side-cat-item { 
-                flex: 0 0 auto; 
-                margin-right: 8px; 
-                margin-bottom: 0;
-                padding: 8px 16px;
-                font-size: 13px;
-                background: #f1f5f9;
-                border-radius: 20px;
-            }
+            .side-cat-item { flex: 0 0 auto; margin-right: 8px; margin-bottom: 0; padding: 8px 16px; font-size: 13px; background: #f1f5f9; border-radius: 20px; }
             .side-cat-item.active { background: var(--primary); color: #fff; }
             .category-block { scroll-margin-top: 130px; }
         }
         
-        /* ==================== 📱 手機版專屬樣式 ==================== */
         @media (max-width: 600px) {
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
@@ -623,233 +457,49 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
 
-            /* ⏱️ 手機版：拉高「截止時間懸浮框」 */
             .cutoff-float-badge { 
-                position: fixed !important;
-                bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important;
-                left: 12px !important;
-                right: 12px !important;
-                width: auto !important;
-                min-width: 0 !important;
-                border-radius: 12px !important;
-                padding: 8px 14px !important;
-                background: #ffffff !important;
-                border: 1.5px solid var(--primary) !important;
-                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
-                z-index: 9998 !important;
-                display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                gap: 8px !important;
+                position: fixed !important; bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important; left: 12px !important; right: 12px !important; width: auto !important; min-width: 0 !important; border-radius: 12px !important; padding: 8px 14px !important; background: #ffffff !important; border: 1.5px solid var(--primary) !important; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important; z-index: 9998 !important; display: flex !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; gap: 8px !important;
             }
 
-            .cutoff-title-group {
-                flex-direction: row !important;
-                gap: 8px !important;
-                align-items: center !important;
-            }
+            .cutoff-title-group { flex-direction: row !important; gap: 8px !important; align-items: center !important; }
+            .cutoff-title { margin-bottom: 0 !important; font-size: 12px !important; white-space: nowrap !important; }
+            .cutoff-time-text { margin-bottom: 0 !important; font-size: 13px !important; white-space: nowrap !important; }
+            .cutoff-timer { width: auto !important; padding: 3px 10px !important; font-size: 13px !important; text-align: center !important; white-space: nowrap !important; }
 
-            .cutoff-title {
-                margin-bottom: 0 !important;
-                font-size: 12px !important;
-                white-space: nowrap !important;
-            }
-
-            .cutoff-time-text {
-                margin-bottom: 0 !important;
-                font-size: 13px !important;
-                white-space: nowrap !important;
-            }
-
-            .cutoff-timer {
-                width: auto !important;
-                padding: 3px 10px !important;
-                font-size: 13px !important;
-                text-align: center !important;
-                white-space: nowrap !important;
-            }
-
-            /* 📱 底部固定導覽列 */
             .fab-container {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100%;
-                height: 62px;
-                background: #ffffff;
-                border-top: 1px solid #e2e8f0;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
-                flex-direction: row;
-                justify-content: space-around;
-                align-items: center;
-                gap: 0;
-                padding: 4px 0 calc(4px + env(safe-area-inset-bottom)) 0;
-                z-index: 9999;
+                position: fixed; bottom: 0; left: 0; right: 0; width: 100%; height: 62px; background: #ffffff; border-top: 1px solid #e2e8f0; box-shadow: 0 -2px 10px rgba(0,0,0,0.06); flex-direction: row; justify-content: space-around; align-items: center; gap: 0; padding: 4px 0 calc(4px + env(safe-area-inset-bottom)) 0; z-index: 9999;
             }
 
-            .fab-btn {
-                width: auto;
-                height: 100%;
-                flex: 1;
-                border-radius: 0;
-                background: transparent !important;
-                box-shadow: none !important;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 2px;
-                color: #64748b;
-                padding: 0;
-                transition: color 0.15s ease;
-            }
-
+            .fab-btn { width: auto; height: 100%; flex: 1; border-radius: 0; background: transparent !important; box-shadow: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #64748b; padding: 0; transition: color 0.15s ease; }
             .fab-btn:hover, .fab-btn:active { transform: none !important; color: var(--primary); }
-            
-            .fab-menu { 
-                display: flex !important; 
-                cursor: pointer !important;
-            }
-
-            .desktop-accumulated-text {
-                display: none !important;
-            }
-
-            .mobile-menu-wrapper {
-                display: flex !important;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-                gap: 1px;
-            }
-
-            .mobile-accumulated-label {
-                font-size: 10px;
-                color: #64748b;
-                font-weight: 600;
-                line-height: 1;
-            }
-
-            .mobile-accumulated-val {
-                font-size: 17px !important;
-                font-weight: 800 !important;
-                color: var(--primary) !important;
-                line-height: 1.1;
-            }
-
+            .fab-menu { display: flex !important; cursor: pointer !important; }
+            .desktop-accumulated-text { display: none !important; }
+            .mobile-menu-wrapper { display: flex !important; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; gap: 1px; }
+            .mobile-accumulated-label { font-size: 10px; color: #64748b; font-weight: 600; line-height: 1; }
+            .mobile-accumulated-val { font-size: 17px !important; font-weight: 800 !important; color: var(--primary) !important; line-height: 1.1; }
             .fab-btn svg { width: 22px; height: 22px; fill: #64748b; transition: fill 0.15s ease; }
             .others-float-btn svg { fill: none !important; stroke: #64748b; transition: stroke 0.15s ease; }
-
             .fab-btn:active svg, .fab-btn.active svg { fill: var(--primary); }
             .others-float-btn:active svg { stroke: var(--primary); }
-
             .fab-text { display: block !important; font-size: 11px; font-weight: 600; line-height: 1.1; color: inherit; }
-
             .cart-icon-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
             .cart-badge { top: -6px; right: -10px; font-size: 10px; min-width: 16px; height: 16px; padding: 0 4px; border-width: 1px; }
 
-            /* ==================== 手機版「今日其他人點了什麼」卡片化樣式 ==================== */
-            .history-modal-content {
-                width: 95vw !important;
-                max-height: 88vh !important;
-                border-radius: 16px !important;
-                margin: 0 auto;
-            }
-
-            .history-modal-content .modal-body {
-                padding: 12px 14px !important;
-            }
-
-            .history-table-wrapper {
-                overflow-x: visible !important;
-            }
-
-            .history-table, 
-            .history-table thead, 
-            .history-table tbody, 
-            .history-table th, 
-            .history-table td, 
-            .history-table tr {
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
-            }
-
+            .history-modal-content { width: 95vw !important; max-height: 88vh !important; border-radius: 16px !important; margin: 0 auto; }
+            .history-modal-content .modal-body { padding: 12px 14px !important; }
+            .history-table-wrapper { overflow-x: visible !important; }
+            .history-table, .history-table thead, .history-table tbody, .history-table th, .history-table td, .history-table tr { display: block; width: 100%; box-sizing: border-box; }
             .history-table { min-width: 0 !important; }
             .history-table thead { display: none; }
 
-            .history-table tbody tr {
-                background: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                padding: 12px 14px;
-                margin-bottom: 12px;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-                display: flex;
-                flex-wrap: wrap;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            .history-table td {
-                padding: 2px 0 !important;
-                border-bottom: none !important;
-            }
-
-            .history-table td:nth-child(1) {
-                font-size: 15px;
-                font-weight: 700;
-                color: #1e293b;
-                order: 1;
-            }
-
-            .history-table td:nth-child(2) {
-                order: 2;
-                text-align: right;
-            }
-
-            .history-table td:nth-child(3) {
-                width: 100%;
-                order: 3;
-                font-size: 12px;
-                color: #64748b;
-                margin-top: 2px;
-                margin-bottom: 6px;
-            }
-
-            .history-table td:nth-child(4) {
-                width: 100%;
-                order: 4;
-                font-size: 14px;
-                background: #f8fafc;
-                border: 1px solid #f1f5f9;
-                border-radius: 8px;
-                padding: 8px 10px !important;
-                margin: 4px 0;
-                line-height: 1.4;
-            }
-
-            .history-table td:nth-child(5) {
-                width: 100%;
-                order: 5;
-                text-align: right;
-                font-size: 15px;
-                font-weight: 800 !important;
-                color: var(--primary) !important;
-                margin-top: 4px;
-            }
-
-            .history-table td.no-record {
-                text-align: center !important;
-                background: transparent !important;
-                border: none !important;
-                padding: 30px 0 !important;
-                color: #88a085;
-            }
+            .history-table tbody tr { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+            .history-table td { padding: 2px 0 !important; border-bottom: none !important; }
+            .history-table td:nth-child(1) { font-size: 15px; font-weight: 700; color: #1e293b; order: 1; }
+            .history-table td:nth-child(2) { order: 2; text-align: right; }
+            .history-table td:nth-child(3) { width: 100%; order: 3; font-size: 12px; color: #64748b; margin-top: 2px; margin-bottom: 6px; }
+            .history-table td:nth-child(4) { width: 100%; order: 4; font-size: 14px; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 8px; padding: 8px 10px !important; margin: 4px 0; line-height: 1.4; }
+            .history-table td:nth-child(5) { width: 100%; order: 5; text-align: right; font-size: 15px; font-weight: 800 !important; color: var(--primary) !important; margin-top: 4px; }
+            .history-table td.no-record { text-align: center !important; background: transparent !important; border: none !important; padding: 30px 0 !important; color: #88a085; }
         }
     </style>
 </head>
@@ -1001,6 +651,19 @@ window.addEventListener('pageshow', function (event) {
     }
 });
 
+/* ==================== 季節限定判斷邏輯 ==================== */
+// 1. 刨冰限定 3月到11月 販售
+function isShavedIceSeason() {
+    const currentMonth = new Date().getMonth() + 1; // 1 ~ 12
+    return currentMonth >= 3 && currentMonth <= 11;
+}
+
+// 2. 薑汁限定 11月到4月 選擇 (11, 12, 1, 2, 3, 4月)
+function isGingerSeason() {
+    const currentMonth = new Date().getMonth() + 1; // 1 ~ 12
+    return currentMonth >= 11 || currentMonth <= 4;
+}
+
 const menuItems = [
     // === 豆花 ===
     {name: "綜合豆花 (任選3配料)", priceM: 55, priceL: 55, category: "豆花", icon:"🥣"},
@@ -1087,7 +750,7 @@ let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
 
-let selectedSpecs = { size: '', sugar: '', ice: '', topping: '' };
+let selectedSpecs = { base: '傳統', size: '', sugar: '', ice: '', topping: '' };
 
 let finalTotal = 0;
 let finalSummary = "";
@@ -1217,7 +880,7 @@ async function fetchCutoffSetting() {
         const response = await fetch(`/api/cutoff-time?_=${new Date().getTime()}`, { cache: 'no-store' });
         if (response.ok) {
             const data = await response.json();
-            latestTime = data.cutoffTime || data.time || data.cutoff_time || data.cutoff || data.lockTime;
+            latestTime = data.cutoffTime || data.time || data.cutoff_time || data.lockTime;
             latestDate = data.lockDate || data.cutoffDate || data.order_lock_date || null;
         }
     } catch (e) {
@@ -1251,7 +914,7 @@ async function fetchCutoffSetting() {
             }
 
             if (rawVal.includes(':')) {
-                const match = rawVal.match(/([01]?\d|2[0-3]):[0-5]\d/);
+                const match = rawVal.match(/ ([01]?\d|2[0-3]):[0-5]\d/);
                 if (match) {
                     latestTime = match[0];
                     break;
@@ -1573,6 +1236,16 @@ function clickAddItem(name) {
     const item = menuItems.find(m => m.name === name);
     if (!item) return;
 
+    // 📌 規則驗證 1：刨冰僅限 3月至11月 販售，非販售期間鎖定不給加入購物車
+    if (item.category === "剉冰" && !isShavedIceSeason()) {
+        return showCustomModal({
+            title: "非販售季節",
+            bodyHtml: "<p style='text-align:center; color:#e11d48; font-weight:bold;'>🍧 刨冰僅限 3月至 11月 販售！<br><span style='font-size:13px; color:#64748b;'>目前月份系統鎖定不開放加入購物車。</span></p>",
+            confirmText: "我知道了",
+            showCancel: false
+        });
+    }
+
     // 根據品項類別設置預設選項
     let sizeDefault = '標準';
     if (item.priceXL) sizeDefault = 'M(500cc)';
@@ -1583,9 +1256,24 @@ function clickAddItem(name) {
     let iceDefault = (item.category === "飲品" || item.category === "剉冰") ? '少冰' : '冷';
     let sugarDefault = '正常甜';
 
-    selectedSpecs = { size: sizeDefault, sugar: sugarDefault, ice: iceDefault, topping: '不加料' };
+    selectedSpecs = { base: '傳統', size: sizeDefault, sugar: sugarDefault, ice: iceDefault, topping: '不加料' };
 
-    // 1. 尺寸 HTML
+    // 1. 豆花底體選擇 HTML (傳統/布丁/抹茶 三選一)
+    let baseOptionsHtml = '';
+    if (item.category === "豆花") {
+        baseOptionsHtml = `
+            <div class="spec-group">
+                <div class="spec-title">豆花底體 (三選一)</div>
+                <div class="spec-options">
+                    <button type="button" class="spec-btn active" data-type="base" data-val="傳統" onclick="selectSpec(this)">傳統豆花</button>
+                    <button type="button" class="spec-btn" data-type="base" data-val="布丁" onclick="selectSpec(this)">布丁豆花</button>
+                    <button type="button" class="spec-btn" data-type="base" data-val="抹茶" onclick="selectSpec(this)">抹茶豆花</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // 2. 尺寸 HTML
     let sizeOptionsHtml = '';
     if (item.priceXL) {
         sizeOptionsHtml = `
@@ -1609,7 +1297,10 @@ function clickAddItem(name) {
         sizeOptionsHtml = `<button type="button" class="spec-btn active" data-type="size" data-val="標準" onclick="selectSpec(this)">標準 ($${item.priceL})</button>`;
     }
 
-    // 2. 溫度 / 冰塊 HTML
+    // 3. 📌 規則驗證 2：薑汁僅限 11月到4月 選擇 (適用：豆花、仙草、薏仁湯、飲品、湯圓甜湯)
+    const gingerAllowedCategories = ["豆花", "嫩仙草凍/燒仙草", "招牌薏仁湯", "飲品", "湯圓/甜湯"];
+    const allowGingerOption = gingerAllowedCategories.includes(item.category) && isGingerSeason();
+
     let iceOptionsHtml = '';
     if (item.category === "飲品") {
         iceOptionsHtml = `
@@ -1618,6 +1309,7 @@ function clickAddItem(name) {
             <button type="button" class="spec-btn" data-type="ice" data-val="微冰" onclick="selectSpec(this)">微冰</button>
             <button type="button" class="spec-btn" data-type="ice" data-val="去冰" onclick="selectSpec(this)">去冰</button>
             <button type="button" class="spec-btn" data-type="ice" data-val="熱飲" onclick="selectSpec(this)">熱飲</button>
+            ${allowGingerOption ? '<button type="button" class="spec-btn" data-type="ice" data-val="+薑汁(熱)" onclick="selectSpec(this)">+薑汁 (熱)</button>' : ''}
         `;
     } else if (item.category === "剉冰") {
         iceOptionsHtml = `
@@ -1629,12 +1321,12 @@ function clickAddItem(name) {
         iceOptionsHtml = `
             <button type="button" class="spec-btn active" data-type="ice" data-val="冷" onclick="selectSpec(this)">冷</button>
             <button type="button" class="spec-btn" data-type="ice" data-val="燒(熱)" onclick="selectSpec(this)">燒 (熱)</button>
-            <button type="button" class="spec-btn" data-type="ice" data-val="+薑" onclick="selectSpec(this)">+薑 (熱)</button>
+            ${allowGingerOption ? '<button type="button" class="spec-btn" data-type="ice" data-val="+薑汁(熱)" onclick="selectSpec(this)">+薑汁 (熱)</button>' : ''}
             <button type="button" class="spec-btn" data-type="ice" data-val="+冰" onclick="selectSpec(this)">+冰</button>
         `;
     }
 
-    // 3. 甜度 HTML
+    // 4. 甜度 HTML
     let sugarOptionsHtml = `
         <button type="button" class="spec-btn active" data-type="sugar" data-val="正常甜" onclick="selectSpec(this)">正常甜</button>
         <button type="button" class="spec-btn" data-type="sugar" data-val="少甜" onclick="selectSpec(this)">少甜</button>
@@ -1642,30 +1334,40 @@ function clickAddItem(name) {
         <button type="button" class="spec-btn" data-type="sugar" data-val="無糖" onclick="selectSpec(this)">無糖</button>
     `;
 
-    // 4. 加價與配料選擇 HTML
+    // 5. 📌 規則驗證 3：配料選擇 (豆花/仙草選1~10，刨冰選1~11，選芋頭加價+5元)
+    let toppingTitleText = "加購/配料選擇";
+    if (item.category === "豆花" || item.category === "嫩仙草凍/燒仙草") {
+        toppingTitleText = "配料選擇 (1~10任選3種，選芋頭額外+5元)";
+    } else if (item.category === "剉冰") {
+        toppingTitleText = "配料選擇 (1~11任選4種，選芋頭額外+5元)";
+    }
+
     let toppingOptionsHtml = `
         <button type="button" class="spec-btn active" data-type="topping" data-val="不加料" onclick="selectSpec(this)">不加料</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="1.花生" onclick="selectSpec(this)">1.花生</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="2.紅豆" onclick="selectSpec(this)">2.紅豆</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="3.綠豆" onclick="selectSpec(this)">3.綠豆</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="4.彎豆" onclick="selectSpec(this)">4.彎豆</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="5.粉圓" onclick="selectSpec(this)">5.粉圓</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="6.芋圓" onclick="selectSpec(this)">6.芋圓</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="7.湯圓" onclick="selectSpec(this)">7.湯圓</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="8.芋頭(+$5)" onclick="selectSpec(this)">8.芋頭(+$5)</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="9.仙草" onclick="selectSpec(this)">9.仙草</button>
+        <button type="button" class="spec-btn" data-type="topping" data-val="10.薏仁湯" onclick="selectSpec(this)">10.薏仁湯</button>
+        ${item.category === "剉冰" ? '<button type="button" class="spec-btn" data-type="topping" data-val="11.鳳梨" onclick="selectSpec(this)">11.鳳梨</button>' : ''}
         <button type="button" class="spec-btn" data-type="topping" data-val="奶油球(+$5)" onclick="selectSpec(this)">奶油球(+$5)</button>
         <button type="button" class="spec-btn" data-type="topping" data-val="改豆漿湯底(+$5)" onclick="selectSpec(this)">改豆漿湯底(+$5)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="花生(+$10)" onclick="selectSpec(this)">花生(+$10)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="紅豆(+$10)" onclick="selectSpec(this)">紅豆(+$10)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="綠豆(+$10)" onclick="selectSpec(this)">綠豆(+$10)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="粉圓(+$10)" onclick="selectSpec(this)">粉圓(+$10)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="湯圓(+$10)" onclick="selectSpec(this)">湯圓(+$10)</button>
         <button type="button" class="spec-btn" data-type="topping" data-val="煉乳(+$10)" onclick="selectSpec(this)">煉乳(+$10)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="芋圓(+$15)" onclick="selectSpec(this)">芋圓(+$15)</button>
         <button type="button" class="spec-btn" data-type="topping" data-val="紫米(+$15)" onclick="selectSpec(this)">紫米(+$15)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="鳳梨(+$15)" onclick="selectSpec(this)">鳳梨(+$15)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="鮮奶(+$15)" onclick="selectSpec(this)">鮮奶(+$15)</button>
         <button type="button" class="spec-btn" data-type="topping" data-val="老麵茶(+$15)" onclick="selectSpec(this)">老麵茶(+$15)</button>
         <button type="button" class="spec-btn" data-type="topping" data-val="硬花生(+$15)" onclick="selectSpec(this)">硬花生(+$15)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="薏仁(+$15)" onclick="selectSpec(this)">薏仁(+$15)</button>
-        <button type="button" class="spec-btn" data-type="topping" data-val="芋頭(+$20)" onclick="selectSpec(this)">芋頭(+$20)</button>
         <button type="button" class="spec-btn" data-type="topping" data-val="香草冰淇淋(+$30)" onclick="selectSpec(this)">香草冰淇淋(+$30)</button>
         <button type="button" class="spec-btn" data-type="topping" data-val="抹茶冰淇淋(+$30)" onclick="selectSpec(this)">抹茶冰淇淋(+$30)</button>
     `;
 
     let bodyHtml = `
+        ${baseOptionsHtml}
+
         <div class="spec-group">
             <div class="spec-title">規格/尺寸</div>
             <div class="spec-options">
@@ -1688,7 +1390,7 @@ function clickAddItem(name) {
         </div>
 
         <div class="spec-group">
-            <div class="spec-title" style="color: #64748b; font-weight: 600;">加購/配料選擇</div>
+            <div class="spec-title" style="color: #64748b; font-weight: 600;">${toppingTitleText}</div>
             <div class="spec-options">
                 ${toppingOptionsHtml}
             </div>
@@ -1709,13 +1411,16 @@ function clickAddItem(name) {
                 unitPrice = item.priceXL || item.priceL;
             }
 
-            if (selectedSpecs.topping.includes('+$5')) unitPrice += 5;
+            // 📌 芋頭選加額外 +5 元 / 其他標準加價
+            if (selectedSpecs.topping.includes('8.芋頭') || selectedSpecs.topping.includes('芋頭(+$5)')) unitPrice += 5;
+            if (selectedSpecs.topping.includes('+$5') && !selectedSpecs.topping.includes('芋頭')) unitPrice += 5;
             if (selectedSpecs.topping.includes('+$10')) unitPrice += 10;
             if (selectedSpecs.topping.includes('+$15')) unitPrice += 15;
             if (selectedSpecs.topping.includes('+$20')) unitPrice += 20;
             if (selectedSpecs.topping.includes('+$30')) unitPrice += 30;
 
-            const customKey = `${item.name}|${selectedSpecs.size}|${selectedSpecs.sugar}|${selectedSpecs.ice}|${selectedSpecs.topping}`;
+            const baseTag = (item.category === "豆花") ? `底體:${selectedSpecs.base}|` : '';
+            const customKey = `${item.name}|${baseTag}${selectedSpecs.size}|${selectedSpecs.sugar}|${selectedSpecs.ice}|${selectedSpecs.topping}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -1725,6 +1430,7 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
+                    base: (item.category === "豆花") ? selectedSpecs.base : '',
                     size: selectedSpecs.size,
                     sugar: selectedSpecs.sugar,
                     ice: selectedSpecs.ice,
@@ -1775,7 +1481,8 @@ function renderCart() {
         totalCount += item.qty;
         const sub = item.qty * item.price;
         finalTotal += sub;
-        finalSummary += `${item.baseName}(${item.size}/${item.sugar}/${item.ice}/${item.topping})*${item.qty} `;
+        const baseStr = item.base ? `${item.base}/` : '';
+        finalSummary += `${item.baseName}(${baseStr}${item.size}/${item.sugar}/${item.ice}/${item.topping})*${item.qty} `;
     });
 
     const badgeEl = document.getElementById("cart-badge");
@@ -1847,10 +1554,11 @@ function renderModalCartList() {
         const sub = item.qty * item.price;
         const div = document.createElement("div");
         div.className = "cart-item";
+        const baseStr = item.base ? `底體: ${item.base} | ` : '';
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName} (${item.size})</div>
-                <div class="custom-item-tag">🍬 ${item.sugar} | 🧊 ${item.ice} | 🧋 ${item.topping}</div>
+                <div class="custom-item-tag">${baseStr}🍬 ${item.sugar} | 🧊 ${item.ice} | 🧋 ${item.topping}</div>
                 <div style="color:var(--primary); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
