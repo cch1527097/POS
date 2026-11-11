@@ -286,7 +286,6 @@
         .fab-cart { background-color: #278638; }
         .fab-exit { background-color: #a40e11; }
         
-        /* 電腦版：累計金額圓框（純顯示） */
         .fab-menu { 
             display: flex; 
             background-color: #0284c7; 
@@ -332,7 +331,7 @@
             stroke: #ffffff;
         }
 
-        /* ⏱️ 截止時間懸浮元件 (電腦版右下角懸浮 - 同步最新規格) */
+        /* ⏱️ 截止時間懸浮元件 */
         .cutoff-float-badge {
             position: fixed;
             bottom: 305px;
@@ -532,7 +531,6 @@
             margin-top: 2px;
         }
 
-        /* 👥 「其他人點了什麼」表格專用樣式 */
         .history-modal-content {
             width: 92vw !important;
             max-width: 1000px !important;
@@ -583,7 +581,6 @@
             font-style: italic;
         }
 
-        /* RWD 平板調整 */
         @media (max-width: 1024px) {
             .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
@@ -618,7 +615,6 @@
             .category-block { scroll-margin-top: 130px; }
         }
         
-        /* ==================== 📱 手機版專屬樣式 ==================== */
         @media (max-width: 600px) {
             .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
             .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
@@ -631,7 +627,6 @@
             .category-sidebar { top: 98px; }
             .category-block { scroll-margin-top: 160px; }
 
-            /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 (同步最新規格) */
             .cutoff-float-badge { 
                 position: fixed !important;
                 bottom: calc(62px + env(safe-area-inset-bottom, 0px) + 14px) !important;
@@ -678,7 +673,6 @@
                 white-space: nowrap !important;
             }
 
-            /* 📱 底部固定導覽列 (Bottom Navigation Bar) */
             .fab-container {
                 position: fixed;
                 bottom: 0;
@@ -724,7 +718,6 @@
                 cursor: pointer !important;
             }
 
-            /* 手機版隱藏圓框內的文字，改為大字金額區塊 */
             .desktop-accumulated-text {
                 display: none !important;
             }
@@ -913,7 +906,7 @@
     </div>
 </div>
 
-<!-- ⏱️ 右下角/手機底部截止時間與倒數計時懸浮元件 (同步最新 DOM 結構) -->
+<!-- ⏱️ 右下角/手機底部截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
     <div class="cutoff-title-group">
         <div class="cutoff-title">⏱️ 點餐截止時間</div>
@@ -924,19 +917,14 @@
 
 <!-- 📱 底部固定導覽列 / 懸浮按鈕群 -->
 <div class="fab-container">
-    <!-- 1. 累計金額 (電腦版圓框顯示金額；手機版直接醒目大字顯示，無 Icon) -->
     <div class="fab-btn fab-menu" title="目前累計金額" aria-label="累計金額">
-        <!-- 電腦版圓框置中金額 -->
         <span class="desktop-accumulated-text" id="desktop-accumulated-total">$0</span>
-
-        <!-- 手機版大字金額區塊 -->
         <div class="mobile-menu-wrapper" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
             <span class="mobile-accumulated-label">累計金額</span>
             <span class="mobile-accumulated-val" id="mobile-accumulated-total">$0</span>
         </div>
     </div>
 
-    <!-- 2. 其他人點了什麼 -->
     <button class="fab-btn others-float-btn" onclick="openOthersModal()" title="其他人點了什麼" aria-label="其他人點了什麼">
         <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -947,7 +935,6 @@
         <span class="fab-text">他人點餐</span>
     </button>
 
-    <!-- 3. 購物車 -->
     <button class="fab-btn fab-cart" onclick="openCartModal()" title="開啟購物車" aria-label="開啟購物車">
         <div class="cart-icon-wrapper">
             <svg viewBox="0 0 24 24">
@@ -958,7 +945,6 @@
         <span class="fab-text">購物車</span>
     </button>
 
-    <!-- 4. 離開點餐 -->
     <button class="fab-btn fab-exit" onclick="goBack()" title="離開點餐" aria-label="離開點餐">
         <svg viewBox="0 0 24 24">
             <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
@@ -1042,29 +1028,38 @@
 
 <script>
 function goBack() {
-    // 點擊「離開點餐」：使用 replace 替換當前頁面歷史紀錄退回 index.html
     window.location.replace('index.html');
 }
 
-// 攔截瀏覽器快取 (BFCache) 與上一頁載入
 window.addEventListener('pageshow', function (event) {
     if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
         checkAccess();
     }
 });
 
+// 📌 已將原本整合大/小份的品項，拆分為獨立的菜單品項
 const menuItems = [
-    {name: "鴨肉羹", subName: "招牌生炒鴨肉羹", smallPrice: 60, largePrice: 70, category: "招牌鴨肉羹", icon: "🥣", hasSize: true},
-    {name: "鴨肉羹麵", subName: "鴨肉羹搭配油麵", smallPrice: 70, largePrice: 80, category: "招牌鴨肉羹", icon: "🍜", hasSize: true},
-    {name: "鴨肉羹飯", subName: "鴨肉羹搭配白飯", smallPrice: 70, largePrice: 80, category: "招牌鴨肉羹", icon: "🍚", hasSize: true},
-    {name: "鴨肉羹冬粉", subName: "鴨肉羹搭配冬粉", smallPrice: 70, largePrice: 80, category: "招牌鴨肉羹", icon: "🍲", hasSize: true},
-    {name: "鴨肉羹米粉", subName: "鴨肉羹搭配米粉", smallPrice: 70, largePrice: 80, category: "招牌鴨肉羹", icon: "🍜", hasSize: true},
+    {name: "鴨肉羹 (小)", subName: "招牌生炒鴨肉羹", price: 60, category: "招牌鴨肉羹", icon: "🥣"},
+    {name: "鴨肉羹 (大)", subName: "招牌生炒鴨肉羹", price: 70, category: "招牌鴨肉羹", icon: "🥣"},
+    {name: "鴨肉羹麵 (小)", subName: "鴨肉羹搭配油麵", price: 70, category: "招牌鴨肉羹", icon: "🍜"},
+    {name: "鴨肉羹麵 (大)", subName: "鴨肉羹搭配油麵", price: 80, category: "招牌鴨肉羹", icon: "🍜"},
+    {name: "鴨肉羹飯 (小)", subName: "鴨肉羹搭配白飯", price: 70, category: "招牌鴨肉羹", icon: "🍚"},
+    {name: "鴨肉羹飯 (大)", subName: "鴨肉羹搭配白飯", price: 80, category: "招牌鴨肉羹", icon: "🍚"},
+    {name: "鴨肉羹冬粉 (小)", subName: "鴨肉羹搭配冬粉", price: 70, category: "招牌鴨肉羹", icon: "🍲"},
+    {name: "鴨肉羹冬粉 (大)", subName: "鴨肉羹搭配冬粉", price: 80, category: "招牌鴨肉羹", icon: "🍲"},
+    {name: "鴨肉羹米粉 (小)", subName: "鴨肉羹搭配米粉", price: 70, category: "招牌鴨肉羹", icon: "🍜"},
+    {name: "鴨肉羹米粉 (大)", subName: "鴨肉羹搭配米粉", price: 80, category: "招牌鴨肉羹", icon: "🍜"},
 
-    {name: "麻辣乾麵", subName: "香辣帶勁乾麵", smallPrice: 40, largePrice: 55, category: "其它飯麵", icon: "🍜", hasSize: true},
-    {name: "醋香乾麵", subName: "獨門醋香風味乾麵", smallPrice: 40, largePrice: 55, category: "其它飯麵", icon: "🍜", hasSize: true},
-    {name: "麻醬乾麵", subName: "濃郁香醇麻醬麵", smallPrice: 45, largePrice: 70, category: "其它飯麵", icon: "🍜", hasSize: true},
-    {name: "乾麵", subName: "傳統古早味乾麵", smallPrice: 30, largePrice: 40, category: "其它飯麵", icon: "🍜", hasSize: true},
-    {name: "滷肉飯", subName: "經典台味滷肉飯", smallPrice: 30, largePrice: 40, category: "其它飯麵", icon: "🍚", hasSize: true},
+    {name: "麻辣乾麵 (小)", subName: "香辣帶勁乾麵", price: 40, category: "其它飯麵", icon: "🍜"},
+    {name: "麻辣乾麵 (大)", subName: "香辣帶勁乾麵", price: 55, category: "其它飯麵", icon: "🍜"},
+    {name: "醋香乾麵 (小)", subName: "獨門醋香風味乾麵", price: 40, category: "其它飯麵", icon: "🍜"},
+    {name: "醋香乾麵 (大)", subName: "獨門醋香風味乾麵", price: 55, category: "其它飯麵", icon: "🍜"},
+    {name: "麻醬乾麵 (小)", subName: "濃郁香醇麻醬麵", price: 45, category: "其它飯麵", icon: "🍜"},
+    {name: "麻醬乾麵 (大)", subName: "濃郁香醇麻醬麵", price: 70, category: "其它飯麵", icon: "🍜"},
+    {name: "乾麵 (小)", subName: "傳統古早味乾麵", price: 30, category: "其它飯麵", icon: "🍜"},
+    {name: "乾麵 (大)", subName: "傳統古早味乾麵", price: 40, category: "其它飯麵", icon: "🍜"},
+    {name: "滷肉飯 (小)", subName: "經典台味滷肉飯", price: 30, category: "其它飯麵", icon: "🍚"},
+    {name: "滷肉飯 (大)", subName: "經典台味滷肉飯", price: 40, category: "其它飯麵", icon: "🍚"},
 
     {name: "燙地瓜葉", subName: "新鮮時菜", price: 30, category: "小菜", icon: "🥬"},
     {name: "燙大陸妹", subName: "新鮮時菜", price: 30, category: "小菜", icon: "🥬"},
@@ -1103,23 +1098,16 @@ function checkAccess() {
     const cardId = urlParams.get('card_id') || urlParams.get('cardId');
 
     if (cardId) {
-        // 從 index.html 帶卡號點入：驗證成功！暫存卡號供當前頁面點餐使用
         sessionStorage.setItem('currentCardId', cardId);
-        
-        // 關鍵：立刻擦除網址列上的 ?card_id 參數，防止按上一頁時重新載入卡號
         history.replaceState(null, '', window.location.pathname);
-        
         return cardId;
     }
 
-    // 若網址沒有卡號（代表是按瀏覽器「上一頁/下一頁」回到此頁）：
-    // 強制踢回 index.html，不留歷史紀錄
     window.location.replace('index.html');
     return null;
 }
 
 window.onload = async function() {
-    // 執行進入權限檢查 (無 URL 卡號會自動踢回 index.html)
     currentCardId = checkAccess();
     if (!currentCardId) return;
 
@@ -1192,18 +1180,14 @@ async function syncPricesFromBackend() {
     const backendItems = storeTarget.items.map((item, idx) => {
         const cleanName = item.name ? item.name.trim() : '';
         const category = item.category || (cleanName.includes("鴨肉羹") ? "招牌鴨肉羹" : (cleanName.includes("家庭") ? "家庭份量" : (cleanName.includes("泡菜") || cleanName.includes("肝") || cleanName.includes("涼拌") ? "涼拌小菜類" : (cleanName.includes("麵") || cleanName.includes("飯") ? "其它飯麵" : "小菜"))));
-        const hasSize = item.hasSize ?? (cleanName.includes("羹") || cleanName.includes("麵") || cleanName.includes("飯"));
         
         return {
             id: item.id || (idx + 1),
             name: cleanName,
             subName: item.subName || item.description || '',
             price: item.price !== undefined ? Number(item.price) : 0,
-            smallPrice: item.smallPrice !== undefined ? Number(item.smallPrice) : (item.price ? Number(item.price) : 60),
-            largePrice: item.largePrice !== undefined ? Number(item.largePrice) : 70,
             category: category,
-            icon: item.icon || (category === "招牌鴨肉羹" ? "🥣" : (category === "小菜" ? "🥬" : (category === "涼拌小菜類" ? "🥗" : "🍜"))),
-            hasSize: hasSize
+            icon: item.icon || (category === "招牌鴨肉羹" ? "🥣" : (category === "小菜" ? "🥬" : (category === "涼拌小菜類" ? "🥗" : "🍜")))
         };
     });
 
@@ -1543,19 +1527,12 @@ function renderMenu(items) {
                 }
             });
 
-            let displayPrice = "";
-            if (item.hasSize) {
-                displayPrice = `小 $${item.smallPrice} / 大 $${item.largePrice}`;
-            } else {
-                displayPrice = `$${item.price}`;
-            }
-
             card.innerHTML = `
                 <div class="item-info">
                     <div class="item-name">${item.name}</div>
                     <div class="item-subname">${item.subName || ''}</div>
                     <div class="item-price-zone">
-                        <div class="item-price">${displayPrice}</div>
+                        <div class="item-price">$${item.price}</div>
                     </div>
                 </div>
                 <div class="item-img-placeholder">
@@ -1610,15 +1587,11 @@ function clickAddItem(name) {
         </div>
     `;
 
-    if (item.hasSize) {
+    const isMainFood = (item.category === "招牌鴨肉羹" || item.category === "其它飯麵");
+
+    if (isMainFood) {
         bodyHtml += `
             <div class="opt-group">
-                <label>📏 選擇份量</label>
-                <div class="opt-pills" id="pop-size-group">
-                    <div class="opt-pill pill-size active" data-value="小" data-price="${item.smallPrice}" onclick="selectPill('pill-size', this)">小份 ($${item.smallPrice})</div>
-                    <div class="opt-pill pill-size" data-value="大" data-price="${item.largePrice}" onclick="selectPill('pill-size', this)">大份 ($${item.largePrice})</div>
-                </div>
-
                 <label>🌶️ 辣度需求</label>
                 <div class="opt-pills" id="pop-spicy-group">
                     <div class="opt-pill pill-spicy active" data-value="不辣" onclick="selectPill('pill-spicy', this)">不辣</div>
@@ -1626,6 +1599,12 @@ function clickAddItem(name) {
                     <div class="opt-pill pill-spicy" data-value="小辣" onclick="selectPill('pill-spicy', this)">小辣</div>
                     <div class="opt-pill pill-spicy" data-value="中辣" onclick="selectPill('pill-spicy', this)">中辣</div>
                     <div class="opt-pill pill-spicy" data-value="大辣" onclick="selectPill('pill-spicy', this)">大辣</div>
+                </div>
+
+                <label>📝 備註需求</label>
+                <div class="opt-pills" id="pop-note-group">
+                    <div class="opt-pill pill-note active" data-value="無" onclick="selectPill('pill-note', this)">無特別需求</div>
+                    <div class="opt-pill pill-note" data-value="外帶分開裝" onclick="selectPill('pill-note', this)">外帶分開裝</div>
                 </div>
             </div>
         `;
@@ -1650,19 +1629,17 @@ function clickAddItem(name) {
         showCancel: true,
         onConfirm: () => {
             let unitPrice = item.price || 0;
-            let sizeVal = "標準";
             let spicyVal = "不辣";
             let noteVal = "無";
 
-            if (item.hasSize) {
-                const activeSize = document.querySelector("#pop-size-group .pill-size.active");
-                if (activeSize) {
-                    sizeVal = activeSize.getAttribute("data-value");
-                    unitPrice = parseInt(activeSize.getAttribute("data-price"));
-                }
+            if (isMainFood) {
                 const activeSpicy = document.querySelector("#pop-spicy-group .pill-spicy.active");
                 if (activeSpicy) {
                     spicyVal = activeSpicy.getAttribute("data-value");
+                }
+                const activeNote = document.querySelector("#pop-note-group .pill-note.active");
+                if (activeNote) {
+                    noteVal = activeNote.getAttribute("data-value");
                 }
             } else {
                 const activeNote = document.querySelector("#pop-note-group .pill-note.active");
@@ -1671,7 +1648,7 @@ function clickAddItem(name) {
                 }
             }
 
-            const customKey = `${item.name}|${sizeVal}|${spicyVal}|${noteVal}`;
+            const customKey = `${item.name}|${spicyVal}|${noteVal}`;
 
             if (cart[customKey]) {
                 cart[customKey].qty += 1;
@@ -1681,10 +1658,8 @@ function clickAddItem(name) {
                     baseName: item.name,
                     price: unitPrice,
                     qty: 1,
-                    size: sizeVal,
                     spicy: spicyVal,
-                    note: noteVal,
-                    hasSize: !!item.hasSize
+                    note: noteVal
                 };
             }
 
@@ -1721,14 +1696,10 @@ function renderCart() {
         const sub = item.qty * item.price;
         finalTotal += sub;
         
-        let optText = "";
-        if (item.hasSize) {
-            let opts = [item.size];
-            if (item.spicy !== "不辣") opts.push(item.spicy);
-            optText = opts.join(",");
-        } else {
-            optText = item.note !== "無" ? item.note : "標準";
-        }
+        let opts = [];
+        if (item.spicy && item.spicy !== "不辣") opts.push(item.spicy);
+        if (item.note && item.note !== "無") opts.push(item.note);
+        let optText = opts.length > 0 ? opts.join(",") : "標準";
 
         finalSummary += `${item.baseName}(${optText})*${item.qty} `;
     });
@@ -1743,7 +1714,6 @@ function renderCart() {
         }
     }
 
-    // 📱 同步手機版大字與電腦版圓框金額
     const mobileTotalEl = document.getElementById("mobile-accumulated-total");
     if (mobileTotalEl) {
         mobileTotalEl.innerText = `$${finalTotal}`;
@@ -1804,17 +1774,15 @@ function renderModalCartList() {
         const div = document.createElement("div");
         div.className = "cart-item";
 
-        let optTag = "";
-        if (item.hasSize) {
-            optTag = `🍲 ${item.size} | 辣度: ${item.spicy}`;
-        } else {
-            optTag = `📌 備註: ${item.note}`;
-        }
+        let opts = [];
+        if (item.spicy && item.spicy !== "不辣") opts.push(`辣度: ${item.spicy}`);
+        if (item.note && item.note !== "無") opts.push(`備註: ${item.note}`);
+        let optTag = opts.length > 0 ? opts.join(" | ") : "無特別需求";
 
         div.innerHTML = `
             <div style="flex:1; padding-right: 8px;">
                 <div style="font-weight:600; font-size:14px;">${item.baseName}</div>
-                <div class="custom-item-tag">${optTag}</div>
+                <div class="custom-item-tag">📌 ${optTag}</div>
                 <div style="color:var(--accent); font-weight:700; font-size:13px; margin-top:2px;">單價 $${item.price} / 小計 $${sub}</div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
