@@ -277,7 +277,7 @@
             height: 44px;
         }
 
-        #orderSearchInput { padding-left: 40px !important; }
+        #orderSearchInput, #menuStoreSearchInput { padding-left: 40px !important; }
 
         input:focus, select:focus {
             border-color: #10b981;
@@ -517,7 +517,8 @@
         body.role-viewer button[onclick*="toggleAllStores"],
         body.role-viewer button[onclick*="openStoreMenuModal"],
         body.role-viewer button[onclick*="addNewEmployee"],
-        body.role-viewer .sidebar .menu-item[onclick*="employee-mgr"] {
+        body.role-viewer .sidebar .menu-item[onclick*="employee-mgr"],
+        body.role-viewer .sidebar .menu-item[onclick*="menu-mgr"] {
             display: none !important;
         }
 
@@ -690,7 +691,11 @@
                 <i class="fa-solid fa-chart-pie text-base"></i> 全部訂單總覽
             </button>
             <button type="button" class="menu-item" onclick="handleMenuClick('store-mgr', this)">
-                <i class="fa-solid fa-store text-base"></i> 店家金額品項控制
+                <i class="fa-solid fa-store text-base"></i> 店家開放控制
+            </button>
+            <!-- 🌟 獨立出的「品項及金額管理」選項 -->
+            <button type="button" class="menu-item" onclick="handleMenuClick('menu-mgr', this)">
+                <i class="fa-solid fa-list-check text-base"></i> 品項及金額管理
             </button>
             <button type="button" class="menu-item" onclick="handleMenuClick('drink-mgr', this)">
                 <i class="fa-solid fa-wine-glass text-base"></i> 喝涼涼訂單
@@ -869,13 +874,13 @@
             </div>
         </div>
 
-        <!-- 分頁二：店家金額品項控制 -->
+        <!-- 分頁二：店家開放控制 -->
         <div id="store-mgr" class="tab-content">
             
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
                 <div>
-                    <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🏪 店家開放與品項金額管理</h1>
-                    <p class="text-xs text-slate-500 mt-1">即時開啟或關閉前台點餐店家、設定各店家餐點與飲品金額及品項</p>
+                    <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🏪 店家開放狀態控制</h1>
+                    <p class="text-xs text-slate-500 mt-1">即時開啟或關閉前台可供點餐的店家選單</p>
                 </div>
             </div>
 
@@ -891,7 +896,7 @@
             <div id="subtab-food" class="store-subtab-content" style="display: block;">
                 <div class="card">
                     <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                        <h3 class="text-base font-bold text-slate-800">🍱 美味餐點 - 開放店家與菜單金額管理</h3>
+                        <h3 class="text-base font-bold text-slate-800">🍱 美味餐點 - 店家開放權限設定</h3>
                         <div class="flex gap-2">
                             <button class="btn btn-secondary text-xs py-1.5 px-3 min-h-[36px]" onclick="toggleAllStores('美味餐點', true)">🔓 全選開放</button>
                             <button class="btn btn-danger-light text-xs py-1.5 px-3 min-h-[36px]" onclick="toggleAllStores('美味餐點', false)">🔒 全選關閉</button>
@@ -903,14 +908,13 @@
                                 <tr>
                                     <th>店家名稱</th>
                                     <th>餐點類別</th>
-                                    <th>已設定品項</th>
                                     <th>目前開放狀態</th>
                                     <th>前台權限</th>
                                     <th>控制操作</th>
                                 </tr>
                             </thead>
                             <tbody id="foodStoreTableBody">
-                                <tr><td colspan="6" class="text-center py-8 text-slate-400">載入中...</td></tr>
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400">載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -920,7 +924,7 @@
             <div id="subtab-drink" class="store-subtab-content" style="display: none;">
                 <div class="card">
                     <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                        <h3 class="text-base font-bold text-slate-800">🥤 喝涼涼 - 開放店家與菜單金額管理</h3>
+                        <h3 class="text-base font-bold text-slate-800">🥤 喝涼涼 - 店家開放權限設定</h3>
                         <div class="flex gap-2">
                             <button class="btn btn-secondary text-xs py-1.5 px-3 min-h-[36px]" onclick="toggleAllStores('喝涼涼', true)">🔓 全選開放</button>
                             <button class="btn btn-danger-light text-xs py-1.5 px-3 min-h-[36px]" onclick="toggleAllStores('喝涼涼', false)">🔒 全選關閉</button>
@@ -932,14 +936,13 @@
                                 <tr>
                                     <th>店家名稱</th>
                                     <th>餐點類別</th>
-                                    <th>已設定品項</th>
                                     <th>目前開放狀態</th>
                                     <th>前台權限</th>
                                     <th>控制操作</th>
                                 </tr>
                             </thead>
                             <tbody id="drinkStoreTableBody">
-                                <tr><td colspan="6" class="text-center py-8 text-slate-400">載入中...</td></tr>
+                                <tr><td colspan="5" class="text-center py-8 text-slate-400">載入中...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -947,7 +950,55 @@
             </div>
         </div>
 
-        <!-- 分頁三：喝涼涼歷史紀錄 -->
+        <!-- 🌟 分頁三：全新獨立「前台更新品項及金額管理」分頁 -->
+        <div id="menu-mgr" class="tab-content">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold text-slate-800">📋 前台品項及金額管理</h1>
+                    <p class="text-xs text-slate-500 mt-1">獨立維護全公司店家的菜單品項、價格設定與批次菜單匯入</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                    <div class="store-tab-bar mb-0 border-b-0 pb-0">
+                        <button type="button" class="store-subtab-btn active" onclick="switchMenuCategoryTab('all', this)">
+                            <i class="fa-solid fa-border-all mr-1.5"></i>全部店家
+                        </button>
+                        <button type="button" class="store-subtab-btn" onclick="switchMenuCategoryTab('food', this)">
+                            <i class="fa-solid fa-utensils mr-1.5"></i>美味餐點
+                        </button>
+                        <button type="button" class="store-subtab-btn" onclick="switchMenuCategoryTab('drink', this)">
+                            <i class="fa-solid fa-glass-water mr-1.5"></i>喝涼涼
+                        </button>
+                    </div>
+
+                    <div class="relative w-full md:w-72">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                        <input type="text" id="menuStoreSearchInput" placeholder="搜尋店家名稱或品項..." class="w-full text-sm" oninput="renderMenuManagementTable()">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>店家名稱</th>
+                                <th>分類</th>
+                                <th>設定品項數</th>
+                                <th class="col-meal-detail">代表品項與單價預覽</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="menuMgmtTableBody">
+                            <tr><td colspan="5" class="text-center py-8 text-slate-400">載入中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分頁四：喝涼涼歷史紀錄 -->
         <div id="drink-mgr" class="tab-content">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
                 <div>
@@ -983,7 +1034,7 @@
             </div>
         </div>
 
-        <!-- 分頁四：美味餐點歷史紀錄 -->
+        <!-- 分頁五：美味餐點歷史紀錄 -->
         <div id="food-mgr" class="tab-content">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
                 <div>
@@ -1019,7 +1070,7 @@
             </div>
         </div>
 
-        <!-- 分頁五：員工管理 -->
+        <!-- 分頁六：員工管理 -->
         <div id="employee-mgr" class="tab-content">
             <div class="mb-5">
                 <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🪪 員工卡號與權限管理</h1>
@@ -1100,6 +1151,7 @@
         let allHistoryOrders = []; 
         let currentFilteredHistoryOrders = []; 
         let currentOverviewCategory = 'all';
+        let currentMenuCategoryFilter = 'all';
         let searchTimeout = null;
 
         // 手機側邊欄開關控制
@@ -1313,7 +1365,7 @@ ${openStores}
 
         function switchStoreTab(type, btn) {
             document.querySelectorAll('.store-subtab-content').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.store-subtab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#store-mgr .store-subtab-btn').forEach(b => b.classList.remove('active'));
 
             document.getElementById(`subtab-${type}`).style.display = 'block';
             btn.classList.add('active');
@@ -1332,7 +1384,7 @@ ${openStores}
 
             const buildRows = (list) => {
                 if (list.length === 0) {
-                    return `<tr><td colspan="6" class="text-center py-8 text-slate-400">尚無店家資料</td></tr>`;
+                    return `<tr><td colspan="5" class="text-center py-8 text-slate-400">尚無店家資料</td></tr>`;
                 }
                 return list.map(store => {
                     const statusBadge = store.isOpen 
@@ -1347,25 +1399,17 @@ ${openStores}
                         ? `<button class="btn-delete" onclick="closeStore('${store.id}')"><i class="fa-solid fa-lock mr-1"></i>關閉</button>`
                         : `<button class="btn text-xs py-1.5 px-3 min-h-[36px]" onclick="openStore('${store.id}')"><i class="fa-solid fa-unlock mr-1"></i>開放</button>`;
 
-                    const editMenuBtn = `<button class="btn-edit" onclick="openStoreMenuModal('${store.id}')"><i class="fa-solid fa-pen-to-square mr-1"></i>品項金額 (${(store.items || []).length})</button>`;
-
                     const categoryBadgeClass = store.category === '喝涼涼' ? 'badge-drink' : 'badge-food';
-
-                    const itemCountBadge = (store.items && store.items.length > 0)
-                        ? `<span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200">${store.items.length} 項品項</span>`
-                        : `<span class="badge bg-amber-50 text-amber-700 border border-amber-200">尚未設定</span>`;
 
                     return `
                         <tr>
                             <td data-label="店家名稱"><strong>${store.name}</strong></td>
                             <td data-label="餐點類別"><span class="badge ${categoryBadgeClass}">${store.category}</span></td>
-                            <td data-label="已設定品項">${itemCountBadge}</td>
                             <td data-label="開放狀態">${statusBadge}</td>
                             <td data-label="前台權限">${permissionText}</td>
                             <td data-label="控制操作">
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     ${actionBtn}
-                                    ${editMenuBtn}
                                 </div>
                             </td>
                         </tr>
@@ -1377,7 +1421,72 @@ ${openStores}
             if (drinkTbody) drinkTbody.innerHTML = buildRows(drinkStores);
         }
 
-        // ------------------ 🍱 編輯店家品項與金額 Modal 強化控制 ------------------
+        // ------------------ 🌟 獨立「品項及金額管理」分頁渲染 ------------------
+        function switchMenuCategoryTab(category, btn) {
+            currentMenuCategoryFilter = category;
+            document.querySelectorAll('#menu-mgr .store-subtab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMenuManagementTable();
+        }
+
+        function renderMenuManagementTable() {
+            const tbody = document.getElementById('menuMgmtTableBody');
+            if (!tbody) return;
+
+            const keyword = (document.getElementById('menuStoreSearchInput')?.value || '').trim().toLowerCase();
+
+            let filteredStores = storeList;
+            if (currentMenuCategoryFilter === 'food') {
+                filteredStores = filteredStores.filter(s => s.category === '美味餐點');
+            } else if (currentMenuCategoryFilter === 'drink') {
+                filteredStores = filteredStores.filter(s => s.category === '喝涼涼');
+            }
+
+            if (keyword) {
+                filteredStores = filteredStores.filter(s => {
+                    const hasMatchName = s.name.toLowerCase().includes(keyword);
+                    const hasMatchItem = (s.items || []).some(item => (item.name || '').toLowerCase().includes(keyword));
+                    return hasMatchName || hasMatchItem;
+                });
+            }
+
+            if (filteredStores.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">找不到符合條件的店家或品項</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filteredStores.map(store => {
+                const items = store.items || [];
+                const categoryBadgeClass = store.category === '喝涼涼' ? 'badge-drink' : 'badge-food';
+                
+                const itemCountBadge = items.length > 0
+                    ? `<span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">${items.length} 項品項</span>`
+                    : `<span class="badge bg-amber-50 text-amber-700 border border-amber-200 font-bold">尚未設定</span>`;
+
+                let previewHtml = `<span class="text-slate-400 text-xs">尚無設定品項與價格</span>`;
+                if (items.length > 0) {
+                    const previewList = items.slice(0, 3).map(i => `<span class="inline-block bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs border border-slate-200 mr-1 mb-1"><b>${i.name}</b> <span class="text-emerald-700 font-bold">$${i.price}</span></span>`).join('');
+                    const moreText = items.length > 3 ? `<small class="text-slate-400">等共 ${items.length} 項...</small>` : '';
+                    previewHtml = previewList + moreText;
+                }
+
+                return `
+                    <tr>
+                        <td data-label="店家名稱"><strong>${store.name}</strong></td>
+                        <td data-label="分類"><span class="badge ${categoryBadgeClass}">${store.category}</span></td>
+                        <td data-label="設定品項數">${itemCountBadge}</td>
+                        <td data-label="代表品項與單價預覽" class="col-meal-detail">${previewHtml}</td>
+                        <td data-label="操作">
+                            <button class="btn-edit" onclick="openStoreMenuModal('${store.id}')">
+                                <i class="fa-solid fa-pen-to-square mr-1"></i>編輯菜單品項
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ------------------ 🍱 編輯店家品項與金額 Modal 控制 ------------------
         let currentEditingStoreId = null;
         let tempStoreItems = [];
 
@@ -1676,6 +1785,7 @@ ${openStores}
             store.items = tempStoreItems.filter(i => i && i.name && i.name.trim() !== '');
 
             renderStoreTable();
+            renderMenuManagementTable();
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
             try {
@@ -1699,6 +1809,7 @@ ${openStores}
 
             targetStore.isOpen = true;
             renderStoreTable();
+            renderMenuManagementTable();
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
             try {
@@ -1727,6 +1838,7 @@ ${openStores}
 
             store.isOpen = false;
             renderStoreTable();
+            renderMenuManagementTable();
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
             try {
@@ -1757,6 +1869,7 @@ ${openStores}
             });
 
             renderStoreTable();
+            renderMenuManagementTable();
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
             try {
@@ -1983,6 +2096,7 @@ ${openStores}
             else if (tabId === 'overview') loadOrders();
             else if (tabId === 'employee-mgr') loadEmployees();
             else if (tabId === 'store-mgr') renderStoreTable();
+            else if (tabId === 'menu-mgr') renderMenuManagementTable();
         }
 
         async function refreshCurrentTab() {
@@ -1993,6 +2107,7 @@ ${openStores}
             else if (activeTab.id === 'drink-mgr' || activeTab.id === 'food-mgr') await loadHistoryOrders();
             else if (activeTab.id === 'employee-mgr') await loadEmployees();
             else if (activeTab.id === 'store-mgr') renderStoreTable();
+            else if (activeTab.id === 'menu-mgr') renderMenuManagementTable();
         }
 
         function setOverviewCategory(cat, btn) {
@@ -2566,6 +2681,7 @@ ${openStores}
             localStorage.setItem('active_store_config', JSON.stringify(storeList));
 
             renderStoreTable();
+            renderMenuManagementTable();
             await loadLockTime(); 
             await loadEmployees();
             await loadOrders();
