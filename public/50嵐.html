@@ -1039,7 +1039,12 @@
 
 <script>
 function goBack() {
-    window.location.href = 'index.html'; 
+    // 登出時徹底清空卡號
+    localStorage.removeItem('currentCardId');
+    sessionStorage.clear();
+    
+    // 使用 replace 替換當前頁面歷史，讓瀏覽器「上一頁」無法回到此點餐頁
+    window.location.replace('index.html'); 
 }
 
 const menuItems = [
@@ -1196,17 +1201,29 @@ async function syncPricesFromBackend() {
     }
 }
 
-    // ==================== 防止網頁返回 (上一頁) ====================
-(function preventBack() {
-    // 進入頁面時先推入一筆歷史紀錄
-    history.pushState(null, null, location.href);
+    // ==================== 1. 卡號權限檢查與防返回機制 ====================
+function checkAuth() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const cardId = urlParams.get('card_id') || urlParams.get('cardId') || localStorage.getItem('currentCardId');
+    
+    // 如果沒有卡號，立刻強制退回登入頁 (index.html)，不讓使用者留在此頁
+    if (!cardId || cardId === "null" || cardId === "undefined") {
+        window.location.replace('index.html');
+        return false;
+    }
+    return true;
+}
 
-    // 當使用者按下瀏覽器返回鍵時觸發
-    window.onpopstate = function () {
-        // 再次推入歷史紀錄，將頁面鎖在當前頁
-        history.pushState(null, null, location.href);
-    };
-})();
+// 頁面載入時立刻執行驗證
+checkAuth();
+
+// 監聽瀏覽器返回事件（防止瀏覽器讀取快取畫面 Back-Forward Cache）
+window.addEventListener('pageshow', function (event) {
+    // 若頁面是從上一頁快取載入，重新驗證卡號
+    if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+        checkAuth();
+    }
+});
 
 window.onload = async function() {
     const urlParams = new URLSearchParams(window.location.search);
