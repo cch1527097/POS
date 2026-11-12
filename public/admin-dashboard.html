@@ -2627,7 +2627,9 @@ ${openStores}
                 return;
             }
 
-            const headers = ["訂單編號", "類別", "部門", "點餐人", "員工卡號", "時間", "餐點", "客製選項", "備註", "金額", "繳費狀態"];
+            // 💡 標頭欄位拆分出「店家」與「餐點內容」
+            const headers = ["訂單編號", "類別", "部門", "點餐人", "員工卡號", "時間", "店家", "餐點內容", "客製選項", "備註", "金額", "繳費狀態"];
+            
             const rows = data.map(order => {
                 const cardId = order.cardId || order.card_id || '';
                 const empInfo = getEmployeeInfo(cardId);
@@ -2636,6 +2638,21 @@ ${openStores}
                 const orderIdStr = String(order.orderId || order.id || '');
                 const tsRaw = String(order.timestamp || order.time || order.date || '');
 
+                // 💡 自動依據全形冒號「：」或半形冒號「:」切分店家名稱與餐點內容
+                const rawMeal = String(order.meal || order.note || '').trim();
+                let storeName = order.storeName || order.store || order.shopName || '未指定店家';
+                let mealContent = rawMeal;
+
+                if (rawMeal.includes('：')) {
+                    const parts = rawMeal.split('：');
+                    storeName = parts[0].trim();
+                    mealContent = parts.slice(1).join('：').trim();
+                } else if (rawMeal.includes(':')) {
+                    const parts = rawMeal.split(':');
+                    storeName = parts[0].trim();
+                    mealContent = parts.slice(1).join(':').trim();
+                }
+
                 return [
                     `"${orderIdStr.replace(/"/g, '""')}"`,
                     `"${isDrinkOrder(order) ? '喝涼涼' : '美味餐點'}"`,
@@ -2643,7 +2660,8 @@ ${openStores}
                     `"${empName.replace(/"/g, '""')}"`,
                     `"${cardId.replace(/"/g, '""')}"`,
                     `"${tsRaw.replace(/"/g, '""')}"`,
-                    `"${(order.meal || '').toString().replace(/"/g, '""')}"`,
+                    `"${storeName.replace(/"/g, '""')}"`,
+                    `"${mealContent.replace(/"/g, '""')}"`,
                     `"${(order.spicy || order.sauce || '無').toString().replace(/"/g, '""')}"`,
                     `"${(order.note || '無').toString().replace(/"/g, '""')}"`,
                     `"${order.total || order.amount || 0}"`,
