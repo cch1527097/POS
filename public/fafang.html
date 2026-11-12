@@ -13,16 +13,21 @@
         :root { 
             --primary: #8b0000;       /* 質感深紅 */
             --primary-light: #fdf2f1; /* 淺紅底色 */
-            --secondary: #f1c40f;      /* 溫暖金黃 */
+            --secondary: #f1c40f;     /* 溫暖金黃 */
             --accent: #e74c3c;        /* 亮紅點綴 */
             --bg-main: #f4f6f9;       /* 輕灰底色 */
-            --text-dark: #2c3e50;      /* 深色文字 */
+            --text-dark: #2c3e50;     /* 深色文字 */
             --text-muted: #7f8c8d;    /* 輔助灰色 */
             --border-color: #e2e8f0;  /* 邊框線條 */
         }
 
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Microsoft JhengHei", sans-serif; 
+            font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; 
             background: var(--bg-main); 
             margin: 0; 
             padding: 0; 
@@ -30,56 +35,188 @@
             line-height: 1.5;
         }
 
-        /* ==================== 頂部 Header 樣式 ==================== */
-        .navbar {
+        .hidden { display: none !important; }
+
+        /* ==================== 頂部 Header 樣式 (同步雙層工作列) ==================== */
+        .nidin-header {
             width: 100%;
             background-color: #ffffff;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #eaeaea;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            padding: 12px 40px;
-            box-sizing: border-box;
+            color: #333;
+            position: sticky;      
+            top: 0;                
+            z-index: 1000;         
+        }
+
+        .nidin-top-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        .navbar-brand { 
-            font-size: 24px; 
-            font-weight: 800; 
-            color: var(--primary); 
-            text-decoration: none; 
-            z-index: 2;
-        }
-        
-        .search-wrapper { 
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            max-width: 400px; 
-            padding: 0 20px;
-            box-sizing: border-box;
-            z-index: 1;
-        }
-        .top-search-box {
-            width: 100%;
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            background: #f1f5f9;
-            font-size: 14px;
-            box-sizing: border-box;
-            text-align: center;
-            outline: none;
-        }
-        .top-search-box:focus {
-            border-color: var(--primary);
-            background: #fff;
+            gap: 15px;
         }
 
+        .nidin-top-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .nidin-logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0091ff;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            user-select: none;
+            cursor: pointer;
+        }
+        .nidin-logo .dot {
+            color: #ff4d4f;
+            font-size: 22px;
+        }
+
+        .nidin-divider {
+            width: 1px;
+            height: 20px;
+            background-color: #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        .nidin-location-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            color: #4a4a4a;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .nidin-location-btn:hover {
+            background-color: #f5f5f5;
+        }
+
+        .nidin-search-box {
+            display: flex;
+            align-items: center;
+            background-color: #f2f3f5;
+            border-radius: 20px;
+            padding: 8px 16px;
+            width: 100%;
+            max-width: 340px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        .nidin-search-box:focus-within {
+            background-color: #ffffff;
+            box-shadow: 0 0 0 2px #0091ff;
+        }
+        .nidin-search-box input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 15px;
+            margin-left: 8px;
+            width: 100%;
+            color: #333;
+        }
+
+        .nidin-top-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+
+        .nidin-user-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        #user-name {
+            color: #0091ff;
+        }
+
+        .header-dept-badge {
+            background-color: #e8f4fd;
+            color: #1e88e5;
+            border: 1px solid #bbdefb;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .nidin-nav-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 8px 20px 12px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nidin-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: #222;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s, transform 0.1s;
+            cursor: pointer;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        .nidin-nav-item:hover {
+            color: #0091ff;
+            transform: translateY(-1px);
+        }
+        .nidin-nav-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nidin-nav-icon svg {
+            width: 22px;
+            height: 22px;
+            stroke: #333;
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .nidin-nav-item:hover .nidin-nav-icon svg {
+            stroke: #0091ff;
+        }
+
+        /* ==================== 主容器與店家資訊樣式 ==================== */
         .container { 
             max-width: 1200px; 
             margin: 0 auto; 
@@ -157,7 +294,7 @@
             padding: 10px; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.02); 
             position: sticky; 
-            top: 70px; 
+            top: 130px; 
         }
         .side-cat-item { 
             display: block; 
@@ -176,7 +313,7 @@
         }
 
         .menu-content { flex: 1; min-width: 0; }
-        .category-block { margin-bottom: 30px; scroll-margin-top: 70px; }
+        .category-block { margin-bottom: 30px; scroll-margin-top: 130px; }
         .category-title { font-size: 18px; font-weight: 700; color: #e67e22; margin: 0 0 14px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
         
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
@@ -429,7 +566,8 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(3px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -437,6 +575,7 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.2s ease, visibility 0.2s ease;
+            padding: 12px;
         }
 
         .modal-overlay.active {
@@ -446,10 +585,10 @@
 
         .modal-container {
             background: #fff;
-            width: 90%;
+            width: 100%;
             max-width: 440px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.18);
             overflow: hidden;
             transform: scale(0.95);
             transition: transform 0.2s ease;
@@ -466,6 +605,7 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #f1f5f9;
+            background-color: #f8f9fa;
         }
 
         .modal-title { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; }
@@ -473,7 +613,7 @@
         .modal-close {
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 24px;
             color: #94a3b8;
             cursor: pointer;
             line-height: 1;
@@ -531,10 +671,11 @@
             margin-top: 2px;
         }
 
+        /* 👥 「其他人點了什麼」與「曾點過」表格專用樣式 */
         .history-modal-content {
-            width: 92vw !important;
-            max-width: 1000px !important;
-            max-height: 85vh !important;
+            width: 95vw !important;
+            max-width: 1050px !important;
+            max-height: 88vh !important;
         }
 
         .history-table-wrapper {
@@ -555,12 +696,14 @@
             font-weight: bold;
             padding: 12px 14px;
             border-bottom: 2px solid #d6ebd3;
+            white-space: nowrap;
         }
 
         .history-table td {
             padding: 12px 14px;
             border-bottom: 1px solid #f0f7f0;
             color: #445941;
+            vertical-align: middle;
         }
 
         .dept-badge {
@@ -581,8 +724,222 @@
             font-style: italic;
         }
 
+        /* 選擇院區與付款介紹彈窗專用樣式 */
+        .branch-list {
+            padding: 6px 0;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .branch-item {
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            color: #333;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .branch-item:hover {
+            background-color: #f0f7ee;
+            color: #2b4c23;
+        }
+        .branch-item .check-icon {
+            display: none;
+            color: #0091ff;
+            font-weight: bold;
+        }
+        .branch-item.active {
+            background-color: #eef7ed;
+            color: #2b4c23;
+            font-weight: bold;
+        }
+        .branch-item.active .check-icon {
+            display: inline;
+        }
+
+        .payment-modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .payment-item {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px 16px;
+            border-left: 4px solid #4e803c;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .payment-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #2b4c23;
+        }
+        .payment-detail {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* 歷史訂單操作按鈕 */
+        .order-action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            margin: 2px;
+            min-height: 32px;
+        }
+        .btn-edit-order {
+            background-color: #e6f4ff;
+            color: #0958d9;
+            border: 1px solid #91caff;
+        }
+        .btn-edit-order:hover {
+            background-color: #0958d9;
+            color: #ffffff;
+        }
+        .btn-cancel-order {
+            background-color: #ffeef0;
+            color: #d9363e;
+            border: 1px solid #fca5a5;
+        }
+        .btn-cancel-order:hover {
+            background-color: #d9363e;
+            color: #ffffff;
+        }
+        .cart-cancel-disabled {
+            display: inline-block;
+            background-color: #ffeef0;
+            color: #d9363e;
+            border: 1px solid #fca5a5;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* ==================== 🎰 吃啥拉霸機樣式 ==================== */
+        .slot-machine-body {
+            background: linear-gradient(145deg, #1e3a1e, #2b4c23);
+            border: 4px solid #d4af37;
+            border-radius: 16px;
+            padding: 16px 12px;
+            width: 100%;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.25);
+            position: relative;
+        }
+        .slot-machine-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #111;
+            padding: 6px 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #d4af37;
+        }
+        .slot-title {
+            color: #ffd700;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        }
+        .slot-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px currentColor;
+        }
+        .slot-light.red { background-color: #ff4d4f; color: #ff4d4f; }
+        .slot-light.gold { background-color: #ffd700; color: #ffd700; }
+
+        .slot-reels-container {
+            display: flex;
+            gap: 8px;
+            background: #000;
+            padding: 8px;
+            border-radius: 10px;
+            border: 2px solid #333;
+            height: 120px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+        }
+        .slot-window-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 5;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.7) 0%,
+                rgba(0,0,0,0) 25%,
+                rgba(0,0,0,0) 75%,
+                rgba(0,0,0,0.7) 100%
+            );
+            border-radius: 8px;
+        }
+        .slot-reel {
+            flex: 1;
+            background: #ffffff;
+            border-radius: 6px;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #ddd;
+        }
+        .slot-strip {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            transition: transform 0.1s linear;
+        }
+        .slot-item {
+            height: 104px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 4px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #2b4c23;
+            text-align: center;
+            word-break: break-word;
+            line-height: 1.25;
+            box-sizing: border-box;
+            border-bottom: 1px dashed #eee;
+            background: #fff;
+        }
+        .wheel-action-btn {
+            color: white;
+            border: none;
+            border-radius: 10px;
+            width: 140px;
+            padding: 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .wheel-action-btn:disabled {
+            background-color: #cccccc !important;
+            cursor: not-allowed;
+        }
+
+        /* ==================== RWD 響應式適配 ==================== */
         @media (max-width: 1024px) {
-            .navbar { padding: 12px 20px; }
             .main-layout { flex-direction: column; }
             .category-sidebar { 
                 display: flex;
@@ -592,7 +949,7 @@
                 overflow-x: auto;
                 white-space: nowrap;
                 position: sticky; 
-                top: 60px; 
+                top: 122px; 
                 z-index: 900;
                 background: #fff;
                 padding: 10px 12px;
@@ -612,20 +969,65 @@
                 border-radius: 20px;
             }
             .side-cat-item.active { background: var(--primary); color: #fff; }
-            .category-block { scroll-margin-top: 130px; }
+            .category-block { scroll-margin-top: 185px; }
+        }
+
+        @media (max-width: 768px) {
+            .nidin-top-bar {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 10px 14px;
+                gap: 10px;
+            }
+            .nidin-top-left {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                gap: 8px;
+            }
+            .nidin-top-right {
+                width: 100%;
+                justify-content: center;
+                margin-left: 0;
+            }
+            .nidin-user-info {
+                justify-content: center;
+                width: 100%;
+            }
+            .nidin-divider, .nidin-location-btn {
+                display: none;
+            }
+            .nidin-search-box {
+                width: 100%;
+                max-width: 100%;
+                margin-top: 2px;
+            }
+            .nidin-search-box input {
+                text-align: center;
+            }
+            .nidin-nav-bar {
+                justify-content: flex-start;
+                gap: 18px;
+                padding: 8px 14px 12px 14px;
+            }
+            .category-sidebar {
+                top: 175px;
+            }
+            .category-block {
+                scroll-margin-top: 235px;
+            }
         }
         
+        /* ==================== 📱 手機版專屬樣式 ==================== */
         @media (max-width: 600px) {
-            .navbar { height: auto; flex-direction: column; gap: 10px; padding: 12px 16px; }
-            .search-wrapper { position: static; transform: none; width: 100%; max-width: none; padding: 0; }
             .container { padding: 16px 12px 160px 12px; }
             .store-banner { padding: 16px; flex-direction: column; align-items: flex-start; }
             .store-info-left { gap: 12px; }
             .store-logo { width: 60px; height: 60px; font-size: 24px; border-radius: 12px; }
             .store-details h1 { font-size: 18px; }
             .menu-grid { grid-template-columns: 1fr; }
-            .category-sidebar { top: 98px; }
-            .category-block { scroll-margin-top: 160px; }
 
             .cutoff-float-badge { 
                 position: fixed !important;
@@ -684,7 +1086,7 @@
                 border-top: 1px solid #e2e8f0;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.06);
                 flex-direction: row;
-                justify-around;
+                justify-content: space-around;
                 align-items: center;
                 gap: 0;
                 padding: 4px 0 calc(4px + env(safe-area-inset-bottom)) 0;
@@ -818,13 +1220,8 @@
                 box-sizing: border-box;
             }
 
-            .history-table {
-                min-width: 0 !important;
-            }
-
-            .history-table thead {
-                display: none;
-            }
+            .history-table { min-width: 0 !important; }
+            .history-table thead { display: none; }
 
             .history-table tbody tr {
                 background: #ffffff;
@@ -887,6 +1284,23 @@
                 margin-top: 4px;
             }
 
+            .history-table td:nth-child(6) {
+                width: 100%;
+                order: 6;
+                font-size: 12px;
+                color: #64748b;
+                margin-top: 2px;
+            }
+
+            .history-table td:nth-child(7) {
+                width: 100%;
+                order: 7;
+                text-align: right !important;
+                margin-top: 8px;
+                padding-top: 8px !important;
+                border-top: 1px dashed #e2e8f0 !important;
+            }
+
             .history-table td.no-record {
                 text-align: center !important;
                 background: transparent !important;
@@ -899,12 +1313,102 @@
 </head>
 <body>
 
-<div class="navbar">
-    <a href="index.html" class="navbar-brand">醫鹿訂餐系統</a>
-    <div class="search-wrapper">
-        <input type="text" id="search" class="top-search-box" placeholder="🔍 搜尋商品 (例如：鴨肉羹、乾麵、小菜)..." oninput="debounceFilterMenu()">
+<!-- ==================== 頂部功能列 (同步雙層工作列) ==================== -->
+<header class="nidin-header">
+    <!-- 第一層：頂部工具列 -->
+    <div class="nidin-top-bar">
+        <div class="nidin-top-left">
+            <div class="nidin-logo" onclick="goHomePage()">醫鹿訂餐系統<span class="dot">.</span></div>
+            <div class="nidin-divider"></div>
+            
+            <button class="nidin-location-btn" onclick="openBranchModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span id="current-branch-text">彰濱秀傳紀念醫院</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>
+            </button>
+            
+            <div class="nidin-search-box">
+                <svg onclick="filterMenu()" style="cursor: pointer; flex-shrink: 0;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" id="search" oninput="debounceFilterMenu()" placeholder="搜尋商品 (例如：鴨肉羹、乾麵、小菜)...">
+            </div>
+        </div>
+
+        <div class="nidin-top-right">
+            <div class="nidin-user-info">
+                <span>目前登入：</span>
+                <span id="user-department" class="header-dept-badge">未劃分</span>
+                <span id="user-name" style="color: #0091ff;"></span>
+                <span id="offline-tag" style="color: #ff4d4f; display: none;">(離線)</span>
+            </div>
+        </div>
     </div>
-</div>
+
+    <!-- 第二層：導覽選單 -->
+    <nav class="nidin-nav-bar">
+        <a class="nidin-nav-item" href="javascript:void(0);" onclick="openBranchModal()">
+            <div class="nidin-nav-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+                    <circle cx="12" cy="10" r="2.5"/>
+                    <path d="M16 16l3 3"/>
+                </svg>
+            </div>
+            <span>選擇院區</span>
+        </a>
+        
+        <a class="nidin-nav-item" href="javascript:void(0);" onclick="showPaymentInfo()">
+            <div class="nidin-nav-icon">
+                <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-5-4 5-6-7z"/><path d="M3 20h18"/></svg>
+            </div>
+            <span>付款介紹</span>
+        </a>
+
+        <a class="nidin-nav-item" href="javascript:void(0);" onclick="goHomePage()">
+            <div class="nidin-nav-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <span>回首頁</span>
+        </a>
+
+        <a class="nidin-nav-item" href="javascript:void(0);" onclick="goDrinkPage()">
+            <div class="nidin-nav-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M17 8h1a4 4 0 0 1 0 8h-1"/>
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+                    <line x1="6" y1="2" x2="6" y2="5"/>
+                    <line x1="10" y1="2" x2="10" y2="5"/>
+                    <line x1="14" y1="2" x2="14" y2="5"/>
+                </svg>
+            </div>
+            <span>喝涼涼</span>
+        </a>
+
+        <a class="nidin-nav-item" href="javascript:void(0);" onclick="openHistoryModal()">
+            <div class="nidin-nav-icon">
+                <svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
+            </div>
+            <span>曾點過</span>
+        </a>
+
+        <a class="nidin-nav-item" href="javascript:void(0);" onclick="openWheelModal()">
+            <div class="nidin-nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                    <path d="M6 8v8M12 8v8M18 8v8"></path>
+                </svg>
+            </div>
+            <span>吃啥拉霸機</span>
+        </a>
+    </nav>
+</header>
 
 <!-- ⏱️ 右下角/手機底部截止時間與倒數計時懸浮元件 -->
 <div id="cutoffBadge" class="cutoff-float-badge">
@@ -981,6 +1485,7 @@
     </div>
 </div>
 
+<!-- 客製化 / 購物車 Modal 彈窗 -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -995,6 +1500,7 @@
     </div>
 </div>
 
+<!-- 👥 今日其他人點了什麼彈窗 (Modal) -->
 <div id="othersModal" class="modal-overlay" onclick="closeOthersModal(event)">
     <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -1026,8 +1532,254 @@
     </div>
 </div>
 
+<!-- 選擇院區彈窗 (Modal) -->
+<div id="branchModal" class="modal-overlay" onclick="closeBranchModal(event)">
+    <div class="modal-container" style="max-width: 420px;" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title" style="color: #2b4c23;">請選擇服務院區</h3>
+            <button class="modal-close" onclick="closeBranchModal()">&times;</button>
+        </div>
+        <div class="branch-list">
+            <div class="branch-item active" onclick="switchBranch('彰濱秀傳紀念醫院')">
+                <span>彰濱秀傳紀念醫院</span>
+                <span class="check-icon">✓</span>
+            </div>
+            <div class="branch-item" onclick="switchBranch('彰化秀傳紀念醫院')">
+                <span>彰化秀傳紀念醫院</span>
+                <span class="check-icon">✓</span>
+            </div>
+            <div class="branch-item" onclick="switchBranch('高雄秀傳紀念醫院')">
+                <span>高雄秀傳紀念醫院</span>
+                <span class="check-icon">✓</span>
+            </div>
+            <div class="branch-item" onclick="switchBranch('竹山秀傳醫院')">
+                <span>竹山秀傳醫院</span>
+                <span class="check-icon">✓</span>
+            </div>
+            <div class="branch-item" onclick="switchBranch('台南市立醫院')">
+                <span>台南市立醫院</span>
+                <span class="check-icon">✓</span>
+            </div>
+            <div class="branch-item" onclick="switchBranch('高雄市立岡山醫院')">
+                <span>高雄市立岡山醫院</span>
+                <span class="check-icon">✓</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 付款介紹彈窗 (Modal) -->
+<div id="paymentModal" class="modal-overlay" onclick="closePaymentModal(event)">
+    <div class="modal-container" style="max-width: 420px;" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title" style="color: #2b4c23;">💵 付款方式說明</h3>
+            <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+        </div>
+        <div class="payment-modal-body">
+            <div class="payment-item">
+                <span class="payment-title">1. 現金支付</span>
+                <span class="payment-detail">請至現場櫃檯支付現金</span>
+            </div>
+            <div class="payment-item">
+                <span class="payment-title">2. 電子支付 (iPASS MONEY)</span>
+                <span class="payment-detail">現場支援 iPass money 掃碼支付</span>
+            </div>
+            <div class="payment-item">
+                <span class="payment-title">3. 電子支付 (LINE Pay)</span>
+                <span class="payment-detail">現場支援 LINE Pay 掃碼支付</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🏛️ 曾點過歷史紀錄彈窗 (Modal) -->
+<div id="historyModal" class="modal-overlay" onclick="closeHistoryModal(event)">
+    <div class="modal-container history-modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px; color: #2b4c23;">
+                🏛️ 曾點過歷史點餐軌跡
+            </h3>
+            <button class="modal-close" onclick="closeHistoryModal()">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 18px;">
+            <div style="margin-bottom: 12px; font-size: 13px; color: #668062; font-weight: bold; text-align: right;">
+                資料來源：Neon PostgreSQL 資料庫
+            </div>
+            <div class="history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 13%; background-color: #eff7ee; color: #2b4c23; border-bottom-color: #d6ebd3;">卡號 / 姓名</th>
+                            <th style="width: 10%; background-color: #eff7ee; color: #2b4c23; border-bottom-color: #d6ebd3;">部門</th>
+                            <th style="width: 17%; background-color: #eff7ee; color: #2b4c23; border-bottom-color: #d6ebd3;">日期時間</th>
+                            <th style="width: 26%; background-color: #eff7ee; color: #2b4c23; border-bottom-color: #d6ebd3;">點餐店家 / 內容</th>
+                            <th style="width: 9%; background-color: #eff7ee; color: #2b4c23; border-bottom-color: #d6ebd3;">金額</th>
+                            <th style="width: 12%; background-color: #eff7ee; color: #2b4c23; border-bottom-color: #d6ebd3;">備註說明</th>
+                            <th style="width: 13%; background-color: #eff7ee; color: #2b4c23; border-bottom-color: #d6ebd3; text-align: center;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="global-history-list">
+                        <tr>
+                            <td colspan="7" class="no-record">核心資料庫載入中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🎰 店家拉霸機彈窗 (Modal) -->
+<div id="wheelModal" class="modal-overlay" onclick="closeWheelModal(event)">
+    <div class="modal-container" onclick="event.stopPropagation()" style="max-width: 460px; text-align: center;">
+        <div class="modal-header">
+            <h3 class="modal-title" style="color: #2b4c23;">🎰 今天吃什麼~吃啥拉霸機</h3>
+            <button class="modal-close" onclick="closeWheelModal()">&times;</button>
+        </div>
+        <div style="padding: 20px 16px; display: flex; flex-direction: column; align-items: center; position: relative;">
+            <div class="slot-machine-body">
+                <div class="slot-machine-header">
+                    <span class="slot-light red"></span>
+                    <span class="slot-title">LUCKY EAT</span>
+                    <span class="slot-light gold"></span>
+                </div>
+                
+                <div class="slot-reels-container">
+                    <div class="slot-window-overlay"></div>
+                    <div class="slot-reel" id="reel-1">
+                        <div class="slot-strip" id="strip-1"></div>
+                    </div>
+                    <div class="slot-reel" id="reel-2">
+                        <div class="slot-strip" id="strip-2"></div>
+                    </div>
+                    <div class="slot-reel" id="reel-3">
+                        <div class="slot-strip" id="strip-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="wheelResult" style="margin-top: 18px; font-size: 18px; font-weight: bold; color: #2b4c23; min-height: 28px;">
+                點擊下方按鈕啟動拉霸機！
+            </div>
+
+            <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center; width: 100%;">
+                <button id="spinWheelBtn" class="wheel-action-btn" style="background-color: #e65100;" onclick="spinWheel()">🎰 啟動拉霸</button>
+                <button id="wheelGoShopBtn" class="wheel-action-btn hidden" style="background-color: #0091ff;" onclick="goSelectedShop()">進入點餐 ➔</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 客製化自訂提示/確認對話框 (Modal) -->
+<div id="customAlertModal" class="modal-overlay" style="z-index: 10002;" onclick="closeCustomAlert(false)">
+    <div class="modal-container" style="max-width: 420px;" onclick="event.stopPropagation()">
+        <div class="modal-header" style="background-color: #ffffff;">
+            <h3 id="customAlertTitle" class="modal-title" style="font-size: 17px;">提示</h3>
+            <button class="modal-close" onclick="closeCustomAlert(false)">&times;</button>
+        </div>
+        <div class="modal-body" id="customAlertMessage" style="padding: 24px 20px;">
+            提示內容
+        </div>
+        <div class="modal-footer">
+            <button id="customAlertCancelBtn" class="btn-modal-cancel" onclick="closeCustomAlert(false)">取消</button>
+            <button id="customAlertConfirmBtn" class="btn-modal-confirm" style="background-color: #8b1a1a;" onclick="closeCustomAlert(true)">確定</button>
+        </div>
+    </div>
+</div>
+
 <script>
+const shopUrlMap = {
+    '八方雲集': 'bafang.html',
+    '飯大廚': 'aafang.html',
+    '鼎森泰式料理': 'cafang.html',
+    '榮郁香廣式燒臘': 'dafang.html',
+    '顏舍關東煮': 'eafang.html',
+    '羹香鴨肉羹': 'fafang.html',
+    '徊香麵線糊': 'gafang.html',
+    '四海遊龍': 'hafang.html',
+    '北斗賓肉圓': 'kafang.html',
+    '得利牛排': 'jafang.html',
+    '老聃飲食': 'iafang.html',
+    '八廚職人弁当': 'lafang.html',
+    '嵐 爌肉・豬腳飯': 'mafang.html',
+    '旺春豐傳統小吃': 'nafang.html',
+    '咕雞 鹽水雞': 'oafang.html',
+    '家灶 傳統爌肉 豬腳專賣': 'pafang.html',
+    '丼滋丼滋': 'qafang.html',
+    '老蕭土魠魚羹麵館': 'rafang.html',
+    '小松丼丼食事處': 'safang.html',
+    '滿座燒肉丼飯屋': 'tafang.html',
+    '地6攤排餐': 'uafang.html',
+    '八鮮雲吞': 'vafang.html',
+    '明美快餐': '明美快餐.html',
+    '森晴餐盒製所': '森晴餐盒製所.html',
+    '廈門沙茶麵': '廈門沙茶麵.html',
+    '李王麻辣專賣': '李王麻辣專賣.html',
+    '員湘園': '員湘園.html',
+    '志氣雞飯': '志氣雞飯.html',
+    '竑食 泰式拌飯': '竑食 泰式拌飯.html',
+    '50嵐': '50嵐.html',
+    'TEA TOP': 'TEA TOP.html',
+    'TEA TOP 第一味': 'TEA TOP.html',
+    '得正': '得正.html',
+    '尚淳草本茶': '尚淳草本茶.html',
+    '烏弄': '烏弄.html',
+    '烏弄原茶': '烏弄.html',
+    '可不可熟成紅茶': '可不可熟成紅茶.html',
+    '鹿兒角': '鹿兒角.html',
+    '八曜和茶': '八曜和茶.html',
+    '一沐日': '一沐日.html',
+    '粉圓伯': '粉圓伯.html',
+    '先喝道': '先喝道.html',
+    '李珍心綠豆沙專門店': '李珍心綠豆沙專門店.html',
+    '吳家紅茶冰': '吳家紅茶冰.html',
+    '有茶': '有茶.html',
+    '青山': '青山.html',
+    '迷客夏': '迷客夏.html',
+    '茗沏': '茗沏.html',
+    '李記紅茶冰': '李記紅茶冰.html',
+    '旅人阿宏': '旅人阿宏.html',
+    '麻古茶坊': '麻古茶坊.html',
+    '茶湯會': '茶湯會.html',
+    '樂法': '樂法.html',
+    '一鳴': '一鳴.html',
+    '一鳴 義式料理': '一鳴.html',
+    '五路鍋聖': '五路鍋聖.html',
+    '秈鋤料理廚房': '秈鋤料理廚房.html',
+    '江滬上海小籠湯包': '江滬上海小籠湯包.html',
+    '食光飯糰': '食光飯糰.html',
+    '春耕': '春耕.html',
+    '春耕仙草茶': '春耕.html',
+    '秋本家': '秋本家.html',
+    '名家大餛飩': '名家大餛飩.html',
+    '小宸義大利麵': '小宸義大利麵.html',
+    '阿香師油飯': '阿香師油飯.html',
+    '熱浪小島': '熱浪小島.html',
+    '小妞滷味': '小妞滷味.html',
+    '麵匡匡': '麵匡匡.html',
+    '統元豆花': '統元豆花.html'
+};
+
+const branchUrls = {
+    '彰濱秀傳紀念醫院': 'index.html', 
+    '彰化秀傳紀念醫院': 'changhua.html',
+    '高雄秀傳紀念醫院': 'kaohsiung.html',
+    '竹山秀傳醫院': 'zhushan.html',
+    '台南市立醫院': 'tainan.html',
+    '高雄市立岡山醫院': 'gangshan.html'
+};
+
 function goBack() {
+    window.location.replace('index.html');
+}
+
+function goHomePage() {
+    localStorage.setItem('selectedCategory', 'food');
+    window.location.replace('index.html');
+}
+
+function goDrinkPage() {
+    localStorage.setItem('selectedCategory', 'drink');
     window.location.replace('index.html');
 }
 
@@ -1083,6 +1835,7 @@ let cart = {};
 let currentCardId = null;
 let currentFilteredItems = [...menuItems];
 let searchDebounceTimer = null;
+let customAlertCallback = null;
 
 let finalTotal = 0;
 let finalSummary = "";
@@ -1092,23 +1845,65 @@ let cutoffTimerInterval = null;
 let targetCutoffStr = null;
 let targetCutoffDateStr = null;
 
+// ==================== 1. 權限檢查與登入資訊同步機制 ====================
 function checkAccess() {
     const urlParams = new URLSearchParams(window.location.search);
-    const cardId = urlParams.get('card_id') || urlParams.get('cardId');
+    const urlCardId = urlParams.get('card_id') || urlParams.get('cardId');
+    const urlEmpName = urlParams.get('empName');
 
-    if (cardId) {
-        sessionStorage.setItem('currentCardId', cardId);
+    if (urlCardId) {
+        sessionStorage.setItem('currentCardId', urlCardId);
+        localStorage.setItem('currentCardId', urlCardId);
+        if (urlEmpName) {
+            localStorage.setItem('currentEmpName', urlEmpName);
+        }
         history.replaceState(null, '', window.location.pathname);
-        return cardId;
+        return urlCardId;
+    }
+
+    const storedCardId = sessionStorage.getItem('currentCardId') || localStorage.getItem('currentCardId');
+    if (storedCardId) {
+        return storedCardId;
     }
 
     window.location.replace('index.html');
     return null;
 }
 
+function updateHeaderUserInfo(cardId) {
+    const empName = localStorage.getItem('currentEmpName') || cardId || '';
+    const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department)
+        ? globalEmployeesMap[cardId].department
+        : (localStorage.getItem('currentDepartment') || '未劃分');
+    const isOffline = localStorage.getItem('isOfflineMode') === 'true';
+
+    const userNameEl = document.getElementById('user-name');
+    if (userNameEl) userNameEl.textContent = empName;
+
+    const userDeptEl = document.getElementById('user-department');
+    if (userDeptEl) userDeptEl.textContent = dept;
+
+    const offlineTagEl = document.getElementById('offline-tag');
+    if (offlineTagEl) offlineTagEl.style.display = isOffline ? 'inline' : 'none';
+
+    const savedBranch = localStorage.getItem('selectedBranch') || '彰濱秀傳紀念醫院';
+    const currentBranchEl = document.getElementById('current-branch-text');
+    if (currentBranchEl) currentBranchEl.textContent = savedBranch;
+
+    document.querySelectorAll('#branchModal .branch-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.innerText.includes(savedBranch)) {
+            item.classList.add('active');
+        }
+    });
+}
+
+// ==================== 2. 頁面初始化 ====================
 window.onload = async function() {
     currentCardId = checkAccess();
     if (!currentCardId) return;
+
+    updateHeaderUserInfo(currentCardId);
 
     const statusDiv = document.getElementById("card-status");
     if (currentCardId) {
@@ -1126,16 +1921,413 @@ window.onload = async function() {
     setInterval(syncPricesFromBackend, 10000);
     renderCart();
 
-    fetchEmployeeList();
+    await fetchEmployeeList();
+    updateHeaderUserInfo(currentCardId);
     startCutoffCountdown();
 };
 
-/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 window.addEventListener('storage', (e) => {
     fetchCutoffSetting();
     updateCountdownUI();
 });
 
+/* ==================== 頂部導覽列互動功能 (選擇院區 / 付款介紹 / 曾點過 / 拉霸機) ==================== */
+function callCustomAlert(title, message, callback, showCancel = true) {
+    document.getElementById('customAlertTitle').textContent = title;
+    document.getElementById('customAlertMessage').innerHTML = message;
+    
+    const cancelBtn = document.getElementById('customAlertCancelBtn');
+    if (showCancel) {
+        cancelBtn.classList.remove('hidden');
+    } else {
+        cancelBtn.classList.add('hidden');
+    }
+    
+    customAlertCallback = callback;
+    document.getElementById('customAlertModal').classList.add('active');
+}
+
+function closeCustomAlert(result) {
+    document.getElementById('customAlertModal').classList.remove('active');
+    if (customAlertCallback) {
+        customAlertCallback(result);
+        customAlertCallback = null;
+    }
+}
+
+function openBranchModal() {
+    document.getElementById('branchModal')?.classList.add('active');
+}
+
+function closeBranchModal(event) {
+    document.getElementById('branchModal')?.classList.remove('active');
+}
+
+function switchBranch(branchName) {
+    const targetUrl = branchUrls[branchName];
+    if (!targetUrl) {
+        callCustomAlert('提示', '尚未設定該院區的主頁網址！', null, false);
+        return;
+    }
+
+    localStorage.setItem('selectedBranch', branchName);
+    const branchText = document.getElementById('current-branch-text');
+    if (branchText) {
+        branchText.textContent = branchName;
+    }
+    closeBranchModal();
+    window.location.href = targetUrl;
+}
+
+function showPaymentInfo() {
+    document.getElementById('paymentModal')?.classList.add('active');
+}
+
+function closePaymentModal(event) {
+    document.getElementById('paymentModal')?.classList.remove('active');
+}
+
+function openHistoryModal() {
+    if (currentCardId) {
+        fetchGlobalOrders(currentCardId);
+    }
+    document.getElementById('historyModal')?.classList.add('active');
+}
+
+function closeHistoryModal(event) {
+    document.getElementById('historyModal')?.classList.remove('active');
+}
+
+function isTodayOrYesterdayOrder(orderObj) {
+    const orderTs = getMilliTimestamp(orderObj);
+    if (orderTs === 0) return false;
+
+    const orderDate = new Date(orderTs);
+    const today = new Date();
+
+    const d1 = new Date(orderDate.getFullYear(), orderDate.getMonth(), orderDate.getDate());
+    const d2 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+    return diffDays === 0 || diffDays === 1;
+}
+
+async function fetchGlobalOrders(targetCardId) {
+    const globalHistoryList = document.getElementById('global-history-list');
+    if (!globalHistoryList || !targetCardId) return;
+
+    let isAllowCancel = true;
+    try {
+        const allowRes = await fetch(`/api/allow-cancel?_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (allowRes.ok) {
+            const allowData = await allowRes.json();
+            isAllowCancel = (allowData.allowCancel === true || allowData.allowCancel === 'true');
+        }
+    } catch(e) {}
+
+    try {
+        let orderArray = [];
+        let response = await fetch(`/api/orders?all=true&_=${new Date().getTime()}`, { cache: 'no-store' });
+        if (response.ok) {
+            orderArray = await response.json();
+        } else {
+            response = await fetch(`orders.json?v=${new Date().getTime()}`, { cache: 'no-store' });
+            if (response.ok) {
+                const allOrders = await response.json();
+                orderArray = Array.isArray(allOrders) ? allOrders : (allOrders.orders || []);
+            }
+        }
+
+        const userOrders = orderArray.filter(order => {
+            const orderCard = String(order.cardId || order.card_id || '').trim().toLowerCase();
+            const loginCard = String(targetCardId).trim().toLowerCase();
+            return orderCard === loginCard;
+        });
+
+        if (userOrders.length === 0) {
+            globalHistoryList.innerHTML = `<tr><td colspan="7" class="no-record">💡 您在全系統資料庫中尚無任何點餐軌跡。</td></tr>`;
+            return;
+        }
+
+        userOrders.sort((a, b) => getMilliTimestamp(b) - getMilliTimestamp(a));
+
+        const userDept = globalEmployeesMap[targetCardId]
+            ? globalEmployeesMap[targetCardId].department
+            : (localStorage.getItem('currentDepartment') || '未劃分');
+
+        globalHistoryList.innerHTML = '';
+        userOrders.forEach(order => {
+            const tr = document.createElement('tr');
+            
+            const tdUser = document.createElement('td');
+            tdUser.textContent = `${order.cardId || order.card_id || ''} ${order.empName || order.name || ''}`;
+
+            const tdDept = document.createElement('td');
+            tdDept.innerHTML = `<span class="dept-badge">${userDept}</span>`;
+            
+            const tdTime = document.createElement('td');
+            tdTime.textContent = formatDisplayTime(order);
+            
+            const fullMealText = order.meal || '';
+            const tdMeal = document.createElement('td');
+            tdMeal.style.fontWeight = 'bold';
+            tdMeal.textContent = fullMealText || '-';
+            
+            const rawPrice = order.total ?? order.Total ?? order.price ?? order.Price ?? order.totalPrice ?? order.amount ?? null;
+            let totalAmount = (rawPrice !== null && rawPrice !== '') ? rawPrice : 0;
+            if (!totalAmount && order.note) {
+                const match = String(order.note).match(/總計[:：]\s*\$(\d+)/);
+                if (match) totalAmount = parseInt(match[1], 10);
+            }
+
+            const tdPrice = document.createElement('td');
+            tdPrice.textContent = (totalAmount !== null && totalAmount !== '' && totalAmount !== 0) ? `$${totalAmount}` : '-';
+            
+            const tdNote = document.createElement('td');
+            tdNote.textContent = order.note || '-';
+
+            let shopName = order.storeName || order.store || order.shopName || '';
+            if (!shopName && fullMealText) {
+                const matchedKey = Object.keys(shopUrlMap).find(key => {
+                    const cleanKey = key.replace(/\s+/g, '');
+                    const cleanMeal = fullMealText.replace(/\s+/g, '');
+                    return cleanMeal.includes(cleanKey);
+                });
+
+                if (matchedKey) {
+                    shopName = matchedKey;
+                } else if (fullMealText.includes('：')) {
+                    shopName = fullMealText.split('：')[0].trim();
+                } else if (fullMealText.includes(':')) {
+                    shopName = fullMealText.split(':')[0].trim();
+                }
+            }
+
+            const timeKey = order.timestamp || order.time || order.Time || '';
+            const orderId = order.orderId || order.order_id || order.id || '';
+
+            const safeOrderId = String(orderId).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeTimeKey = String(timeKey).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeShopName = String(shopName).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+            const tdAction = document.createElement('td');
+            tdAction.style.textAlign = 'center';
+            tdAction.style.whiteSpace = 'nowrap';
+
+            const canModify = isTodayOrYesterdayOrder(order);
+            if (isAllowCancel && canModify) {
+                tdAction.innerHTML = `
+                    <button class="order-action-btn btn-edit-order" onclick="editOrder('${safeOrderId}', '${safeTimeKey}', '${safeShopName}')">修改</button>
+                    <button class="order-action-btn btn-cancel-order" onclick="cancelOrder('${safeOrderId}', '${safeTimeKey}')">取消</button>
+                `;
+            } else if (!isAllowCancel && canModify) {
+                tdAction.innerHTML = `<span class="cart-cancel-disabled">🚫 關閉取消</span>`;
+            } else {
+                tdAction.innerHTML = `<span style="color: #888; font-size: 12px;">已結案</span>`;
+            }
+            
+            tr.appendChild(tdUser);
+            tr.appendChild(tdDept);
+            tr.appendChild(tdTime);
+            tr.appendChild(tdMeal);
+            tr.appendChild(tdPrice);
+            tr.appendChild(tdNote);
+            tr.appendChild(tdAction);
+            globalHistoryList.appendChild(tr);
+        });
+    } catch (error) {
+        console.error(error);
+        globalHistoryList.innerHTML = `<tr><td colspan="7" class="no-record" style="color: #a01010;">❌ 無法載入歷史軌跡。</td></tr>`;
+    }
+}
+
+function cancelOrder(orderId, timestamp) {
+    callCustomAlert('確認取消', '❌ 確定要取消這筆點餐紀錄嗎？', async (confirmed) => {
+        if (!confirmed) return;
+        await executeCancelLogic(orderId, timestamp, true);
+    }, true);
+}
+
+function editOrder(orderId, timestamp, shopName) {
+    let targetShop = shopName;
+    if (targetShop && !shopUrlMap[targetShop]) {
+        const cleanTarget = targetShop.replace(/\s+/g, '');
+        const matchedKey = Object.keys(shopUrlMap).find(k => {
+            const cleanKey = k.replace(/\s+/g, '');
+            return cleanTarget.includes(cleanKey) || cleanKey.includes(cleanTarget);
+        });
+        if (matchedKey) targetShop = matchedKey;
+    }
+
+    const shopMsg = (targetShop && shopUrlMap[targetShop]) ? `<strong>【${targetShop}】</strong>` : '店家';
+    callCustomAlert('修改訂單', `✏️ 修改訂單將先刪除目前這筆紀錄，並帶您前往 ${shopMsg} 重新點餐，是否繼續？`, async (confirmed) => {
+        if (!confirmed) return;
+        const success = await executeCancelLogic(orderId, timestamp, false);
+        if (success) {
+            closeHistoryModal();
+            if (targetShop && shopUrlMap[targetShop]) {
+                redirectToShop(targetShop);
+            } else {
+                goHomePage();
+            }
+        }
+    }, true);
+}
+
+async function executeCancelLogic(orderId, timestamp, showAlert = true) {
+    const cardId = currentCardId;
+    let success = false;
+
+    try {
+        const response = await fetch('/api/orders/cancel', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cardId: cardId, orderId: orderId, timestamp: timestamp })
+        });
+        if (response.ok) {
+            const resData = await response.json();
+            if (resData.success) success = true;
+        }
+    } catch (e) {}
+
+    const localKey = `orders_${cardId}`;
+    try {
+        let localOrders = JSON.parse(localStorage.getItem(localKey)) || [];
+        localOrders = localOrders.filter(o => {
+            const oTime = o.timestamp || o.time || o.Time || '';
+            const matchTime = timestamp && oTime === timestamp;
+            const matchId = orderId && (o.orderId === orderId || o.order_id === orderId || o.id === orderId);
+            return !(matchTime || matchId);
+        });
+        localStorage.setItem(localKey, JSON.stringify(localOrders));
+        success = true;
+    } catch(e) {}
+
+    if (success) {
+        if (showAlert) callCustomAlert('提示', '✅ 訂單已成功取消！', null, false);
+        fetchGlobalOrders(cardId);
+        return true;
+    } else {
+        if (showAlert) callCustomAlert('提示', '⚠️ 取消訂單失敗，請稍後再試。', null, false);
+        return false;
+    }
+}
+
+function redirectToShop(shopName) {
+    let targetShop = shopName;
+    if (targetShop && !shopUrlMap[targetShop]) {
+        const cleanTarget = targetShop.replace(/\s+/g, '');
+        const matchedKey = Object.keys(shopUrlMap).find(k => {
+            const cleanKey = k.replace(/\s+/g, '');
+            return cleanTarget.includes(cleanKey) || cleanKey.includes(cleanTarget);
+        });
+        if (matchedKey) targetShop = matchedKey;
+    }
+
+    const url = shopUrlMap[targetShop];
+    if (!url) {
+        callCustomAlert('提示', `⚠️ 尚未設定 <strong>${shopName}</strong> 的對應點餐網頁。`, null, false);
+        return;
+    }
+    const empName = localStorage.getItem('currentEmpName') || currentCardId;
+    window.location.href = `${url}?cardId=${encodeURIComponent(currentCardId)}&empName=${encodeURIComponent(empName)}`;
+}
+
+/* ==================== 🎰 店家拉霸機功能邏輯 ==================== */
+const wheelShops = [
+    '小妞滷味', '咕雞 鹽水雞', '李王麻辣專賣', '阿香師油飯', '榮郁香廣式燒臘',
+    '四海遊龍', '八方雲集', '熱浪小島', '鼎森泰式料理', '竑食 泰式拌飯',
+    '徊香麵線糊', '北斗賓肉圓', '飯大廚', '志氣雞飯', '明美快餐',
+    '老聃飲食', '八廚職人弁当', '嵐 爌肉・豬腳飯', '旺春豐傳統小吃',
+    '家灶 傳統爌肉 豬腳專賣', '秈鋤料理廚房', '老蕭土魠魚羹麵館', '羹香鴨肉羹',
+    '顏舍關東煮', '小松丼丼食事處', '滿座燒肉丼飯屋', '麵匡匡',
+    '丼滋丼滋', '食光飯糰', '秋本家', '廈門沙茶麵', '員湘園',
+    '森晴餐盒製所', '一鳴 義式料理', '小宸義大利麵', '地6攤排餐',
+    '得利牛排', '江滬上海小籠湯包', '名家大餛飩', '八鮮雲吞',
+    '五路鍋聖', '統元豆花'
+];
+let isWheelSpinning = false;
+let selectedWheelShop = '';
+const ITEM_HEIGHT = 104;
+
+function openWheelModal() {
+    selectedWheelShop = '';
+    document.getElementById('wheelResult').textContent = '點擊下方按鈕開始抽籤！';
+    document.getElementById('wheelGoShopBtn').classList.add('hidden');
+    initSlotStrips();
+    document.getElementById('wheelModal').classList.add('active');
+}
+
+function closeWheelModal(event) {
+    if (isWheelSpinning) return;
+    document.getElementById('wheelModal')?.classList.remove('active');
+}
+
+function initSlotStrips() {
+    for (let r = 1; r <= 3; r++) {
+        const strip = document.getElementById(`strip-${r}`);
+        if (!strip) continue;
+        const randomInitial = wheelShops[Math.floor(Math.random() * wheelShops.length)];
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateY(0px)';
+        strip.innerHTML = `<div class="slot-item">${randomInitial}</div>`;
+    }
+}
+
+function spinWheel() {
+    if (isWheelSpinning || wheelShops.length === 0) return;
+    isWheelSpinning = true;
+    document.getElementById('spinWheelBtn').disabled = true;
+    document.getElementById('wheelGoShopBtn').classList.add('hidden');
+    document.getElementById('wheelResult').textContent = '🎰 命運拉霸轉動中...';
+
+    const winningIndex = Math.floor(Math.random() * wheelShops.length);
+    selectedWheelShop = wheelShops[winningIndex];
+    const reelDelays = [1500, 2200, 2900];
+
+    for (let r = 1; r <= 3; r++) {
+        const strip = document.getElementById(`strip-${r}`);
+        if (!strip) continue;
+
+        const stripLength = 20 + r * 6;
+        let stripHtml = '';
+        const currentItemText = strip.querySelector('.slot-item')?.textContent || wheelShops[0];
+        stripHtml += `<div class="slot-item">${currentItemText}</div>`;
+
+        for (let i = 1; i < stripLength - 1; i++) {
+            const randShop = wheelShops[Math.floor(Math.random() * wheelShops.length)];
+            stripHtml += `<div class="slot-item">${randShop}</div>`;
+        }
+        stripHtml += `<div class="slot-item">${selectedWheelShop}</div>`;
+
+        strip.innerHTML = stripHtml;
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateY(0px)';
+        void strip.offsetHeight;
+
+        const targetY = -(stripLength - 1) * ITEM_HEIGHT;
+        const duration = reelDelays[r - 1];
+        strip.style.transition = `transform ${duration}ms cubic-bezier(0.15, 0.85, 0.35, 1)`;
+        strip.style.transform = `translateY(${targetY}px)`;
+    }
+
+    setTimeout(() => {
+        isWheelSpinning = false;
+        document.getElementById('spinWheelBtn').disabled = false;
+        document.getElementById('wheelResult').innerHTML = `今天就吃：<span style="color: #0091ff; font-size: 20px;">${selectedWheelShop}</span>！`;
+        document.getElementById('wheelGoShopBtn').classList.remove('hidden');
+    }, reelDelays[2] + 100);
+}
+
+function goSelectedShop() {
+    if (selectedWheelShop) {
+        closeWheelModal();
+        if (selectedWheelShop === '羹香鴨肉羹') return;
+        redirectToShop(selectedWheelShop);
+    }
+}
+
+/* ==================== ⏱️ 截止時間與倒數計時邏輯 ==================== */
 async function startCutoffCountdown() {
     if (cutoffTimerInterval) clearInterval(cutoffTimerInterval);
     await fetchCutoffSetting();
@@ -1401,7 +2593,7 @@ async function fetchOthersOrders() {
         let totalAmount = Number(order.total || order.amount || 0);
 
         if (!totalAmount && order.note) {
-            const match = String(order.note).match(/總計:\s*\$(\d+)/);
+            const match = String(order.note).match(/總計[:：]\s*\$(\d+)/);
             if (match) totalAmount = parseInt(match[1], 10);
         }
 
