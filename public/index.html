@@ -3219,15 +3219,34 @@ function showLoginSection() {
                 return;
             }
 
+            // 💡 將「點餐店家與內容」拆分成「店家」與「餐點內容」兩個獨立欄位
             let csvContent = "\uFEFF";
-            csvContent += "卡號,姓名,部門,訂單時間,點餐店家與內容,金額,備註\n";
+            csvContent += "卡號,姓名,部門,訂單時間,店家,餐點內容,金額,備註\n";
 
             activeOrders.forEach(order => {
                 const cardId = order.cardId || order.card_id || '';
                 const empName = order.empName || order.name || order.emp_name || '';
                 const dept = (globalEmployeesMap[cardId] && globalEmployeesMap[cardId].department) ? globalEmployeesMap[cardId].department : (order.department || '未劃分');
                 const timeStr = formatDisplayTime(order);
-                let mealText = (order.meal || order.note || '').replace(/"/g, '""');
+
+                // 自動依照全形「：」或半形「:」切分店家與餐點內容
+                const rawMeal = String(order.meal || order.note || '').trim();
+                let storeName = order.storeName || order.store || order.shopName || '未指定店家';
+                let mealText = rawMeal;
+
+                if (rawMeal.includes('：')) {
+                    const parts = rawMeal.split('：');
+                    storeName = parts[0].trim();
+                    mealText = parts.slice(1).join('：').trim();
+                } else if (rawMeal.includes(':')) {
+                    const parts = rawMeal.split(':');
+                    storeName = parts[0].trim();
+                    mealText = parts.slice(1).join(':').trim();
+                }
+
+                // 防護雙引號避免 CSV 欄位錯位
+                const safeStore = storeName.replace(/"/g, '""');
+                const safeMeal = mealText.replace(/"/g, '""');
                 
                 let totalAmount = Number(order.total || order.amount || 0);
                 if (!totalAmount && order.note) {
@@ -3235,9 +3254,9 @@ function showLoginSection() {
                     if (match) totalAmount = parseInt(match[1], 10);
                 }
 
-                const noteText = (order.note || '').replace(/"/g, '""');
+                const noteText = String(order.note || '').replace(/"/g, '""');
 
-                csvContent += `"${cardId}","${empName}","${dept}","${timeStr}","${mealText}","${totalAmount}","${noteText}"\n`;
+                csvContent += `"${cardId}","${empName}","${dept}","${timeStr}","${safeStore}","${safeMeal}","${totalAmount}","${noteText}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
