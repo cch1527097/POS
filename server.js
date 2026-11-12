@@ -1231,7 +1231,7 @@ app.get('/api/order-history', async (req, res) => {
 
 app.get('/api/export-excel', async (req, res) => {
     try {
-        // 讀取店家清單，供後續智慧比對店家名稱
+        // 讀取店家設定清單，作為備用智慧匹配來源
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         let stores = [];
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
@@ -1248,27 +1248,9 @@ app.get('/api/export-excel', async (req, res) => {
             ORDER BY o.order_id ASC;
         `);
         
-        const orders = result.rows.map(row => {
-            const matchedStore = findMatchedStore(stores, '', '', row.meal);
-            const storeName = matchedStore ? matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim() : '未指定店家';
-
-            return {
-                orderId: String(row.order_id),
-                timestamp: row.timestamp,
-                cardId: row.card_id,
-                name: row.name,
-                department: row.department,
-                storeName: storeName,
-                meal: row.meal,
-                spicy: row.spicy,
-                note: row.note,
-                total: Number(row.total),
-                groupId: row.group_id || '-',
-                isPaid: row.is_paid ? '已繳費' : '未繳費'
-            };
-        });
-
         const workbook = new ExcelJS.Workbook();
+        
+        // 工作表 1：訂單明細
         const sheet1 = workbook.addWorksheet('訂單明細');
         sheet1.columns = [
             { header: '訂單ID', key: 'orderId', width: 22 },
@@ -1276,8 +1258,8 @@ app.get('/api/export-excel', async (req, res) => {
             { header: '部門', key: 'department', width: 15 },
             { header: '員工卡號', key: 'cardId', width: 15 },
             { header: '員工姓名', key: 'name', width: 15 }, 
-            { header: '店家', key: 'storeName', width: 20 },
-            { header: '餐點品項', key: 'meal', width: 25 },
+            { header: '店家名稱', key: 'storeName', width: 20 },
+            { header: '餐點內容', key: 'mealContent', width: 35 },
             { header: '醬料辣度', key: 'spicy', width: 15 },
             { header: '備註', key: 'note', width: 25 },
             { header: '金額', key: 'total', width: 12 },
@@ -1285,45 +1267,68 @@ app.get('/api/export-excel', async (req, res) => {
             { header: '繳費狀態', key: 'isPaid', width: 12 }
         ];
         
+        // 工作表 2：店家點餐統計表
         const sheet2 = workbook.addWorksheet('店家點餐統計表');
         sheet2.columns = [
             { header: '店家名稱', key: 'storeName', width: 20 },
-            { header: '餐點品項名稱', key: 'meal', width: 25 },
+            { header: '餐點內容', key: 'mealContent', width: 35 },
             { header: '總點餐次數', key: 'count', width: 15 }
         ];
 
-        orders.forEach(order => {
-            sheet1.addRow({
-                orderId: order.orderId,
-                timestamp: order.timestamp,
-                department: order.department,
-                cardId: order.cardId,
-                name: order.name || '未知', 
-                storeName: order.storeName,
-                meal: order.meal,
-                spicy: order.spicy || '無',
-                note: order.note || '無',
-                total: !isNaN(order.total) ? order.total : 0,
-                groupId: order.groupId,
-                isPaid: order.isPaid
-            });
-        });
-
         const statistics = {};
-        orders.forEach(order => {
-            if (order.meal) {
-                const key = `${order.storeName} - ${order.meal}`;
-                if (!statistics[key]) {
-                    statistics[key] = { storeName: order.storeName, meal: order.meal, count: 0 };
+
+        result.rows.forEach(row => {
+            const rawMeal = (row.meal || '').trim();
+            let storeName = '';
+            let mealContent = rawMeal;
+
+            // 💡 1. 優先從文字中的冒號「：」或「:」拆分店家名稱與餐點內容
+            if (rawMeal.includes('：')) {
+                const parts = rawMeal.split('：');
+                storeName = parts[0].trim();
+                mealContent = parts.slice(1).join('：').trim();
+            } else if (rawMeal.includes(':')) {
+                const parts = rawMeal.split(':');
+                storeName = parts[0].trim();
+                mealContent = parts.slice(1).join(':').trim();
+            } else {
+                // 💡 2. 若文字無冒號，嘗試透過智慧比對函數查找店家
+                const matchedStore = findMatchedStore(stores, '', '', rawMeal);
+                if (matchedStore && matchedStore.name) {
+                    storeName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
+                } else {
+                    storeName = '未指定店家';
                 }
-                statistics[key].count += 1;
+            }
+
+            sheet1.addRow({
+                orderId: String(row.order_id),
+                timestamp: row.timestamp,
+                department: row.department,
+                cardId: row.card_id,
+                name: row.name || '未知', 
+                storeName: storeName,
+                mealContent: mealContent,
+                spicy: row.spicy || '無',
+                note: row.note || '無',
+                total: !isNaN(Number(row.total)) ? Number(row.total) : 0,
+                groupId: row.group_id || '-',
+                isPaid: row.is_paid ? '已繳費' : '未繳費'
+            });
+
+            if (mealContent) {
+                const statKey = `${storeName} - ${mealContent}`;
+                if (!statistics[statKey]) {
+                    statistics[statKey] = { storeName, mealContent, count: 0 };
+                }
+                statistics[statKey].count += 1;
             }
         });
 
         Object.values(statistics).forEach(stat => {
             sheet2.addRow({
                 storeName: stat.storeName,
-                meal: stat.meal,
+                mealContent: stat.mealContent,
                 count: stat.count
             });
         });
