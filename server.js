@@ -1231,6 +1231,13 @@ app.get('/api/order-history', async (req, res) => {
 
 app.get('/api/export-excel', async (req, res) => {
     try {
+        // 讀取店家清單，供後續智慧比對店家名稱
+        const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
+        let stores = [];
+        if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
+            try { stores = JSON.parse(storeListRes.rows[0].value) || []; } catch(e) { stores = []; }
+        }
+
         const result = await pool.query(`
             SELECT 
                 o.order_id, o.timestamp, o.card_id, o.name, o.meal, o.spicy, o.note, o.total, o.group_id,
@@ -1241,19 +1248,25 @@ app.get('/api/export-excel', async (req, res) => {
             ORDER BY o.order_id ASC;
         `);
         
-        const orders = result.rows.map(row => ({
-            orderId: String(row.order_id),
-            timestamp: row.timestamp,
-            cardId: row.card_id,
-            name: row.name,
-            department: row.department,
-            meal: row.meal,
-            spicy: row.spicy,
-            note: row.note,
-            total: Number(row.total),
-            groupId: row.group_id || '-',
-            isPaid: row.is_paid ? '已繳費' : '未繳費'
-        }));
+        const orders = result.rows.map(row => {
+            const matchedStore = findMatchedStore(stores, '', '', row.meal);
+            const storeName = matchedStore ? matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim() : '未指定店家';
+
+            return {
+                orderId: String(row.order_id),
+                timestamp: row.timestamp,
+                cardId: row.card_id,
+                name: row.name,
+                department: row.department,
+                storeName: storeName,
+                meal: row.meal,
+                spicy: row.spicy,
+                note: row.note,
+                total: Number(row.total),
+                groupId: row.group_id || '-',
+                isPaid: row.is_paid ? '已繳費' : '未繳費'
+            };
+        });
 
         const workbook = new ExcelJS.Workbook();
         const sheet1 = workbook.addWorksheet('訂單明細');
@@ -1263,7 +1276,8 @@ app.get('/api/export-excel', async (req, res) => {
             { header: '部門', key: 'department', width: 15 },
             { header: '員工卡號', key: 'cardId', width: 15 },
             { header: '員工姓名', key: 'name', width: 15 }, 
-            { header: '點餐店家/品項', key: 'meal', width: 25 },
+            { header: '店家', key: 'storeName', width: 20 },
+            { header: '餐點品項', key: 'meal', width: 25 },
             { header: '醬料辣度', key: 'spicy', width: 15 },
             { header: '備註', key: 'note', width: 25 },
             { header: '金額', key: 'total', width: 12 },
@@ -1273,7 +1287,8 @@ app.get('/api/export-excel', async (req, res) => {
         
         const sheet2 = workbook.addWorksheet('店家點餐統計表');
         sheet2.columns = [
-            { header: '店家/品項名稱', key: 'meal', width: 25 },
+            { header: '店家名稱', key: 'storeName', width: 20 },
+            { header: '餐點品項名稱', key: 'meal', width: 25 },
             { header: '總點餐次數', key: 'count', width: 15 }
         ];
 
@@ -1284,6 +1299,7 @@ app.get('/api/export-excel', async (req, res) => {
                 department: order.department,
                 cardId: order.cardId,
                 name: order.name || '未知', 
+                storeName: order.storeName,
                 meal: order.meal,
                 spicy: order.spicy || '無',
                 note: order.note || '無',
@@ -1296,14 +1312,19 @@ app.get('/api/export-excel', async (req, res) => {
         const statistics = {};
         orders.forEach(order => {
             if (order.meal) {
-                statistics[order.meal] = (statistics[order.meal] || 0) + 1;
+                const key = `${order.storeName} - ${order.meal}`;
+                if (!statistics[key]) {
+                    statistics[key] = { storeName: order.storeName, meal: order.meal, count: 0 };
+                }
+                statistics[key].count += 1;
             }
         });
 
-        Object.keys(statistics).forEach(meal => {
+        Object.values(statistics).forEach(stat => {
             sheet2.addRow({
-                meal: meal,
-                count: statistics[meal]
+                storeName: stat.storeName,
+                meal: stat.meal,
+                count: stat.count
             });
         });
 
@@ -1327,7 +1348,7 @@ app.get('/api/export-excel', async (req, res) => {
         });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=orders_\${Date.now()}.xlsx`);
+        res.setHeader('Content-Disposition', `attachment; filename=orders_${Date.now()}.xlsx`);
 
         await workbook.xlsx.write(res);
         res.end();
@@ -1343,7 +1364,7 @@ async function startServer() {
         await initDatabase();
         app.listen(PORT, () => {
             console.log(`================================================================`);
-            console.log(` 🚀 訂餐系統後端已啟動！Port: \${PORT}`);
+            console.log(` 🚀 訂餐系統後端已啟動！Port: ${PORT}`);
             console.log(`================================================================`);
         });
     } catch (err) {
