@@ -1296,6 +1296,73 @@ body.login-mode .login-footer-copy {
         let customAlertCallback = null;
         let globalEmployeesMap = {}; // 快取員工對照表 (含部門資訊)
         let currentCategoryView = 'food'; // 🌟 紀錄當前版面狀態：'food' 或 'drink'
+        let isRestoringScroll = false;
+
+        // ==================== 📌 網頁滾動位置記憶機制 ====================
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+
+        function getScrollStorageKey(category = currentCategoryView) {
+            const pageKey = (window.location.pathname.split('/').pop() || 'gangshan.html').replace(/[^a-zA-Z0-9_-]/g, '_');
+            return `scrollPos_${pageKey}_${category}`;
+        }
+
+        function saveScrollPosition() {
+            if (isRestoringScroll) return;
+            if (document.body.classList.contains('login-mode')) return;
+            const orderSection = document.getElementById('order-section');
+            if (!orderSection || orderSection.classList.contains('hidden')) return;
+
+            const currentY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+            const key = getScrollStorageKey();
+            sessionStorage.setItem(key, String(currentY));
+            localStorage.setItem(key, String(currentY));
+        }
+
+        function clearSavedScrollPositions() {
+            ['food', 'drink'].forEach(cat => {
+                const key = getScrollStorageKey(cat);
+                sessionStorage.removeItem(key);
+                localStorage.removeItem(key);
+            });
+        }
+
+        function restoreScrollPosition() {
+            const key = getScrollStorageKey();
+            const savedY = sessionStorage.getItem(key) ?? localStorage.getItem(key);
+            const targetY = savedY !== null ? parseInt(savedY, 10) : 0;
+
+            if (isNaN(targetY) || targetY <= 0) return;
+
+            isRestoringScroll = true;
+            const applyScroll = () => {
+                window.scrollTo({ top: targetY, behavior: 'instant' in window ? 'instant' : 'auto' });
+            };
+
+            requestAnimationFrame(() => {
+                applyScroll();
+                setTimeout(() => {
+                    applyScroll();
+                    isRestoringScroll = false;
+                }, 120);
+            });
+        }
+
+        let scrollSaveTimer = null;
+        window.addEventListener('scroll', () => {
+            if (isRestoringScroll) return;
+            if (scrollSaveTimer) clearTimeout(scrollSaveTimer);
+            scrollSaveTimer = setTimeout(saveScrollPosition, 100);
+        }, { passive: true });
+
+        window.addEventListener('pagehide', saveScrollPosition);
+        window.addEventListener('beforeunload', saveScrollPosition);
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted && loggedInCardId) {
+                restoreScrollPosition();
+            }
+        });
 
         const shopUrlMap = {
             '00': '00.html',
@@ -1685,15 +1752,22 @@ function goSelectedShop() {
 
         /* 🌟 版面切換控制：美味餐點 ↔ 喝涼涼 切換核心函數 */
         function toggleFoodDrinkView() {
+            saveScrollPosition();
             if (currentCategoryView === 'food') {
-                showDrinkOnly();
+                showDrinkOnly(false);
             } else {
-                showFoodOnly();
+                showFoodOnly(false);
+            }
+            const targetY = parseInt(sessionStorage.getItem(getScrollStorageKey()) ?? localStorage.getItem(getScrollStorageKey()) ?? '0', 10) || 0;
+            if (targetY > 0) {
+                restoreScrollPosition();
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
         /* 🌟 切換至「喝涼涼」版面 */
-        function showDrinkOnly() {
+        function showDrinkOnly(shouldScrollTop = true) {
             currentCategoryView = 'drink';
             localStorage.setItem('selectedCategory', 'drink'); // 💾 記住目前在喝涼涼
 
@@ -1715,11 +1789,11 @@ function goSelectedShop() {
                 </svg>
             `;
 
-            resetSearch();
+            resetSearch(shouldScrollTop);
         }
 
         /* 🌟 切換至「美味餐點」版面 */
-        function showFoodOnly() {
+        function showFoodOnly(shouldScrollTop = true) {
             currentCategoryView = 'food';
             localStorage.setItem('selectedCategory', 'food'); // 💾 記住目前在美味餐點
 
@@ -1741,31 +1815,42 @@ function goSelectedShop() {
                 </svg>
             `;
 
-            resetSearch();
+            resetSearch(shouldScrollTop);
         }
 
-        /* 重置搜尋框與滾動至頂部 */
-        function resetSearch() {
+        /* 重置搜尋框（依參數決定是否滾動至頂部） */
+        function resetSearch(shouldScrollTop = true) {
             const searchInput = document.getElementById('shopSearchInput');
             if (searchInput) {
                 searchInput.value = '';
                 filterShops();
             }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        /* 🌟 版面切換控制：還原上次觀看的分類 */
-        function restoreSelectedCategory() {
-            const savedCat = localStorage.getItem('selectedCategory');
-            if (savedCat === 'drink') {
-                showDrinkOnly();
-            } else {
-                showFoodOnly();
+            if (shouldScrollTop) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                const key = getScrollStorageKey();
+                sessionStorage.setItem(key, '0');
+                localStorage.setItem(key, '0');
             }
         }
 
+        /* 🌟 版面切換控制：還原上次觀看的分類與滾動位置 */
+        function restoreSelectedCategory() {
+            const savedCat = localStorage.getItem('selectedCategory');
+            if (savedCat === 'drink') {
+                showDrinkOnly(false);
+            } else {
+                showFoodOnly(false);
+            }
+            restoreScrollPosition();
+        }
+
         function showAllCategories() {
-            restoreSelectedCategory();
+            const savedCat = localStorage.getItem('selectedCategory');
+            if (savedCat === 'drink') {
+                showDrinkOnly(true);
+            } else {
+                showFoodOnly(true);
+            }
         }
 
         function goHome() {
@@ -1840,8 +1925,9 @@ function goSelectedShop() {
                 return;
             }
             
-            // 💾 在前往店家點餐前，紀錄目前所在分類狀態
+            // 💾 在前往店家點餐前，紀錄目前所在分類狀態與滾動位置
             localStorage.setItem('selectedCategory', currentCategoryView);
+            saveScrollPosition();
 
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
             const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}`;
@@ -1899,6 +1985,7 @@ function goSelectedShop() {
             localStorage.removeItem('currentEmpName');
             localStorage.removeItem('currentDepartment');
             localStorage.removeItem('isOfflineMode');
+            clearSavedScrollPositions();
             document.getElementById('user-name').innerText = ''; 
             document.getElementById('user-department').innerText = '未劃分';
             
