@@ -23,8 +23,6 @@
     <!-- 2. 圖示設定 (Google 搜尋偏好 PNG / ICO 格式正方形圖示) -->
     <link rel="icon" href="logo.gif" type="image/gif">
     <link rel="icon" type="image/png" sizes="48x48" href="logo.png">
-</script>
-    <link rel="icon" href="logo.gif" type="image/gif">
     <style>
         /* ==================== 全局與基礎樣式 ==================== */
         * { 
@@ -1541,7 +1539,7 @@
                 </div>
                 <div class="shop-info">
                     <h3 class="shop-name">小妞滷味</h3>
-                    <p class="shop-desc">菜色選擇豐富，從各式火鍋料、蔬菜、豆皮、米血到肉片應有盡有，也有像滷整顆雞蛋等特色品項。</p>
+                    <p class="shop-desc">菜色選擇豐富，從各式火鍋料、蔬菜、豆皮、米血到肉片應有有盡，也有像滷整顆雞蛋等特色品項。</p>
                 </div>
             </div>            
 
@@ -2688,6 +2686,29 @@
         // 揪團變數
         let currentGroupGeneratedUrl = '';
 
+        /* ==================== 📌 滾動位置記憶功能 ==================== */
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+
+        let scrollSaveTimer = null;
+        window.addEventListener('scroll', () => {
+            const orderSection = document.getElementById('order-section');
+            if (!orderSection || orderSection.classList.contains('hidden')) return;
+
+            clearTimeout(scrollSaveTimer);
+            scrollSaveTimer = setTimeout(() => {
+                sessionStorage.setItem('orderScrollY', String(window.scrollY));
+            }, 150);
+        }, { passive: true });
+
+        window.addEventListener('pagehide', () => {
+            const orderSection = document.getElementById('order-section');
+            if (orderSection && !orderSection.classList.contains('hidden')) {
+                sessionStorage.setItem('orderScrollY', String(window.scrollY));
+            }
+        });
+
         const shopUrlMap = {
             '八方雲集': 'bafang.html',
             '飯大廚': 'aafang.html',
@@ -2775,6 +2796,7 @@
                 return;
             }
 
+            sessionStorage.removeItem('orderScrollY');
             localStorage.setItem('selectedBranch', branchName);
             const branchText = document.getElementById('current-branch-text');
             if (branchText) {
@@ -3028,73 +3050,82 @@
         }
 
         // ==================== 1. 全局登入狀態驗證機制 ====================
-function verifyAuthOrRedirect() {
-    const savedCardId = localStorage.getItem('currentCardId');
-    if (!savedCardId) {
-        showLoginSection();
-        return false;
-    }
-    return true;
-}
+        function verifyAuthOrRedirect() {
+            const savedCardId = localStorage.getItem('currentCardId');
+            if (!savedCardId) {
+                showLoginSection();
+                return false;
+            }
+            return true;
+        }
 
-// 監聽 pageshow 事件（包含瀏覽器上一頁/快取還原情況）
-window.addEventListener('pageshow', (event) => {
-    verifyAuthOrRedirect();
-});
+        // 監聽 pageshow 事件（包含瀏覽器上一頁/快取還原情況）
+        window.addEventListener('pageshow', (event) => {
+            if (!verifyAuthOrRedirect()) return;
+            if (event.persisted) {
+                const savedScrollY = parseInt(sessionStorage.getItem('orderScrollY') || '0', 10);
+                if (savedScrollY > 0) {
+                    requestAnimationFrame(() => {
+                        window.scrollTo(0, savedScrollY);
+                    });
+                }
+            }
+        });
 
-// 監聽 popstate 事件（歷史紀錄變更）
-window.addEventListener('popstate', () => {
-    verifyAuthOrRedirect();
-});
+        // 監聽 popstate 事件（歷史紀錄變更）
+        window.addEventListener('popstate', () => {
+            verifyAuthOrRedirect();
+        });
 
-// ==================== 2. 修正後的 showLoginSection 登出清理邏輯 ====================
-function showLoginSection() {
-    window.scrollTo(0, 0);
-    loggedInCardId = '';
-    isSubmitting = false;
-    
-    // 清除所有登入與暫存資料
-    localStorage.removeItem('currentCardId');
-    localStorage.removeItem('currentEmpName');
-    localStorage.removeItem('currentDepartment');
-    localStorage.removeItem('isOfflineMode');
-    sessionStorage.clear();
+        // ==================== 2. 登出與登入畫面切換清理邏輯 ====================
+        function showLoginSection() {
+            window.scrollTo(0, 0);
+            loggedInCardId = '';
+            isSubmitting = false;
+            
+            // 清除所有登入、滾動記憶與暫存資料
+            localStorage.removeItem('currentCardId');
+            localStorage.removeItem('currentEmpName');
+            localStorage.removeItem('currentDepartment');
+            localStorage.removeItem('isOfflineMode');
+            sessionStorage.removeItem('orderScrollY');
+            sessionStorage.clear();
 
-    // 重置網址（清除 GET 參數如 ?groupId=...），防止上一頁紀錄殘留
-    if (window.history && window.history.replaceState) {
-        window.history.replaceState(null, '', window.location.pathname);
-    }
+            // 重置網址（清除 GET 參數如 ?groupId=...），防止上一頁紀錄殘留
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.pathname);
+            }
 
-    // UI 重置
-    const userNameEl = document.getElementById('user-name');
-    if (userNameEl) userNameEl.innerText = ''; 
-    
-    const userDeptEl = document.getElementById('user-department');
-    if (userDeptEl) userDeptEl.innerText = '未劃分';
-    
-    const loginBtn = document.getElementById('submit-login-btn');
-    if (loginBtn) { loginBtn.disabled = false; }
-    
-    const cardInput = document.getElementById('cardId');
-    if (cardInput) { 
-        cardInput.value = ''; 
-        cardInput.disabled = false; 
-        cardInput.setCustomValidity(''); 
-    }
-    
-    document.getElementById('offline-tag').style.display = 'none';
-    document.getElementById('order-section').classList.add('hidden');
-    document.getElementById('login-section').classList.remove('hidden');
-    document.body.classList.remove('order-mode');
-    document.body.classList.add('login-mode');
+            // UI 重置
+            const userNameEl = document.getElementById('user-name');
+            if (userNameEl) userNameEl.innerText = ''; 
+            
+            const userDeptEl = document.getElementById('user-department');
+            if (userDeptEl) userDeptEl.innerText = '未劃分';
+            
+            const loginBtn = document.getElementById('submit-login-btn');
+            if (loginBtn) { loginBtn.disabled = false; }
+            
+            const cardInput = document.getElementById('cardId');
+            if (cardInput) { 
+                cardInput.value = ''; 
+                cardInput.disabled = false; 
+                cardInput.setCustomValidity(''); 
+            }
+            
+            document.getElementById('offline-tag').style.display = 'none';
+            document.getElementById('order-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            document.body.classList.remove('order-mode');
+            document.body.classList.add('login-mode');
 
-    requestAnimationFrame(() => { 
-        if (cardInput) { 
-            cardInput.focus(); 
-            cardInput.select(); 
-        } 
-    });
-}
+            requestAnimationFrame(() => { 
+                if (cardInput) { 
+                    cardInput.focus(); 
+                    cardInput.select(); 
+                } 
+            });
+        }
 
         /* 🎉 揪團彈窗與網址生成邏輯 */
         function openGroupModal() {
@@ -3299,6 +3330,7 @@ function showLoginSection() {
 
         function goToGroupShop() {
             if (currentGroupGeneratedUrl) {
+                sessionStorage.setItem('orderScrollY', String(window.scrollY));
                 window.location.href = currentGroupGeneratedUrl;
             }
         }
@@ -3601,13 +3633,13 @@ function showLoginSection() {
 
         function toggleFoodDrinkView() {
             if (currentCategoryView === 'food') {
-                showDrinkOnly();
+                showDrinkOnly(true);
             } else {
-                showFoodOnly();
+                showFoodOnly(true);
             }
         }
 
-        function showDrinkOnly() {
+        function showDrinkOnly(scrollToTop = true) {
             currentCategoryView = 'drink';
             localStorage.setItem('selectedCategory', 'drink');
 
@@ -3627,10 +3659,10 @@ function showLoginSection() {
                 </svg>
             `;
 
-            resetSearch();
+            resetSearch(scrollToTop);
         }
 
-        function showFoodOnly() {
+        function showFoodOnly(scrollToTop = true) {
             currentCategoryView = 'food';
             localStorage.setItem('selectedCategory', 'food');
 
@@ -3650,29 +3682,32 @@ function showLoginSection() {
                 </svg>
             `;
 
-            resetSearch();
+            resetSearch(scrollToTop);
         }
 
-        function resetSearch() {
+        function resetSearch(scrollToTop = true) {
             const searchInput = document.getElementById('shopSearchInput');
             if (searchInput) {
                 searchInput.value = '';
                 filterShops();
             }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (scrollToTop) {
+                sessionStorage.removeItem('orderScrollY');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
-        function restoreSelectedCategory() {
+        function restoreSelectedCategory(scrollToTop = true) {
             const savedCat = localStorage.getItem('selectedCategory');
             if (savedCat === 'drink') {
-                showDrinkOnly();
+                showDrinkOnly(scrollToTop);
             } else {
-                showFoodOnly();
+                showFoodOnly(scrollToTop);
             }
         }
 
         function showAllCategories() {
-            restoreSelectedCategory();
+            restoreSelectedCategory(true);
         }
 
         async function executeLogin() {
@@ -3749,7 +3784,9 @@ function showLoginSection() {
                 return;
             }
             
+            // 跳轉前立即儲存目前分類與滾動高度
             localStorage.setItem('selectedCategory', currentCategoryView);
+            sessionStorage.setItem('orderScrollY', String(window.scrollY));
 
             const empName = localStorage.getItem('currentEmpName') || loggedInCardId;
             const targetUrl = `${url}?cardId=${encodeURIComponent(loggedInCardId)}&empName=${encodeURIComponent(empName)}`;
@@ -3800,42 +3837,21 @@ function showLoginSection() {
             document.body.classList.remove('login-mode');
             document.body.classList.add('order-mode');
             
-            restoreSelectedCategory();
+            // 還原分類但不強制捲回頂部，接著跳轉至記憶的滾動高度
+            restoreSelectedCategory(false);
+            const savedScrollY = parseInt(sessionStorage.getItem('orderScrollY') || '0', 10);
+            if (savedScrollY > 0) {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        window.scrollTo(0, savedScrollY);
+                    });
+                });
+            }
+
             fetchOrderHistory(cardId);
             fetchGlobalOrders(cardId);
             startCutoffCountdown();
             checkIsGroupInitiator();
-        }
-
-        function showLoginSection() {
-            window.scrollTo(0, 0);
-            loggedInCardId = '';
-            isSubmitting = false;
-            
-            localStorage.removeItem('currentCardId');
-            localStorage.removeItem('currentEmpName');
-            localStorage.removeItem('currentDepartment');
-            localStorage.removeItem('isOfflineMode');
-            document.getElementById('user-name').innerText = ''; 
-            document.getElementById('user-department').innerText = '未劃分';
-            
-            const loginBtn = document.getElementById('submit-login-btn');
-            if (loginBtn) { loginBtn.disabled = false; }
-            
-            const cardInput = document.getElementById('cardId');
-            if (cardInput) { 
-                cardInput.value = ''; 
-                cardInput.disabled = false; 
-                cardInput.setCustomValidity(''); 
-            }
-            
-            document.getElementById('offline-tag').style.display = 'none';
-            document.getElementById('order-section').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-            document.body.classList.remove('order-mode');
-            document.body.classList.add('login-mode');
-
-            requestAnimationFrame(() => { if (cardInput) { cardInput.focus(); cardInput.select(); } });
         }
 
         function getMilliTimestamp(obj) {
