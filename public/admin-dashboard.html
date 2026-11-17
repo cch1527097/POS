@@ -1011,14 +1011,29 @@
 
         <!-- 分頁四：喝涼涼歷史紀錄 -->
         <div id="drink-mgr" class="tab-content">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🥤 喝涼涼 - 飲料歷史紀錄</h1>
-                    <p class="text-xs text-slate-500 mt-1">檢視完整歷史飲品點餐與繳費明細</p>
+                    <p class="text-xs text-slate-500 mt-1">請選擇單日或日期區間篩選並匯出飲品明細</p>
                 </div>
-                <button class="btn btn-excel-drink w-full sm:w-auto" onclick="exportCategoryToCSV('history', 'drink')">
-                    <i class="fa-solid fa-file-csv"></i> 匯出飲料歷史 CSV
-                </button>
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div class="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-xs font-semibold text-slate-500 whitespace-nowrap">日期：</span>
+                        <div class="w-full sm:w-36">
+                            <input type="date" id="drinkExportStartDate" class="text-xs !h-9" onchange="filterHistoryTableByDate('drink')">
+                        </div>
+                        <span class="text-slate-400 text-xs">~</span>
+                        <div class="w-full sm:w-36">
+                            <input type="date" id="drinkExportEndDate" class="text-xs !h-9" onchange="filterHistoryTableByDate('drink')">
+                        </div>
+                        <button type="button" class="text-xs text-slate-500 hover:text-emerald-600 px-2 py-1 whitespace-nowrap font-medium" onclick="resetHistoryDateFilter('drink')" title="清除日期篩選以檢視全部">
+                            全部
+                        </button>
+                    </div>
+                    <button class="btn btn-excel-drink w-full sm:w-auto" onclick="exportCategoryToCSV('history', 'drink')">
+                        <i class="fa-solid fa-file-csv"></i> 匯出指定日期 CSV
+                    </button>
+                </div>
             </div>
             <div class="card">
                 <div class="scrollable-table-container">
@@ -1047,14 +1062,29 @@
 
         <!-- 分頁五：美味餐點歷史紀錄 -->
         <div id="food-mgr" class="tab-content">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-5">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-slate-800">🍱 美味餐點 - 正餐歷史紀錄</h1>
-                    <p class="text-xs text-slate-500 mt-1">檢視完整歷史餐點點餐與繳費明細</p>
+                    <p class="text-xs text-slate-500 mt-1">請選擇單日或日期區間篩選並匯出餐點明細</p>
                 </div>
-                <button class="btn btn-excel-food w-full sm:w-auto" onclick="exportCategoryToCSV('history', 'food')">
-                    <i class="fa-solid fa-file-csv"></i> 匯出正餐歷史 CSV
-                </button>
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div class="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-xs font-semibold text-slate-500 whitespace-nowrap">日期：</span>
+                        <div class="w-full sm:w-36">
+                            <input type="date" id="foodExportStartDate" class="text-xs !h-9" onchange="filterHistoryTableByDate('food')">
+                        </div>
+                        <span class="text-slate-400 text-xs">~</span>
+                        <div class="w-full sm:w-36">
+                            <input type="date" id="foodExportEndDate" class="text-xs !h-9" onchange="filterHistoryTableByDate('food')">
+                        </div>
+                        <button type="button" class="text-xs text-slate-500 hover:text-emerald-600 px-2 py-1 whitespace-nowrap font-medium" onclick="resetHistoryDateFilter('food')" title="清除日期篩選以檢視全部">
+                            全部
+                        </button>
+                    </div>
+                    <button class="btn btn-excel-food w-full sm:w-auto" onclick="exportCategoryToCSV('history', 'food')">
+                        <i class="fa-solid fa-file-csv"></i> 匯出指定日期 CSV
+                    </button>
+                </div>
             </div>
             <div class="card">
                 <div class="scrollable-table-container">
@@ -2455,11 +2485,71 @@ ${openStores}
             }
         }
 
+        // ------------------ 📅 歷史紀錄日期篩選與匯出控制 ------------------
+        function getTodayTaipeiStr() {
+            const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function getOrderDateStr(order) {
+            const ts = order.timestamp || order.time || order.date || order.datetime;
+            if (!ts) return '';
+            const orderTime = parseTimestamp(ts);
+            if (!orderTime) return '';
+            const oDate = new Date(orderTime);
+            const y = oDate.getFullYear();
+            const m = String(oDate.getMonth() + 1).padStart(2, '0');
+            const d = String(oDate.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function initHistoryExportDates() {
+            const todayStr = getTodayTaipeiStr();
+            ['drinkExportStartDate', 'drinkExportEndDate', 'foodExportStartDate', 'foodExportEndDate'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && !el.value) el.value = todayStr;
+            });
+        }
+
+        function filterHistoryTableByDate(category) {
+            const isDrink = (category === 'drink');
+            const startEl = document.getElementById(isDrink ? 'drinkExportStartDate' : 'foodExportStartDate');
+            const endEl = document.getElementById(isDrink ? 'drinkExportEndDate' : 'foodExportEndDate');
+            const tbodyId = isDrink ? 'drinkTableBody' : 'foodTableBody';
+
+            let list = allHistoryOrders.filter(o => isDrink ? isDrinkOrder(o) : !isDrinkOrder(o));
+            const startVal = startEl ? startEl.value : '';
+            const endVal = endEl ? endEl.value : '';
+
+            if (startVal || endVal) {
+                const sDate = startVal || endVal;
+                const eDate = endVal || startVal;
+                list = list.filter(o => {
+                    const oDateStr = getOrderDateStr(o);
+                    return oDateStr && oDateStr >= sDate && oDateStr <= eDate;
+                });
+            }
+
+            renderOrderTable(list, tbodyId, true, true);
+        }
+
+        function resetHistoryDateFilter(category) {
+            const isDrink = (category === 'drink');
+            const startEl = document.getElementById(isDrink ? 'drinkExportStartDate' : 'foodExportStartDate');
+            const endEl = document.getElementById(isDrink ? 'drinkExportEndDate' : 'foodExportEndDate');
+            if (startEl) startEl.value = '';
+            if (endEl) endEl.value = '';
+            filterHistoryTableByDate(category);
+        }
+
         async function loadHistoryOrders() {
             try {
                 allHistoryOrders = await fetchOrdersFromApi();
-                renderOrderTable(allHistoryOrders.filter(o => isDrinkOrder(o)), 'drinkTableBody', true, true);
-                renderOrderTable(allHistoryOrders.filter(o => !isDrinkOrder(o)), 'foodTableBody', true, true);
+                filterHistoryTableByDate('drink');
+                filterHistoryTableByDate('food');
             } catch (error) {
                 console.error('歷史資料讀取失敗:', error);
             }
@@ -2680,12 +2770,51 @@ ${openStores}
         }
 
         function exportCategoryToCSV(sourceType, targetCategory) {
-            const rawData = (sourceType === 'today') ? currentTodayOrders : allHistoryOrders;
-            const prefix = (sourceType === 'today') ? "今日訂單" : "歷史訂單";
-            const todayStr = new Date().toISOString().split('T')[0];
+            const isDrink = (targetCategory === 'drink');
+            const categoryLabel = isDrink ? '喝涼涼' : '美味餐點';
 
-            if (targetCategory === 'drink') generateCSV(rawData.filter(o => isDrinkOrder(o)), `${prefix}_喝涼涼_${todayStr}`);
-            else if (targetCategory === 'food') generateCSV(rawData.filter(o => !isDrinkOrder(o)), `${prefix}_美味餐點_${todayStr}`);
+            // 儀表板總覽的「今日匯出」維持原邏輯
+            if (sourceType === 'today') {
+                const todayStr = getTodayTaipeiStr();
+                const filtered = currentTodayOrders.filter(o => isDrink ? isDrinkOrder(o) : !isDrinkOrder(o));
+                generateCSV(filtered, `今日訂單_${categoryLabel}_${todayStr}`);
+                return;
+            }
+
+            // 歷史紀錄匯出：強制檢查必須選擇日期
+            const startEl = document.getElementById(isDrink ? 'drinkExportStartDate' : 'foodExportStartDate');
+            const endEl = document.getElementById(isDrink ? 'drinkExportEndDate' : 'foodExportEndDate');
+            const startVal = startEl ? startEl.value : '';
+            const endVal = endEl ? endEl.value : '';
+
+            if (!startVal && !endVal) {
+                showCustomModal({
+                    title: '請先選擇匯出日期',
+                    message: `為避免匯出全部歷史資料，請先選擇「<b>${categoryLabel}</b>」要匯出的日期（或日期區間）！`
+                });
+                return;
+            }
+
+            const sDate = startVal || endVal;
+            const eDate = endVal || startVal;
+
+            if (sDate > eDate) {
+                showCustomModal({
+                    title: '日期區間錯誤',
+                    message: '「開始日期」不能晚於「結束日期」，請重新選擇！'
+                });
+                return;
+            }
+
+            const filteredHistory = allHistoryOrders.filter(o => {
+                const matchCategory = isDrink ? isDrinkOrder(o) : !isDrinkOrder(o);
+                if (!matchCategory) return false;
+                const oDateStr = getOrderDateStr(o);
+                return oDateStr && oDateStr >= sDate && oDateStr <= eDate;
+            });
+
+            const dateRangeLabel = (sDate === eDate) ? sDate : `${sDate}_至_${eDate}`;
+            generateCSV(filteredHistory, `歷史訂單_${categoryLabel}_${dateRangeLabel}`);
         }
 
         window.onload = async function() {
@@ -2713,6 +2842,7 @@ ${openStores}
 
             renderStoreTable();
             renderMenuManagementTable();
+            initHistoryExportDates();
             await loadLockTime(); 
             await loadEmployees();
             await loadOrders();
