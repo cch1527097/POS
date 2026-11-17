@@ -216,6 +216,30 @@ function findMatchedStore(stores, reqStoreId, reqStoreName, cleanMeal) {
     return null;
 }
 
+// 💡 核心輔助函式：判斷訂單是否屬於「喝涼涼」飲品類（與前端規則同步）
+function isDrinkOrderRecord(order, matchedStore) {
+    if (matchedStore && matchedStore.category) {
+        return matchedStore.category === '喝涼涼';
+    }
+
+    const mealStr = (order.meal || '').toLowerCase();
+    const foodExceptions = [
+        '老聃飲食', '沙茶', '茶碗蒸', '烏龍麵', '竑食泰式拌飯', '一鳴', '五路鍋聖',
+        '江滬湯包', '食光飯糰', '秋本家', '得利牛排', '名家大餛飩', '小宸義大利麵',
+        '阿香師油飯', '熱浪小島', '小妞魯味', '李王麻辣專賣', '美味牛排', '麵匡匡',
+        '統元豆花', '偶鵝嚐嚐鵝肉專賣店'
+    ];
+    if (foodExceptions.some(ex => mealStr.includes(ex))) return false;
+
+    const drinkKeywords = [
+        '50嵐', 'tea top', '得正', '尚淳草本茶', '烏弄', '奶茶', '綠茶', '紅茶',
+        '青茶', '烏龍', '飲品', '李記', '可不可熟成紅茶', '鹿兒角', '八曜和茶',
+        '一沐日', '粉圓伯', '旅人阿宏', '茗沏', '迷客夏', '青山', '有茶',
+        '吳家紅茶冰', '先喝道', '麻古茶坊', '樂法', '春耕', '李珍心綠豆沙專門店'
+    ];
+    return drinkKeywords.some(kw => mealStr.includes(kw));
+}
+
 // 同步寫入 public/orders.json（安全包覆機制）
 async function syncOrdersJsonFile() {
     try {
@@ -800,7 +824,7 @@ app.post('/api/lock-time', async (req, res) => {
             `, [newLockDate]);
         }
 
-        const displayStr = newDate ? `${newDate} ${newLockTime}` : newLockTime;
+        const displayStr = newLockDate ? `${newLockDate} ${newLockTime}` : newLockTime;
 
         return res.json({ 
             success: true, 
@@ -1230,60 +1254,127 @@ app.get('/api/order-history', async (req, res) => {
     }
 });
 
+// 📊 匯出 Excel (.xlsx)：支援日期區間與類別篩選，含「訂單明細」與「店家點餐統計表」雙工作表
 app.get('/api/export-excel', async (req, res) => {
     try {
-        // 讀取店家設定清單，作為備用智慧匹配來源
+        const { startDate, endDate, category, allowAll } = req.query;
+
+        // 防呆：若未指定任何日期且未明確允許全部匯出，直接阻擋
+        if (!startDate && !endDate && allowAll !== 'true') {
+            return res.status(400).json({
+                success: false,
+                message: '請先選擇要匯出的日期（或日期區間），禁止一次匯出全部歷史訂單！'
+            });
+        }
+
+        let sDate = '';
+        let eDate = '';
+        if (startDate || endDate) {
+            sDate = String(startDate || endDate).trim();
+            eDate = String(endDate || startDate).trim();
+
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(sDate) || !/^\d{4}-\d{2}-\d{2}$/.test(eDate)) {
+                return res.status(400).json({
+                    success: false,
+                    message: '日期格式不正確，請使用 YYYY-MM-DD 格式！'
+                });
+            }
+
+            if (sDate > eDate) {
+                return res.status(400).json({
+                    success: false,
+                    message: '開始日期不能晚於結束日期，請重新選擇！'
+                });
+            }
+        }
+
+        // 讀取店家設定清單，作為智慧匹配來源
         const storeListRes = await pool.query("SELECT value FROM settings WHERE key = 'store_list';");
         let stores = [];
         if (storeListRes.rows.length > 0 && storeListRes.rows[0].value) {
             try { stores = JSON.parse(storeListRes.rows[0].value) || []; } catch(e) { stores = []; }
         }
 
-        const result = await pool.query(`
+        let sqlQuery = `
             SELECT 
                 o.order_id, o.timestamp, o.card_id, o.name, o.meal, o.spicy, o.note, o.total, o.group_id,
                 COALESCE(o.is_paid, false) AS is_paid,
                 COALESCE(u.department, '未劃分') AS department
             FROM orders o
             LEFT JOIN users u ON o.card_id = u.card_id
-            ORDER BY o.order_id ASC;
-        `);
-        
+        `;
+        const queryParams = [];
+
+        if (sDate && eDate) {
+            sqlQuery += `
+                WHERE COALESCE((o.created_at AT TIME ZONE 'Asia/Taipei')::date, CURRENT_DATE) >= $1::date
+                  AND COALESCE((o.created_at AT TIME ZONE 'Asia/Taipei')::date, CURRENT_DATE) <= $2::date
+            `;
+            queryParams.push(sDate, eDate);
+        }
+
+        sqlQuery += ` ORDER BY o.order_id ASC;`;
+
+        const result = await pool.query(sqlQuery, queryParams);
+
+        // 依類別（drink / food / all）篩選資料
+        const targetCategory = (category || 'all').toLowerCase();
+        const filteredRows = result.rows.filter(row => {
+            const matchedStore = findMatchedStore(stores, '', '', row.meal || '');
+            const isDrink = isDrinkOrderRecord(row, matchedStore);
+            if (targetCategory === 'drink') return isDrink;
+            if (targetCategory === 'food') return !isDrink;
+            return true;
+        });
+
+        if (filteredRows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: '所選日期區間內無符合條件的訂餐資料！'
+            });
+        }
+
         const workbook = new ExcelJS.Workbook();
-        
+        workbook.creator = '醫鹿管理系統';
+        workbook.created = new Date();
+
         // 工作表 1：訂單明細
         const sheet1 = workbook.addWorksheet('訂單明細');
         sheet1.columns = [
-            { header: '訂單ID', key: 'orderId', width: 22 },
-            { header: '時間', key: 'timestamp', width: 25 },
+            { header: '訂單編號', key: 'orderId', width: 22 },
+            { header: '類別', key: 'categoryLabel', width: 12 },
+            { header: '點餐時間', key: 'timestamp', width: 24 },
             { header: '部門', key: 'department', width: 15 },
-            { header: '員工卡號', key: 'cardId', width: 15 },
-            { header: '員工姓名', key: 'name', width: 15 }, 
+            { header: '員工卡號', key: 'cardId', width: 14 },
+            { header: '員工姓名', key: 'name', width: 14 },
             { header: '店家名稱', key: 'storeName', width: 20 },
-            { header: '餐點內容', key: 'mealContent', width: 35 },
-            { header: '醬料辣度', key: 'spicy', width: 15 },
-            { header: '備註', key: 'note', width: 25 },
+            { header: '餐點內容', key: 'mealContent', width: 38 },
+            { header: '甜冰/客製', key: 'spicy', width: 16 },
+            { header: '備註', key: 'note', width: 24 },
             { header: '金額', key: 'total', width: 12 },
-            { header: '揪團編號', key: 'groupId', width: 18 },
             { header: '繳費狀態', key: 'isPaid', width: 12 }
         ];
-        
+
         // 工作表 2：店家點餐統計表
         const sheet2 = workbook.addWorksheet('店家點餐統計表');
         sheet2.columns = [
-            { header: '店家名稱', key: 'storeName', width: 20 },
-            { header: '餐點內容', key: 'mealContent', width: 35 },
-            { header: '總點餐次數', key: 'count', width: 15 }
+            { header: '店家名稱', key: 'storeName', width: 22 },
+            { header: '品項明細', key: 'mealContent', width: 42 },
+            { header: '訂購數量', key: 'count', width: 14 },
+            { header: '小計金額', key: 'amount', width: 14 }
         ];
 
         const statistics = {};
+        let grandTotalAmount = 0;
 
-        result.rows.forEach(row => {
+        filteredRows.forEach(row => {
             const rawMeal = (row.meal || '').trim();
+            const matchedStore = findMatchedStore(stores, '', '', rawMeal);
+            const isDrink = isDrinkOrderRecord(row, matchedStore);
             let storeName = '';
             let mealContent = rawMeal;
 
-            // 💡 1. 優先從文字中的冒號「：」或「:」拆分店家名稱與餐點內容
+            // 1. 優先從全形冒號「：」或半形冒號「:」拆分店家名稱與餐點內容
             if (rawMeal.includes('：')) {
                 const parts = rawMeal.split('：');
                 storeName = parts[0].trim();
@@ -1292,69 +1383,127 @@ app.get('/api/export-excel', async (req, res) => {
                 const parts = rawMeal.split(':');
                 storeName = parts[0].trim();
                 mealContent = parts.slice(1).join(':').trim();
+            } else if (matchedStore && matchedStore.name) {
+                storeName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
             } else {
-                // 💡 2. 若文字無冒號，嘗試透過智慧比對函數查找店家
-                const matchedStore = findMatchedStore(stores, '', '', rawMeal);
-                if (matchedStore && matchedStore.name) {
-                    storeName = matchedStore.name.replace(/\s*\([^)]*\)/g, '').trim();
-                } else {
-                    storeName = '未指定店家';
-                }
+                storeName = '未指定店家';
             }
+
+            const rowAmount = !isNaN(Number(row.total)) ? Number(row.total) : 0;
+            grandTotalAmount += rowAmount;
 
             sheet1.addRow({
                 orderId: String(row.order_id),
-                timestamp: row.timestamp,
-                department: row.department,
+                categoryLabel: isDrink ? '喝涼涼' : '美味餐點',
+                timestamp: row.timestamp || '-',
+                department: row.department || '未劃分',
                 cardId: row.card_id,
-                name: row.name || '未知', 
+                name: row.name || '未知',
                 storeName: storeName,
                 mealContent: mealContent,
                 spicy: row.spicy || '無',
                 note: row.note || '無',
-                total: !isNaN(Number(row.total)) ? Number(row.total) : 0,
-                groupId: row.group_id || '-',
+                total: rowAmount,
                 isPaid: row.is_paid ? '已繳費' : '未繳費'
             });
 
+            // 解析品項數量（支援 *2 或 x2 格式，預設 1）
             if (mealContent) {
-                const statKey = `${storeName} - ${mealContent}`;
-                if (!statistics[statKey]) {
-                    statistics[statKey] = { storeName, mealContent, count: 0 };
+                let itemQty = 1;
+                let cleanItemName = mealContent;
+                const qtyMatch = mealContent.match(/[*xX×]\s*(\d+)\s*$/);
+                if (qtyMatch) {
+                    itemQty = parseInt(qtyMatch[1], 10) || 1;
+                    cleanItemName = mealContent.replace(/[*xX×]\s*\d+\s*$/, '').trim();
                 }
-                statistics[statKey].count += 1;
+
+                const statKey = `${storeName}__${cleanItemName}`;
+                if (!statistics[statKey]) {
+                    statistics[statKey] = { storeName, mealContent: cleanItemName, count: 0, amount: 0 };
+                }
+                statistics[statKey].count += itemQty;
+                statistics[statKey].amount += rowAmount;
             }
         });
 
-        Object.values(statistics).forEach(stat => {
+        // 工作表 1 底部加總列
+        const summaryRow1 = sheet1.addRow({
+            orderId: '總計',
+            categoryLabel: `共 ${filteredRows.length} 筆`,
+            timestamp: '',
+            department: '',
+            cardId: '',
+            name: '',
+            storeName: '',
+            mealContent: '',
+            spicy: '',
+            note: '',
+            total: grandTotalAmount,
+            isPaid: ''
+        });
+        summaryRow1.font = { bold: true, size: 11 };
+        summaryRow1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'ECFDF5' } };
+
+        // 工作表 2 依店家排序並寫入統計列
+        const sortedStats = Object.values(statistics).sort((a, b) => a.storeName.localeCompare(b.storeName, 'zh-Hant'));
+        let totalItemCount = 0;
+        let totalStatAmount = 0;
+
+        sortedStats.forEach(stat => {
+            totalItemCount += stat.count;
+            totalStatAmount += stat.amount;
             sheet2.addRow({
                 storeName: stat.storeName,
                 mealContent: stat.mealContent,
-                count: stat.count
+                count: stat.count,
+                amount: stat.amount
             });
         });
 
-        [sheet1, sheet2].forEach(sheet => {
+        const summaryRow2 = sheet2.addRow({
+            storeName: '總計',
+            mealContent: '',
+            count: totalItemCount,
+            amount: totalStatAmount
+        });
+        summaryRow2.font = { bold: true, size: 11 };
+        summaryRow2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'ECFDF5' } };
+
+        // 統一樣式美化
+        [sheet1, sheet2].forEach((sheet, idx) => {
             const headerRow = sheet.getRow(1);
-            headerRow.height = 24;
+            headerRow.height = 26;
             headerRow.font = { bold: true, color: { argb: 'FFFFFF' }, size: 11 };
-            headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '2B4C23' } };
-            
-            sheet.eachRow((row) => {
-                row.eachCell(cell => {
-                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '047857' } };
+
+            sheet.eachRow((row, rowNumber) => {
+                if (rowNumber > 1) row.height = 22;
+                row.eachCell((cell, colNumber) => {
+                    const isLeftAlignCol = (idx === 0 && (colNumber === 8 || colNumber === 10)) || (idx === 1 && colNumber === 2);
+                    cell.alignment = {
+                        vertical: 'middle',
+                        horizontal: isLeftAlignCol ? 'left' : 'center',
+                        wrapText: true
+                    };
                     cell.border = {
-                        top: { style: 'thin', color: { argb: 'DDDDDD' } },
-                        bottom: { style: 'thin', color: { argb: 'DDDDDD' } },
-                        left: { style: 'thin', color: { argb: 'DDDDDD' } },
-                        right: { style: 'thin', color: { argb: 'DDDDDD' } }
+                        top: { style: 'thin', color: { argb: 'E2E8F0' } },
+                        bottom: { style: 'thin', color: { argb: 'E2E8F0' } },
+                        left: { style: 'thin', color: { argb: 'E2E8F0' } },
+                        right: { style: 'thin', color: { argb: 'E2E8F0' } }
                     };
                 });
             });
         });
 
+        // 金額欄位套用千分位格式
+        sheet1.getColumn('total').numFmt = '#,##0';
+        sheet2.getColumn('amount').numFmt = '#,##0';
+
+        const catName = targetCategory === 'drink' ? 'drink' : (targetCategory === 'food' ? 'food' : 'all');
+        const dateTag = sDate ? (sDate === eDate ? sDate : `${sDate}_to_${eDate}`) : Date.now();
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=orders_${Date.now()}.xlsx`);
+        res.setHeader('Content-Disposition', `attachment; filename=orders_${catName}_${dateTag}.xlsx`);
 
         await workbook.xlsx.write(res);
         res.end();
