@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>麵匡匡拉麵食堂 - 醫鹿訂餐系統</title>
+    <title>麵匡匡拉麵食堂 鹿港鹿東店 - 醫鹿訂餐系統</title>
     <!-- 設定分頁 Favicon 圖示 -->
     <link rel="icon" href="logo.gif" type="image/gif">
     <link rel="shortcut icon" href="logo.gif" type="image/gif">
@@ -316,9 +316,10 @@
 
         .menu-content { flex: 1; min-width: 0; }
         .category-block { margin-bottom: 30px; scroll-margin-top: 130px; }
-        .category-title { font-size: 18px; font-weight: 700; color: var(--primary); margin: 0 0 14px 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 6px; }
+        .category-title { font-size: 18px; font-weight: 700; color: var(--primary); margin: 0 0 14px 0; border-bottom: 2px solid var(--primary-light); padding-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+        .category-subtitle { font-size: 12px; font-weight: 500; color: var(--text-muted); }
         
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
         
         .item-card {
             background: #fff;
@@ -332,14 +333,15 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
         .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.05); }
-        .item-info { flex: 1; padding-right: 12px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
-        .item-name { font-weight: 700; color: var(--text-dark); font-size: 15px; margin-bottom: 6px; word-break: break-all; }
+        .item-info { flex: 1; padding-right: 12px; display: flex; flex-direction: column; height: 100%; justify-content: space-between; min-width: 0; }
+        .item-name { font-weight: 700; color: var(--text-dark); font-size: 15px; margin-bottom: 4px; word-break: break-word; }
+        .item-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .item-price-zone { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
-        .item-price { color: var(--text-dark); font-weight: 700; font-size: 15px; }
+        .item-price { color: var(--primary); font-weight: 800; font-size: 15px; }
         
         .item-img-placeholder {
-            width: 70px;
-            height: 70px;
+            width: 66px;
+            height: 66px;
             background: #f8fafc;
             border-radius: 8px;
             display: flex;
@@ -356,9 +358,10 @@
         .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 8px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 12px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
         
-        .action-zone { display: flex; align-items: center; gap: 8px; }
+        .action-zone { display: flex; align-items: center; gap: 6px; margin-left: 8px; flex-shrink: 0; }
         .btn-qty { background: #f1f5f9; border: none; color: var(--text-dark); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; user-select: none; }
         .btn-qty:hover { background: var(--primary); color: white; }
+        .qty-num { min-width: 16px; text-align: center; font-weight: 700; font-size: 14px; }
 
         /* ==================== 懸浮按鈕群 & 截止時間懸浮元件 (電腦預設) ==================== */
         .fab-container {
@@ -564,7 +567,7 @@
         .modal-container {
             background: #fff;
             width: 100%;
-            max-width: 480px;
+            max-width: 520px;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.18);
             overflow: hidden;
@@ -643,14 +646,14 @@
 
         /* 客製化選單 - 按鈕網格 */
         .option-section {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .option-section-title {
             font-size: 14px;
             font-weight: 700;
             color: #475569;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 4px;
@@ -662,17 +665,28 @@
             margin-right: 2px;
         }
 
+        .option-section-hint {
+            font-size: 12px;
+            font-weight: 400;
+            color: #64748b;
+            margin-left: 4px;
+        }
+
         .option-grid {
             display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .option-grid-3 {
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
         }
 
         .opt-card {
             background: #ffffff;
             border: 1px solid #d1d5db;
-            border-radius: 12px;
-            padding: 10px 6px;
+            border-radius: 10px;
+            padding: 8px 8px;
             text-align: center;
             font-size: 13px;
             font-weight: 600;
@@ -681,10 +695,23 @@
             user-select: none;
             transition: all 0.15s ease;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 42px;
+            min-height: 40px;
             box-sizing: border-box;
+            line-height: 1.3;
+        }
+
+        .opt-card small {
+            font-size: 11px;
+            font-weight: 500;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .opt-card.selected small {
+            color: var(--primary-hover);
         }
 
         .opt-card:hover {
@@ -1065,7 +1092,7 @@
             .store-logo { width: 60px; height: 60px; font-size: 24px; border-radius: 12px; }
             .store-details h1 { font-size: 18px; }
             .menu-grid { grid-template-columns: 1fr; }
-            .option-grid { grid-template-columns: repeat(2, 1fr); }
+            .option-grid-3 { grid-template-columns: repeat(2, 1fr); }
 
             /* ⏱️ 手機版：拉高「截止時間懸浮框」，與底部工作列保持適度間距 */
             .cutoff-float-badge { 
@@ -1341,7 +1368,7 @@
                     <circle cx="11" cy="11" r="8"/>
                     <path d="M21 21l-4.35-4.35"/>
                 </svg>
-                <input type="text" id="search" oninput="debounceFilterMenu()" placeholder="搜尋商品（例如：豚骨、唐揚雞、柑橘...）">
+                <input type="text" id="search" oninput="debounceFilterMenu()" placeholder="搜尋商品（例如：豚骨、繁盛、唐揚雞、豆乳...）">
             </div>
         </div>
 
@@ -1473,7 +1500,7 @@
         <div class="store-info-left">
             <div class="store-logo">麵</div>
             <div class="store-details">
-                <h1>麵匡匡拉麵食堂 鹿港店</h1>
+                <h1>麵匡匡拉麵食堂 鹿港鹿東店</h1>
                 <div class="store-meta">
                     <span class="rating">⭐ 4.9 (583)</span>
                     <span>🕒 11:00 ~ 20:30</span>
@@ -1484,10 +1511,10 @@
         </div>
     </div>
 
-    <!-- 低消訊息橫幅 -->
+    <!-- 低消訊息橫幅（比照快一點官方外送門檻） -->
     <div class="promo-banner">
-        <span class="promo-badge">低消</span>
-        <span class="promo-text">外送最低金額 <b>800</b> 元</span>
+        <span class="promo-badge">外送</span>
+        <span class="promo-text">專屬外送服務：單筆結帳滿 <b>650</b> 元起送</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -1786,7 +1813,6 @@ const branchUrls = {
 };
 
 function goBack() {
-    // 點擊「離開點餐」：使用 replace 替換當前頁面歷史紀錄退回 index.html
     window.location.replace('index.html');
 }
 
@@ -1800,65 +1826,79 @@ function goDrinkPage() {
     window.location.replace('index.html');
 }
 
-// 攔截瀏覽器快取 (BFCache) 與上一頁載入
 window.addEventListener('pageshow', function (event) {
     if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
         checkAccess();
     }
 });
 
+// ==================== 比照快一點 QuickClick 六大官方分類與品項 ====================
+const categorySubtitles = {
+    "拉麵": "經典職人湯頭・可選麵體硬度與加購豐盛套餐",
+    "拉麵繁盛": "肉量升級・額外增加 2片豬叉燒＋4片雞叉燒",
+    "拉麵-豪華海鮮": "海味加碼・額外增加 3隻鳳尾蝦＋4片嫩滑魚片",
+    "美味小菜": "招牌炸物、配飯與人氣涼菜",
+    "單點好料": "加麵、叉燒肉盤與配料加點",
+    "冷飲": "沁涼佐餐茶飲（甜度冰量固定）"
+};
+
 const menuItems = [
-    // === 決定今天怎麼吃（主餐拉麵） ===
-    {name: "果韻海鮮 輕拉麵", price: 135, category: "美味拉麵", icon: "🍜", hasCustom: true},
-    {name: "醇厚豆韻 熟成醬油拉麵", price: 155, category: "美味拉麵", icon: "🍜", hasCustom: true},
-    {name: "香濃起司 牛奶拉麵", price: 170, category: "美味拉麵", icon: "🧀", hasCustom: true},
-    {name: "金沙工藝 鹹蛋黃拉麵", price: 175, category: "美味拉麵", icon: "🍳", hasCustom: true},
-    {name: "溫潤暖心 雞白湯拉麵", price: 175, category: "美味拉麵", icon: "🍗", hasCustom: true},
-    {name: "首席選品 極濃豚骨拉麵", price: 180, category: "美味拉麵", icon: "🦐", hasCustom: true},
-    {name: "椒香四溢 麻辣拉麵", price: 185, category: "美味拉麵", icon: "🌶️", hasCustom: true},
-    {name: "限量旬味 炙燒牛蛤蜊拉麵", price: 255, category: "美味拉麵", icon: "🐔", hasCustom: true},
-    {name: "光泉5.1濃醇豆乳拉麵", price: 175, category: "美味拉麵", icon: "🥩", hasCustom: true},
-    {name: "果韻海鮮 輕拉麵-繁盛", price: 195, category: "美味拉麵", icon: "🍜", hasCustom: true},
-    {name: "醇厚豆韻 熟成醬油拉麵-繁盛", price: 215, category: "美味拉麵", icon: "🍜", hasCustom: true},
-    {name: "香濃起司 牛奶拉麵-繁盛", price: 230, category: "美味拉麵", icon: "🧀", hasCustom: true},
-    {name: "金沙工藝 鹹蛋黃拉麵-繁盛", price: 235, category: "美味拉麵", icon: "🍳", hasCustom: true},
-    {name: "溫潤暖心 雞白湯拉麵-繁盛", price: 235, category: "美味拉麵", icon: "🍗", hasCustom: true},
-    {name: "首席選品 極濃豚骨拉麵-繁盛", price: 240, category: "美味拉麵", icon: "🦐", hasCustom: true},
-    {name: "椒香四溢 麻辣拉麵-繁盛", price: 245, category: "美味拉麵", icon: "🌶️", hasCustom: true},
-    {name: "限量旬味 炙燒牛蛤蜊拉麵-繁盛", price: 315, category: "美味拉麵", icon: "🐔", hasCustom: true},
-    {name: "光泉5.1濃醇豆乳拉麵-繁盛", price: 235, category: "美味拉麵", icon: "🥩", hasCustom: true},
-    {name: "果韻海鮮 輕拉麵-豪華海鮮", price: 220, category: "美味拉麵", icon: "🍜", hasCustom: true},
-    {name: "醇厚豆韻 熟成醬油拉麵-豪華海鮮", price: 240, category: "美味拉麵", icon: "🍜", hasCustom: true},
-    {name: "香濃起司 牛奶拉麵-豪華海鮮", price: 255, category: "美味拉麵", icon: "🧀", hasCustom: true},
-    {name: "金沙工藝 鹹蛋黃拉麵-豪華海鮮", price: 260, category: "美味拉麵", icon: "🍳", hasCustom: true},
-    {name: "溫潤暖心 雞白湯拉麵-豪華海鮮", price: 260, category: "美味拉麵", icon: "🍗", hasCustom: true},
-    {name: "首席選品 極濃豚骨拉麵-豪華海鮮", price: 265, category: "美味拉麵", icon: "🦐", hasCustom: true},
-    {name: "椒香四溢 麻辣拉麵-豪華海鮮", price: 270, category: "美味拉麵", icon: "🌶️", hasCustom: true},
-    {name: "限量旬味 炙燒牛蛤蜊拉麵-豪華海鮮", price: 340, category: "美味拉麵", icon: "🐔", hasCustom: true},
-    {name: "光泉5.1濃醇豆乳拉麵-豪華海鮮", price: 260, category: "美味拉麵", icon: "🥩", hasCustom: true},
-    
+    // === 1. 拉麵（標準款） ===
+    {name: "果韻海鮮・輕拉麵", desc: "青檸微酸與海鮮的完美比例，呈現極簡的純粹美味（固定：1鳳尾蝦+2魚片）", price: 135, category: "拉麵", icon: "🍜", hasCustom: true},
+    {name: "醇厚豆韻・熟成醬油拉麵", desc: "熟成醬油釀出黃豆原香，湯頭溫潤輕甜，韻味悠長", price: 155, category: "拉麵", icon: "🍜", hasCustom: true},
+    {name: "香濃起司・牛奶拉麵", desc: "濃濃起司與乳香完美交織，湯質醇厚，究極之作", price: 170, category: "拉麵", icon: "🧀", hasCustom: true},
+    {name: "金沙工藝・鹹蛋黃拉麵", desc: "在地鹹蛋黃研磨細膩金沙，鹹香層次分明，獨家風味", price: 175, category: "拉麵", icon: "🍳", hasCustom: true},
+    {name: "溫潤暖心・雞白湯拉麵", desc: "濃郁雞白湯結合炙燒叉燒，香氣層層堆疊，暖意人心", price: 175, category: "拉麵", icon: "🍗", hasCustom: true},
+    {name: "光泉5.1濃醇豆乳拉麵", desc: "特選光泉特濃5.1無加糖豆漿，為職人湯頭注入絲滑濃郁靈魂（固定：雞叉燒4片）", price: 175, category: "拉麵", icon: "🥛", hasCustom: true},
+    {name: "首席選品・極濃豚骨拉麵", desc: "長時熬煮淬煉，湯頭鮮甜醇厚，療癒入魂", price: 180, category: "拉麵", icon: "🍲", hasCustom: true},
+    {name: "椒香四溢・麻辣拉麵", desc: "獨家秘製香麻配方，辛而不燥，成就層次感分明", price: 185, category: "拉麵", icon: "🌶️", hasCustom: true},
+    {name: "限量旬味・炙燒牛蛤蜊拉麵", desc: "鮮甜蛤蜊與炙燒牛培根，合奏完美的海陸交響樂（固定：牛培根+蛤蜊）", price: 255, category: "拉麵", icon: "🥩", hasCustom: true},
 
-    // === 多點多開心（名物與單點好料） ===
-    {name: "招牌唐揚雞", price: 105, category: "名物與單點", icon: "🍗", hasCustom: false},
-    {name: "和風溫時蔬", price: 60, category: "名物與單點", icon: "🍗", hasCustom: false},
-    {name: "明太子叉燒飯", price: 65, category: "名物與單點", icon: "🍚", hasCustom: false},
-    {name: "蜜煉乳糰子(2串)", price: 55, category: "名物與單點", icon: "🍡", hasCustom: false},
-    {name: "蜜煉乳糰子(1串)", price: 30, category: "名物與單點", icon: "🍡", hasCustom: false},
-    {name: "胡麻龍鬍涼菜", price: 60, category: "名物與單點", icon: "🥗", hasCustom: false},
-    {name: "海味御品泡菜", price: 40, category: "名物與單點", icon: "🥗", hasCustom: false},
-    {name: "胡麻豆腐", price: 40, category: "名物與單點", icon: "🧊", hasCustom: false},
-    {name: "豬雞拼盤", price: 80, category: "名物與單點", icon: "🥓", hasCustom: false},
-    {name: "豬叉燒 (5片)", price: 95, category: "名物與單點", icon: "🥩", hasCustom: false},
-    {name: "雞叉燒 (8片)", price: 60, category: "名物與單點", icon: "🐔", hasCustom: false},
-    {name: "溏心蛋", price: 30, category: "名物與單點", icon: "🥚", hasCustom: false},
-    {name: "白飯", price: 15, category: "名物與單點", icon: "🍚", hasCustom: false},
-    {name: "加麵 (細麵)", price: 25, category: "名物與單點", icon: "🍜", hasCustom: false},
-    {name: "加麵 (粗麵)", price: 25, category: "名物與單點", icon: "🍜", hasCustom: false},
+    // === 2. 拉麵繁盛（+2片豬叉燒 +4片雞叉燒） ===
+    {name: "果韻海鮮・輕拉麵-繁盛", desc: "固定1鳳尾蝦+2魚片｜額外增加 2片豬叉燒與4片雞叉燒", price: 195, category: "拉麵繁盛", icon: "🍜", hasCustom: true},
+    {name: "醇厚豆韻・熟成醬油拉麵-繁盛", desc: "黃豆原香溫潤湯頭｜額外增加 2片豬叉燒與4片雞叉燒", price: 215, category: "拉麵繁盛", icon: "🍜", hasCustom: true},
+    {name: "香濃起司・牛奶拉麵-繁盛", desc: "濃濃起司與乳香交織｜額外增加 2片豬叉燒與4片雞叉燒", price: 230, category: "拉麵繁盛", icon: "🧀", hasCustom: true},
+    {name: "金沙工藝・鹹蛋黃拉麵-繁盛", desc: "細膩金沙鹹香湯頭｜額外增加 2片豬叉燒與4片雞叉燒", price: 235, category: "拉麵繁盛", icon: "🍳", hasCustom: true},
+    {name: "溫潤暖心・雞白湯拉麵-繁盛", desc: "濃而不膩雞白湯｜額外增加 2片豬叉燒與4片雞叉燒", price: 235, category: "拉麵繁盛", icon: "🍗", hasCustom: true},
+    {name: "光泉5.1濃醇豆乳拉麵-繁盛", desc: "特選光泉5.1無加糖豆漿湯頭｜額外增加 2片豬叉燒與4片雞叉燒", price: 235, category: "拉麵繁盛", icon: "🥛", hasCustom: true},
+    {name: "首席選品・極濃豚骨拉麵-繁盛", desc: "長時熬煮鮮甜醇厚豚骨｜額外增加 2片豬叉燒與4片雞叉燒", price: 240, category: "拉麵繁盛", icon: "🍲", hasCustom: true},
+    {name: "椒香四溢・麻辣拉麵-繁盛", desc: "獨家秘製香麻辛而不燥｜額外增加 2片豬叉燒與4片雞叉燒", price: 245, category: "拉麵繁盛", icon: "🌶️", hasCustom: true},
+    {name: "限量旬味・炙燒牛蛤蜊拉麵-繁盛", desc: "固定牛培根+蛤蜊｜額外增加 2片豬叉燒與4片雞叉燒", price: 315, category: "拉麵繁盛", icon: "🥩", hasCustom: true},
 
-    // === 呷涼涼（飲品） ===
-    {name: "四季春茶(無糖)", price: 40, category: "呷涼涼", icon: "🍵", hasCustom: false},
-    {name: "桂花紅茶(微糖)", price: 40, category: "呷涼涼", icon: "🍵", hasCustom: false},
-    {name: "野莓果茶", price: 40, category: "呷涼涼", icon: "🍹", hasCustom: false}
+    // === 3. 拉麵-豪華海鮮（+3隻鳳尾蝦 +4片嫩滑魚片） ===
+    {name: "果韻海鮮・輕拉麵-豪華海鮮", desc: "固定1鳳尾蝦+2魚片｜額外增加 3隻鳳尾蝦+4片嫩滑魚片", price: 220, category: "拉麵-豪華海鮮", icon: "🦐", hasCustom: true},
+    {name: "醇厚豆韻・熟成醬油拉麵-豪華海鮮", desc: "黃豆原香溫潤湯頭｜額外增加 3隻鳳尾蝦+4片嫩滑魚片", price: 240, category: "拉麵-豪華海鮮", icon: "🦐", hasCustom: true},
+    {name: "香濃起司・牛奶拉麵-豪華海鮮", desc: "濃濃起司與乳香交織｜額外增加 3隻鳳尾蝦+4片嫩滑魚片", price: 255, category: "拉麵-豪華海鮮", icon: "🦐", hasCustom: true},
+    {name: "金沙工藝・鹹蛋黃拉麵-豪華海鮮", desc: "細膩金沙鹹香湯頭｜額外增加 3隻鳳尾蝦+4片嫩滑魚片", price: 260, category: "拉麵-豪華海鮮", icon: "🦐", hasCustom: true},
+    {name: "溫潤暖心・雞白湯拉麵-豪華海鮮", desc: "濃郁雞白湯底｜額外增加 3隻鳳尾蝦+4片嫩滑魚片", price: 260, category: "拉麵-豪華海鮮", icon: "🦐", hasCustom: true},
+    {name: "光泉5.1濃醇豆乳拉麵-豪華海鮮", desc: "特選光泉5.1無加糖豆漿湯頭｜額外增加 3隻鳳尾蝦+4片嫩滑魚片", price: 260, category: "拉麵-豪華海鮮", icon: "🦐", hasCustom: true},
+    {name: "首席選品・極濃豚骨拉麵-豪華海鮮", desc: "長時熬煮鮮甜醇厚豚骨｜額外增加 3隻鳳尾蝦+4片嫩滑魚片", price: 265, category: "拉麵-豪華海鮮", icon: "🦐", hasCustom: true},
+    {name: "椒香四溢・麻辣拉麵-豪華海鮮", desc: "獨家秘製香麻辛而不燥｜額外增加 3隻鳳尾蝦+4片嫩滑魚片", price: 270, category: "拉麵-豪華海鮮", icon: "🦐", hasCustom: true},
+    {name: "限量旬味・炙燒牛蛤蜊拉麵-豪華海鮮", desc: "固定牛培根+蛤蜊｜額外增加 3隻鳳尾蝦+4片嫩滑魚片", price: 340, category: "拉麵-豪華海鮮", icon: "🦐", hasCustom: true},
+
+    // === 4. 美味小菜 ===
+    {name: "招牌唐揚雞", desc: "外酥內嫩多汁日式炸雞", price: 105, category: "美味小菜", icon: "🍗", hasCustom: false},
+    {name: "明太子叉燒飯", desc: "炙燒叉燒丁佐濃郁明太子醬（微辣）", price: 65, category: "美味小菜", icon: "🍚", hasCustom: false},
+    {name: "和風溫時蔬", desc: "清爽甘甜和風醬汁燙時蔬", price: 60, category: "美味小菜", icon: "🥬", hasCustom: false},
+    {name: "胡麻龍鬚涼菜", desc: "脆口龍鬚菜淋上香濃胡麻醬", price: 60, category: "美味小菜", icon: "🥗", hasCustom: false},
+    {name: "蜜煉乳糰子(2串)", desc: "Q彈日式烤糰子淋香甜煉乳（2串）", price: 55, category: "美味小菜", icon: "🍡", hasCustom: false},
+    {name: "蜜煉乳糰子(1串)", desc: "Q彈日式烤糰子淋香甜煉乳（1串）", price: 30, category: "美味小菜", icon: "🍡", hasCustom: false},
+    {name: "海味御品泡菜", desc: "爽脆開胃黄金海味泡菜", price: 40, category: "美味小菜", icon: "🥗", hasCustom: false},
+    {name: "胡麻豆腐", desc: "滑嫩涼豆腐佐香醇胡麻醬", price: 40, category: "美味小菜", icon: "🧊", hasCustom: false},
+
+    // === 5. 單點好料 ===
+    {name: "豬叉燒 (5片)", desc: "炙燒厚切五花豬叉燒 5 片", price: 95, category: "單點好料", icon: "🥩", hasCustom: false},
+    {name: "豬雞拼盤", desc: "豬叉燒與舒肥雞叉燒雙拼組合", price: 80, category: "單點好料", icon: "🥓", hasCustom: false},
+    {name: "雞叉燒 (8片)", desc: "軟嫩多汁舒肥雞胸叉燒 8 片", price: 60, category: "單點好料", icon: "🐔", hasCustom: false},
+    {name: "溏心蛋", desc: "日式秘製滷汁半熟溏心蛋", price: 30, category: "單點好料", icon: "🥚", hasCustom: false},
+    {name: "加麵 (細麵)", desc: "單點加量細麵一份", price: 25, category: "單點好料", icon: "🍜", hasCustom: false},
+    {name: "加麵 (粗麵)", desc: "單點加量Q彈粗麵一份", price: 25, category: "單點好料", icon: "🍜", hasCustom: false},
+    {name: "白飯", desc: "香Q白米飯（約160g）", price: 15, category: "單點好料", icon: "🍚", hasCustom: false},
+
+    // === 6. 冷飲 ===
+    {name: "四季春茶(無糖)", desc: "清香回甘台灣四季春茶（無糖）", price: 40, category: "冷飲", icon: "🍵", hasCustom: false},
+    {name: "桂花紅茶(微糖)", desc: "淡雅桂花釀香氣紅茶（微糖）", price: 40, category: "冷飲", icon: "🍵", hasCustom: false},
+    {name: "野莓果茶", desc: "酸甜莓果果香冰茶", price: 40, category: "冷飲", icon: "🍹", hasCustom: false}
 ];
 
 let cart = {};
@@ -2376,6 +2416,10 @@ async function startCutoffCountdown() {
     }, 1000);
 }
 
+function normalizeItemName(str) {
+    return String(str || '').replace(/[・\s\-【】]/g, '').trim();
+}
+
 async function syncPricesFromBackend() {
     let stores = null;
     try {
@@ -2403,13 +2447,13 @@ async function syncPricesFromBackend() {
     const itemPriceMap = {};
     store.items.forEach(item => {
         if (item.name) {
-            itemPriceMap[item.name.trim()] = item;
+            itemPriceMap[normalizeItemName(item.name)] = item;
         }
     });
 
     let updated = false;
     menuItems.forEach(item => {
-        const matched = itemPriceMap[item.name];
+        const matched = itemPriceMap[normalizeItemName(item.name)];
         if (matched && matched.price !== undefined && item.price !== Number(matched.price)) {
             item.price = Number(matched.price);
             updated = true;
@@ -2707,7 +2751,8 @@ function renderMenu(items) {
 
         const title = document.createElement("div");
         title.className = "category-title";
-        title.innerText = cat;
+        const subText = categorySubtitles[cat] ? `<span class="category-subtitle">${categorySubtitles[cat]}</span>` : '';
+        title.innerHTML = `<span>${cat}</span>${subText}`;
         block.appendChild(title);
 
         const grid = document.createElement("div");
@@ -2726,7 +2771,10 @@ function renderMenu(items) {
 
             card.innerHTML = `
                 <div class="item-info">
-                    <div class="item-name">${item.name}</div>
+                    <div>
+                        <div class="item-name">${item.name}</div>
+                        ${item.desc ? `<div class="item-desc" title="${item.desc}">${item.desc}</div>` : ''}
+                    </div>
                     <div class="item-price-zone">
                         <div class="item-price">$${item.price}</div>
                     </div>
@@ -2735,7 +2783,7 @@ function renderMenu(items) {
                     ${item.icon || '🍜'}
                     ${currentQty > 0 ? `<div style="position:absolute; top:-6px; right:-6px; background:var(--accent); color:white; font-size:11px; font-weight:bold; border-radius:10px; padding:2px 6px;">${currentQty}</div>` : ''}
                 </div>
-                <div class="action-zone" style="margin-left: 10px;">
+                <div class="action-zone">
                     <button class="btn-qty" onclick="removeOneBaseItem('${item.name}')">-</button>
                     <span class="qty-num">${currentQty}</span>
                     <button class="btn-qty" onclick="clickAddItem('${item.name}')">+</button>
@@ -2761,7 +2809,8 @@ function filterMenu() {
     } else {
         currentFilteredItems = menuItems.filter(item => 
             item.name.toLowerCase().includes(query) || 
-            item.category.toLowerCase().includes(query)
+            item.category.toLowerCase().includes(query) ||
+            (item.desc && item.desc.toLowerCase().includes(query))
         );
     }
     renderMenu(currentFilteredItems);
@@ -2777,8 +2826,10 @@ function clickAddItem(name) {
     }
 
     let bodyHtml = `
+        ${item.desc ? `<div style="font-size:13px; color:#64748b; background:#f8fafc; padding:8px 12px; border-radius:8px; margin-bottom:14px; border-left:3px solid var(--primary);">${item.desc}</div>` : ''}
+
         <div class="option-section">
-            <div class="option-section-title"><span class="required">*</span>Step 1: 麵體與硬度選擇</div>
+            <div class="option-section-title"><span class="required">*</span>Step 1: 麵體與硬度選擇 <span class="option-section-hint">(必選)</span></div>
             <div class="option-grid">
                 <div class="opt-card selected" data-group="noodle" data-value="細麵(偏硬)" data-price="0">細麵-偏硬</div>
                 <div class="opt-card" data-group="noodle" data-value="細麵(基本)" data-price="0">細麵-基本</div>
@@ -2786,42 +2837,98 @@ function clickAddItem(name) {
                 <div class="opt-card" data-group="noodle" data-value="粗麵(Q彈)" data-price="0">粗麵-Q彈</div>
             </div>
         </div>
+
         <div class="option-section">
-            <div class="option-section-title">Step 2: 配料客製</div>
+            <div class="option-section-title">Step 2: 配料客製 <span class="option-section-hint">(可複選)</span></div>
             <div class="option-grid">
                 <div class="opt-card" data-group="custom" data-value="不加蔥" data-price="0">不加蔥</div>
                 <div class="opt-card" data-group="custom" data-value="不加蒜" data-price="0">不加蒜</div>
             </div>
         </div>
+
         <div class="option-section">
-            <div class="option-section-title">✨ 加購</div>
+            <div class="option-section-title">🍱 Step 3: 豐盛套餐加購 <span class="option-section-hint">(每碗限選1組，含冷飲)</span></div>
             <div class="option-grid">
-                <div class="opt-card" data-group="addons" data-value="加購溏心蛋" data-price="30">+溏心蛋(+$30)</div>
-                <div class="opt-card" data-group="addons" data-value="加購嫩滑魚片" data-price="35">+嫩滑魚片(+$35)</div>
-                <div class="opt-card" data-group="addons" data-value="加購胡麻豆腐" data-price="40">+胡麻豆腐(+$40)</div>
-                <div class="opt-card" data-group="addons" data-value="加購唐揚雞(半份)" data-price="55">+唐揚雞(半份)(+$55)</div>
-                <div class="opt-card" data-group="addons" data-value="加購四季春茶(無糖)" data-price="40">+四季春茶(無糖)(+$40)</div>
-                <div class="opt-card" data-group="addons" data-value="加購桂花紅茶(微糖)" data-price="40">+桂花紅茶(微糖)(+$40)</div>
+                <div class="opt-card" data-group="combo" data-value="豐盛套餐A1(溏心蛋)" data-price="49">A1 溏心蛋＋冷飲<small>+$49 (原價$70)</small></div>
+                <div class="opt-card" data-group="combo" data-value="豐盛套餐A2(糰子1串)" data-price="49">A2 糰子1串＋冷飲<small>+$49 (原價$70)</small></div>
+                <div class="opt-card" data-group="combo" data-value="豐盛套餐B1(海味御品泡菜)" data-price="59">B1 御品泡菜＋冷飲<small>+$59 (原價$80)</small></div>
+                <div class="opt-card" data-group="combo" data-value="豐盛套餐B2(胡麻豆腐)" data-price="59">B2 胡麻豆腐＋冷飲<small>+$59 (原價$80)</small></div>
+                <div class="opt-card" data-group="combo" data-value="豐盛套餐C1(胡麻龍鬚菜)" data-price="69">C1 胡麻龍鬚菜＋冷飲<small>+$69 (原價$100)</small></div>
+                <div class="opt-card" data-group="combo" data-value="豐盛套餐C2(和風溫時蔬)" data-price="69">C2 和風溫時蔬＋冷飲<small>+$69 (原價$100)</small></div>
+                <div class="opt-card" data-group="combo" data-value="豐盛套餐D1(明太子叉燒飯)" data-price="69">D1 明太子叉燒飯＋冷飲<small>+$69 (原價$105)</small></div>
+                <div class="opt-card" data-group="combo" data-value="豐盛套餐D2(唐揚雞半份)" data-price="69">D2 唐揚雞半份＋冷飲<small>+$69 (原價$95)</small></div>
+            </div>
+
+            <div id="combo-drink-section" class="hidden" style="margin-top: 10px; padding: 10px; background: var(--primary-light); border-radius: 10px; border: 1px dashed var(--primary);">
+                <div class="option-section-title" style="font-size: 13px; margin-bottom: 6px;"><span class="required">*</span>請選擇套餐冷飲：</div>
+                <div class="option-grid option-grid-3">
+                    <div class="opt-card selected" data-group="comboDrink" data-value="四季春茶(無糖)" data-price="0">四季春茶(無糖)</div>
+                    <div class="opt-card" data-group="comboDrink" data-value="桂花紅茶(微糖)" data-price="0">桂花紅茶(微糖)</div>
+                    <div class="opt-card" data-group="comboDrink" data-value="野莓果茶" data-price="0">野莓果茶</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="option-section">
+            <div class="option-section-title">✨ Step 4: 單點加料 <span class="option-section-hint">(可複選)</span></div>
+            <div class="option-grid">
+                <div class="opt-card" data-group="addons" data-value="加購溏心蛋" data-price="30">+溏心蛋 (+$30)</div>
+                <div class="opt-card" data-group="addons" data-value="加購嫩滑魚片" data-price="35">+嫩滑魚片 (+$35)</div>
+                <div class="opt-card" data-group="addons" data-value="加購胡麻豆腐" data-price="40">+胡麻豆腐 (+$40)</div>
+                <div class="opt-card" data-group="addons" data-value="加購唐揚雞(半份)" data-price="55">+唐揚雞(半份) (+$55)</div>
+                <div class="opt-card" data-group="addons" data-value="加購加麵(細麵)" data-price="25">+加麵(細麵) (+$25)</div>
+                <div class="opt-card" data-group="addons" data-value="加購加麵(粗麵)" data-price="25">+加麵(粗麵) (+$25)</div>
+                <div class="opt-card" data-group="addons" data-value="加購白飯" data-price="15">+白飯 (+$15)</div>
+                <div class="opt-card" data-group="addons" data-value="加購四季春茶(無糖)" data-price="40">+四季春茶(無糖) (+$40)</div>
+                <div class="opt-card" data-group="addons" data-value="加購桂花紅茶(微糖)" data-price="40">+桂花紅茶(微糖) (+$40)</div>
+                <div class="opt-card" data-group="addons" data-value="加購野莓果茶" data-price="40">+野莓果茶 (+$40)</div>
             </div>
         </div>
     `;
 
+    const updateModalPriceLabel = () => {
+        let extra = 0;
+        document.querySelectorAll('#modal-body .opt-card.selected').forEach(c => {
+            extra += parseInt(c.getAttribute('data-price') || 0, 10);
+        });
+        const confirmBtn = document.getElementById("btn-modal-confirm");
+        if (confirmBtn) {
+            confirmBtn.innerText = `加入購物車 ($${item.price + extra})`;
+        }
+    };
+
     showCustomModal({
         title: `客製「${item.name}」`,
         bodyHtml: bodyHtml,
-        confirmText: "加入購物車",
+        confirmText: `加入購物車 ($${item.price})`,
         cancelText: "取消",
         showCancel: true,
         onConfirm: () => {
             let addPrice = 0;
             let options = [];
 
-            document.querySelectorAll('#modal-body .opt-card.selected').forEach(card => {
-                const val = card.getAttribute('data-value');
-                const price = parseInt(card.getAttribute('data-price') || 0);
+            // 1. 麵體
+            const noodleCard = document.querySelector('#modal-body .opt-card[data-group="noodle"].selected');
+            if (noodleCard) options.push(noodleCard.getAttribute('data-value'));
 
-                addPrice += price;
-                if (val) options.push(val);
+            // 2. 配料客製
+            document.querySelectorAll('#modal-body .opt-card[data-group="custom"].selected').forEach(card => {
+                options.push(card.getAttribute('data-value'));
+            });
+
+            // 3. 豐盛套餐 + 套餐冷飲
+            const comboCard = document.querySelector('#modal-body .opt-card[data-group="combo"].selected');
+            if (comboCard) {
+                addPrice += parseInt(comboCard.getAttribute('data-price') || 0, 10);
+                const comboDrinkCard = document.querySelector('#modal-body .opt-card[data-group="comboDrink"].selected');
+                const drinkName = comboDrinkCard ? comboDrinkCard.getAttribute('data-value') : '四季春茶(無糖)';
+                options.push(`${comboCard.getAttribute('data-value')}+${drinkName}`);
+            }
+
+            // 4. 單點加料
+            document.querySelectorAll('#modal-body .opt-card[data-group="addons"].selected').forEach(card => {
+                addPrice += parseInt(card.getAttribute('data-price') || 0, 10);
+                options.push(card.getAttribute('data-value'));
             });
 
             addItemToCart(item, addPrice, options);
@@ -2833,12 +2940,23 @@ function clickAddItem(name) {
         document.querySelectorAll('#modal-body .opt-card').forEach(card => {
             card.onclick = function() {
                 const group = this.getAttribute('data-group');
-                if (group === 'size' || group === 'noodle') {
+                if (group === 'noodle' || group === 'comboDrink') {
                     document.querySelectorAll(`#modal-body .opt-card[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
                     this.classList.add('selected');
+                } else if (group === 'combo') {
+                    const wasSelected = this.classList.contains('selected');
+                    document.querySelectorAll('#modal-body .opt-card[data-group="combo"]').forEach(c => c.classList.remove('selected'));
+                    const drinkSec = document.getElementById('combo-drink-section');
+                    if (!wasSelected) {
+                        this.classList.add('selected');
+                        drinkSec?.classList.remove('hidden');
+                    } else {
+                        drinkSec?.classList.add('hidden');
+                    }
                 } else {
                     this.classList.toggle('selected');
                 }
+                updateModalPriceLabel();
             };
         });
     }, 50);
