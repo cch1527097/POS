@@ -53,15 +53,20 @@ if (rawDbUrl) {
 // 判斷是否為本地連線以自動調整 SSL 設定
 const isLocalDb = cleanDbUrl && (cleanDbUrl.includes('localhost') || cleanDbUrl.includes('127.0.0.1'));
 
-// PostgreSQL (Neon / Local) 連線設定
+// PostgreSQL (Aiven / Local) 連線設定
 const pool = new Pool({
     connectionString: cleanDbUrl,
     ssl: isLocalDb ? false : {
         rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
     },
-    max: 10,
+    max: 5, // Aiven 免費版上限為 20 連線，設為 5 可保留充足餘裕給後台或匯出使用
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000
+});
+
+// 監聽連線池閒置錯誤，避免偶發斷線導致 Node.js 整個崩潰
+pool.on('error', (err) => {
+    console.error('⚠️ PostgreSQL 連線池發生非預期錯誤:', err.message);
 });
 
 // 預設員工資料
