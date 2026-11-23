@@ -33,10 +33,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Render 健康檢查探針
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.status(200).json({ status: 'ok', database: 'Aiven PostgreSQL', timestamp: new Date().toISOString() });
 });
 
-// 自動解析並剔除 DATABASE_URL 中的 sslmode 參數
+// 自動解析並剔除 DATABASE_URL 中的 sslmode 參數（Aiven 連線字串預設帶有 ?sslmode=require）
 const rawDbUrl = process.env.DATABASE_URL || '';
 let cleanDbUrl = rawDbUrl;
 
@@ -44,29 +44,40 @@ if (rawDbUrl) {
     try {
         const parsedUrl = new URL(rawDbUrl);
         parsedUrl.searchParams.delete('sslmode');
+        parsedUrl.searchParams.delete('channel_binding');
         cleanDbUrl = parsedUrl.toString();
     } catch (err) {
-        cleanDbUrl = rawDbUrl.replace(/([?&])sslmode=[^&]*/g, '');
+        cleanDbUrl = rawDbUrl.replace(/([?&])(sslmode|channel_binding)=[^&]*/g, '');
     }
 }
 
 // 判斷是否為本地連線以自動調整 SSL 設定
 const isLocalDb = cleanDbUrl && (cleanDbUrl.includes('localhost') || cleanDbUrl.includes('127.0.0.1'));
 
-// PostgreSQL (Aiven / Local) 連線設定
+// 讀取 Aiven CA 憑證（支援環境變數 DB_CA_CERT 或專案根目錄下的 ca.pem）
+let aivenCaCert = process.env.DB_CA_CERT ? process.env.DB_CA_CERT.replace(/\\n/g, '\n') : null;
+const caFilePath = path.join(__dirname, 'ca.pem');
+if (!aivenCaCert && fs.existsSync(caFilePath)) {
+    aivenCaCert = fs.readFileSync(caFilePath, 'utf-8');
+}
+
+// Aiven PostgreSQL 連線池設定
 const pool = new Pool({
     connectionString: cleanDbUrl,
-    ssl: isLocalDb ? false : {
+    ssl: isLocalDb ? false : (aivenCaCert ? {
+        rejectUnauthorized: true,
+        ca: aivenCaCert
+    } : {
         rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
-    },
-    max: 5, // Aiven 免費版上限為 20 連線，設為 5 可保留充足餘裕給後台或匯出使用
+    }),
+    max: 5, // Aiven 免費版總上限為 20 連線，設為 5 可保留充足餘裕給後台與匯出使用
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000
 });
 
 // 監聽連線池閒置錯誤，避免偶發斷線導致 Node.js 整個崩潰
 pool.on('error', (err) => {
-    console.error('⚠️ PostgreSQL 連線池發生非預期錯誤:', err.message);
+    console.error('⚠️ Aiven PostgreSQL 連線池發生非預期錯誤:', err.message);
 });
 
 // 預設員工資料
@@ -290,9 +301,16 @@ function generateSafeOrderId() {
     return Number(`${timestamp}${randomSuffix}`);
 }
 
-// 初始化資料庫
+// 初始化 Aiven PostgreSQL 資料庫
 async function initDatabase() {
     try {
+        if (!cleanDbUrl) {
+            throw new Error('環境變數 DATABASE_URL 未設定，請填入 Aiven PostgreSQL 連線字串！');
+        }
+
+        // 驗證 Aiven 連線是否暢通
+        await pool.query('SELECT 1;');
+
         await pool.query(`
             CREATE TABLE IF NOT EXISTS orders (
                 id SERIAL PRIMARY KEY,
@@ -468,7 +486,7 @@ async function initDatabase() {
 
         const userCheck = await pool.query('SELECT COUNT(*) FROM users;');
         if (parseInt(userCheck.rows[0].count, 10) === 0) {
-            console.log('[系統提示] 正在初始化預設員工名單至 Neon PostgreSQL...');
+            console.log('[系統提示] 正在初始化預設員工名單至 Aiven PostgreSQL...');
             const cardIds = Object.keys(INITIAL_USER_DB);
             const names = Object.values(INITIAL_USER_DB);
 
@@ -480,10 +498,10 @@ async function initDatabase() {
             `, [cardIds, names]);
         }
 
-        console.log(`[系統提示] Neon PostgreSQL 資料表與員工資料檢查完成！`);
+        console.log(`[系統提示] Aiven PostgreSQL 資料表與員工資料檢查完成！`);
         await syncOrdersJsonFile();
     } catch (err) {
-        console.error(`❌ 初始化 Neon 資料庫失敗：`, err.message);
+        console.error(`❌ 初始化 Aiven PostgreSQL 資料庫失敗：`, err.message);
         throw err;
     }
 }
@@ -1524,11 +1542,11 @@ async function startServer() {
         await initDatabase();
         app.listen(PORT, () => {
             console.log(`================================================================`);
-            console.log(` 🚀 訂餐系統後端已啟動！Port: ${PORT}`);
+            console.log(` 🚀 訂餐系統後端已啟動 (Aiven PostgreSQL)！Port: ${PORT}`);
             console.log(`================================================================`);
         });
     } catch (err) {
-        console.error('❌ 伺服器啟動失敗，無法連線至 Neon PostgreSQL:', err);
+        console.error('❌ 伺服器啟動失敗，無法連線至 Aiven PostgreSQL:', err);
         process.exit(1);
     }
 }
