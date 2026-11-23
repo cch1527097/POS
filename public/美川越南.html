@@ -1506,18 +1506,19 @@
             <div class="store-details">
                 <h1>美川越南美食 <span style="font-size: 14px; font-weight: 600; color: var(--primary);">MỸ XUYÊN VIỆT NAM</span></h1>
                 <div class="store-meta">
-                    <span>🕒 早上 09:30 ~ 下午 19:30 (週一公休)</span>
-                    <span>📍 彰化鹿港鎮大有里大明路46巷5號</span>
-                    <span>📞 0923-500128</span>
+                    <span class="rating">⭐ 4.3 (12)</span>
+                    <span>🕒 09:30 ~ 19:30</span>
+                    <span>📍 505彰化縣鹿港鎮大有里大明路46巷5號</span>
+                    <span>📞 0923-500-128</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 店家公告橫幅 -->
+    <!-- 低消訊息橫幅 -->
     <div class="promo-banner">
-        <span class="promo-badge">越式風味</span>
-        <span class="promo-text">道地越南河粉、春捲、法國麵包・可點選品項進行口味與主食客製</span>
+        <span class="promo-badge">低消</span>
+        <span class="promo-text">外送最低金額 <b>1000</b> 元</span>
     </div>
 
     <div id="card-status" class="info-banner">🔍 正在讀取卡號資訊...</div>
@@ -3117,7 +3118,7 @@ async function submitOrderToServer() {
                 cardId: currentCardId,
                 category: "vietnamese",
                 type: "food",
-                meal: `美川越南美食：${finalSummary.trim()}`,
+                meal: `美川越南：${finalSummary.trim()}`,
                 spicy: "依餐點選擇",
                 total: finalTotal,
                 note: `總計：$${finalTotal}`
