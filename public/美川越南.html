@@ -715,20 +715,6 @@
             font-weight: 700;
         }
 
-        .custom-note-input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            font-size: 14px;
-            font-family: inherit;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .custom-note-input:focus {
-            border-color: var(--primary);
-        }
-
         .custom-item-tag {
             font-size: 12px;
             color: #64748b;
@@ -2810,7 +2796,7 @@ function clickAddItem(name) {
     }
 
     bodyHtml += `
-        <div class="option-section">
+        <div class="option-section" style="margin-bottom: 4px;">
             <div class="option-section-title">口味客製 <span class="option-section-hint">(可複選)</span></div>
             <div class="option-grid">
                 <div class="opt-card" data-group="custom" data-value="不加香菜">不加香菜</div>
@@ -2818,11 +2804,6 @@ function clickAddItem(name) {
                 <div class="opt-card" data-group="custom" data-value="不加洋蔥">不加洋蔥</div>
                 <div class="opt-card" data-group="custom" data-value="加辣">加辣</div>
             </div>
-        </div>
-
-        <div class="option-section" style="margin-bottom: 4px;">
-            <div class="option-section-title">其他備註 <span class="option-section-hint">(選填)</span></div>
-            <input type="text" id="custom-note-field" class="custom-note-input" placeholder="例如：湯麵分開、辣放旁邊...">
         </div>
     `;
 
@@ -2845,12 +2826,6 @@ function clickAddItem(name) {
             document.querySelectorAll('#modal-body .opt-card[data-group="custom"].selected').forEach(card => {
                 options.push(card.getAttribute('data-value'));
             });
-
-            // 3. 手動備註
-            const noteVal = (document.getElementById('custom-note-field')?.value || '').trim();
-            if (noteVal) {
-                options.push(noteVal);
-            }
 
             addItemToCart(item, 0, options);
             closeModal();
